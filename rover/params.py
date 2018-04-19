@@ -101,6 +101,7 @@ class RoverArgumentParser(ArgumentParser):
         config, args = self.extract_config(args)
         self.generate_default_config(config)
         args = self.patch_config(args, config)
+        print(args)
         return super().parse_args(args=args, namespace=namespace)
 
     def preprocess_booleans(self, args):
