@@ -86,7 +86,7 @@ class RoverArgumentParser(ArgumentParser):
         self.add_argument(m(F), mm(FILE), default=CONFIG, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
-        self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background daemons', metavar='')
+        self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
 
     def parse_args(self, args=None, namespace=None):
         '''
@@ -121,7 +121,6 @@ class RoverArgumentParser(ArgumentParser):
             if negative:
                 args[index] = mm(args[index][5:])
             args.insert(index+1, str(not negative))
-        print(args)
         return args
 
     def extract_config(self, args):
