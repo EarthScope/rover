@@ -8,6 +8,7 @@ NO = '--no-'
 DAEMON = 'daemon'
 F, FILE = 'f', 'file'
 HELP = 'help'
+CONFIG = '~/.rover'
 
 
 def parse_bool(value):
@@ -33,7 +34,8 @@ class StoreBoolAction(Action):
                  default=None,
                  choices=None,
                  required=False,
-                 help=None):
+                 help=None,
+                 metavar=None):
         super().__init__(
             option_strings=option_strings,
             dest=dest,
@@ -44,7 +46,7 @@ class StoreBoolAction(Action):
             choices=choices,
             required=required,
             help=help,
-            metavar=None)
+            metavar=metavar)
 
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, values)
@@ -75,11 +77,16 @@ class RoverArgumentParser(ArgumentParser):
 
     def __init__(self):
         super().__init__(fromfile_prefix_chars='@',
-                         description='ROVER: Retrieval of Various Experiment data Robustly')
+                         description='ROVER: Retrieval of Various Experiment data Robustly',
+                         epilog='Defaults are read from the configuration file '
+                                +'(default %s; written on first use). ' % CONFIG
+                                +'Flags can be negated (eg --no-daemon).')
         self.register('action', 'store_bool', StoreBoolAction)
         # TODO - windows needs different path
-        self.add_argument(m(F), mm(FILE), default="~/.rover", help='specify configuration file')
-        self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background daemons')
+        self.add_argument(m(F), mm(FILE), default=CONFIG, help='specify configuration file')
+        # metavar must be empty string to hide value since user options
+        # are flags that are automatically given values below.
+        self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background daemons', metavar='')
 
     def parse_args(self, args=None, namespace=None):
         '''
@@ -137,7 +144,8 @@ class RoverArgumentParser(ArgumentParser):
         for index in reversed(indices):
             args = args[:index] + args[index+2:]
         if not config:
-            config = self.get_default(FILE)\
+            config = self.get_default(FILE)
+        config = expanduser(config)
         # include config flag so that it is set correctly, even if the extracted
         # value is th eone that is used here
         return config, [mm(FILE), config] + args
@@ -146,11 +154,9 @@ class RoverArgumentParser(ArgumentParser):
         '''
         If the config file is missing, fill it with default values.
         '''
-        config = expanduser(config)
         if not exists(config):
             with open(config, 'w') as out:
                 for action in self._actions:
-                    print(action)
                     if action.dest not in (HELP, FILE):
                         if action.default is not None:
                             if action.help:
