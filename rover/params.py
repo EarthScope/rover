@@ -107,7 +107,7 @@ class RoverArgumentParser(ArgumentParser):
         '''
         Replace --foo with '--foo True' and --no-foo with '--foo False'.
         This makes the interface consistent with the config file (which has
-        the format 'foo=True') while letting the user trype simple flags.
+        the format 'foo=True') while letting the user type simple flags.
         '''
         indices = []
         for (index, arg) in enumerate(args):
