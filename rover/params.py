@@ -1,6 +1,7 @@
 
-from argparse import ArgumentParser, Action
+from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
 from os.path import exists, expanduser
+from textwrap import dedent
 import sys
 
 
@@ -77,16 +78,19 @@ class RoverArgumentParser(ArgumentParser):
 
     def __init__(self):
         super().__init__(fromfile_prefix_chars='@',
+                         formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
-                         epilog='Defaults are read from the configuration file '
-                                +'(default %s; written on first use). ' % CONFIG
-                                +'Flags can be negated (eg --no-daemon).')
+                         epilog=dedent('''
+                         Defaults are read from the configuration file (default %s).
+                         Flags can be negated (eg --no-daemon).''' % CONFIG))
         self.register('action', 'store_bool', StoreBoolAction)
         # TODO - windows needs different path
         self.add_argument(m(F), mm(FILE), default=CONFIG, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
+        self.add_argument('command', metavar='COMMAND', nargs='?', choices=['foo', 'bsr'], help='')
+        self.add_argument('args', nargs='*')
 
     def parse_args(self, args=None, namespace=None):
         '''
@@ -101,7 +105,6 @@ class RoverArgumentParser(ArgumentParser):
         config, args = self.extract_config(args)
         self.generate_default_config(config)
         args = self.patch_config(args, config)
-        print(args)
         return super().parse_args(args=args, namespace=namespace)
 
     def preprocess_booleans(self, args):
