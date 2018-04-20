@@ -1,4 +1,4 @@
 #!/bin/bash
 
-source env/bin/activate
+source env3/bin/activate
 nosetests tests/*
