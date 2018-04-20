@@ -6,16 +6,27 @@ import sys
 
 
 NO = '--no-'
+
 DAEMON = 'daemon'
 F, FILE = 'f', 'file'
 HELP = 'help'
-CONFIG = join('~', '.rover')
+LOGDIR = 'log-dir'
+LOGVERBOSITY = 'log-verbosity'
+LOGSIZE = 'log-size'
+LOGCOUNT = 'log-count'
+V, VERBOSITY = 'v', 'verbosity'
 
+DEFAULT_FILE = join('~', '.rover')
+DEFAULT_LOGDIR = join('~', '.rover-logs')
+DEFAULT_LOGVERBOSITY = 4
+DEFAULT_LOGSIZE = 6
+DEFAULT_LOGCOUNT = 10
+DEFAULT_VERBOSITY = 2
 
 
 def parse_bool(value):
     '''
-    Treat caseless true, yes and on and true, anthing else as false.
+    Treat caseless true, yes and on and true, anything else as false.
     '''
     if not value:
         value = 'False'
@@ -83,14 +94,19 @@ class RoverArgumentParser(ArgumentParser):
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          epilog=dedent('''
                          Defaults are read from the configuration file (default %s).
-                         Flags can be negated (eg --no-daemon).''' % CONFIG))
+                         Flags can be negated (eg --no-daemon).''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
-        self.add_argument(m(F), mm(FILE), default=CONFIG, help='specify configuration file')
+        self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
-        self.add_argument('command', metavar='COMMAND', nargs='?', choices=['foo', 'bsr'], help='')
-        self.add_argument('args', nargs='*')
+        self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
+        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (1-5)', metavar='V', type=int)
+        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (5-10)', metavar='N', type=int)
+        self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
+        self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (1-5)', metavar='V', type=int)
+        self.add_argument('command', metavar='COMMAND', nargs='?', choices=['foo', 'bsr'], help='run with no command to see detailed help')
+        self.add_argument('args', nargs='*', help='depends on command - see above')
 
     def parse_args(self, args=None, namespace=None):
         '''
