@@ -1,6 +1,6 @@
 
 from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
-from os.path import exists, expanduser
+from os.path import exists, expanduser, join
 from textwrap import dedent
 import sys
 
@@ -9,7 +9,8 @@ NO = '--no-'
 DAEMON = 'daemon'
 F, FILE = 'f', 'file'
 HELP = 'help'
-CONFIG = '~/.rover'
+CONFIG = join('~', '.rover')
+
 
 
 def parse_bool(value):
@@ -84,7 +85,6 @@ class RoverArgumentParser(ArgumentParser):
                          Defaults are read from the configuration file (default %s).
                          Flags can be negated (eg --no-daemon).''' % CONFIG))
         self.register('action', 'store_bool', StoreBoolAction)
-        # TODO - windows needs different path
         self.add_argument(m(F), mm(FILE), default=CONFIG, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.

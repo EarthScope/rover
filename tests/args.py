@@ -1,5 +1,5 @@
 
-from rover.params import RoverArgumentParser
+from rover.args import RoverArgumentParser
 from tempfile import TemporaryDirectory
 from os.path import join
 
