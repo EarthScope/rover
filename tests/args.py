@@ -15,6 +15,16 @@ def test_write_config():
             assert contents == \
 '''# use background processes
 daemon=False
+# directory for logs
+log-dir=~/.rover-logs
+# log verbosity (1-5)
+log-verbosity=4
+# maximum log size (1-7)
+log-size=6
+# maximum number of logs
+log-count=10
+# stdout verbosity (1-5)
+verbosity=3
 ''', contents
 
 def test_enable_daemon():

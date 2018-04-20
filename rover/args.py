@@ -4,6 +4,8 @@ from os.path import exists, expanduser, join
 from textwrap import dedent
 import sys
 
+from re import sub
+
 
 NO = '--no-'
 
@@ -21,7 +23,7 @@ DEFAULT_LOGDIR = join('~', '.rover-logs')
 DEFAULT_LOGVERBOSITY = 4
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
-DEFAULT_VERBOSITY = 2
+DEFAULT_VERBOSITY = 3
 
 
 def parse_bool(value):
@@ -102,10 +104,10 @@ class RoverArgumentParser(ArgumentParser):
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (1-5)', metavar='V', type=int)
-        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (5-10)', metavar='N', type=int)
+        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-7)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (1-5)', metavar='V', type=int)
-        self.add_argument('command', metavar='COMMAND', nargs='?', choices=['foo', 'bsr'], help='run with no command to see detailed help')
+        self.add_argument('command', metavar='COMMAND', nargs='?', help='run with no command to see detailed help')
         self.add_argument('args', nargs='*', help='depends on command - see above')
 
     def parse_args(self, args=None, namespace=None):
@@ -180,7 +182,7 @@ class RoverArgumentParser(ArgumentParser):
                         if action.default is not None:
                             if action.help:
                                 out.write('# %s\n' % action.help)
-                            out.write('%s=%s\n' % (action.dest, action.default))
+                            out.write('%s=%s\n' % (sub('_', '-', action.dest), action.default))
         return
 
     def patch_config(self, args, config):
