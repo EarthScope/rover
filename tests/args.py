@@ -23,7 +23,7 @@ log-verbosity=4
 log-size=6
 # maximum number of logs
 log-count=10
-# stdout verbosity (1-5)
+# stdout verbosity (0-5)
 verbosity=3
 ''', contents
 

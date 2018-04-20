@@ -1,11 +1,17 @@
 
+from .welcome import welcome
 from .args import RoverArgumentParser
 from .logs import init_log
 
+
+def execute(command, args, log):
+    if not command:
+        welcome(args, log)
+    else:
+        print('TODO: %s' % command)
 
 def main():
     argparse = RoverArgumentParser()
     args = argparse.parse_args()
     log = init_log(args, 'rover')
-    log.debug('args: %s' % args)
-    log.error('hello world')
+    execute(args.command, args, log)
