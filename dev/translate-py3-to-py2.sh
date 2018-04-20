@@ -6,4 +6,4 @@ mkdir py2
 cp -r rover py2
 cp -r tests py2
 cd py2
-pasteurize .
+pasteurize -w -n .
