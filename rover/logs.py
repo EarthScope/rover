@@ -8,10 +8,10 @@ import sys
 
 def level(n):
     '''
-    Our log levels are 1-5 (quiet - verbose).
+    Our log levels are 0-5 (silent - verbose).
     Logging levels are 50-10 (quiet - verbose)
     '''
-    return 10 * (6 - (max(min(n, 5), 1)))
+    return 10 * (6 - (max(min(n, 5), 0)))
 
 
 def init_log(args, name, stdout=None):

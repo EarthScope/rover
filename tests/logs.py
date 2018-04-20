@@ -74,3 +74,9 @@ rover  WARNING: warn
 rover    ERROR: error
 rover CRITICAL: critical
 ''')
+
+def test_critical_only():
+    do_all_levels(1, '''CRITICAL [timestamp]: critical\n''', 1, '''rover CRITICAL: critical\n''')
+
+def test_silent():
+    do_all_levels(0, '''''', 0, '''''')
