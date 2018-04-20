@@ -3,13 +3,14 @@
 
 def welcome(args, log):
     print('''
-                    Welcome to Rover!
+                      Welcome to Rover!
 
-For more information on the parametes that modify Rover's behaviour 
-run "rover -h" or edit %s
-
-The following commands are available:
+  The following commands are available:
 
 
+
+  For more information on the parameters that modify Rover's behaviour 
+  run "rover -h" or edit %s
+  To redisplay this information run "rover" (with no command).
 
 ''' % args.file)

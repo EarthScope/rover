@@ -14,4 +14,5 @@ def main():
     argparse = RoverArgumentParser()
     args = argparse.parse_args()
     log = init_log(args, 'rover')
+    log.info('args: %s' % args)
     execute(args.command, args, log)

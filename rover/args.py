@@ -64,7 +64,7 @@ class StoreBoolAction(Action):
             metavar=metavar)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, self.dest, values)
+        setattr(namespace, self.dest, values[0])
 
 
 

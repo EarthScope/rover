@@ -1,5 +1,5 @@
 
-from logging import getLogger, StreamHandler, Formatter
+from logging import getLogger, StreamHandler, Formatter, DEBUG
 from logging.handlers import RotatingFileHandler
 from os.path import join, exists, isdir, expanduser
 from os import makedirs
@@ -17,6 +17,7 @@ def level(n):
 def init_log(args, name, stdout=None):
 
     log = getLogger(name)
+    log.setLevel(DEBUG)
 
     dir = expanduser(args.log_dir)
     if not exists(dir):
