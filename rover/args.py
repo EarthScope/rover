@@ -103,7 +103,7 @@ class RoverArgumentParser(ArgumentParser):
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
-        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (1-5)', metavar='V', type=int)
+        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-7)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (1-5)', metavar='V', type=int)

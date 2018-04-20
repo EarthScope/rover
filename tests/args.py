@@ -17,7 +17,7 @@ def test_write_config():
 daemon=False
 # directory for logs
 log-dir=~/.rover-logs
-# log verbosity (1-5)
+# log verbosity (0-5)
 log-verbosity=4
 # maximum log size (1-7)
 log-size=6
