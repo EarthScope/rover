@@ -1,3 +1,4 @@
 #!/bin/bash
 
+source env3/bin/activate
 python -m rover "$@"
