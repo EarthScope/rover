@@ -51,8 +51,7 @@ class StoreBoolAction(Action):
                  required=False,
                  help=None,
                  metavar=None):
-        # super(...) args needed for python 2 conversion
-        super(StoreBoolAction, self).__init__(
+        super().__init__(
             option_strings=option_strings,
             dest=dest,
             nargs=1,
@@ -92,8 +91,7 @@ class RoverArgumentParser(ArgumentParser):
 
 
     def __init__(self):
-        # super(...) args needed for python 2 conversion
-        super(RoverArgumentParser, self).__init__(fromfile_prefix_chars='@',
+        super().__init__(fromfile_prefix_chars='@',
                          formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          epilog=dedent('''
@@ -125,8 +123,7 @@ class RoverArgumentParser(ArgumentParser):
         config, args = self.extract_config(args)
         self.generate_default_config(config)
         args = self.patch_config(args, config)
-        # super(...) args needed for python 2 conversion
-        return super(RoverArgumentParser, self).parse_args(args=args, namespace=namespace)
+        return super().parse_args(args=args, namespace=namespace)
 
     def preprocess_booleans(self, args):
         '''
