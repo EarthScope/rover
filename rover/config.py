@@ -1,28 +1,35 @@
 
 from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
-from os.path import exists, expanduser, join
+
+from os import unlink
+from os.path import exists, expanduser, join, isfile
 from textwrap import dedent
 import sys
 
 from re import sub
 
+from .utils import create_parents
 
 NO = '--no-'
 
 DAEMON = 'daemon'
+DATABASEFILE = 'database-file'
 F, FILE = 'f', 'file'
 HELP = 'help'
 LOGDIR = 'log-dir'
 LOGVERBOSITY = 'log-verbosity'
 LOGSIZE = 'log-size'
 LOGCOUNT = 'log-count'
+MSEEDDIR = 'mssed-dir'
 V, VERBOSITY = 'v', 'verbosity'
 
-DEFAULT_FILE = join('~', '.rover')
-DEFAULT_LOGDIR = join('~', '.rover-logs')
+DEFAULT_DATABASEFILE = join('~', 'rover', 'index.sql')
+DEFAULT_FILE = join('~', 'rover', 'config')
+DEFAULT_LOGDIR = join('~', 'rover', 'logs')
 DEFAULT_LOGVERBOSITY = 4
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
+DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_VERBOSITY = 3
 
 
@@ -102,10 +109,12 @@ class RoverArgumentParser(ArgumentParser):
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
+        self.add_argument(mm(DATABASEFILE), default=DEFAULT_DATABASEFILE, action='store', help='mseed index database', metavar='FILE')
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-7)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
+        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar='DIR')
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (0-5)', metavar='V', type=int)
         self.add_argument('command', metavar='COMMAND', nargs='?', help='run with no command to see detailed help')
         self.add_argument('args', nargs='*', help='depends on command - see above')
@@ -148,7 +157,7 @@ class RoverArgumentParser(ArgumentParser):
     def extract_config(self, args):
         '''
         Find the config file, if given, otherwise use the default.
-        This must be done before arrgument parsing because we need
+        This must be done before argument parsing because we need
         to add the contents of the file to the arguments (that is
         how the file is read).
         '''
@@ -171,12 +180,13 @@ class RoverArgumentParser(ArgumentParser):
         # value is th eone that is used here
         return config, [mm(FILE), config] + args
 
-    def generate_default_config(self, config):
+    def generate_default_config(self, path):
         '''
         If the config file is missing, fill it with default values.
         '''
-        if not exists(config):
-            with open(config, 'w') as out:
+        if not exists(path):
+            create_parents(path)
+            with open(path, 'w') as out:
                 for action in self._actions:
                     if action.dest not in (HELP, FILE):
                         if action.default is not None:
@@ -204,3 +214,14 @@ class RoverArgumentParser(ArgumentParser):
             return [mm(name), value]
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
+
+
+def update_config(args, log):
+    argparse = RoverArgumentParser()
+    if exists(args.file):
+        if not isfile(args.file):
+            raise Exception('"%s" is not a file' % args.file)
+        log.info('Removing old config file "%s"' % args.file)
+        unlink(args.file)
+    log.info('Writing new config file "%s"' % args.file)
+    argparse.generate_default_config(args.file)

@@ -1,5 +1,5 @@
 
-from rover.args import RoverArgumentParser
+from rover.config import RoverArgumentParser
 from tempfile import TemporaryDirectory
 from os.path import join
 
@@ -15,14 +15,18 @@ def test_write_config():
             assert contents == \
 '''# use background processes
 daemon=False
+# mseed index database
+database-file=~/rover/index.sql
 # directory for logs
-log-dir=~/.rover-logs
+log-dir=~/rover/logs
 # log verbosity (0-5)
 log-verbosity=4
 # maximum log size (1-7)
 log-size=6
 # maximum number of logs
 log-count=10
+# root of mseed data dirs
+mssed-dir=~/rover/mseed
 # stdout verbosity (0-5)
 verbosity=3
 ''', contents

@@ -8,7 +8,7 @@ from os.path import join
 from re import sub
 
 from rover import init_log
-from rover.args import RoverArgumentParser, DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
+from rover.config import RoverArgumentParser, DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
 
 
 def log_all(log):
