@@ -1,15 +1,15 @@
 
 from contextlib import closing
+from os import listdir, stat, makedirs
+from os.path import join, basename, isfile, isdir, dirname, exists
+from subprocess import Popen
 from time import sleep
 
-from os import listdir, stat, makedirs
-from os.path import join, basename, expanduser, abspath, isfile, isdir, dirname, exists
-from subprocess import Popen
-
+from .utils import canonify, check_cmd
 from .sqlite import Sqlite, NoResult
 
 
-class Workers():
+class Workers:
     """
     A collection of processes that run asynchronously.  Note that the Python
     code here does NOT run asynchonously - it will block if there are no free
@@ -63,7 +63,7 @@ class Workers():
 
 
 
-class Mseedindex(Sqlite):
+class Indexer(Sqlite):
     '''
     Wrap mseedindex, extending functionality to:
     * Work with a standard directory layout on disk
@@ -80,13 +80,14 @@ class Mseedindex(Sqlite):
     '''
 
     def __init__(self, mseedindex, dbpath, root, n_workers, log):
-        dbpath = abspath(expanduser(dbpath))
+        dbpath = canonify(dbpath)
         super().__init__(dbpath, log)
+        check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
         self._dbpath = dbpath
         self._workers = Workers(n_workers, log)
         self._load_tables()
-        self._check_root(abspath(expanduser(root)))
+        self._check_root(canonify(root))
 
     def _load_tables(self):
         self._execute('''create table if not exists rover_mseeddirs (
@@ -121,7 +122,7 @@ class Mseedindex(Sqlite):
     def _root(self):
         return self._fetchsingle('select path from rover_mseeddirs where parent is null')
 
-    def scan(self):
+    def index(self):
         """
         Initiates a scan of all data below mseed-dir.
         """
@@ -237,5 +238,5 @@ class Mseedindex(Sqlite):
 
 
 def index(args, log):
-    with closing(Mseedindex(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers, log)) as indexer:
-        indexer.scan()
+    with closing(Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers, log)) as indexer:
+        indexer.index()

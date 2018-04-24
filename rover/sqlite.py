@@ -8,7 +8,7 @@ class NoResult(Exception):
 
 
 
-class Sqlite():
+class Sqlite:
     '''
     Utility class supporting various common database operations.
     '''

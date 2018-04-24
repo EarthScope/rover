@@ -2,13 +2,13 @@
 from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
 
 from os import unlink
-from os.path import exists, expanduser, join, isfile
+from os.path import exists, join, isfile
 from textwrap import dedent
 import sys
 
 from re import sub
 
-from .utils import create_parents
+from .utils import create_parents, canonify
 
 
 INDEX = 'index'
@@ -187,7 +187,7 @@ class RoverArgumentParser(ArgumentParser):
             args = args[:index] + args[index+2:]
         if not config:
             config = self.get_default(FILE)
-        config = expanduser(config)
+        config = canonify(config)
         # include config flag so that it is set correctly, even if the extracted
         # value is the one that is used here
         return config, [mm(FILE), config] + args

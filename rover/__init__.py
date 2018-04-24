@@ -1,4 +1,5 @@
 
+from .ingest import ingest
 from .index import index
 from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_STORE
 from .logs import init_log
@@ -46,12 +47,21 @@ def execute(command, args, log):
         reset_config(args, log)
     elif command == INDEX:
         index(args, log)
+    elif command == INGEST:
+        ingest(args, log)
     else:
         print('TODO: %s' % command)
 
 def main():
-    argparse = RoverArgumentParser()
-    args = argparse.parse_args()
-    log = init_log(args, 'rover')
-    log.info('args: %s' % args)
-    execute(args.command, args, log)
+    log = None
+    try:
+        argparse = RoverArgumentParser()
+        args = argparse.parse_args()
+        log = init_log(args, 'rover')
+        log.info('args: %s' % args)
+        execute(args.command, args, log)
+    except Exception as e:
+        if log:
+            log.error(str(e))
+        else:
+            raise e

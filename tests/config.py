@@ -15,8 +15,6 @@ def test_write_config():
             assert contents == \
 '''# use background processes
 daemon=False
-# mseed index database
-database-file=~/rover/index.sql
 # directory for logs
 log-dir=~/rover/logs
 # log verbosity (0-5)
@@ -25,8 +23,14 @@ log-verbosity=4
 log-size=6
 # maximum number of logs
 log-count=10
+# mseedindex command
+mseed-cmd=mseedindex
+# mseedindex database (also used by rover)
+mseed-db=~/rover/index.sql
 # root of mseed data dirs
-mssed-dir=~/rover/mseed
+mseed-dir=~/rover/mseed
+# number of mseedindex instances to run
+mseed-workers=10
 # stdout verbosity (0-5)
 verbosity=3
 ''', contents
