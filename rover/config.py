@@ -13,7 +13,7 @@ from .utils import create_parents
 NO = '--no-'
 
 DAEMON = 'daemon'
-DATABASEFILE = 'database-file'
+DBFILE = 'db-file'
 F, FILE = 'f', 'file'
 HELP = 'help'
 LOGDIR = 'log-dir'
@@ -23,7 +23,7 @@ LOGCOUNT = 'log-count'
 MSEEDDIR = 'mssed-dir'
 V, VERBOSITY = 'v', 'verbosity'
 
-DEFAULT_DATABASEFILE = join('~', 'rover', 'index.sql')
+DEFAULT_DBFILE = join('~', 'rover', 'index.sql')
 DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_LOGDIR = join('~', 'rover', 'logs')
 DEFAULT_LOGVERBOSITY = 4
