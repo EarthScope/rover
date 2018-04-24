@@ -25,6 +25,9 @@ class Workers():
         self._workers = []
 
     def execute(self, command, on_success):
+        """
+        Execute the command, with callback on success.
+        """
         self._wait_for_space()
         self._workers.append((Popen(command, shell=True), on_success))
 
@@ -49,6 +52,9 @@ class Workers():
             i -= 1
 
     def wait_for_all(self):
+        """
+        Wait for all remaining processes to finish.
+        """
         while True:
             self._check()
             if not self._workers:
@@ -116,6 +122,9 @@ class Mseedindex(Sqlite):
         return self._fetchsingle('select path from rover_mseeddirs where parent is null')
 
     def scan(self):
+        """
+        Initiates a scan of all data below mseed-dir.
+        """
         self._scan_dir(self._root(), 0)
 
     def _scan_dir(self, dir, level):
@@ -220,6 +229,9 @@ class Mseedindex(Sqlite):
         # todo - delete mseedindex too
 
     def close(self):
+        """
+        Must be called on exit to make sure that we wait for all mseedindex instances.
+        """
         self._workers.wait_for_all()
         self._db.close()
 
