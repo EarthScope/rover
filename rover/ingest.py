@@ -2,7 +2,7 @@
 from os import listdir
 from os.path import exists, isdir, join, isfile
 
-from .utils import canonify, run, check_cmd
+from .utils import canonify, run, check_cmd, check_leap
 from .sqlite import Sqlite
 
 
@@ -12,13 +12,14 @@ class Ingester(Sqlite):
     into the local store, and index them.
     """
 
-    def __init__(self, mseedindex, dbpath, root, log):
+    def __init__(self, mseedindex, dbpath, root, leap_file, leap_url, log):
         dbpath = canonify(dbpath)
         super().__init__(dbpath, log)
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
         self._dbpath = dbpath
         self._root = canonify(root)
+        self._leap_file = check_leap(leap_file, leap_url, log)
 
     def ingest(self, args):
         for arg in args:
@@ -41,9 +42,10 @@ class Ingester(Sqlite):
     def _ingest_file(self, file):
         self._execute('drop table if exists rover_import')
         self._log.info('Examining %s' % file)
-        run('%s -table rover_import -sqlite %s %s' % (self._mseedindex, self._dbpath, file), self._log)
+        run('LIBMSEED_LEAPSECOND_FILE=%s %s -table rover_import -sqlite %s %s'
+            % (self._leap_file, self._mseedindex, self._dbpath, file), self._log)
 
 
 def ingest(args, log):
-    ingester = Ingester(args.mseed_cmd, args.mseed_db, args.mseed_dir, log)
+    ingester = Ingester(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.leap_file, args.leap_url, log)
     ingester.ingest(args.args)

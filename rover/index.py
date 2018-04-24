@@ -5,7 +5,7 @@ from os.path import join, basename, isfile, isdir, dirname, exists
 from subprocess import Popen
 from time import sleep
 
-from .utils import canonify, check_cmd
+from .utils import canonify, check_cmd, check_leap
 from .sqlite import Sqlite, NoResult
 
 
@@ -79,13 +79,14 @@ class Indexer(Sqlite):
     between that table and the additional tables used by rover.
     '''
 
-    def __init__(self, mseedindex, dbpath, root, n_workers, log):
+    def __init__(self, mseedindex, dbpath, root, n_workers, leap_file, leap_url, log):
         dbpath = canonify(dbpath)
         super().__init__(dbpath, log)
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
         self._dbpath = dbpath
         self._workers = Workers(n_workers, log)
+        self._leap_file = check_leap(leap_file, leap_url, log)
         self._load_tables()
         self._check_root(canonify(root))
 
@@ -215,7 +216,8 @@ class Indexer(Sqlite):
         return lastmod != statinfo.st_atime or size != statinfo.st_size
 
     def _scan_and_record_file(self, file):
-        self._workers.execute('%s -sqlite %s %s' % (self._mseedindex, self._dbpath, file),
+        self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
+                              % (self._leap_file, self._mseedindex, self._dbpath, file),
                               lambda: self._record_file(file))
 
     def _record_file(self, file):
@@ -238,5 +240,6 @@ class Indexer(Sqlite):
 
 
 def index(args, log):
-    with closing(Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers, log)) as indexer:
+    with closing(Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers,
+                         args.leap_file, args.leap_url, log)) as indexer:
         indexer.index()

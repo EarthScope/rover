@@ -1,7 +1,10 @@
 
 from os.path import dirname, exists, isdir, expanduser, abspath
-from os import makedirs
+from os import makedirs, stat
 from subprocess import Popen, check_output, STDOUT
+
+from time import time
+from urllib.request import urlretrieve
 
 
 def create_parents(path):
@@ -39,3 +42,20 @@ def run(cmd, log):
     process.wait()
     if process.returncode:
         raise Exception('Command "%s" failed' % cmd)
+
+def check_leap(file, url, log):
+    """
+    Download a file if none exists or it is more than 3 months old.
+    """
+    file = canonify(file)
+    if exists(file):
+        statinfo = stat(file)
+        age = int(time()) - statinfo.st_atime
+        log.debug('%s is %ds old' % (file, age))
+        download = age > 3 * 30 * 24 * 60 * 60
+    else:
+        download= True
+    if download:
+        log.info('Downloading %s from %s' % (file, url))
+        urlretrieve(url, file)
+    return file  # canonified
