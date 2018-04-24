@@ -1,15 +1,60 @@
 
 from contextlib import closing
+from time import sleep
 
-from os import listdir, stat
-from os.path import join, basename, expanduser, abspath, isfile, isdir, dirname
+from os import listdir, stat, makedirs
+from os.path import join, basename, expanduser, abspath, isfile, isdir, dirname, exists
+from subprocess import Popen
 
 from .sqlite import Sqlite, NoResult
 
 
 class Workers():
+    """
+    A collection of processes that run asynchronously.  Note that the Python
+    code here does NOT run asynchonously - it will block if there are no free
+    workers.
 
-    pass
+    The idea is that we run N meedindex processes in the background so that
+    we are not waiting on them to complete.
+    """
+
+    def __init__(self, size, log):
+        self._log = log
+        self._size = size
+        self._workers = []
+
+    def execute(self, command, on_success):
+        self._wait_for_space()
+        self._workers.append((Popen(command, shell=True), on_success))
+
+    def _wait_for_space(self):
+        while True:
+            self._check()
+            if len(self._workers) < self._size:
+                return
+            sleep(0.1)
+
+    def _check(self):
+        i = len(self._workers) - 1
+        while i > -1:
+            process = self._workers[i][0]
+            if process.returncode is not None:
+                if process.returncode:
+                    self._log._error('"%s" returned %d' % (process.args, process.returncode))
+                else:
+                    self._log.debug('"%s" succeeded' % (process.args,))
+                    self._workers[i][1]()  # execute on_success
+            self._workers = self._workers[:i-1] + self._workers[i:]
+            i -= 1
+
+    def wait_for_all(self):
+        while True:
+            self._check()
+            if not self._workers:
+                return
+            sleep(0.1)
+
 
 
 class Mseedindex(Sqlite):
@@ -22,10 +67,18 @@ class Mseedindex(Sqlite):
 
     To do this we manage parallel database tabeles containing file
     directory, size and last modified data.
+
+    WARNING: Do not allow the table name for mseedindex to change
+    without considering how this will impact the relationship
+    between that table and the additional tables used by rover.
     '''
 
-    def __init__(self, dbpath, root, log):
+    def __init__(self, mseedindex, dbpath, root, n_workers, log):
+        dbpath = abspath(expanduser(dbpath))
         super().__init__(dbpath, log)
+        self._mseedindex = mseedindex
+        self._dbpath = dbpath
+        self._workers = Workers(n_workers, log)
         self._load_tables()
         self._check_root(abspath(expanduser(root)))
 
@@ -43,7 +96,7 @@ class Mseedindex(Sqlite):
                             size integer not null,
                             last_modified integer not null,
                             foreign key (dir) references rover_mseeddirs(id) on delete cascade,
-                            constraint dir_name unique on rover_mseedfiles(dir, name)
+                            constraint dir_name unique (dir, name)
                      )''')
 
     def _check_root(self, root):
@@ -56,6 +109,8 @@ class Mseedindex(Sqlite):
                 self._add_dir(None, root)
         except NoResult:
             self._add_dir(None, root)
+            if not exists(root):
+                makedirs(root)
 
     def _root(self):
         return self._fetchsingle('select path from rover_mseeddirs where parent is null')
@@ -150,7 +205,14 @@ class Mseedindex(Sqlite):
         return lastmod != statinfo.st_atime or size != statinfo.st_size
 
     def _scan_and_record_file(self, file):
-        pass
+        self._workers.execute('%s -sqlite %s %s' % (self._mseedindex, self._dbpath, file),
+                              lambda: self._record_file(file))
+
+    def _record_file(self, file):
+        statinfo = stat(file)
+        id = self._id_for_dir(dirname(file))
+        self._execute('update rover_mseedfiles set last_modified = ?, size = ? where dir = ? and name = ?',
+                      (statinfo.st_atime, statinfo.st_size, id, basename(file)))
 
     def _remove_file(self, file):
         id = self._id_for_dir(dirname(file))
@@ -158,10 +220,10 @@ class Mseedindex(Sqlite):
         # todo - delete mseedindex too
 
     def close(self):
-        # todo - wait for workers
+        self._workers.wait_for_all()
         self._db.close()
 
 
 def index(args, log):
-    with closing(Mseedindex(args.db_file, args.mseed_dir, log)) as indexer:
+    with closing(Mseedindex(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers, log)) as indexer:
         indexer.scan()

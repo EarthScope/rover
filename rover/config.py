@@ -10,26 +10,34 @@ from re import sub
 
 from .utils import create_parents
 
+
+INDEX = 'index'
+UPDATE_CONFIG = 'update-config'
+
 NO = '--no-'
 
 DAEMON = 'daemon'
-DBFILE = 'db-file'
 F, FILE = 'f', 'file'
 HELP = 'help'
 LOGDIR = 'log-dir'
 LOGVERBOSITY = 'log-verbosity'
 LOGSIZE = 'log-size'
 LOGCOUNT = 'log-count'
-MSEEDDIR = 'mssed-dir'
+MSEEDCMD = 'mseed-cmd'
+MSEEDDB = 'mseed-db'
+MSEEDDIR = 'mseed-dir'
+MSEEDWORKERS = 'mseed-workers'
 V, VERBOSITY = 'v', 'verbosity'
 
-DEFAULT_DBFILE = join('~', 'rover', 'index.sql')
 DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_LOGDIR = join('~', 'rover', 'logs')
 DEFAULT_LOGVERBOSITY = 4
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
+DEFAULT_MSEEDCMD = 'mseedindex'
+DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
+DEFAULT_MSEEDWORKERS = 10
 DEFAULT_VERBOSITY = 3
 
 
@@ -109,12 +117,14 @@ class RoverArgumentParser(ArgumentParser):
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
-        self.add_argument(mm(DATABASEFILE), default=DEFAULT_DATABASEFILE, action='store', help='mseed index database', metavar='FILE')
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-7)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
+        self.add_argument(mm(MSEEDCMD), default=DEFAULT_MSEEDCMD, action='store', help='mseedindex command', metavar='CMD')
+        self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar='FILE')
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar='DIR')
+        self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N')
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (0-5)', metavar='V', type=int)
         self.add_argument('command', metavar='COMMAND', nargs='?', help='run with no command to see detailed help')
         self.add_argument('args', nargs='*', help='depends on command - see above')
@@ -122,7 +132,7 @@ class RoverArgumentParser(ArgumentParser):
     def parse_args(self, args=None, namespace=None):
         '''
         Intercept normal arg parsing to:
-        * scan initial args to find if config file location specifed
+        * scan initial args to find if config file location specified
         * if config file is missing, generate defaults
         * read config file before command line args
         '''
@@ -177,7 +187,7 @@ class RoverArgumentParser(ArgumentParser):
             config = self.get_default(FILE)
         config = expanduser(config)
         # include config flag so that it is set correctly, even if the extracted
-        # value is th eone that is used here
+        # value is the one that is used here
         return config, [mm(FILE), config] + args
 
     def generate_default_config(self, path):
@@ -197,9 +207,14 @@ class RoverArgumentParser(ArgumentParser):
 
     def patch_config(self, args, config):
         '''
-        Force the reading of the config file.
+        Force the reading of the config file (ignored for update-config
+        because we may be rewriting it because it has errors).
         '''
-        return ['@'+config] + args
+        if UPDATE_CONFIG in args:
+            return args
+        else:
+            return ['@'+config] + args
+
 
     def convert_arg_line_to_args(self, arg_line):
         '''

@@ -1,9 +1,7 @@
-from .index import index
-from .config import RoverArgumentParser, update_config
-from .logs import init_log
 
-UPDATE_CONFIG = 'update-config'
-INDEX = 'index'
+from .index import index
+from .config import RoverArgumentParser, update_config, UPDATE_CONFIG, INDEX
+from .logs import init_log
 
 
 def welcome(args, log):
@@ -12,12 +10,12 @@ def welcome(args, log):
 
   The following commands are available:
   
-    index
+    %s
       Scan the mssed files in the local store (config
       parameter mseed-dir) and update the database index
       (config parameter database-file).
 
-    update-config
+    %s
       Delete and re-write the configuration file.
 
 
@@ -26,7 +24,7 @@ def welcome(args, log):
   run "rover -h" or edit %s
   To redisplay this information run "rover" (with no command).
   
-''' % args.file)
+''' % (INDEX, UPDATE_CONFIG, args.file))
 
 def execute(command, args, log):
     if not command:
