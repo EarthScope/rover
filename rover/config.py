@@ -12,7 +12,9 @@ from .utils import create_parents
 
 
 INDEX = 'index'
-UPDATE_CONFIG = 'update-config'
+INGEST = 'ingest'
+LIST_STORE = 'list-store'
+RESET_CONFIG = 'reset-config'
 
 NO = '--no-'
 
@@ -210,7 +212,7 @@ class RoverArgumentParser(ArgumentParser):
         Force the reading of the config file (ignored for update-config
         because we may be rewriting it because it has errors).
         '''
-        if UPDATE_CONFIG in args:
+        if RESET_CONFIG in args:
             return args
         else:
             return ['@'+config] + args
@@ -231,12 +233,12 @@ class RoverArgumentParser(ArgumentParser):
             raise Exception('Cannot parse "%s"' % arg_line)
 
 
-def update_config(args, log):
+def reset_config(args, log):
     argparse = RoverArgumentParser()
     if exists(args.file):
         if not isfile(args.file):
             raise Exception('"%s" is not a file' % args.file)
-        log.info('Removing old config file "%s"' % args.file)
+        log.warn('Removing old config file "%s"' % args.file)
         unlink(args.file)
     log.info('Writing new config file "%s"' % args.file)
     argparse.generate_default_config(args.file)
