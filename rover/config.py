@@ -19,6 +19,7 @@ RESET_CONFIG = 'reset-config'
 NO = '--no-'
 
 DAEMON = 'daemon'
+DEV = 'dev'
 F, FILE = 'f', 'file'
 HELP = 'help'
 LEAP = 'leap'
@@ -125,8 +126,9 @@ class RoverArgumentParser(ArgumentParser):
         self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
-        self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
-        self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file', metavar='')
+        self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes?', metavar='')
+        self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
+        self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
         self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar='N', type=int)
         self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar='FILE')
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
@@ -245,6 +247,9 @@ class RoverArgumentParser(ArgumentParser):
 
 
 def reset_config(args, log):
+    """
+    Implement the reset-config command.
+    """
     argparse = RoverArgumentParser()
     if exists(args.file):
         if not isfile(args.file):

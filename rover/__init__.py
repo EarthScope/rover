@@ -39,6 +39,7 @@ def welcome(args, log):
        RESET_CONFIG,
        args.file))
 
+
 def execute(command, args, log):
     if not command:
         welcome(args, log)
@@ -49,7 +50,8 @@ def execute(command, args, log):
     elif command == INGEST:
         ingest(args, log)
     else:
-        print('TODO: %s' % command)
+        raise Exception('Unknown command %s' % command)
+
 
 def main():
     log = None
@@ -62,6 +64,7 @@ def main():
     except Exception as e:
         if log:
             log.error(str(e))
-            raise e  # remove after development
+            if not args or args.dev:
+                raise e
         else:
             raise e

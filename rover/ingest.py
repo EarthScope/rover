@@ -105,6 +105,9 @@ class MseedindexIngester(BaseIngester, Sqlite):
 
 
 def ingest(args, log):
+    """
+    Implement the ingest command - run an ingester and then index.
+    """
     ingester = MseedindexIngester(args.mseed_cmd, args.mseed_db, args.mseed_dir,
                                   args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
     ingester.ingest(args.args)

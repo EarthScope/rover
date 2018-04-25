@@ -13,9 +13,11 @@ def test_write_config():
         with open(config, 'r') as input:
             contents = input.read()
             assert contents == \
-'''# use background processes
+'''# use background processes?
 daemon=False
-# use leapseconds file
+# development mode (show exceptions)?
+dev=False
+# use leapseconds file?
 leap=True
 # number of days before refreshing file
 leap-expire=30

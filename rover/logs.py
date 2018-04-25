@@ -15,6 +15,11 @@ def level(n):
 
 
 def init_log(args, name, stdout=None):
+    """
+    Create a log with two handlers.
+    One handler is a rotated file, the other stdout.
+    The file is for details, stdout for errors to the user.
+    """
 
     log = getLogger(name)
     log.setLevel(DEBUG)
@@ -27,7 +32,7 @@ def init_log(args, name, stdout=None):
 
     time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
     path = join(dir, name + '.log')
-    # smallest size is 8kB (2^13), largest szie 1MB (2^20)
+    # smallest size is 8kB (2^13), largest size 1MB (2^20)
     size = 2 ** (12 + max(min(args.log_size, 7), 1))
     count = max(min(args.log_count, 100), 1)
     file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)

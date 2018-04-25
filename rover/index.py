@@ -48,6 +48,7 @@ class Workers:
             if process.returncode is not None:
                 if process.returncode:
                     self._log._error('"%s" returned %d' % (process.args, process.returncode))
+                    # todo - raise exception?
                 else:
                     self._log.debug('"%s" succeeded' % (process.args,))
                     self._workers[i][1]()  # execute on_success
@@ -250,6 +251,9 @@ class Indexer(Sqlite):
 
 
 def index(args, log):
+    """
+    Implement the index command.
+    """
     with closing(Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers,
                          args.leap, args.leap_expire, args.leap_file, args.leap_url, log)) as indexer:
         indexer.index()
