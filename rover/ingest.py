@@ -1,25 +1,23 @@
 
 from os import listdir
 from os.path import exists, isdir, join, isfile
+from re import match
 
-from .utils import canonify, run, check_cmd, check_leap
+from datetime import datetime
+
+from .utils import canonify, run, check_cmd, check_leap, create_parents, append_bytes
 from .sqlite import Sqlite
 
 
-class Ingester(Sqlite):
+class BaseIngester:
     """
-    Run mseed index on the given files / dirs, copy them
-    into the local store, and index them.
+    Iterate over the given files and call self._iongest_file, which
+    must be implemented by any child class.
     """
 
-    def __init__(self, mseedindex, dbpath, root, leap, leap_expire, leap_file, leap_url, log):
-        dbpath = canonify(dbpath)
-        super().__init__(dbpath, log)
-        check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
-        self._mseedindex = mseedindex
-        self._dbpath = dbpath
+    def __init__(self, root, log):
         self._root = canonify(root)
-        self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
+        self._log = log
 
     def ingest(self, args):
         for arg in args:
@@ -39,13 +37,56 @@ class Ingester(Sqlite):
             else:
                 self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
 
+    def _make_destination(self, network, station, starttime):
+        date_string = match(r'\d{4}-\d{2}-\d{2}', starttime).group(0)
+        time_data = datetime.strptime(date_string, '%Y-%m-%d').timetuple()
+        year, day = time_data.tm_year, time_data.tm_yday
+        return join(self._root, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
+
+
+
+TMPTABLE = 'rover_tmpingest'
+
+class MseedindexIngester(BaseIngester, Sqlite):
+    """
+    The simplest possible ingester:
+    * Uses mseedindx to parse the file.
+    * For each section, appends to any existing file using byte offsets
+    * Refuses to handle blocks that cross day boundaries
+    * Does not check for overlap, differences in sample rate, etc.
+    """
+
+    def __init__(self, mseedindex, dbpath, root, leap, leap_expire, leap_file, leap_url, log):
+        Sqlite.__init__(self, dbpath, log)
+        BaseIngester.__init__(self, root, log)
+        check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
+        self._mseedindex = mseedindex
+        self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
+
     def _ingest_file(self, file):
-        self._execute('drop table if exists rover_import')
-        self._log.info('Examining %s' % file)
-        run('LIBMSEED_LEAPSECOND_FILE=%s %s -table rover_import -sqlite %s %s'
-            % (self._leap_file, self._mseedindex, self._dbpath, file), self._log)
+        self._execute('drop table if exists %s' % TMPTABLE)
+        run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
+            % (self._leap_file, self._mseedindex, self._dbpath, TMPTABLE, file), self._log)
+        rows = self._fetchall('select network, station, location, channel, starttime, endtime, byteoffset, bytes from %s' % TMPTABLE)
+        for row in rows:
+            self._copy_block(file, *row)
+
+    def _copy_block(self, file, network, station, location, channel, starttime, endtime, byteoffset, bytes):
+        print(file, network, station, location, channel, starttime, endtime, byteoffset, bytes)
+        self._assert_single_day(file, starttime, endtime)
+        dest = self._make_destination(network, station, starttime)
+        if not exists(dest):
+            create_parents(dest)
+            open(dest, 'w').close()
+        self._log.debug('Appending %d bytes from %s at offset %d to %s' % (bytes, file, byteoffset, dest))
+        append_bytes(file, dest, byteoffset, bytes)
+
+    def _assert_single_day(self, file, starttime, endtime):
+        if starttime[:10] != endtime[:10]:
+            raise Exception('File %s contains data from more than one day (%s-%s)' % (file, starttime, endtime))
 
 
 def ingest(args, log):
-    ingester = Ingester(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
+    ingester = MseedindexIngester(args.mseed_cmd, args.mseed_db, args.mseed_dir,
+                                  args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
     ingester.ingest(args.args)

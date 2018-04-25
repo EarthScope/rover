@@ -63,5 +63,6 @@ def main():
     except Exception as e:
         if log:
             log.error(str(e))
+            raise e  # remove after development
         else:
             raise e

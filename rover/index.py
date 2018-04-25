@@ -80,11 +80,9 @@ class Indexer(Sqlite):
     '''
 
     def __init__(self, mseedindex, dbpath, root, n_workers, leap, leap_expire, leap_file, leap_url, log):
-        dbpath = canonify(dbpath)
         super().__init__(dbpath, log)
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
-        self._dbpath = dbpath
         self._workers = Workers(n_workers, log)
         self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
         self._load_tables()
@@ -127,7 +125,7 @@ class Indexer(Sqlite):
         """
         Initiates a scan of all data below mseed-dir.
         """
-        self._scan_dir(self._root(), 0)
+        self._scan_dir(self._root(), 1)
 
     def _scan_dir(self, dir, level):
         self._log.debug('Scanning directory "%s" (level %d / 4)' % (dir, level))
@@ -174,7 +172,7 @@ class Indexer(Sqlite):
     def _db_dirs(self, dir):
         parent = self._id_for_dir(dir)
         paths = self._fetchall('select path from rover_mseeddirs where parent = ?', (parent,))
-        dirs = [basename(path) for path in paths]
+        dirs = [basename(path[0]) for path in paths]
         return sorted(dirs)
 
     def _fs_dirs(self, dir):

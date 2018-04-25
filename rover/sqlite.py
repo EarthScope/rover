@@ -1,4 +1,7 @@
+
 from sqlite3 import connect
+
+from .utils import canonify
 
 
 class NoResult(Exception):
@@ -14,9 +17,10 @@ class Sqlite:
     '''
 
     def __init__(self, dbpath, log):
+        self._dbpath = canonify(dbpath)
         self._log = log
-        self._log.info('Connecting to sqlite3 %s' % dbpath)
-        self._db = connect(dbpath)
+        self._log.info('Connecting to sqlite3 %s' % self._dbpath)
+        self._db = connect(self._dbpath)
         # https://www.sqlite.org/foreignkeys.html
         self._execute('PRAGMA foreign_keys = ON')
 
