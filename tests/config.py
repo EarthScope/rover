@@ -15,6 +15,14 @@ def test_write_config():
             assert contents == \
 '''# use background processes
 daemon=False
+# use leapseconds file
+leap=True
+# number of days before refreshing file
+leap-expire=30
+# file for leapsecond data
+leap-file=~/rover/leap-seconds.lst
+# URL for leapsecond data
+leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 # directory for logs
 log-dir=~/rover/logs
 # log verbosity (0-5)
