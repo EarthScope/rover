@@ -79,14 +79,14 @@ class Indexer(Sqlite):
     between that table and the additional tables used by rover.
     '''
 
-    def __init__(self, mseedindex, dbpath, root, n_workers, leap_file, leap_url, log):
+    def __init__(self, mseedindex, dbpath, root, n_workers, leap, leap_expire, leap_file, leap_url, log):
         dbpath = canonify(dbpath)
         super().__init__(dbpath, log)
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
         self._dbpath = dbpath
         self._workers = Workers(n_workers, log)
-        self._leap_file = check_leap(leap_file, leap_url, log)
+        self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
         self._load_tables()
         self._check_root(canonify(root))
 
@@ -241,5 +241,5 @@ class Indexer(Sqlite):
 
 def index(args, log):
     with closing(Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers,
-                         args.leap_file, args.leap_url, log)) as indexer:
+                         args.leap, args.leap_expire, args.leap_file, args.leap_url, log)) as indexer:
         indexer.index()

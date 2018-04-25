@@ -21,6 +21,8 @@ NO = '--no-'
 DAEMON = 'daemon'
 F, FILE = 'f', 'file'
 HELP = 'help'
+LEAP = 'leap'
+LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
 LEAPURL = 'leap-url'
 LOGDIR = 'log-dir'
@@ -34,6 +36,7 @@ MSEEDWORKERS = 'mseed-workers'
 V, VERBOSITY = 'v', 'verbosity'
 
 DEFAULT_FILE = join('~', 'rover', 'config')
+DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = join('~', 'rover', 'leap-seconds.lst')
 DEFAULT_LEAPURL = 'http://www.ietf.org/timezones/data/leap-seconds.list'
 DEFAULT_LOGDIR = join('~', 'rover', 'logs')
@@ -123,6 +126,8 @@ class RoverArgumentParser(ArgumentParser):
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes', metavar='')
+        self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file', metavar='')
+        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar='N')
         self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar='FILE')
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')

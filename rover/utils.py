@@ -43,19 +43,22 @@ def run(cmd, log):
     if process.returncode:
         raise Exception('Command "%s" failed' % cmd)
 
-def check_leap(file, url, log):
+def check_leap(enabled, expire, file, url, log):
     """
     Download a file if none exists or it is more than 3 months old.
     """
-    file = canonify(file)
-    if exists(file):
-        statinfo = stat(file)
-        age = int(time()) - statinfo.st_atime
-        log.debug('%s is %ds old' % (file, age))
-        download = age > 3 * 30 * 24 * 60 * 60
+    if enabled:
+        file = canonify(file)
+        if exists(file):
+            statinfo = stat(file)
+            age = int(time()) - statinfo.st_atime
+            log.debug('%s is %ds old' % (file, age))
+            download = age > expire * 24 * 60 * 60
+        else:
+            download= True
+        if download:
+            log.info('Downloading %s from %s' % (file, url))
+            urlretrieve(url, file)
+        return file  # canonified
     else:
-        download= True
-    if download:
-        log.info('Downloading %s from %s' % (file, url))
-        urlretrieve(url, file)
-    return file  # canonified
+        return 'NONE'
