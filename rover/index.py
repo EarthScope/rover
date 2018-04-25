@@ -214,6 +214,7 @@ class Indexer(Sqlite):
         return lastmod != statinfo.st_atime or size != statinfo.st_size
 
     def _scan_and_record_file(self, file):
+        # todo - windows https://superuser.com/questions/1049430/how-do-you-set-environment-variables-for-a-single-command-on-windows
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
                               % (self._leap_file, self._mseedindex, self._dbpath, file),
                               lambda: self._record_file(file))

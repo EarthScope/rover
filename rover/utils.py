@@ -68,13 +68,3 @@ def check_leap(enabled, expire, file, url, log):
     else:
         return 'NONE'
 
-
-def append_bytes(src, dest, offset, length):
-    """
-    Copy the specified byte range from scr to dest (appending to end of file).
-    """
-    with open(src, 'rb') as input:
-        data = input.read(offset+length)
-        with open(dest, 'ab') as output:
-            output.write(data[offset:])
-

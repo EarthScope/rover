@@ -2,10 +2,9 @@
 from os import listdir
 from os.path import exists, isdir, join, isfile
 from re import match
-
 from datetime import datetime
 
-from .utils import canonify, run, check_cmd, check_leap, create_parents, append_bytes
+from .utils import canonify, run, check_cmd, check_leap, create_parents
 from .sqlite import Sqlite
 
 
@@ -67,19 +66,37 @@ class MseedindexIngester(BaseIngester, Sqlite):
         self._execute('drop table if exists %s' % TMPTABLE)
         run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
             % (self._leap_file, self._mseedindex, self._dbpath, TMPTABLE, file), self._log)
-        rows = self._fetchall('select network, station, location, channel, starttime, endtime, byteoffset, bytes from %s' % TMPTABLE)
-        for row in rows:
-            self._copy_block(file, *row)
+        rows = self._fetchall('''select network, station, starttime, endtime, byteoffset, bytes 
+                                 from %s order by byteoffset''' % TMPTABLE)
+        self._copy_rows(file, rows)
 
-    def _copy_block(self, file, network, station, location, channel, starttime, endtime, byteoffset, bytes):
-        print(file, network, station, location, channel, starttime, endtime, byteoffset, bytes)
+    def _copy_rows(self, file, rows):
+        with open(file, 'rb') as input:
+            offset = 0
+            for row in rows:
+                offset = self._copy_row(offset, input, file, *row)
+
+    def _copy_row(self, offset, input, file, network, station, starttime, endtime, byteoffset, bytes):
         self._assert_single_day(file, starttime, endtime)
+        if offset < byteoffset:
+            self._log.warn('Non-contiguous bytes in %s - skipping %d bytes' % (file, byteoffset - offset))
+            input.read(byteoffset - offset)
+            offset = byteoffset
+        elif offset > byteoffset:
+            raise Exception('Overlapping blocks in %s (mseedindex bug?)' % file)
+        data = input.read(bytes)
+        offset += bytes
         dest = self._make_destination(network, station, starttime)
+        self._log.debug('Appending %d bytes from %s at offset %d to %s' % (bytes, file, byteoffset, dest))
+        self._append_data(data, dest)
+        return offset
+
+    def _append_data(self, data, dest):
         if not exists(dest):
             create_parents(dest)
             open(dest, 'w').close()
-        self._log.debug('Appending %d bytes from %s at offset %d to %s' % (bytes, file, byteoffset, dest))
-        append_bytes(file, dest, byteoffset, bytes)
+        with open(dest, 'ba') as output:
+            output.write(data)
 
     def _assert_single_day(self, file, starttime, endtime):
         if starttime[:10] != endtime[:10]:
@@ -90,3 +107,4 @@ def ingest(args, log):
     ingester = MseedindexIngester(args.mseed_cmd, args.mseed_db, args.mseed_dir,
                                   args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
     ingester.ingest(args.args)
+    # todo - index
