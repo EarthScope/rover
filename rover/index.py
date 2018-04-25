@@ -29,12 +29,14 @@ class Workers:
         Execute the command, with callback on success.
         """
         self._wait_for_space()
+        self._log.debug('Adding worker for "%s"' % command)
         self._workers.append((Popen(command, shell=True), on_success))
 
     def _wait_for_space(self):
         while True:
             self._check()
             if len(self._workers) < self._size:
+                self._log.debug('Space for new worker')
                 return
             sleep(0.1)
 
@@ -42,13 +44,14 @@ class Workers:
         i = len(self._workers) - 1
         while i > -1:
             process = self._workers[i][0]
+            process.poll()
             if process.returncode is not None:
                 if process.returncode:
                     self._log._error('"%s" returned %d' % (process.args, process.returncode))
                 else:
                     self._log.debug('"%s" succeeded' % (process.args,))
                     self._workers[i][1]()  # execute on_success
-            self._workers = self._workers[:i-1] + self._workers[i:]
+                self._workers = self._workers[:i] + self._workers[i+1:]
             i -= 1
 
     def wait_for_all(self):
@@ -58,6 +61,7 @@ class Workers:
         while True:
             self._check()
             if not self._workers:
+                self._log.debug('No workers remain')
                 return
             sleep(0.1)
 
@@ -151,13 +155,14 @@ class Indexer(Sqlite):
     def _process_files(self, dir):
         db_files = [' '] + self._db_files(dir)
         fs_files = [' '] + self._fs_files(dir)
-        while len(db_files) > 1 or len(fs_files) > -1:
+        while len(db_files) > 1 or len(fs_files) > 1:
+            print('fs', fs_files)
+            print('db', db_files)
             if db_files[-1] == fs_files[-1]:
                 file = join(dir, fs_files.pop())
                 db_files.pop()
                 if self._modified(file):
                     self._scan_and_record_file(file)
-                fs_files.pop()
             elif db_files[-1] > fs_files[-1]:
                 # database has entry that is missing from file system
                 self._remove_file(join(dir, db_files.pop()))
@@ -210,7 +215,7 @@ class Indexer(Sqlite):
         id = self._id_for_dir(dirname(file))
         lastmod, size = self._fetchone('select last_modified, size from rover_mseedfiles where dir = ? and name = ?',
                                        (id, basename(file)))
-        self._log.debug('%s lastmod %d / %d; size %d / %d' % (lastmod, statinfo.st_atime, size, statinfo.st_size))
+        self._log.debug('%s lastmod %d / %d; size %d / %d' % (file, lastmod, statinfo.st_atime, size, statinfo.st_size))
         return lastmod != statinfo.st_atime or size != statinfo.st_size
 
     def _scan_and_record_file(self, file):
@@ -222,8 +227,14 @@ class Indexer(Sqlite):
     def _record_file(self, file):
         statinfo = stat(file)
         id = self._id_for_dir(dirname(file))
-        self._execute('update rover_mseedfiles set last_modified = ?, size = ? where dir = ? and name = ?',
-                      (statinfo.st_atime, statinfo.st_size, id, basename(file)))
+        name = basename(file)
+        try:
+            self._fetchone('select 1 from rover_mseedfiles where dir = ? and name = ?', (id, name))
+            self._execute('update rover_mseedfiles set last_modified = ?, size = ? where dir = ? and name = ?',
+                          (statinfo.st_atime, statinfo.st_size, id, name))
+        except NoResult:
+            self._execute('insert into rover_mseedfiles (dir, name, size, last_modified) values (?, ?, ?, ?)',
+                         (id, name, statinfo.st_size, statinfo.st_atime))
 
     def _remove_file(self, file):
         id = self._id_for_dir(dirname(file))

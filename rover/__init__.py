@@ -23,8 +23,7 @@ def welcome(args, log):
     %s
       Scan the mseed files in the local store (config parameter 
       %s) and update the database index (config parameter 
-      %s).  Unlikely to be useful directly - called 
-      automatically when needed.
+      %s).  Called by %s when needed.
 
     %s
       Delete and re-write the configuration file.
@@ -36,7 +35,7 @@ def welcome(args, log):
   
 ''' % (INGEST, MSEEDDIR, MSEEDDB,
        LIST_STORE, MSEEDDIR,
-       INDEX, MSEEDDIR, MSEEDDB,
+       INDEX, MSEEDDIR, MSEEDDB, INGEST,
        RESET_CONFIG,
        args.file))
 

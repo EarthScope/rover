@@ -4,6 +4,7 @@ from os.path import exists, isdir, join, isfile
 from re import match
 from datetime import datetime
 
+from .index import index
 from .utils import canonify, run, check_cmd, check_leap, create_parents
 from .sqlite import Sqlite
 
@@ -107,4 +108,4 @@ def ingest(args, log):
     ingester = MseedindexIngester(args.mseed_cmd, args.mseed_db, args.mseed_dir,
                                   args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
     ingester.ingest(args.args)
-    # todo - index
+    index(args, log)
