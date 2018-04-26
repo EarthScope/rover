@@ -239,7 +239,7 @@ class Indexer(Sqlite):
     def _remove_file(self, file):
         id = self._id_for_dir(dirname(file))
         self._execute('delete from rover_mseedfiles where dir = ? and name = ?', (id, basename(file)))
-        # todo - delete mseedindex too
+        self._execute('delete from tsindex where filename like ?', (join('%', file),))
 
 
 def index(args, log):

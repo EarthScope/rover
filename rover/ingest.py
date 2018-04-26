@@ -44,7 +44,7 @@ class BaseIngester:
         return join(self._root, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
 
 
-
+# todo - what if multiple ingester run at once?
 TMPTABLE = 'rover_tmpingest'
 
 class MseedindexIngester(BaseIngester, Sqlite):
