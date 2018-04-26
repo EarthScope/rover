@@ -175,6 +175,10 @@ class IndexLister(Sqlite):
     def _count(self, sql, params):
         print(self._fetchsingle(sql, params))
 
+    def _contiguous(self, endtime, starttime):
+        # TODO!!!!!!!!!!!!
+        return True
+
     def _rows(self, sql, params):
         self._log.debug('%s %s' % (sql, params))
         c = self._db.cursor()
@@ -182,7 +186,7 @@ class IndexLister(Sqlite):
         for row in c.execute(sql, params):
             if join:
                 row = list(row)
-                if prev and prev[0:5] == row[0:5]: # todo - check contig
+                if prev and prev[0:5] == row[0:5] and self._contiguous(prev[7], row[6]):
                     prev[7] = row[7]
                 else:
                     if prev: print(*prev)
