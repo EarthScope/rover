@@ -4,9 +4,19 @@ from re import match, sub
 from .sqlite import Sqlite
 
 
+
+BEGIN = 'begin'
+END = 'end'
+COUNT = 'count'
+JOIN = 'join'
+
+
 class IndexLister(Sqlite):
     """
     List entries in the index that match the given constraints.
+    
+    WARNING - do not re-use instance after single query (parsing
+    alters lister state)
     """
 
     def __init__(self, dbpath, log):
@@ -17,9 +27,9 @@ class IndexLister(Sqlite):
                                       'location': [],
                                       'quality': [],
                                       'samplerate': []}
-        self._single_constraints = {'begin': None,
-                                    'end': None}
-        self._flags = {'count': False, 'join': False}
+        self._single_constraints = {BEGIN: None,
+                                    END: None}
+        self._flags = {COUNT: False, JOIN: False}
 
     def _display_help(self):
         print('''
@@ -71,7 +81,7 @@ class IndexLister(Sqlite):
         else:
             self._parse_args(args)
             sql, params = self._build_query()
-            if self._flags['count']:
+            if self._flags[COUNT]:
                 self._count(sql, params)
             else:
                 self._rows(sql, params)
@@ -89,7 +99,7 @@ class IndexLister(Sqlite):
                     raise Exception('Cannot parse "%s" (not of form name=value)' % arg)
                 else:
                     name, value = parts
-                    if name in ('begin', 'end'):
+                    if name in (BEGIN, END):
                         self._set_time_limit(name, value)
                     else:
                         self._set_name_value(name, value)
@@ -112,15 +122,15 @@ class IndexLister(Sqlite):
     def _set_time_limit(self, name, value):
         if self._single_constraints[name]:
             raise Exception('Multiple values for %s' % name)
-        if not match('\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}(.\d{1,6})?)?)?)?)?)?', value):
+        if not match('^\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}(.\d{1,6})?)?)?)?)?)?$', value):
             raise Exception('Poorly formed time "%s" (should be 2017, 2017-01-01T01:01:01.00 etc' % value)
         value = value + '2000-01-01T00:00:00.000000'[len(value):]
         self._log.debug('Padded time "%s"'% value)
         self._single_constraints[name] = value
-        if self._single_constraints['begin'] and self._single_constraints['end'] \
-                and self._single_constraints[begin] > self._single_constraints['end']:
+        if self._single_constraints[BEGIN] and self._single_constraints[END] \
+                and self._single_constraints[BEGIN] > self._single_constraints[END]:
             raise Exception('begin (%s) must be after end (%s)'
-                            % (self._single_constraints['begin'], self._single_constraints['end']))
+                            % (self._single_constraints[BEGIN], self._single_constraints[END]))
 
     def _set_name_value(self, name, value):
         if not match('^[\w\*\?]+$', value):
@@ -136,7 +146,7 @@ class IndexLister(Sqlite):
 
     def _build_query(self):
         sql, params = 'select ', []
-        if self._flags['count']:
+        if self._flags[COUNT]:
             sql += 'count(*) '
         else:
             sql += 'network, station, location, channel, quality, samplerate, starttime, endtime '
@@ -159,13 +169,13 @@ class IndexLister(Sqlite):
                 params.append(self._wildchars(value))
             if repeated:
                 sql += ') '
-        if self._single_constraints['begin']:
+        if self._single_constraints[BEGIN]:
             sql += 'and endtime > ?'
-            params.append(self._single_constraints['begin'])
-        if self._single_constraints['end']:
-            sql += 'and starttime > ?'
-            params.append(self._single_constraints['end'])
-        if not self._flags['count']:
+            params.append(self._single_constraints[BEGIN])
+        if self._single_constraints[END]:
+            sql += 'and starttime < ?'
+            params.append(self._single_constraints[END])
+        if not self._flags[COUNT]:
             sql += 'order by network, station, location, channel, quality, samplerate, starttime'
         return sql, tuple(params)
 
@@ -182,7 +192,7 @@ class IndexLister(Sqlite):
     def _rows(self, sql, params):
         self._log.debug('%s %s' % (sql, params))
         c = self._db.cursor()
-        prev, join = None, self._flags['join']
+        prev, join = None, self._flags[JOIN]
         for row in c.execute(sql, params):
             if join:
                 row = list(row)
