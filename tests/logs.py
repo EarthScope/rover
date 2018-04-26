@@ -1,7 +1,4 @@
 
-import sys
-from textwrap import dedent
-
 from io import StringIO
 from tempfile import TemporaryDirectory
 from os.path import join

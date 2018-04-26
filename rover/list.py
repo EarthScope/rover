@@ -1,8 +1,8 @@
 
 from re import match, sub
+import sys
 
 from .sqlite import Sqlite
-
 
 
 BEGIN = 'begin'
@@ -75,16 +75,17 @@ class IndexLister(Sqlite):
   printed to stdout.
 ''')
 
-    def list(self, args):
+    def list(self, args, stdout=None):
+        if not stdout: stdout = sys,stdout
         if not args:
             self._display_help()
         else:
             self._parse_args(args)
             sql, params = self._build_query()
             if self._flags[COUNT]:
-                self._count(sql, params)
+                self._count(sql, params, stdout=stdout)
             else:
-                self._rows(sql, params)
+                self._rows(sql, params, stdout=stdout)
 
     def _parse_args(self, args):
         for arg in args:
@@ -182,14 +183,14 @@ class IndexLister(Sqlite):
     def _wildchars(self, value):
         return sub(r'\?', '_', sub(r'\*', '%', value))
 
-    def _count(self, sql, params):
-        print(self._fetchsingle(sql, params))
+    def _count(self, sql, params, stdout):
+        print(self._fetchsingle(sql, params), file=stdout)
 
     def _contiguous(self, endtime, starttime):
         # TODO!!!!!!!!!!!!
         return True
 
-    def _rows(self, sql, params):
+    def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
         c = self._db.cursor()
         prev, join = None, self._flags[JOIN]
@@ -199,11 +200,11 @@ class IndexLister(Sqlite):
                 if prev and prev[0:5] == row[0:5] and self._contiguous(prev[7], row[6]):
                     prev[7] = row[7]
                 else:
-                    if prev: print(*prev)
+                    if prev: print(file=stdout, *prev)
                     prev = row
             else:
                 print(*row)
-        if join and prev: print(*prev)
+        if join and prev: print(file=stdout, *prev)
 
 
 def list_index(args, log):
