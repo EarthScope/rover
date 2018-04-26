@@ -178,22 +178,18 @@ class IndexLister(Sqlite):
     def _rows(self, sql, params):
         self._log.debug('%s %s' % (sql, params))
         c = self._db.cursor()
-        st, prev, join = None, None, self._flags['join']
+        prev, join = None, self._flags['join']
         for row in c.execute(sql, params):
             if join:
-                if not prev:
-                    prev = row
-                    st = prev[6]
+                row = list(row)
+                if prev and prev[0:5] == row[0:5]: # todo - check contig
+                    prev[7] = row[7]
                 else:
-                    if prev[0:5] == row[0:5]:
-                        pass # todo check contig
-                    else:
-                        row = list(row)
-                        row[6] = st
-                        prev = None
-                        print(*row)
+                    if prev: print(*prev)
+                    prev = row
             else:
                 print(*row)
+        if join and prev: print(*prev)
 
 
 def list_index(args, log):
