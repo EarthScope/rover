@@ -1,26 +1,12 @@
+
 from re import match, sub
 
 from .sqlite import Sqlite
 
 
-
-
-class Constraints:
-
-    def __init__(self):
-        self.station = []
-        self.network = []
-        self.channel = []
-        self.location = []
-        self.quality = []
-        self.begin = []
-        self.end = []
-        self.samplerate = []
-
-
 class IndexLister(Sqlite):
     """
-    List entries in the index that match the given SNCL pattern.
+    List entries in the index that match the given constraints.
     """
 
     def __init__(self, dbpath, log):
