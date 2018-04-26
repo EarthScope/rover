@@ -186,7 +186,7 @@ class Indexer(Sqlite):
     def _remove_dir(self, dir):
         id = self._id_for_dir(dir)
         # this uses cascade to delete files and child dirs
-        self._execute('delete from rover_mseeddirs  where id = ?' (id,))
+        self._execute('delete from rover_mseeddirs  where id = ?', (id,))
         # todo - delete mseedindex too
 
     def _remove_all_dirs(self):
