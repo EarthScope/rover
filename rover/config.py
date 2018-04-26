@@ -15,6 +15,7 @@ INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
 RESET_CONFIG = 'reset-config'
+RETRIEVE = 'retrieve'
 
 NO = '--no-'
 
@@ -34,6 +35,7 @@ MSEEDCMD = 'mseed-cmd'
 MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
+TEMPDIR = 'temp-dir'
 V, VERBOSITY = 'v', 'verbosity'
 
 DEFAULT_FILE = join('~', 'rover', 'config')
@@ -48,6 +50,7 @@ DEFAULT_MSEEDCMD = 'mseedindex'
 DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_MSEEDWORKERS = 10
+DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
 DEFAULT_VERBOSITY = 3
 
 
@@ -140,6 +143,7 @@ class RoverArgumentParser(ArgumentParser):
         self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar='FILE')
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar='DIR')
         self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
+        self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar='DIR')
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (0-5)', metavar='V', type=int)
         self.add_argument('command', metavar='COMMAND', nargs='?', help='run with no command to see detailed help')
         self.add_argument('args', nargs='*', help='depends on command - see above')

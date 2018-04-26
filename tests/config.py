@@ -45,10 +45,12 @@ mseed-workers=10
 verbosity=3
 ''', contents
 
+
 def test_enable_daemon():
     argparse = RoverArgumentParser()
     args = argparse.parse_args(['--daemon'])
     assert args.daemon
+
 
 def test_disable_daemon():
     with TemporaryDirectory() as dir:
@@ -63,6 +65,7 @@ def test_disable_daemon():
         argparse = RoverArgumentParser()
         args = argparse.parse_args(['-f', config, '--no-daemon'])
         assert not args.daemon
+
 
 def test_multiple_flags():
     argparse = RoverArgumentParser()

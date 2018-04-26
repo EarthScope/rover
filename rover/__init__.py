@@ -2,7 +2,8 @@
 from .list import list_index
 from .ingest import ingest
 from .index import index
-from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX
+from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX, \
+    RETRIEVE, TEMPDIR
 from .logs import init_log
 
 
@@ -12,10 +13,15 @@ def welcome(args, log):
 
   The following commands are available:
   
+    %s url
+      Download data from the given URL to the temporary store
+      (config parameter %s).  When downloaded, ingest into the
+      local store (config parameter %s) and delete.
+  
     %s (file|dir) ...
       Add the specified files to the local store (config
       parameter %s) and update the database index (config
-      parameter %s).
+      parameter %s).  Called by %s when needed.
       
     %s ...
       List index entries for the local store (config parameter 
@@ -35,7 +41,8 @@ def welcome(args, log):
   run "rover -h" or read %s
   To redisplay this information run "rover" (with no command).
   
-''' % (INGEST, MSEEDDIR, MSEEDDB,
+''' % (RETRIEVE, TEMPDIR, MSEEDDIR,
+       INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
        LIST_INDEX, MSEEDDIR, LIST_INDEX,
        INDEX, MSEEDDIR, MSEEDDB, INGEST,
        RESET_CONFIG,
