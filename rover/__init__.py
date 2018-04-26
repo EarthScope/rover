@@ -62,7 +62,7 @@ def main():
     try:
         argparse = RoverArgumentParser()
         args = argparse.parse_args()
-        log = init_log(args, 'rover')
+        log = init_log(args.log_dir, args.log_size, args.log_count, args.log_verbosity, args.verbosity, 'rover')
         log.info('args: %s' % args)
         execute(args.command, args, log)
     except Exception as e:

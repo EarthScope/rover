@@ -22,7 +22,7 @@ class Workers:
     def __init__(self, size, log):
         self._log = log
         self._size = size
-        self._workers = []
+        self._workers = []  # (command, popen, callback)
 
     def execute(self, command, on_success):
         """
@@ -30,7 +30,7 @@ class Workers:
         """
         self._wait_for_space()
         self._log.debug('Adding worker for "%s"' % command)
-        self._workers.append((Popen(command, shell=True), on_success))
+        self._workers.append((command, Popen(command, shell=True), on_success))
 
     def _wait_for_space(self):
         while True:
@@ -43,15 +43,15 @@ class Workers:
     def _check(self):
         i = len(self._workers) - 1
         while i > -1:
-            process = self._workers[i][0]
+            cmd, process, callback = self._workers[i]
             process.poll()
             if process.returncode is not None:
                 if process.returncode:
-                    self._log._error('"%s" returned %d' % (process.args, process.returncode))
+                    self._log._error('"%s" returned %d' % (cmd, process.returncode))
                     # todo - raise exception?
                 else:
-                    self._log.debug('"%s" succeeded' % (process.args,))
-                    self._workers[i][1]()  # execute on_success
+                    self._log.debug('"%s" succeeded' % (cmd,))
+                    callback()  # execute on_success
                 self._workers = self._workers[:i] + self._workers[i+1:]
             i -= 1
 
@@ -131,6 +131,7 @@ class Indexer(Sqlite):
         Initiates a scan of all data below mseed-dir.
         """
         self._scan_dir(self._root(), 1)
+        self._workers.wait_for_all()
 
     def _scan_dir(self, dir, level):
         self._log.debug('Scanning directory "%s" (level %d / 4)' % (dir, level))
@@ -157,8 +158,6 @@ class Indexer(Sqlite):
         db_files = [' '] + self._db_files(dir)
         fs_files = [' '] + self._fs_files(dir)
         while len(db_files) > 1 or len(fs_files) > 1:
-            print('fs', fs_files)
-            print('db', db_files)
             if db_files[-1] == fs_files[-1]:
                 file = join(dir, fs_files.pop())
                 db_files.pop()
@@ -242,18 +241,11 @@ class Indexer(Sqlite):
         self._execute('delete from rover_mseedfiles where dir = ? and name = ?', (id, basename(file)))
         # todo - delete mseedindex too
 
-    def close(self):
-        """
-        Must be called on exit to make sure that we wait for all mseedindex instances.
-        """
-        self._workers.wait_for_all()
-        self._db.close()
-
 
 def index(args, log):
     """
     Implement the index command.
     """
-    with closing(Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers,
-                         args.leap, args.leap_expire, args.leap_file, args.leap_url, log)) as indexer:
-        indexer.index()
+    indexer = Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers,
+                      args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
+    indexer.index()
