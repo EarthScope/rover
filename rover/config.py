@@ -13,7 +13,7 @@ from .utils import create_parents, canonify
 
 INDEX = 'index'
 INGEST = 'ingest'
-LIST_STORE = 'list-store'
+LIST_INDEX = 'list-index'
 RESET_CONFIG = 'reset-config'
 
 NO = '--no-'

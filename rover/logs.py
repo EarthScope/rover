@@ -14,11 +14,11 @@ def level(n):
     return 10 * (6 - (max(min(n, 5), 0)))
 
 
-def init_log(args, name, stdout=None):
+def init_log(args, name, stderr=None):
     """
     Create a log with two handlers.
-    One handler is a rotated file, the other stdout.
-    The file is for details, stdout for errors to the user.
+    One handler is a rotated file, the other stderr.
+    The file is for details, stderr for errors to the user.
     """
 
     log = getLogger(name)
@@ -41,7 +41,7 @@ def init_log(args, name, stdout=None):
     log.addHandler(file_handler)
 
     name_formatter = Formatter('%(name)s %(levelname)8s: %(message)s')
-    stdout_handler = StreamHandler(stdout if stdout else sys.stdout)
+    stdout_handler = StreamHandler(stderr if stderr else sys.stderr)
     stdout_handler.setLevel(level(args.verbosity))
     stdout_handler.setFormatter(name_formatter)
     log.addHandler(stdout_handler)

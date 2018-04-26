@@ -34,7 +34,7 @@ def do_all_levels(log_level, log_expected, stdout_level, stdout_expected):
         assert args.verbosity == stdout_level
 
         stdout = StringIO()
-        log = init_log(args, 'rover', stdout=stdout)
+        log = init_log(args, 'rover', stderr=stdout)
         log_all(log)
         stdout.seek(0)
         stdout_contents = stdout.read()

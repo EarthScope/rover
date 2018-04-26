@@ -1,7 +1,8 @@
 
+from .list import list_index
 from .ingest import ingest
 from .index import index
-from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_STORE
+from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX
 from .logs import init_log
 
 
@@ -16,9 +17,10 @@ def welcome(args, log):
       parameter %s) and update the database index (config
       parameter %s).
       
-    %s SNCL
-      List contents of the local store (config parameter 
-      %s) that match the given SNCL pattern.
+    %s ...
+      List index entries for the local store (config parameter 
+      %s) that match the given constraints.  For more information, 
+      run "rover %s" (with no arguments).
   
     %s
       Scan the mseed files in the local store (config parameter 
@@ -34,7 +36,7 @@ def welcome(args, log):
   To redisplay this information run "rover" (with no command).
   
 ''' % (INGEST, MSEEDDIR, MSEEDDB,
-       LIST_STORE, MSEEDDIR,
+       LIST_INDEX, MSEEDDIR, LIST_INDEX,
        INDEX, MSEEDDIR, MSEEDDB, INGEST,
        RESET_CONFIG,
        args.file))
@@ -49,6 +51,8 @@ def execute(command, args, log):
         index(args, log)
     elif command == INGEST:
         ingest(args, log)
+    elif command == LIST_INDEX:
+        list_index(args, log)
     else:
         raise Exception('Unknown command %s' % command)
 
