@@ -34,7 +34,6 @@ class IndexLister(SqliteSupport):
 
     def _display_help(self):
         print('''
-        
   The list_store command prints entries from the index that match 
   the query parameters.  Parameters generally have the form 
   name=value (no spaces).
@@ -64,12 +63,10 @@ class IndexLister(SqliteSupport):
   Examples:
   
     rover list-index IU.ANMO.00.BH? count
-    
       will display the number of entries for all time, any
       quality or smaplerate.
       
     rover list-index net=* begin=2001-01-01
-    
       will list all entries in the index after the year 2000.
       
   Note that console logging is to stderr, while results are

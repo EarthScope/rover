@@ -37,6 +37,9 @@ class Retriever(SqliteSupport):
         self._load_retrievers_table()
 
     def retrieve(self, url):
+        """
+        Download the give URL, then call ingest and index before deleting.
+        """
         self._assert_single_use()
         retrievers_id, table = self._update_retrievers_table(url)
         try:
@@ -81,6 +84,9 @@ class Retriever(SqliteSupport):
 
 
 def retrieve(args, log):
+    """
+    Implement the retrieve command - download, ingest and index data.
+    """
     retriever = Retriever(args.mseed_db, args.temp_dir, args.mseed_cmd, args.mseed_dir,
                           args.leap, args.leap_expire, args.leap_file, args.leap_url, args.mseed_workers, log)
     if len(args.args) != 1:
