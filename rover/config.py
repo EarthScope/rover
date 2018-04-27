@@ -43,7 +43,7 @@ DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = join('~', 'rover', 'leap-seconds.lst')
 DEFAULT_LEAPURL = 'http://www.ietf.org/timezones/data/leap-seconds.list'
 DEFAULT_LOGDIR = join('~', 'rover', 'logs')
-DEFAULT_LOGVERBOSITY = 4
+DEFAULT_LOGVERBOSITY = 5
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
 DEFAULT_MSEEDCMD = 'mseedindex'
@@ -51,7 +51,7 @@ DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_MSEEDWORKERS = 10
 DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
-DEFAULT_VERBOSITY = 3
+DEFAULT_VERBOSITY = 4
 
 
 def parse_bool(value):

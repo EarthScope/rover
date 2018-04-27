@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .index import index
 from .utils import canonify, run, check_cmd, check_leap, create_parents
-from .sqlite import Sqlite
+from .sqlite import SqliteSupport
 
 
 class BaseIngester:
@@ -44,10 +44,9 @@ class BaseIngester:
         return join(self._root, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
 
 
-# todo - what if multiple ingester run at once?
 TMPTABLE = 'rover_tmpingest'
 
-class MseedindexIngester(BaseIngester, Sqlite):
+class MseedindexIngester(BaseIngester, SqliteSupport):
     """
     The simplest possible ingester:
     * Uses mseedindx to parse the file.
@@ -57,21 +56,34 @@ class MseedindexIngester(BaseIngester, Sqlite):
     """
 
     def __init__(self, mseedindex, dbpath, root, leap, leap_expire, leap_file, leap_url, log):
-        Sqlite.__init__(self, dbpath, log)
+        SqliteSupport.__init__(self, dbpath, log)
         BaseIngester.__init__(self, root, log)
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
         self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
+        self._table = None
+
+    def ingest(self, args, table=TMPTABLE):
+        self._table = table
+        super().ingest(args)
+
+    def _drop_table(self):
+        self._execute('drop table if exists %s' % self._table)
 
     def _ingest_file(self, file):
-        self._execute('drop table if exists %s' % TMPTABLE)
-        run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
-            % (self._leap_file, self._mseedindex, self._dbpath, TMPTABLE, file), self._log)
-        rows = self._fetchall('''select network, station, starttime, endtime, byteoffset, bytes 
-                                 from %s order by byteoffset''' % TMPTABLE)
-        self._copy_rows(file, rows)
+        self._log.info('Scanning %s for ingest' % file)
+        self._drop_table()
+        try:
+            run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
+                % (self._leap_file, self._mseedindex, self._dbpath, self._table, file), self._log)
+            rows = self._fetchall('''select network, station, starttime, endtime, byteoffset, bytes 
+                                     from %s order by byteoffset''' % self._table)
+            self._copy_rows(file, rows)
+        finally:
+            self._drop_table()
 
     def _copy_rows(self, file, rows):
+        self._log.info('Ingesting %s' % file)
         with open(file, 'rb') as input:
             offset = 0
             for row in rows:

@@ -1,4 +1,5 @@
 
+from .retrieve import retrieve
 from .list import list_index
 from .ingest import ingest
 from .index import index
@@ -60,6 +61,8 @@ def execute(command, args, log):
         ingest(args, log)
     elif command == LIST_INDEX:
         list_index(args, log)
+    elif command == RETRIEVE:
+        retrieve(args, log)
     else:
         raise Exception('Unknown command %s' % command)
 
@@ -70,7 +73,7 @@ def main():
         argparse = RoverArgumentParser()
         args = argparse.parse_args()
         log = init_log(args.log_dir, args.log_size, args.log_count, args.log_verbosity, args.verbosity, 'rover')
-        log.info('args: %s' % args)
+        log.debug('args: %s' % args)
         execute(args.command, args, log)
     except Exception as e:
         if log:

@@ -2,7 +2,7 @@
 from re import match, sub
 import sys
 
-from .sqlite import Sqlite
+from .sqlite import SqliteSupport
 
 
 BEGIN = 'begin'
@@ -11,7 +11,7 @@ COUNT = 'count'
 JOIN = 'join'
 
 
-class IndexLister(Sqlite):
+class IndexLister(SqliteSupport):
     """
     List entries in the index that match the given constraints.
     
@@ -30,6 +30,7 @@ class IndexLister(Sqlite):
         self._single_constraints = {BEGIN: None,
                                     END: None}
         self._flags = {COUNT: False, JOIN: False}
+        self._used = False
 
     def _display_help(self):
         print('''
@@ -76,10 +77,11 @@ class IndexLister(Sqlite):
 ''')
 
     def list(self, args, stdout=None):
-        if not stdout: stdout = sys,stdout
+        if not stdout: stdout = sys.stdout
         if not args:
             self._display_help()
         else:
+            self._assert_single_use()
             self._parse_args(args)
             sql, params = self._build_query()
             if self._flags[COUNT]:

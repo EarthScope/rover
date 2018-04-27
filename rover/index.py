@@ -6,7 +6,7 @@ from subprocess import Popen
 from time import sleep
 
 from .utils import canonify, check_cmd, check_leap
-from .sqlite import Sqlite, NoResult
+from .sqlite import SqliteSupport, NoResult
 
 
 class Workers:
@@ -68,7 +68,7 @@ class Workers:
 
 
 
-class Indexer(Sqlite):
+class Indexer(SqliteSupport):
     '''
     Wrap mseedindex, extending functionality to:
     * Work with a standard directory layout on disk
@@ -130,6 +130,7 @@ class Indexer(Sqlite):
         """
         Initiates a scan of all data below mseed-dir.
         """
+        self._log.info("Indexing store")
         self._scan_dir(self._root(), 1)
         self._workers.wait_for_all()
 
@@ -219,6 +220,7 @@ class Indexer(Sqlite):
         return lastmod != statinfo.st_atime or size != statinfo.st_size
 
     def _scan_and_record_file(self, file):
+        self._log.info('Indexing %s' % file)
         # todo - windows https://superuser.com/questions/1049430/how-do-you-set-environment-variables-for-a-single-command-on-windows
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
                               % (self._leap_file, self._mseedindex, self._dbpath, file),
