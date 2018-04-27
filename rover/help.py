@@ -28,7 +28,7 @@ def welcome(args):
       
     rover %s %s
       Displays information on the most common commands to immediately 
-      download and inget data.
+      download and ingest data.
         
     rover %s %s
       Covers ROVER's advanced mode, where it runs in the background, 
@@ -45,7 +45,7 @@ def welcome(args):
       Displays the command line parameters.
       
     %s
-      Contains the settings for these parameters and can be edited 
+      Contains the defaults for these parameters and can be edited 
       to change the default behaviour.
         
   To display this screen again, type "rover" or "rover help".
