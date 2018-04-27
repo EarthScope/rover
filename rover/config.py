@@ -11,6 +11,7 @@ from re import sub
 from .utils import create_parents, canonify
 
 
+HELP = 'help'
 INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
@@ -123,8 +124,9 @@ class RoverArgumentParser(ArgumentParser):
                          formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          epilog=dedent('''
-                         Defaults are read from the configuration file (default %s).
-                         Flags can be negated (eg --no-daemon).''' % DEFAULT_FILE))
+                         Flags can be negated (eg --no-daemon).
+                         Defaults are read from the configuration file (%s).
+                         Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
         self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
@@ -145,8 +147,8 @@ class RoverArgumentParser(ArgumentParser):
         self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
         self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar='DIR')
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (0-5)', metavar='V', type=int)
-        self.add_argument('command', metavar='COMMAND', nargs='?', help='run with no command to see detailed help')
-        self.add_argument('args', nargs='*', help='depends on command - see above')
+        self.add_argument('command', metavar='COMMAND', nargs='?', help='use "help" for further information')
+        self.add_argument('args', nargs='*', help='depends on the command - see above')
 
     def parse_args(self, args=None, namespace=None):
         '''
