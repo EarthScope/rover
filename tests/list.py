@@ -13,19 +13,18 @@ from rover.list import IndexLister
 from test_utils import find_root, ingest_and_index
 
 
-def run_args(args):
+def run_args(dir, args):
     root = find_root()
-    with TemporaryDirectory() as dir:
-        log, dbpath = ingest_and_index(dir, (join(root, 'tests', 'data'),))
-        stdout = buffer()
-        IndexLister(dbpath, log).list(args, stdout=stdout)
-        stdout.seek(0)
-        return stdout.read()
+    log, dbpath = ingest_and_index(dir, (join(root, 'tests', 'data'),))
+    stdout = buffer()
+    IndexLister(dbpath, log).list(args, stdout=stdout)
+    stdout.seek(0)
+    return stdout.read()
 
 
-def assert_bad_args(args, msg):
+def assert_bad_args(dir, args, msg):
     try:
-        run_args(args)
+        run_args(dir, args)
     except Exception as e:
         assert msg in str(e), str(e)
 
@@ -33,15 +32,19 @@ def assert_bad_args(args, msg):
 # this is a bit inefficient - do an import and index for every test
 
 def test_bad_begin():
-    assert_bad_args(['begin=2010-1'], 'Poorly formed time "2010-1"')
+    with TemporaryDirectory() as dir:
+        assert_bad_args(dir, ['begin=2010-1'], 'Poorly formed time "2010-1"')
 
 def test_ambiguous():
-    assert_bad_args(['s=foo'], 'Ambiguous parameter: s')
+    with TemporaryDirectory() as dir:
+      assert_bad_args(dir, ['s=foo'], 'Ambiguous parameter: s')
 
 def test_two_flags():
-    assert_bad_args(['count', 'join'], 'Cannot specify multiple keys')
+    with TemporaryDirectory() as dir:
+      assert_bad_args(dir, ['count', 'join'], 'Cannot specify multiple keys')
 
 def test_count():
-    n = run_args(['count'])
-    assert int(n) == 9
+    with TemporaryDirectory() as dir:
+        n = run_args(dir, ['count'])
+        assert int(n) == 9
 

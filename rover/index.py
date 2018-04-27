@@ -47,8 +47,7 @@ class Workers:
             process.poll()
             if process.returncode is not None:
                 if process.returncode:
-                    self._log._error('"%s" returned %d' % (cmd, process.returncode))
-                    # todo - raise exception?
+                    raise Exception('"%s" returned %d' % (cmd, process.returncode))
                 else:
                     self._log.debug('"%s" succeeded' % (cmd,))
                     callback()  # execute on_success

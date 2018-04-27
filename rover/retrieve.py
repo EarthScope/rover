@@ -4,6 +4,7 @@ from os import getpid, unlink
 from os.path import join
 from urllib.request import urlopen
 
+from .config import RETRIEVE
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .utils import canonify, create_parents
@@ -18,7 +19,7 @@ class Retriever(SqliteSupport):
     So we need to manage temp table names and clear out old tables
     from crashed processes.
 
-    To do this we have another table that is a list of retievers,
+    To do this we have another table that is a list of retrievers,
     along with URLs, PIDs, table names and epochs.
 
     This isn't a problem for the main ingest command because only
@@ -82,5 +83,6 @@ class Retriever(SqliteSupport):
 def retrieve(args, log):
     retriever = Retriever(args.mseed_db, args.temp_dir, args.mseed_cmd, args.mseed_dir,
                           args.leap, args.leap_expire, args.leap_file, args.leap_url, args.mseed_workers, log)
-    # todo - check single arg
+    if len(args.args) != 1:
+        raise Exception('Provide a single argument (the URL) to %s' % RETRIEVE)
     retriever.retrieve(args.args[0])

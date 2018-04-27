@@ -28,8 +28,8 @@ leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 # directory for logs
 log-dir=~/rover/logs
 # log verbosity (0-5)
-log-verbosity=4
-# maximum log size (1-7)
+log-verbosity=5
+# maximum log size (1-10)
 log-size=6
 # maximum number of logs
 log-count=10
@@ -41,8 +41,10 @@ mseed-db=~/rover/index.sql
 mseed-dir=~/rover/mseed
 # number of mseedindex instances to run
 mseed-workers=10
+# temporary storage for downloads
+temp-dir=~/rover/tmp
 # stdout verbosity (0-5)
-verbosity=3
+verbosity=4
 ''', contents
 
 

@@ -1,5 +1,5 @@
 
-from logging import getLogger, StreamHandler, Formatter, DEBUG
+from logging import getLogger, StreamHandler, Formatter, DEBUG, shutdown
 from logging.handlers import RotatingFileHandler
 from os.path import join, exists, isdir, expanduser
 from os import makedirs
@@ -32,8 +32,8 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, stder
 
     time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
     path = join(dir, name + '.log')
-    # smallest size is 8kB (2^13), largest size 1MB (2^20)
-    size = 2 ** (12 + max(min(log_size, 7), 1))
+    # smallest size is 8kB (2^13), largest size 4MB (2^22)
+    size = 2 ** (12 + max(min(log_size, 10), 1))
     count = max(min(log_count, 100), 1)
     file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)
     file_handler.setLevel(level(log_verbosity))
