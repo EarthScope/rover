@@ -1,11 +1,17 @@
 
+from sys import version_info
 from binascii import hexlify
 from hashlib import sha1
 from os.path import dirname, exists, isdir, expanduser, abspath
 from os import makedirs, stat
 from subprocess import Popen, check_output, STDOUT
 from time import time
-from urllib.request import urlretrieve
+
+# avoid bug in backport libs for python 2
+if version_info[0] < 3:
+    from urllib import urlretrieve
+else:
+    from urllib.request import urlretrieve
 
 
 def create_parents(path):
