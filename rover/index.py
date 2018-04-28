@@ -68,10 +68,10 @@ class Workers:
 
 def find_stem(path, root, log):
     """
-    Find the initial part of path that matches rot (and return the length).
+    Find the initial part of path that matches root (and return the length).
 
     This is needed because we don't know that filenames in the mseedindex table
-    are anonified in the same way as here.  So links, etc may make things look
+    are canonified in the same way as here.  So links, etc may make things look
     different even though they are equivalent.
     """
     original_path = path
@@ -127,7 +127,7 @@ class DatabasePathIterator(SqliteSupport):
 
 def fileSystemPathIterator(root, depth=1):
     """
-    Ordered iteratoin over the filesystem, returning only files from
+    Ordered iterator over the filesystem, returning only files from
     the fourth directory level, corresponding to the data files in
     the store.
     """
@@ -219,7 +219,7 @@ class Indexer(SqliteSupport):
         self._execute('delete from tsindex where filename like ?', (path,))
 
     def _index(self, path):
-        self._log.debug('Sanning %s' % path)
+        self._log.debug('Scanning %s' % path)
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
                               % (self._leap_file, self._mseedindex, self._dbpath, path))
 
