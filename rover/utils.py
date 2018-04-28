@@ -1,4 +1,6 @@
 
+from binascii import hexlify
+from hashlib import sha1
 from os.path import dirname, exists, isdir, expanduser, abspath
 from os import makedirs, stat
 from subprocess import Popen, check_output, STDOUT
@@ -68,3 +70,8 @@ def check_leap(enabled, expire, file, url, log):
     else:
         return 'NONE'
 
+
+def hash(text):
+    hash = sha1()
+    hash.update(text.encode('utf-8'))
+    return hexlify(hash.digest()).decode('ascii')

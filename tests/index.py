@@ -14,10 +14,6 @@ def test_ingest_and_index():
         db = open_db(dbpath)
         n = db.cursor().execute('select count(*) from tsindex').fetchone()[0]
         assert n == 9, n
-        # n = db.cursor().execute('select count(*) from rover_mseeddirs').fetchone()[0]
-        # assert n == 4, n
-        # n = db.cursor().execute('select count(*) from rover_mseedfiles').fetchone()[0]
-        # assert n == 1, n
 
 
 def test_deleted_file():
@@ -32,15 +28,3 @@ def test_deleted_file():
         indexer.index()
         n = db.cursor().execute('select count(*) from tsindex').fetchone()[0]
         assert n == 0, n
-        # n = db.cursor().execute('select count(*) from rover_mseeddirs').fetchone()[0]
-        # assert n == 4, n
-        # n = db.cursor().execute('select count(*) from rover_mseedfiles').fetchone()[0]
-        # assert n == 0, n
-        rmdir(join(dir, 'IU', '2010', '58'))
-        indexer.index()
-        n = db.cursor().execute('select count(*) from tsindex').fetchone()[0]
-        assert n == 0, n
-        # n = db.cursor().execute('select count(*) from rover_mseeddirs').fetchone()[0]
-        # assert n == 3, n
-        # n = db.cursor().execute('select count(*) from rover_mseedfiles').fetchone()[0]
-        # assert n == 0, n

@@ -23,7 +23,3 @@ def test_retrieve():
         db = open_db(dbpath)
         n = db.cursor().execute('select count(*) from tsindex').fetchone()[0]
         assert n == 1, n  # todo is this right?  just one?
-        # n = db.cursor().execute('select count(*) from rover_mseeddirs').fetchone()[0]
-        # assert n == 4, n
-        # n = db.cursor().execute('select count(*) from rover_mseedfiles').fetchone()[0]
-        # assert n == 1, n

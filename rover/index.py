@@ -1,12 +1,12 @@
 
-from os import listdir, stat, makedirs
-from os.path import join, basename, isfile, isdir, dirname, exists, split
+from os import listdir, stat
+from os.path import join, isdir, split
 from sqlite3 import OperationalError
 from subprocess import Popen
 from time import sleep
 
-from .utils import canonify, check_cmd, check_leap
-from .sqlite import SqliteSupport, NoResult
+from .sqlite import SqliteSupport
+from .utils import canonify, check_leap
 
 
 class Workers:

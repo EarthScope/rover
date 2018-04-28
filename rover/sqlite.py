@@ -1,10 +1,8 @@
-from binascii import hexlify
 
 from time import time
 from sqlite3 import connect
-from hashlib import sha1
 
-from .utils import canonify
+from .utils import canonify, hash
 
 
 class NoResult(Exception):
@@ -101,9 +99,7 @@ class SqliteSupport:
 
     @staticmethod
     def _retrievers_table_name(url):
-        hash = sha1()
-        hash.update(url.encode('utf-8'))
-        return 'rover_retriever_%s' % hexlify(hash.digest()).decode('ascii')[1:5]
+        return 'rover_retriever_%s' % hash(url)[1:5]
 
     def _assert_single_use(self):
         """

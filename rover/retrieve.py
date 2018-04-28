@@ -1,13 +1,17 @@
 
-from cgi import parse_header
+from sys import version_info
 from os import getpid, unlink
 from os.path import join
-from urllib.request import urlopen
+# avoid bug in backport libs for python 2
+if version_info[0] < 3:
+    from urllib import urlretrieve
+else:
+    from urllib.request import urlretrieve
 
 from .config import RETRIEVE
 from .index import Indexer
 from .ingest import MseedindexIngester
-from .utils import canonify, create_parents
+from .utils import canonify, create_parents, hash
 from .sqlite import SqliteSupport, NoResult
 
 
@@ -68,19 +72,13 @@ class Retriever(SqliteSupport):
         return id, table
 
     def _do_download(self, url):
-        data = urlopen(url)
-        header = data.info()['Content-Disposition']
-        ctype, params = parse_header(header)
-        filename = params['filename']
-        self._log.info('Downloading %s to %s' % (url, filename))
-        path = join(self._tmpdir, filename)
+        # previously we extracted teh file name from the header, but the code
+        # failed in python 2 (looked like a backport library bug), so since
+        # the file will be deleted soon anyway we now use an arbitrary name
+        path = join(self._tmpdir, hash(url)[1:20])
         create_parents(path)
-        # todo - check file does not exist
-        with open(path, 'wb') as output:
-            while True:
-                chunk = data.read(self._blocksize)
-                if not chunk: return path
-                output.write(chunk)
+        urlretrieve(url, filename=path)
+        return path
 
 
 def retrieve(args, log):
