@@ -1,7 +1,9 @@
 
 from sys import version_info
-from os import getpid, unlink
-from os.path import join
+from os import getpid, unlink, listdir
+from os.path import join, exists, basename
+from time import time
+
 # avoid bug in backport libs for python 2
 if version_info[0] < 3:
     from urllib import urlretrieve
@@ -11,8 +13,15 @@ else:
 from .config import RETRIEVE
 from .index import Indexer
 from .ingest import MseedindexIngester
-from .utils import canonify, create_parents, hash
+from .utils import canonify, create_parents, hash, lastmod, unique_filename
 from .sqlite import SqliteSupport, NoResult
+
+
+# if a download process fails or hangs, we need to clear out
+# the file, so use a specific name and check for old files
+# in the download area
+TMPFILE = 'rover_tmp_'
+TMPEXPIRE = 60 * 60 * 24
 
 
 class Retriever(SqliteSupport):
@@ -39,6 +48,14 @@ class Retriever(SqliteSupport):
         self._ingester = MseedindexIngester(mseedindex, dbpath, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
         self._indexer = Indexer(mseedindex, dbpath, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, log)
         self._load_retrievers_table()
+        self._clean_tmp()
+
+    def _clean_tmp(self):
+        if exists(self._tmpdir):
+            for file in listdir(self._tmpdir):
+                if basename(file).startswith(TMPFILE):
+                    if time() - lastmod(file) > TMPEXPIRE:
+                        self._log.warn('Deleting old download %s' % file)
 
     def retrieve(self, url):
         """
@@ -72,11 +89,12 @@ class Retriever(SqliteSupport):
         return id, table
 
     def _do_download(self, url):
-        # previously we extracted teh file name from the header, but the code
+        # previously we extracted the file name from the header, but the code
         # failed in python 2 (looked like a backport library bug), so since
         # the file will be deleted soon anyway we now use an arbitrary name
-        path = join(self._tmpdir, hash(url)[1:20])
+        path = join(self._tmpdir, TMPFILE + hash(url)[1:10])
         create_parents(path)
+        path = unique_filename(path)
         urlretrieve(url, filename=path)
         return path
 

@@ -72,6 +72,33 @@ def check_leap(enabled, expire, file, url, log):
 
 
 def hash(text):
+    """
+    SHA1 hash as hex.
+    """
     hash = sha1()
     hash.update(text.encode('utf-8'))
     return hexlify(hash.digest()).decode('ascii')
+
+
+def lastmod(path):
+    """
+    The last modified epoch for the file.
+    """
+    statinfo = stat(path)
+    return statinfo.st_atime
+
+
+def unique_filename(path):
+    """
+    Append a count until we find a unique name.
+    """
+    if exists(path):
+        count = 0
+        while True:
+            count += 1
+            new_path = '%s.%d' % (path, count)
+            if not exists(new_path):
+                return new_path
+    else:
+        return path
+

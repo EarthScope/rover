@@ -6,7 +6,7 @@ from subprocess import Popen
 from time import sleep
 
 from .sqlite import SqliteSupport
-from .utils import canonify, check_leap
+from .utils import canonify, check_leap, lastmod
 
 
 class Workers:
@@ -188,9 +188,9 @@ class Indexer(SqliteSupport):
     def index(self):
         while True:
             # default values for paths work with ordering
-            closed, lastmod, dbpath, fspath = False, 0, ' ', ' '
+            closed, dblastmod, dbpath, fspath = False, 0, ' ', ' '
             try:
-                lastmod, dbpath = next(self._dbpaths)
+                dblastmod, dbpath = next(self._dbpaths)
             except StopIteration:
                 closed = True
             try:
@@ -204,15 +204,14 @@ class Indexer(SqliteSupport):
             # that implies it will be indexed
             if fspath > dbpath:
                 if not closed:
-                    self._dbpaths.push((lastmod, dbpath))
-                lastmod, dbpath = 0, fspath
+                    self._dbpaths.push((dblastmod, dbpath))
+                dblastmod, dbpath = 0, fspath
             # extra entry in database, needs deleting
             if fspath < dbpath:
                 self._delete(dbpath)
-            # fpath == dbpath so test if need to scan
+            # fspath == dbpath so test if need to scan
             else:
-                statinfo = stat(fspath)
-                if statinfo.st_atime != lastmod:
+                if lastmod(fspath) != dblastmod:
                     self._index(fspath)
 
     def _delete(self, path):
