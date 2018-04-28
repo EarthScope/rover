@@ -3,7 +3,7 @@ from sys import version_info
 from binascii import hexlify
 from hashlib import sha1
 from os.path import dirname, exists, isdir, expanduser, abspath
-from os import makedirs, stat
+from os import makedirs, stat, getpid
 from subprocess import Popen, check_output, STDOUT
 from time import time
 
@@ -84,6 +84,15 @@ def hash(text):
     hash = sha1()
     hash.update(text.encode('utf-8'))
     return hexlify(hash.digest()).decode('ascii')
+
+
+def uniqueish(prefix, text, pid=None):
+    """
+    Generate a unique(ish) name, from a prefix, text (hashed) and pid.
+    """
+    if pid is None:
+        pid = getpid()
+    return '%s_%s_%d' % (prefix, hash(text)[:6], pid)
 
 
 def lastmod(path):

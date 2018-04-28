@@ -2,7 +2,7 @@
 from time import time
 from sqlite3 import connect
 
-from .utils import canonify, hash
+from .utils import canonify, uniqueish
 
 
 class NoResult(Exception):
@@ -98,8 +98,8 @@ class SqliteSupport:
             self._execute('delete from rover_retrievers where id = ?', (id,))
 
     @staticmethod
-    def _retrievers_table_name(url):
-        return 'rover_retriever_%s' % hash(url)[1:5]
+    def _retrievers_table_name(url, pid):
+        return uniqueish('rover_retriever', url)
 
     def _assert_single_use(self):
         """

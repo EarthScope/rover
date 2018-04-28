@@ -13,6 +13,9 @@ class BaseIngester:
     """
     Iterate over the given files and call self._iongest_file, which
     must be implemented by any child class.
+
+    (The hops is that in future we will have a smarter ingester
+    based on obspy).
     """
 
     def __init__(self, root, log):
@@ -44,6 +47,8 @@ class BaseIngester:
         return join(self._root, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
 
 
+# this is the table name when run directly from the command line.
+# when run as a worker from (multiple) retriever(s) a table is supplied.
 TMPTABLE = 'rover_tmpingest'
 
 class MseedindexIngester(BaseIngester, SqliteSupport):

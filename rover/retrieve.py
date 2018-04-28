@@ -13,14 +13,14 @@ else:
 from .config import RETRIEVE
 from .index import Indexer
 from .ingest import MseedindexIngester
-from .utils import canonify, create_parents, hash, lastmod, unique_filename
+from .utils import canonify, create_parents, lastmod, unique_filename, uniqueish
 from .sqlite import SqliteSupport, NoResult
 
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
 # in the download area
-TMPFILE = 'rover_tmp_'
+TMPFILE = 'rover_tmp'
 TMPEXPIRE = 60 * 60 * 24
 
 
@@ -83,8 +83,9 @@ class Retriever(SqliteSupport):
                 raise Exception('A retriever already exists for %s' % url)
             self._execute('update rover_retrievers set pid = ? where id = ?', (getpid(), id))
         except NoResult:
-            table = self._retrievers_table_name(url)
-            self._execute('insert into rover_retrievers (pid, table_name, url) values (?, ?, ?)', (getpid(), table, url))
+            pid = getpid()
+            table = self._retrievers_table_name(url, pid)
+            self._execute('insert into rover_retrievers (pid, table_name, url) values (?, ?, ?)', (pid, table, url))
             id = self._fetchsingle('select id from rover_retrievers where url like ?', (url,))
         return id, table
 
@@ -92,7 +93,7 @@ class Retriever(SqliteSupport):
         # previously we extracted the file name from the header, but the code
         # failed in python 2 (looked like a backport library bug), so since
         # the file will be deleted soon anyway we now use an arbitrary name
-        path = join(self._tmpdir, TMPFILE + hash(url)[1:10])
+        path = join(self._tmpdir, uniqueish(TMPFILE, url))
         create_parents(path)
         path = unique_filename(path)
         urlretrieve(url, filename=path)
