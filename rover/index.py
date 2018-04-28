@@ -22,15 +22,15 @@ class Workers:
     def __init__(self, size, log):
         self._log = log
         self._size = size
-        self._workers = []  # (command, popen, callback)
+        self._workers = []  # (command, popen)
 
-    def execute(self, command, on_success):
+    def execute(self, command):
         """
         Execute the command, with callback on success.
         """
         self._wait_for_space()
         self._log.debug('Adding worker for "%s"' % command)
-        self._workers.append((command, Popen(command, shell=True), on_success))
+        self._workers.append((command, Popen(command, shell=True)))
 
     def _wait_for_space(self):
         while True:
@@ -43,14 +43,13 @@ class Workers:
     def _check(self):
         i = len(self._workers) - 1
         while i > -1:
-            cmd, process, callback = self._workers[i]
+            cmd, process = self._workers[i]
             process.poll()
             if process.returncode is not None:
                 if process.returncode:
                     raise Exception('"%s" returned %d' % (cmd, process.returncode))
                 else:
                     self._log.debug('"%s" succeeded' % (cmd,))
-                    callback()  # execute on_success
                 self._workers = self._workers[:i] + self._workers[i+1:]
             i -= 1
 
@@ -137,7 +136,9 @@ def fileSystemPathIterator(root, depth=1):
     for file in files:
         path = join(root, file)
         if isdir(path):
-            yield from fileSystemPathIterator(path, depth=depth+1)
+            # cannot use yield from as 3to2 doesn't translate it
+            for path in fileSystemPathIterator(path, depth=depth+1):
+                yield path
         elif depth == 4:
             yield path
 
@@ -224,8 +225,7 @@ class Indexer(SqliteSupport):
     def _index(self, path):
         self._log.debug('Sanning %s' % path)
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
-                              % (self._leap_file, self._mseedindex, self._dbpath, path),
-                              lambda: None)  # todo - no need for callback in worker
+                              % (self._leap_file, self._mseedindex, self._dbpath, path))
 
 
 def index(args, log):
