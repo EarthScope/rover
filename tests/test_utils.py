@@ -1,3 +1,5 @@
+
+from fnmatch import fnmatch
 from os import listdir
 from os.path import dirname, join
 from sqlite3 import connect
@@ -22,8 +24,13 @@ def open_db(dbpath):
 def assert_files(dir, *files):
     found = listdir(dir)
     assert len(files) == len(found), 'Found %d files in %s (not %d)' % (len(found), dir, len(files))
-    for file in files:
-        assert file in found, 'No %s in %s' % (file, found)
+    for file in found:
+        ok = False
+        for glob in files:
+            if fnmatch(file, glob):
+                ok = True
+        if not ok:
+            raise Exception('Unexpected file: "%s"', file)
 
 
 def ingest_and_index(dir, data):
