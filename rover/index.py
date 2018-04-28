@@ -26,7 +26,7 @@ class Workers:
 
     def execute(self, command):
         """
-        Execute the command, with callback on success.
+        Execute the command in a separate process.
         """
         self._wait_for_space()
         self._log.debug('Adding worker for "%s"' % command)
@@ -145,7 +145,7 @@ def fileSystemPathIterator(root, depth=1):
 
 class PushBackIterator:
     """
-    MOdify an iterator so that a (single) value can be pushed back
+    Modify an iterator so that a (single) value can be pushed back
     and will be returned next iteration.
     """
 
@@ -190,15 +190,11 @@ class Indexer(SqliteSupport):
             closed, lastmod, dbpath, fspath = False, 0, ' ', ' '
             try:
                 lastmod, dbpath = next(self._dbpaths)
-                self._log.debug('db: %s' % dbpath)
             except StopIteration:
-                self._log.debug('db closed')
                 closed = True
             try:
                 fspath = next(self._fspaths)
-                self._log.debug('fs: %s' % fspath)
             except StopIteration:
-                self._log.debug('fs closed')
                 if closed:
                     self._workers.wait_for_all()
                     return
