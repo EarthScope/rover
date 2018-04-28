@@ -107,7 +107,7 @@ class DatabasePathIterator(SqliteSupport):
         try:
             self._cursor.execute('select distinct filemodtime, filename from tsindex order by filename asc, filemodtime desc')
         except OperationalError as e:
-            self._log.debug(e)
+            # this is the case when there's no table yet, so no files
             self._cursor = None
 
     def __iter__(self):
@@ -136,7 +136,7 @@ def fileSystemPathIterator(root, depth=1):
     for file in files:
         path = join(root, file)
         if isdir(path):
-            # cannot use yield from as 3to2 doesn't translate it
+            # cannot use 'yield from' as 3to2 doesn't translate it
             for path in fileSystemPathIterator(path, depth=depth+1):
                 yield path
         elif depth == 4:
@@ -187,6 +187,7 @@ class Indexer(SqliteSupport):
 
     def index(self):
         while True:
+            # default values for paths work with ordering
             closed, lastmod, dbpath, fspath = False, 0, ' ', ' '
             try:
                 lastmod, dbpath = next(self._dbpaths)
