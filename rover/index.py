@@ -65,7 +65,6 @@ class Workers:
             sleep(0.1)
 
 
-
 def find_stem(path, root, log):
     """
     Find the initial part of path that matches root (and return the length).
@@ -135,7 +134,7 @@ def fileSystemPathIterator(root, depth=1):
     files = sorted(listdir(root))
     for file in files:
         path = join(root, file)
-        if isdir(path):
+        if isdir(path) and depth < 4:
             # cannot use 'yield from' as 3to2 doesn't translate it
             for path in fileSystemPathIterator(path, depth=depth+1):
                 yield path
@@ -163,8 +162,7 @@ class PushBackIterator:
 
     def __next__(self):
         if self._pushed:
-            value = self._pushed
-            self._pushed = None
+            value, self._pushed = self._pushed, None
         else:
             value = next(self._iter)
         return value
@@ -220,6 +218,7 @@ class Indexer(SqliteSupport):
 
     def _index(self, path):
         self._log.debug('Scanning %s' % path)
+        # todo - windows var
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
                               % (self._leap_file, self._mseedindex, self._dbpath, path))
 
