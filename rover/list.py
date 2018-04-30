@@ -1,6 +1,7 @@
 
 from re import match, sub
 import sys
+from datetime import datetime, timedelta
 
 from .sqlite import SqliteSupport
 
@@ -186,8 +187,9 @@ class IndexLister(SqliteSupport):
         print(self._fetchsingle(sql, params), file=stdout)
 
     def _contiguous(self, endtime, starttime):
-        # TODO!!!!!!!!!!!!
-        return True
+        s = datetime.strptime(starttime, '%Y-%m-%dT%H:%M:%S.%f')
+        e = datetime.strptime(endtime, '%Y-%m-%dT%H:%M:%S.%f')
+        return s - e == timedelta(microseconds=1)
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
