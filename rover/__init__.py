@@ -1,4 +1,5 @@
 
+from .process import Processes
 from .retrieve import retrieve
 from .list import list_index
 from .ingest import ingest
@@ -33,7 +34,13 @@ def main():
         args = argparse.parse_args()
         log = init_log(args.log_dir, args.log_size, args.log_count, args.log_verbosity, args.verbosity, 'rover')
         log.debug('args: %s' % args)
-        execute(args.command, args, log)
+        processes = Processes(args.mseed_db, log)
+        if not args.daemon:
+            processes.assert_singleton('rover')
+        try:
+            execute(args.command, args, log)
+        finally:
+            processes.remove_process()
     except Exception as e:
         if log:
             log.error(str(e))

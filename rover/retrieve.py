@@ -39,7 +39,6 @@ class Retriever(SqliteSupport):
     a sin=gle instance of the command line command runs at any one
     time.
     """
-    # todo - enforce the single instance condition above
 
     def __init__(self, dbpath, tmpdir, mseedindex, mseed_dir, leap, leap_expire, leap_file, leap_url, n_workers, log):
         super().__init__(dbpath, log)
@@ -47,7 +46,7 @@ class Retriever(SqliteSupport):
         self._blocksize = 1024 * 1024
         self._ingester = MseedindexIngester(mseedindex, dbpath, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
         self._indexer = Indexer(mseedindex, dbpath, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, log)
-        self._load_retrievers_table()
+        self._create_retrievers_table()
         self._clean_tmp()
 
     def _clean_tmp(self):

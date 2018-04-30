@@ -77,7 +77,7 @@ class SqliteSupport:
         self._log.debug('Fetchall: %s %s' % (sql, params))
         return c.execute(sql, params).fetchall()
 
-    def _load_retrievers_table(self):
+    def _create_retrievers_table(self):
         """
         Create the table used by the retriever.  This is here because the
         table may be created by either a retriever or a download manager.
