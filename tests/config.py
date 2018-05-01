@@ -17,6 +17,12 @@ def test_write_config():
 daemon=False
 # development mode (show exceptions)?
 dev=False
+# availability service url
+availability-url=http://service.iris.edu/irisws/availability/1/
+# dataselect service url
+dataselect-url=http://service.iris.edu/fdsnws/dataselect/1
+# temporary storage for downloads
+temp-dir=~/rover/tmp
 # use leapseconds file?
 leap=True
 # number of days before refreshing file
@@ -33,6 +39,8 @@ log-verbosity=5
 log-size=6
 # maximum number of logs
 log-count=10
+# stdout verbosity (0-5)
+verbosity=4
 # mseedindex command
 mseed-cmd=mseedindex
 # mseedindex database (also used by rover)
@@ -41,10 +49,6 @@ mseed-db=~/rover/index.sql
 mseed-dir=~/rover/mseed
 # number of mseedindex instances to run
 mseed-workers=10
-# temporary storage for downloads
-temp-dir=~/rover/tmp
-# stdout verbosity (0-5)
-verbosity=4
 ''', contents
 
 

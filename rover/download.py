@@ -24,7 +24,7 @@ TMPFILE = 'rover_tmp'
 TMPEXPIRE = 60 * 60 * 24
 
 
-class Retriever(SqliteSupport):
+class Downloader(SqliteSupport):
     """
     The only complex thing here is that these may run in parallel
     and call ingest.  That means that multiple ingest instances
@@ -46,7 +46,7 @@ class Retriever(SqliteSupport):
         self._blocksize = 1024 * 1024
         self._ingester = MseedindexIngester(mseedindex, dbpath, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
         self._indexer = Indexer(mseedindex, dbpath, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, log)
-        self._create_retrievers_table()
+        self._create_downloaderss_table()
         self._clean_tmp()
 
     def _clean_tmp(self):
@@ -56,7 +56,7 @@ class Retriever(SqliteSupport):
                     if time() - lastmod(file) > TMPEXPIRE:
                         self._log.warn('Deleting old download %s' % file)
 
-    def retrieve(self, url):
+    def download(self, url):
         """
         Download the give URL, then call ingest and index before deleting.
         """
@@ -69,7 +69,7 @@ class Retriever(SqliteSupport):
             unlink(path)
         finally:
             self._execute('drop table if exists %s' % table)
-            self._execute('delete from rover_retrievers where id = ?', (retrievers_id,))
+            self._execute('delete from rover_downloaders where id = ?', (retrievers_id,))
 
     def _update_retrievers_table(self, url):
         self._clear_dead_retrievers()
@@ -77,15 +77,15 @@ class Retriever(SqliteSupport):
         # in which case url is present and pid is not, or we need
         # to create an entry ourselves.
         try:
-            id, pid, table = self._fetchone('select id, pid, table_name from rover_retrievers where url like ?', (url,))
+            id, pid, table = self._fetchone('select id, pid, table_name from rover_downloaders where url like ?', (url,))
             if pid and pid != getpid():
                 raise Exception('A retriever already exists for %s' % url)
-            self._execute('update rover_retrievers set pid = ? where id = ?', (getpid(), id))
+            self._execute('update rover_downloaders set pid = ? where id = ?', (getpid(), id))
         except NoResult:
             pid = getpid()
             table = self._retrievers_table_name(url, pid)
-            self._execute('insert into rover_retrievers (pid, table_name, url) values (?, ?, ?)', (pid, table, url))
-            id = self._fetchsingle('select id from rover_retrievers where url like ?', (url,))
+            self._execute('insert into rover_downloaders (pid, table_name, url) values (?, ?, ?)', (pid, table, url))
+            id = self._fetchsingle('select id from rover_downloaders where url like ?', (url,))
         return id, table
 
     def _do_download(self, url):
@@ -99,12 +99,12 @@ class Retriever(SqliteSupport):
         return path
 
 
-def retrieve(args, log):
+def download(args, log):
     """
     Implement the retrieve command - download, ingest and index data.
     """
-    retriever = Retriever(args.mseed_db, args.temp_dir, args.mseed_cmd, args.mseed_dir,
-                          args.leap, args.leap_expire, args.leap_file, args.leap_url, args.mseed_workers, log)
+    downloader = Downloader(args.mseed_db, args.temp_dir, args.mseed_cmd, args.mseed_dir,
+                           args.leap, args.leap_expire, args.leap_file, args.leap_url, args.mseed_workers, log)
     if len(args.args) != 1:
         raise Exception('Provide a single argument (the URL) to %s' % RETRIEVE)
-    retriever.retrieve(args.args[0])
+    downloader.download(args.args[0])

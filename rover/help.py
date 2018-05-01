@@ -1,6 +1,6 @@
 
-from .config import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB
-
+from .config import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD
 
 DAEMON = 'daemon'
 USAGE = 'usage'
@@ -58,6 +58,11 @@ def welcome(args):
 def usage():
     print('''
                     Common ROVER Commands
+                    
+    rover %s (file|sncl start [end])
+      Compare the local index (config parameter %s) with the data 
+      availabe remotely (config parameter %s), then download 
+      (config parameter %s) and ingest the missing files.
 
     rover %s ...
       List index entries for the local store (config parameter 
@@ -66,7 +71,8 @@ def usage():
 
     rover %s
       Delete and re-write the configuration file.
-''' % (LIST_INDEX, MSEEDDIR, LIST_INDEX,
+''' % (RETRIEVE, MSEEDDB, AVAILABILITYURL, DATASELECTURL,
+       LIST_INDEX, MSEEDDIR, LIST_INDEX,
        RESET_CONFIG))
 
 
@@ -86,7 +92,8 @@ def low_level():
     %s url
       Download data from the given URL to the temporary store
       (config parameter %s).  When downloaded, ingest into the
-      local store (config parameter %s) and delete.
+      local store (config parameter %s) and delete.  Called
+      by %s when needed.
   
     %s (file|dir) ...
       Add the specified files to the local store (config
@@ -97,6 +104,6 @@ def low_level():
       Scan the mseed files in the local store (config parameter 
       %s) and update the database index (config parameter 
       %s).  Called by %s when needed.
-''' % (RETRIEVE, TEMPDIR, MSEEDDIR,
+''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
        INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
        INDEX, MSEEDDIR, MSEEDDB, INGEST))

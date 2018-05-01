@@ -11,16 +11,20 @@ from re import sub
 from .utils import create_parents, canonify
 
 
+DOWNLOAD = 'download'
 HELP = 'help'
 INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
 RESET_CONFIG = 'reset-config'
 RETRIEVE = 'retrieve'
+SUBSCRIBE = 'subscribe'
 
 NO = '--no-'
 
+AVAILABILITYURL = 'availability-url'
 DAEMON = 'daemon'
+DATASELECTURL = 'dataselect-url'
 DEV = 'dev'
 F, FILE = 'f', 'file'
 HELP = 'help'
@@ -39,6 +43,8 @@ MSEEDWORKERS = 'mseed-workers'
 TEMPDIR = 'temp-dir'
 V, VERBOSITY = 'v', 'verbosity'
 
+DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/'
+DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1'
 DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = join('~', 'rover', 'leap-seconds.lst')
@@ -128,25 +134,39 @@ class RoverArgumentParser(ArgumentParser):
                          Defaults are read from the configuration file (%s).
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
+
+        # operation details
         self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes?', metavar='')
         self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
+
+        # downloads
+        self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar='DIR')
+        self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar='DIR')
+        self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar='DIR')
+
+        # leap seconds
         self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
         self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar='N', type=int)
         self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar='FILE')
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
+
+        # logging
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
+        self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (0-5)', metavar='V', type=int)
+
+        # mseedindex
         self.add_argument(mm(MSEEDCMD), default=DEFAULT_MSEEDCMD, action='store', help='mseedindex command', metavar='CMD')
         self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar='FILE')
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar='DIR')
         self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
-        self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar='DIR')
-        self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='stdout verbosity (0-5)', metavar='V', type=int)
+
+        # commands / args
         self.add_argument('command', metavar='COMMAND', nargs='?', help='use "help" for further information')
         self.add_argument('args', nargs='*', help='depends on the command - see above')
 

@@ -1,11 +1,12 @@
 
+from .subscribe import subscribe
 from .process import Processes
-from .retrieve import retrieve
+from .download import download
 from .list import list_index
 from .ingest import ingest
 from .index import index
 from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD
 from .logs import init_log
 from .help import help
 
@@ -21,8 +22,10 @@ def execute(command, args, log):
         ingest(args, log)
     elif command == LIST_INDEX:
         list_index(args, log)
-    elif command == RETRIEVE:
-        retrieve(args, log)
+    elif command == DOWNLOAD:
+        download(args, log)
+    elif command == SUBSCRIBE:
+        subscribe(args, log)
     else:
         raise Exception('Unknown command %s' % command)
 

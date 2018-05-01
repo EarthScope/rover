@@ -189,12 +189,13 @@ class IndexLister(SqliteSupport):
     def _contiguous(self, endtime, starttime):
         s = datetime.strptime(starttime, '%Y-%m-%dT%H:%M:%S.%f')
         e = datetime.strptime(endtime, '%Y-%m-%dT%H:%M:%S.%f')
+        # todo - maybe this difference should be 1/sampleperiod
         return s - e == timedelta(microseconds=1)
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
         c = self._db.cursor()
-        prev, join = None, self._flags[JOIN]
+        prev, join = [], self._flags[JOIN]
         for row in c.execute(sql, params):
             if join:
                 row = list(row)

@@ -77,12 +77,12 @@ class SqliteSupport:
         self._log.debug('Fetchall: %s %s' % (sql, params))
         return c.execute(sql, params).fetchall()
 
-    def _create_retrievers_table(self):
+    def _create_downloaderss_table(self):
         """
         Create the table used by the retriever.  This is here because the
         table may be created by either a retriever or a download manager.
         """
-        self._execute('''create table if not exists rover_retrievers (
+        self._execute('''create table if not exists rover_downloaders (
                            id integer primary key autoincrement,
                            pid integer,
                            table_name text unique,
@@ -91,11 +91,11 @@ class SqliteSupport:
                          )''')
 
     def _clear_dead_retrievers(self):
-        for row in self._fetchall('select id, table_name from rover_retrievers where creation_epoch < ?', (time() - 60 * 60,)):
+        for row in self._fetchall('select id, table_name from rover_downloaders where creation_epoch < ?', (time() - 60 * 60,)):
             id, table = row[0]
             self._log.warn('Forcing deletion of table %s' % table)
             self._execute('drop table if exists %s' % table)
-            self._execute('delete from rover_retrievers where id = ?', (id,))
+            self._execute('delete from rover_downloaders where id = ?', (id,))
 
     @staticmethod
     def _retrievers_table_name(url, pid):
