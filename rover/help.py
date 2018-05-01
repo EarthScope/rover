@@ -79,7 +79,10 @@ def usage():
 def daemon():
     print('''
                    Advanced ROVER Commands
-''')
+                   
+    rover %s
+      Subscribe to retrieve updates whenever they become available.
+''' % (SUBSCRIBE,))
 
 
 def low_level():
