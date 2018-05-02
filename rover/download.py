@@ -101,10 +101,10 @@ class Downloader(SqliteSupport):
 
 def download(args, log):
     """
-    Implement the retrieve command - download, ingest and index data.
+    Implement the download command - download, ingest and index data.
     """
     downloader = Downloader(args.mseed_db, args.temp_dir, args.mseed_cmd, args.mseed_dir,
                            args.leap, args.leap_expire, args.leap_file, args.leap_url, args.mseed_workers, log)
     if len(args.args) != 1:
-        raise Exception('Provide a single argument (the URL) to %s' % RETRIEVE)
+        raise Exception('Usage: rover %s url' % DOWNLOAD)
     downloader.download(args.args[0])

@@ -1,4 +1,4 @@
-
+from .retrieve import retrieve
 from .subscribe import subscribe
 from .process import Processes
 from .download import download
@@ -24,6 +24,9 @@ def execute(command, args, log):
         list_index(args, log)
     elif command == DOWNLOAD:
         download(args, log)
+    elif command == RETRIEVE:
+
+        retrieve(args, log)
     elif command == SUBSCRIBE:
         subscribe(args, log)
     else:
