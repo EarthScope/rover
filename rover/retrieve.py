@@ -1,105 +1,18 @@
 
+from datetime import datetime
 from os import unlink, makedirs
 from os.path import join
 from re import match
 from shutil import copyfile
-from datetime import datetime
 
 from .config import RETRIEVE
+from .coverage import Coverage
 from .sqlite import SqliteSupport
-from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, format_time, PushBackIterator
+from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time
+
 
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime(1900, 1, 1)
-
-
-class Availability:  # todo - more general name
-
-    def __init__(self, tolerance, network, station, location, channel):
-        self._tolerance = tolerance
-        self.network = network
-        self.station = station
-        self.location = location
-        self.channel = channel
-        self.timespans = []
-
-    def is_sncl(self, n, s, l, c):
-        return self.network == n and self.station == s and self.location == l and self.channel == c
-
-    def add_timespan(self, begin, end):
-        if not self.timespans:
-            self.timespans.append((begin, end))
-        else:
-            b, e = self.timespans[-1]
-            if begin < b:
-                raise Exception('Unsorted availability')
-            if begin <= e or (begin - e).total_seconds() < self._tolerance:
-                if end > e:
-                    self.timespans[-1] = (b, end)
-            else:
-                self.timespans.append((begin, end))
-
-    def __str__(self):
-        return '%s.%s.%s.%s: %d timespans from %s to %s' % (
-            self.network, self.station, self.location, self.channel,
-            len(self.timespans),
-            format_time(self.timespans[0][0]) if self.timespans else '-',
-            format_time(self.timespans[-1][1]) if self.timespans else '-'
-        )
-
-    def subtract(self, other):
-        if not self.is_sncl(other.network, other.station, other.location, other.channel):
-            raise Exception('Cannot subtract mismatched availabilities')
-        us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
-        difference = Availability(self._tolerance, self.network, self.station, self.location, self.channel)
-        while True:
-            try:
-                us_begin, us_end = next(us)
-            except StopIteration:
-                # we can return difference now, because there;s only more subtracting to do
-                return difference
-            try:
-                them_begin, them_end = next(them)
-            except StopIteration:
-                # there's no more subtraction, so everything left goes into difference
-                difference.add_timespan(us_begin, us_end)
-                for (us_begin, us_end) in us:
-                    difference.add_timespan(us_begin, us_end)
-                return difference
-            # we start before them
-            if us_begin < them_begin:
-                # we also end before them, so we're home free into the difference and
-                # they live to try kill our next timespan
-                if us_end <= them_begin:
-                    difference.add_timespan(us_begin, us_end)
-                    them.push((them_begin, them_end))
-                # we end after they start, so we overlap.  save the initial part in
-                # the difference and push the rest back for further consideration.
-                else:
-                    difference.add_timespan(us_begin, them_begin)
-                    us.push((them_begin, us_end))
-                    them.push((them_begin, them_end))
-            # we start together
-            elif us_begin == them_begin:
-                # and we end first, so are completely wiped out, while they live to
-                # perhaps delete more
-                if us_end <= them_end:
-                    them.push((them_begin, them_end))
-                # but they end first.  so some of our timespan still lives to face
-                # the next challenger.
-                else:
-                    us.push((them_end, us_end))
-            # we start after them
-            else:
-                # if we also end before them, then we're deleted completely
-                # while they continue to face out next timespan.
-                if us_end <= them_end:
-                    them.push((them_begin, them_end))
-                # but we also end after them.  so some of our timespan remains
-                # to face their next timespan.
-                else:
-                    us.push((them_end, us_end))
-
 
 
 class Retriever(SqliteSupport):
@@ -165,7 +78,7 @@ class Retriever(SqliteSupport):
                         yield availability
                         availability = None
                     if not availability:
-                        availability = Availability(self._tolerance, n, s, l, c)
+                        availability = Coverage(self._tolerance, n, s, l, c)
                     availability.add_timespan(b, e)
             if availability:
                 yield availability
@@ -173,7 +86,7 @@ class Retriever(SqliteSupport):
     def _scan_index(self, network, station, location, channel):
         # todo - we could maybe use time range from initial query?  or from availability?
         c = self._db.cursor()
-        availability = Availability(self._tolerance, network, station, location, channel)
+        availability = Coverage(self._tolerance, network, station, location, channel)
         for row in c.execute('''select starttime, endtime 
                                 from tsindex 
                                 where network=? and station=? and location=? and channel=?
