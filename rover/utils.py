@@ -135,4 +135,3 @@ def post_to_file(url, up, down, log, unique=True):
     with open(up, 'rb') as input:
         request = post(url, stream=True, data=input)
     return _stream_output(request, down, unique=unique)
-

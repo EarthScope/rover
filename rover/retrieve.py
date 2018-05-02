@@ -2,8 +2,9 @@
 from os import unlink
 from os.path import join, exists
 from re import match
+from shutil import copyfile
 
-from .utils import uniqueish, create_parents, canonify, post_to_file
+from .utils import uniqueish, create_parents, canonify, post_to_file, unique_filename
 from .config import RETRIEVE
 from .sqlite import SqliteSupport
 
@@ -36,20 +37,25 @@ class Retriever(SqliteSupport):
         self._availability = availability
 
     def retrieve(self, up):
-        up = canonify(up)
-        if not exists(up):
-            raise Exception('Cannot find file %s' % up)
-        down = self._get_availability(up)
+        self._prepend_options(up)
+        down = self._post_availability(up)
         try:
+            self._sort_availability(down)
             for remote in self._parse_availability(down):
                 local = self._scan_index(remote.network, remote.station, remote.location, remote.channel)
                 self._request_download(remote.subtract(local))
         finally:
             unlink(down)
 
-    def _get_availability(self, up):
+    def _prepend_options(self, up):
+        pass
+
+    def _post_availability(self, up):
         down = join(self._temp_dir, uniqueish(RETRIEVEFILE, up))
         return post_to_file(self._availability, up, down, self._log)
+
+    def _sort_availability(self, down):
+        pass
 
     def _parse_availability(self, down):
         yield None
@@ -68,32 +74,31 @@ def assert_valid_time(time):
         raise Exception('Invalid time format "%s"' % time)
 
 
-def build_file(temp_dir, sncl, begin, end=None):
+def build_file(path, sncl, begin, end=None):
     parts = list(sncl.split('.'))
     if len(parts) != 4:
         raise Exception('SNCL "%s" does not have 4 components' % sncl)
     parts.append(assert_valid_time(begin))
     if end:
         parts.append(assert_valid_time(end))
-    name = uniqueish(RETRIEVEFILE, sncl)
-    path = join(canonify(temp_dir), name)
-    create_parents(path)
     with open(path, 'w') as req:
        print(*parts, file=req)
-    return path
 
 
 def retrieve(args, log):
     retriever = Retriever(args.mseed_db, args.temp_dir, args.availability_url, log)
-    if len(args.args) == 1:
-        retriever.retrieve(args.args[0])
-    elif len(args.args) == 0 or len(args.args) > 3:
+    if len(args.args) == 0 or len(args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:
-        path = build_file(args.temp_dir, *args.args)
+        # guarantee always called with temp file because we prepend options
+        name = uniqueish(RETRIEVEFILE, args.args[0])
+        path = unique_filename(join(canonify(args.temp_dir), name))
         try:
+            create_parents(path)
+            if len(args.args) == 1:
+                copyfile(args.args[0], path)
+            else:
+                build_file(path, *args.args)
             retriever.retrieve(path)
         finally:
             unlink(path)
-
-
