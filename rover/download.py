@@ -1,21 +1,13 @@
 
-from sys import version_info
 from os import getpid, unlink, listdir
 from os.path import join, exists, basename
 from time import time
 
-# avoid bug in backport libs for python 2
-if version_info[0] < 3:
-    from urllib import urlretrieve
-else:
-    from urllib.request import urlretrieve
-
-from .config import RETRIEVE
+from .config import DOWNLOAD
 from .index import Indexer
 from .ingest import MseedindexIngester
-from .utils import canonify, create_parents, lastmod, unique_filename, uniqueish
 from .sqlite import SqliteSupport, NoResult
-
+from .utils import canonify, lastmod, uniqueish, get_to_file
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
@@ -93,10 +85,7 @@ class Downloader(SqliteSupport):
         # failed in python 2 (looked like a backport library bug), so since
         # the file will be deleted soon anyway we now use an arbitrary name
         path = join(self._tmpdir, uniqueish(TMPFILE, url))
-        create_parents(path)
-        path = unique_filename(path)
-        urlretrieve(url, filename=path)
-        return path
+        return get_to_file(url, path, self._log)
 
 
 def download(args, log):

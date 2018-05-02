@@ -1,17 +1,11 @@
-
-from sys import version_info
 from binascii import hexlify
 from hashlib import sha1
-from os.path import dirname, exists, isdir, expanduser, abspath
 from os import makedirs, stat, getpid
+from os.path import dirname, exists, isdir, expanduser, abspath
 from subprocess import Popen, check_output, STDOUT
 from time import time
 
-# avoid bug in backport libs for python 2
-if version_info[0] < 3:
-    from urllib import urlretrieve
-else:
-    from urllib.request import urlretrieve
+from requests import get
 
 
 def create_parents(path):
@@ -70,8 +64,7 @@ def check_leap(enabled, expire, file, url, log):
         else:
             download= True
         if download:
-            log.info('Downloading %s from %s' % (file, url))
-            urlretrieve(url, file)
+            get_to_file(url, file, log, unique=False)
         return file
     else:
         return 'NONE'
@@ -117,3 +110,16 @@ def unique_filename(path):
     else:
         return path
 
+
+def get_to_file(url, down, log, unique=True):
+    down = canonify(down)
+    create_parents(down)
+    if unique:
+        down = unique_filename(down)
+    log.info('Downloading %s from %s' % (down, url))
+    request = get(url, stream=True)
+    with open(down, 'wb') as f:
+        for chunk in request.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+    return down
