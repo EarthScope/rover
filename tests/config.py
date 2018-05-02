@@ -1,7 +1,8 @@
 
-from rover.config import RoverArgumentParser
 from tempfile import TemporaryDirectory
 from os.path import join
+
+from rover.config import RoverArgumentParser
 
 
 def test_write_config():
@@ -18,7 +19,7 @@ daemon=False
 # development mode (show exceptions)?
 dev=False
 # availability service url
-availability-url=http://service.iris.edu/irisws/availability/1/
+availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
 dataselect-url=http://service.iris.edu/fdsnws/dataselect/1
 # temporary storage for downloads
@@ -49,6 +50,8 @@ mseed-db=~/rover/index.sql
 mseed-dir=~/rover/mseed
 # number of mseedindex instances to run
 mseed-workers=10
+# tolerance for overlapping timespans
+timespan-tol=0.1
 ''', contents
 
 

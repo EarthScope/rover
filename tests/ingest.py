@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 from tempfile import mktemp
 from os.path import join
 
-from rover import init_log
+from rover.logs import init_log
 from rover.ingest import MseedindexIngester
 from test_utils import find_root, open_db, assert_files
 

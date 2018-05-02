@@ -1,11 +1,10 @@
 
 from tempfile import TemporaryDirectory
 from tempfile import mktemp
-
 from os.path import join
 
 from rover.download import Downloader
-from rover import init_log
+from rover.logs import init_log
 from test_utils import find_root, assert_files, open_db
 
 

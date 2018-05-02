@@ -52,6 +52,10 @@ class Coverage:
             format_time(self.timespans[-1][1]) if self.timespans else '-'
         )
 
+    def __eq__(self, other):
+        return self.is_sncl(other.network, other.station, other.location, other.channel) \
+               and self.timespans == other.timespans
+
     def subtract(self, other):
         """
         Calculate the timespans for which this instance has data, but the

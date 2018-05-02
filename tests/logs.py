@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from os.path import join
 from re import sub
 
-from rover import init_log
+from rover.logs import init_log
 from rover.config import RoverArgumentParser, DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
 
 
