@@ -5,6 +5,7 @@ from os.path import join
 from re import match
 from shutil import copyfile
 
+from .download import DownloadManager
 from .config import RETRIEVE
 from .coverage import Coverage
 from .sqlite import SqliteSupport
@@ -16,22 +17,32 @@ EARLY = datetime(1900, 1, 1)
 
 
 class Retriever(SqliteSupport):
+    """
+    Call the availability service, compare with the index, and
+    then call the DownloadManager to retrieve the missing data
+    (which are ingested and indexed by the Downloader).
+    """
 
     def __init__(self, dbpath, temp_dir, availability, tolerance, log):
         super().__init__(dbpath, log)
+        self._download_manager = DownloadManager(dbpath, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
 
     def retrieve(self, up):
+        """
+        Retrieve the data specified in the given file (format as for
+        availability service).
+        """
         self._prepend_options(up)
         down = self._post_availability(up)
         try:
             self._sort_availability(down)
             for remote in self._parse_availability(down):
-                print(remote)
+                self._log.debug('Available data: %s' % remote)
                 local = self._scan_index(remote.network, remote.station, remote.location, remote.channel)
-                print(local)
+                self._log.debug('Local data: %s' % local)
                 self._request_download(remote.subtract(local))
         finally:
             unlink(down)
@@ -97,16 +108,22 @@ class Retriever(SqliteSupport):
         return availability
 
     def _request_download(self, missing):
-        print(missing)
-        return None  # todo - needs a download manager for chunking and buffering
+        self._log.debug('Data to download: %s' % missing)
+        self._download_manager.download(missing)
 
 
 def temp_path(temp_dir, text):
+    """
+    Generate a unique path to a temporary file.
+    """
     name = uniqueish(RETRIEVEFILE, text)
     return unique_filename(join(temp_dir, name))
 
 
 def assert_valid_time(time):
+    """
+    Check timestamp format.
+    """
     if match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
         return time
     else:
@@ -114,6 +131,10 @@ def assert_valid_time(time):
 
 
 def build_file(path, sncl, begin, end=None):
+    """
+    Given a SNCL and begin.end dates, construct an input file in
+    the correct (availability service) format.
+    """
     parts = list(sncl.split('.'))
     if len(parts) != 4:
         raise Exception('SNCL "%s" does not have 4 components' % sncl)
@@ -125,6 +146,10 @@ def build_file(path, sncl, begin, end=None):
 
 
 def retrieve(args, log):
+    """
+    Implement the retrieve command - download data that is available and
+    that we don't already have.
+    """
     temp_dir = canonify(args.temp_dir)
     makedirs(temp_dir, exist_ok=True)
     retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, args.timespan_tol, log)

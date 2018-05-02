@@ -9,6 +9,7 @@ from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport, NoResult
 from .utils import canonify, lastmod, uniqueish, get_to_file
 
+
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
 # in the download area
@@ -18,6 +19,9 @@ TMPEXPIRE = 60 * 60 * 24
 
 class Downloader(SqliteSupport):
     """
+    Download a single request (typically for a day), ingest and
+    index it.
+
     The only complex thing here is that these may run in parallel
     and call ingest.  That means that multiple ingest instances
     can be running in parallel, all using temp tables in the database.
@@ -97,3 +101,13 @@ def download(args, log):
     if len(args.args) != 1:
         raise Exception('Usage: rover %s url' % DOWNLOAD)
     downloader.download(args.args[0])
+
+
+class DownloadManager(SqliteSupport):
+
+    def __init__(self, dbpath, log):
+        super().__init__(dbpath, log)
+
+    def download(self, coverage):
+        self._log.info('Download %s' % coverage)
+

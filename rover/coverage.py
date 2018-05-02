@@ -3,6 +3,12 @@ from .utils import format_time, PushBackIterator
 
 
 class Coverage:
+    """
+    A SNCL and associated timespans.
+
+    The timespans are ordered and do not overlap (they are merged
+    as they are added).
+    """
 
     def __init__(self, tolerance, network, station, location, channel):
         self._tolerance = tolerance
@@ -13,15 +19,25 @@ class Coverage:
         self.timespans = []
 
     def is_sncl(self, n, s, l, c):
+        """
+        Check whether we match the given SNCL.
+        """
         return self.network == n and self.station == s and self.location == l and self.channel == c
 
     def add_timespan(self, begin, end):
+        """
+        Add a timesspan to those that already exist, merging if
+        necessary.
+
+        IMPORTANT: This assumes that the timestamps are added ordered
+        by increasing start time.
+        """
         if not self.timespans:
             self.timespans.append((begin, end))
         else:
             b, e = self.timespans[-1]
             if begin < b:
-                raise Exception('Unsorted availability')
+                raise Exception('Unsorted start times')
             if begin <= e or (begin - e).total_seconds() < self._tolerance:
                 if end > e:
                     self.timespans[-1] = (b, end)
@@ -37,6 +53,10 @@ class Coverage:
         )
 
     def subtract(self, other):
+        """
+        Calculate the timespans for which this instance has data, but the
+        other instance does not.
+        """
         if not self.is_sncl(other.network, other.station, other.location, other.channel):
             raise Exception('Cannot subtract mismatched availabilities')
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
@@ -88,6 +108,3 @@ class Coverage:
                 # to face their next timespan.
                 else:
                     us.push((them_end, us_end))
-
-
-
