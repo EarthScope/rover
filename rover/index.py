@@ -6,7 +6,7 @@ from subprocess import Popen
 from time import sleep
 
 from .sqlite import SqliteSupport
-from .utils import canonify, check_leap, lastmod
+from .utils import canonify, check_leap, lastmod, PushBackIterator
 
 
 class Workers:
@@ -140,32 +140,6 @@ def fileSystemPathIterator(root, depth=1):
                 yield path
         elif depth == 4:
             yield path
-
-
-class PushBackIterator:
-    """
-    Modify an iterator so that a (single) value can be pushed back
-    and will be returned next iteration.
-    """
-
-    def __init__(self, iter):
-        self._iter = iter
-        self._pushed = None
-
-    def push(self, value):
-        if self._pushed:
-            raise Exception('Cannot push multiple values')
-        self._pushed = value
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._pushed:
-            value, self._pushed = self._pushed, None
-        else:
-            value = next(self._iter)
-        return value
 
 
 class Indexer(SqliteSupport):
