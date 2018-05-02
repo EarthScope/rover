@@ -1,8 +1,9 @@
 
 from re import match, sub
 import sys
-from datetime import datetime, timedelta
+from datetime import timedelta
 
+from .utils import parse_time
 from .sqlite import SqliteSupport
 
 
@@ -187,8 +188,8 @@ class IndexLister(SqliteSupport):
         print(self._fetchsingle(sql, params), file=stdout)
 
     def _contiguous(self, endtime, starttime):
-        s = datetime.strptime(starttime, '%Y-%m-%dT%H:%M:%S.%f')
-        e = datetime.strptime(endtime, '%Y-%m-%dT%H:%M:%S.%f')
+        s = parse_time(starttime)
+        e = parse_time(endtime)
         # todo - maybe this difference should be 1/sampleperiod
         return s - e == timedelta(microseconds=1)
 

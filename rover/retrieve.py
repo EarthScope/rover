@@ -4,7 +4,7 @@ from os.path import join, exists
 from re import match
 from shutil import copyfile
 
-from .utils import uniqueish, create_parents, canonify, post_to_file, unique_filename, run
+from .utils import uniqueish, create_parents, canonify, post_to_file, unique_filename, run, parse_time, format_time
 from .config import RETRIEVE
 from .sqlite import SqliteSupport
 
@@ -14,16 +14,37 @@ RETRIEVEFILE = 'rover_retrieve'
 
 class Availability:  # todo - more general name
 
-    def __init__(self, network, station, location, channel):
+    def __init__(self, tolerance, network, station, location, channel):
+        self._tolerance = tolerance
         self.network = network
         self.station = station
         self.location = location
         self.channel = channel
         self.timespans = []
 
+    def is_sncl(self, n, s, l, c):
+        return self.network == n and self.station == s and self.location == l and self.channel == c
+
     def add_timespan(self, begin, end):
-        # todo - something clever here
-        pass
+        if not self.timespans:
+            self.timespans.append((begin, end))
+        else:
+            b, e = self.timespans[-1]
+            if begin < b:
+                raise Exception('Unsorted availability')
+            if begin <= e or (begin - e).total_seconds() < self._tolerance:
+                if end > e:
+                    self.timespans[-1] = (b, end)
+            else:
+                self.timespans.append((begin, end))
+
+    def __str__(self):
+        return '%s.%s.%s.%s: %d timespans from %s to %s' % (
+            self.network, self.station, self.location, self.channel,
+            len(self.timespans),
+            format_time(self.timespans[0][0]) if self.timespans else '-',
+            format_time(self.timespans[-1][1]) if self.timespans else '-'
+        )
 
     def subtract(self, other):
         pass
@@ -31,10 +52,11 @@ class Availability:  # todo - more general name
 
 class Retriever(SqliteSupport):
 
-    def __init__(self, dbpath, temp_dir, availability, log):
+    def __init__(self, dbpath, temp_dir, availability, tolerance, log):
         super().__init__(dbpath, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
+        self._tolerance = tolerance
 
     def retrieve(self, up):
         self._prepend_options(up)
@@ -42,6 +64,7 @@ class Retriever(SqliteSupport):
         try:
             self._sort_availability(down)
             for remote in self._parse_availability(down):
+                print(remote)
                 local = self._scan_index(remote.network, remote.station, remote.location, remote.channel)
                 self._request_download(remote.subtract(local))
         finally:
@@ -75,8 +98,24 @@ class Retriever(SqliteSupport):
         finally:
             unlink(tmp)
 
+    def _parse_line(self, line):
+        n, s, l, c, b, e = line.split()
+        return n, s, l, c, parse_time(b), parse_time(e)
+
     def _parse_availability(self, down):
-        pass
+        with open(down, 'r') as input:
+            availability = None
+            for line in input:
+                if not line.startswith('#'):
+                    n, s, l, c, b, e = self._parse_line(line)
+                    if availability and not availability.is_sncl(n, s, l, c):
+                        yield availability
+                        availability = None
+                    if not availability:
+                        availability = Availability(self._tolerance, n, s, l, c)
+                    availability.add_timespan(b, e)
+            if availability:
+                yield availability
 
     def _scan_index(self, network, station, location, channel):
         return None
@@ -111,7 +150,7 @@ def build_file(path, sncl, begin, end=None):
 def retrieve(args, log):
     temp_dir = canonify(args.temp_dir)
     makedirs(temp_dir, exist_ok=True)
-    retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, log)
+    retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, args.timespan_tol, log)
     if len(args.args) == 0 or len(args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:

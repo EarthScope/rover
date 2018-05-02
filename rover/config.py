@@ -41,6 +41,7 @@ MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
 TEMPDIR = 'temp-dir'
+TIMESPANTOL = 'timespan-tol'
 V, VERBOSITY = 'v', 'verbosity'
 
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
@@ -58,6 +59,7 @@ DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_MSEEDWORKERS = 10
 DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
+DEFAULT_TIMESPANTOL = 0.1
 DEFAULT_VERBOSITY = 4
 
 
@@ -165,6 +167,9 @@ class RoverArgumentParser(ArgumentParser):
         self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar='FILE')
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar='DIR')
         self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
+
+        # retrieval
+        self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='tolerance for overlapping timespans', metavar='SECS', type=float)
 
         # commands / args
         self.add_argument('command', metavar='COMMAND', nargs='?', help='use "help" for further information')

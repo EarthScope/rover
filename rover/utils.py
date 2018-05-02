@@ -1,9 +1,11 @@
+
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid
 from os.path import dirname, exists, isdir, expanduser, abspath
 from subprocess import Popen, check_output, STDOUT
 from time import time
+from datetime import datetime
 
 from requests import get, post
 
@@ -135,3 +137,13 @@ def post_to_file(url, up, down, log, unique=True):
     with open(up, 'rb') as input:
         request = post(url, stream=True, data=input)
     return _stream_output(request, down, unique=unique)
+
+
+def parse_time(time):
+    if time.endswith('Z'):
+        time = time[:-1]
+    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
+
+
+def format_time(time):
+    return datetime.strftime(time, '%Y-%m-%dT%H:%M:%S.%f')
