@@ -1,15 +1,17 @@
 
 from os import unlink, makedirs
-from os.path import join, exists
+from os.path import join
 from re import match
 from shutil import copyfile
+from datetime import datetime
 
-from .utils import uniqueish, create_parents, canonify, post_to_file, unique_filename, run, parse_time, format_time
 from .config import RETRIEVE
 from .sqlite import SqliteSupport
+from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, format_time
 
 
 RETRIEVEFILE = 'rover_retrieve'
+EARLY = datetime(1900, 1, 1)
 
 
 class Availability:  # todo - more general name
@@ -66,6 +68,7 @@ class Retriever(SqliteSupport):
             for remote in self._parse_availability(down):
                 print(remote)
                 local = self._scan_index(remote.network, remote.station, remote.location, remote.channel)
+                print(local)
                 self._request_download(remote.subtract(local))
         finally:
             unlink(down)
@@ -118,7 +121,17 @@ class Retriever(SqliteSupport):
                 yield availability
 
     def _scan_index(self, network, station, location, channel):
-        return None
+        # todo - we could maybe use time range from initial query?  or from availability?
+        c = self._db.cursor()
+        availability = Availability(self._tolerance, network, station, location, channel)
+        for row in c.execute('''select starttime, endtime 
+                                from tsindex 
+                                where network=? and station=? and location=? and channel=?
+                                order by starttime, endtime''', (network, station, location, channel)):
+            b, e = row
+            b, e = parse_time(b), parse_time(e)
+            availability.add_timespan(b, e)
+        return availability
 
     def _request_download(self, missing):
         return None  # todo - needs a download manager for chunking and buffering
