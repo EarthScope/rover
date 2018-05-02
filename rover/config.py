@@ -43,7 +43,7 @@ MSEEDWORKERS = 'mseed-workers'
 TEMPDIR = 'temp-dir'
 V, VERBOSITY = 'v', 'verbosity'
 
-DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/'
+DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1'
 DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_LEAPEXPIRE = 30

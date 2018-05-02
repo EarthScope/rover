@@ -1,10 +1,10 @@
 
-from os import unlink
+from os import unlink, makedirs
 from os.path import join, exists
 from re import match
 from shutil import copyfile
 
-from .utils import uniqueish, create_parents, canonify, post_to_file, unique_filename
+from .utils import uniqueish, create_parents, canonify, post_to_file, unique_filename, run
 from .config import RETRIEVE
 from .sqlite import SqliteSupport
 
@@ -48,23 +48,46 @@ class Retriever(SqliteSupport):
             unlink(down)
 
     def _prepend_options(self, up):
-        pass
+        tmp = temp_path(self._temp_dir, up)
+        self._log.debug('Prepending options to %s via %s' % (up, tmp))
+        try:
+            with open(tmp, 'w') as output:
+                print('mergequality=true', file=output)
+                print('mergesamplerate=true', file=output)
+                with open(up, 'r') as input:
+                    print(input.readline(), file=output, end='')
+            unlink(up)
+            copyfile(tmp, up)
+        finally:
+            unlink(tmp)
 
     def _post_availability(self, up):
-        down = join(self._temp_dir, uniqueish(RETRIEVEFILE, up))
+        down = temp_path(self._temp_dir, up)
         return post_to_file(self._availability, up, down, self._log)
 
     def _sort_availability(self, down):
-        pass
+        tmp = temp_path(self._temp_dir, down)
+        try:
+            self._log.debug('Sorting %s via %s' % (down, tmp))
+            run('sort %s > %s' % (down, tmp), self._log)  # todo - windows
+            unlink(down)
+            copyfile(tmp, down)
+        finally:
+            unlink(tmp)
 
     def _parse_availability(self, down):
-        yield None
+        pass
 
     def _scan_index(self, network, station, location, channel):
         return None
 
     def _request_download(self, missing):
         return None  # todo - needs a download manager for chunking and buffering
+
+
+def temp_path(temp_dir, text):
+    name = uniqueish(RETRIEVEFILE, text)
+    return unique_filename(join(temp_dir, name))
 
 
 def assert_valid_time(time):
@@ -86,15 +109,15 @@ def build_file(path, sncl, begin, end=None):
 
 
 def retrieve(args, log):
-    retriever = Retriever(args.mseed_db, args.temp_dir, args.availability_url, log)
+    temp_dir = canonify(args.temp_dir)
+    makedirs(temp_dir, exist_ok=True)
+    retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, log)
     if len(args.args) == 0 or len(args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:
         # guarantee always called with temp file because we prepend options
-        name = uniqueish(RETRIEVEFILE, args.args[0])
-        path = unique_filename(join(canonify(args.temp_dir), name))
+        path = temp_path(temp_dir, args.args[0])
         try:
-            create_parents(path)
             if len(args.args) == 1:
                 copyfile(args.args[0], path)
             else:
