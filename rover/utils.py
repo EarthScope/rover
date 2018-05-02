@@ -5,7 +5,7 @@ from os.path import dirname, exists, isdir, expanduser, abspath
 from subprocess import Popen, check_output, STDOUT
 from time import time
 
-from requests import get
+from requests import get, post
 
 
 def create_parents(path):
@@ -111,15 +111,28 @@ def unique_filename(path):
         return path
 
 
-def get_to_file(url, down, log, unique=True):
+def _stream_output(request, down, unique=True):
     down = canonify(down)
     create_parents(down)
     if unique:
         down = unique_filename(down)
-    log.info('Downloading %s from %s' % (down, url))
-    request = get(url, stream=True)
-    with open(down, 'wb') as f:
+    with open(down, 'wb') as output:
         for chunk in request.iter_content(chunk_size=1024):
             if chunk:
-                f.write(chunk)
+                output.write(chunk)
     return down
+
+
+def get_to_file(url, down, log, unique=True):
+    log.info('Downloading %s from %s' % (down, url))
+    request = get(url, stream=True)
+    return _stream_output(request, down, unique=unique)
+
+
+def post_to_file(url, up, down, log, unique=True):
+    up = canonify(up)
+    log.info('Downloading %s from %s with %s' % (down, url, up))
+    with open(up, 'rb') as input:
+        request = post(url, stream=True, data=input)
+    return _stream_output(request, down, unique=unique)
+
