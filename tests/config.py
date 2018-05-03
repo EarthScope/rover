@@ -30,6 +30,8 @@ timespan-tol=0.1
 download-workers=10
 # allow multiple processes (internal use only)?
 multiprocess=False
+# command to run rover
+rover-cmd=rover
 # use leapseconds file?
 leap=True
 # number of days before refreshing file

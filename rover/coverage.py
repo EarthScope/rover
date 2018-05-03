@@ -6,15 +6,15 @@ from .utils import format_time, PushBackIterator
 
 class Sncl:
 
-    def __init__(self, net, sta, loc, chan):
+    def __init__(self, net, sta, loc, cha):
         self.net = net
         self.sta = sta
         self.loc = loc
-        self.chan = chan
+        self.cha = cha
 
     def __eq__(self, other):
         try:
-            return self.net == other.net and self.sta == other.sta and self.loc == other.loc and self.chan == other.chan
+            return self.net == other.net and self.sta == other.sta and self.loc == other.loc and self.cha == other.cha
         except:
             return False
 
@@ -22,7 +22,7 @@ class Sncl:
         return '%s.%s.%s.%s' % (self.net, self.sta, self.loc, self.cha)
 
     def to_url_params(self):
-        return 'net=%s&sta=%s&loc=%s&cha=%s' % (self.net, self.sta, self.loc, self.chan)
+        return 'net=%s&sta=%s&loc=%s&cha=%s' % (self.net, self.sta, self.loc, self.cha)
 
 
 class Coverage:

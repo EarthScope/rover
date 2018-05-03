@@ -1,4 +1,4 @@
-
+from datetime import datetime, timedelta
 from os import getpid, unlink, listdir
 from os.path import join, exists, basename
 from queue import Queue
@@ -6,12 +6,11 @@ from threading import Thread
 from time import time
 
 from .workers import Workers
-from .config import DOWNLOAD, MULTIPROCESS
+from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport, NoResult
-from .utils import canonify, lastmod, uniqueish, get_to_file
-
+from .utils import canonify, lastmod, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
@@ -99,27 +98,44 @@ def download(args, log):
 
 class DownloadManager:
 
-    def __init__(self, n_workers, dataselect, log):
+    def __init__(self, n_workers, dataselect, rover, mseedindex, log):
         self._log = log
         self._dataselect = dataselect
+        check_cmd('%s -h' % rover, 'rover', 'rover', log)
+        self._rover = rover
+        check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
+        self._mseedindex = mseedindex
         self._queue = Queue()
         self._workers = Workers(n_workers, log)
-        Thread(target=self._main_loop).start()
+        Thread(target=self._main_loop, daemon=False).start()
 
     def download(self, coverage):
-        # todo expand coverage to days
         for download in self._expand_timespans(coverage):
-            self._queue.push(download)
+            self._queue.put(download)
+
+    def _end_of_day(self, day):
+        right = datetime(day.year, day.month, day.day) + timedelta(hours=24)
+        left = right - timedelta(milliseconds=0.000001)
+        return left, right
 
     def _expand_timespans(self, coverage):
-        yield None
+        sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
+        while True:
+            begin, end = next(timespans)
+            if begin.date == end.date:
+                yield sncl, begin, end
+            else:
+                left, right = self._end_of_day(begin)
+                yield sncl, begin, min(left, end)
+                if right < end:
+                    timespans.push((right, end))
 
     def wait_for_all(self):
         self._queue.join()
         # no need to kill thread as it is non-daemon - ok to leave it blocked on empty queue
 
     def _build_url(self, sncl, begin, end):
-        return '%s?%s&start=%s&end=%s' % (self._dataselect, sncl.to_url_params(), begin, end)
+        return '%s?%s&start=%s&end=%s' % (self._dataselect, sncl.to_url_params(), format_time(begin), format_time(end))
 
     def _callback(self, command, returncode):
         if returncode:
@@ -129,5 +145,6 @@ class DownloadManager:
     def _main_loop(self):
         while True:
             sncl, begin, end = self._queue.get()
-            command = 'rover --%s %s %s' % (MULTIPROCESS, DOWNLOAD, self._build_url(sncl, begin, end))
+            command = '%s --%s --%s \'%s\' %s %s' % (self._rover, MULTIPROCESS, MSEEDCMD, self._mseedindex,
+                                                    DOWNLOAD, self._build_url(sncl, begin, end))
             self._workers.execute(command, callback=self._callback)
