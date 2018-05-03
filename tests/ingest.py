@@ -5,7 +5,7 @@ from os.path import join
 
 from rover.logs import init_log
 from rover.ingest import MseedindexIngester
-from test_utils import find_root, open_db, assert_files
+from .test_utils import find_root, open_db, assert_files
 
 
 def test_mseedindexingester():

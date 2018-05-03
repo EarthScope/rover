@@ -10,7 +10,7 @@ else:
     from io import BytesIO as buffer
 
 from rover.list import IndexLister
-from test_utils import find_root, ingest_and_index
+from .test_utils import find_root, ingest_and_index
 
 
 def run_args(dir, args):

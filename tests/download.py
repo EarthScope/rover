@@ -5,7 +5,7 @@ from os.path import join
 
 from rover.download import Downloader
 from rover.logs import init_log
-from test_utils import find_root, assert_files, open_db
+from .test_utils import find_root, assert_files, open_db
 
 
 def test_dlownload():

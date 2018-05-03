@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from os import unlink, rmdir
 
 from rover.index import Indexer
-from test_utils import find_root, open_db, ingest_and_index
+from .test_utils import find_root, open_db, ingest_and_index
 
 
 def test_ingest_and_index():
