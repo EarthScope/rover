@@ -1,8 +1,7 @@
 
 from datetime import datetime
 
-from rover.coverage import Coverage
-
+from rover.coverage import Coverage, Sncl
 
 
 # rather than try to work out what tests are what in my head, the test
@@ -32,7 +31,7 @@ def coverage_to_str(coverage):
 
 
 def indices_to_coverage(indices):
-    coverage = Coverage(1, 'N', 'S', 'L', 'C')
+    coverage = Coverage(1, Sncl('N', 'S', 'L', 'C'))
     for (begin, end) in indices:
         if begin != end:
             coverage.add_timespan(datetime(2000, 1, 1, begin), datetime(2000, 1, 1, end))

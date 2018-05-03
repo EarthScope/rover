@@ -44,6 +44,7 @@ class Retriever(SqliteSupport):
                 local = self._scan_index(remote.network, remote.station, remote.location, remote.channel)
                 self._log.debug('Local data: %s' % local)
                 self._request_download(remote.subtract(local))
+            self._download_manager.wait_for_all()
         finally:
             unlink(down)
 

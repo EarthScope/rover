@@ -21,9 +21,15 @@ dev=False
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
-dataselect-url=http://service.iris.edu/fdsnws/dataselect/1
+dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 # temporary storage for downloads
 temp-dir=~/rover/tmp
+# tolerance for overlapping timespans
+timespan-tol=0.1
+# number of download instances to run
+download-workers=10
+# allow multiple processes (internal use only)?
+multiprocess=False
 # use leapseconds file?
 leap=True
 # number of days before refreshing file
@@ -50,10 +56,6 @@ mseed-db=~/rover/index.sql
 mseed-dir=~/rover/mseed
 # number of mseedindex instances to run
 mseed-workers=10
-# tolerance for overlapping timespans
-timespan-tol=0.1
-# number of download instances to run
-download-workers=10
 ''', contents
 
 

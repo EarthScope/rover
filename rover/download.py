@@ -6,7 +6,7 @@ from threading import Thread
 from time import time
 
 from .workers import Workers
-from .config import DOWNLOAD
+from .config import DOWNLOAD, MULTIPROCESS
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport, NoResult
@@ -99,22 +99,35 @@ def download(args, log):
 
 class DownloadManager:
 
-    def __init__(self, n_workers, log):
+    def __init__(self, n_workers, dataselect, log):
         self._log = log
+        self._dataselect = dataselect
         self._queue = Queue()
         self._workers = Workers(n_workers, log)
         Thread(target=self._main_loop).start()
 
     def download(self, coverage):
         # todo expand coverage to days
-        self._queue.put(coverage)
+        for download in self._expand_timespans(coverage):
+            self._queue.push(download)
+
+    def _expand_timespans(self, coverage):
+        yield None
 
     def wait_for_all(self):
         self._queue.join()
+        # no need to kill thread as it is non-daemon - ok to leave it blocked on empty queue
+
+    def _build_url(self, sncl, begin, end):
+        return '%s?%s&start=%s&end=%s' % (self._dataselect, sncl.to_url_params(), begin, end)
+
+    def _callback(self, command, returncode):
+        if returncode:
+            self._log.error('Download %s returned %d' % (command, returncode))
+        self._queue.task_done()
 
     def _main_loop(self):
         while True:
-            # todo - change coverage to days
-            coverage = self._queue.get()
-            command = ''
-            self._workers.execute(command, callback=lambda cmd, ret: self._queue.task_done())
+            sncl, begin, end = self._queue.get()
+            command = 'rover --%s %s %s' % (MULTIPROCESS, DOWNLOAD, self._build_url(sncl, begin, end))
+            self._workers.execute(command, callback=self._callback)

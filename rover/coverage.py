@@ -4,6 +4,27 @@ from pdb import set_trace
 from .utils import format_time, PushBackIterator
 
 
+class Sncl:
+
+    def __init__(self, net, sta, loc, chan):
+        self.net = net
+        self.sta = sta
+        self.loc = loc
+        self.chan = chan
+
+    def __eq__(self, other):
+        try:
+            return self.net == other.net and self.sta == other.sta and self.loc == other.loc and self.chan == other.chan
+        except:
+            return False
+
+    def __str__(self):
+        return '%s.%s.%s.%s' % (self.net, self.sta, self.loc, self.cha)
+
+    def to_url_params(self):
+        return 'net=%s&sta=%s&loc=%s&cha=%s' % (self.net, self.sta, self.loc, self.chan)
+
+
 class Coverage:
     """
     A SNCL and associated timespans.
@@ -12,19 +33,10 @@ class Coverage:
     as they are added).
     """
 
-    def __init__(self, tolerance, network, station, location, channel):
+    def __init__(self, tolerance, sncl):
         self._tolerance = tolerance
-        self.network = network
-        self.station = station
-        self.location = location
-        self.channel = channel
+        self.sncl = sncl
         self.timespans = []
-
-    def is_sncl(self, n, s, l, c):
-        """
-        Check whether we match the given SNCL.
-        """
-        return self.network == n and self.station == s and self.location == l and self.channel == c
 
     def add_timespan(self, begin, end):
         """
@@ -47,16 +59,17 @@ class Coverage:
                 self.timespans.append((begin, end))
 
     def __str__(self):
-        return '%s.%s.%s.%s: %d timespans from %s to %s' % (
-            self.network, self.station, self.location, self.channel,
-            len(self.timespans),
+        return '%s: %d timespans from %s to %s' % (
+            self.sncl, len(self.timespans),
             format_time(self.timespans[0][0]) if self.timespans else '-',
             format_time(self.timespans[-1][1]) if self.timespans else '-'
         )
 
     def __eq__(self, other):
-        return self.is_sncl(other.network, other.station, other.location, other.channel) \
-               and self.timespans == other.timespans
+        try:
+            return self.sncl == other.sncl and self.timespans == other.timespans
+        except:
+            return False
 
     def subtract(self, other):
         """
@@ -64,10 +77,10 @@ class Coverage:
         other instance does not.
         """
         # set_trace()
-        if not self.is_sncl(other.network, other.station, other.location, other.channel):
+        if not self.sncl == other.sncl:
             raise Exception('Cannot subtract mismatched availabilities')
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
-        difference = Coverage(self._tolerance, self.network, self.station, self.location, self.channel)
+        difference = Coverage(self._tolerance, self.sncl)
         while True:
             try:
                 us_begin, us_end = next(us)

@@ -41,7 +41,7 @@ def main():
         log = init_log(args.log_dir, args.log_size, args.log_count, args.log_verbosity, args.verbosity, 'rover')
         log.debug('args: %s' % args)
         processes = Processes(args.mseed_db, log)
-        if not args.daemon:
+        if not (args.daemon or args.multiprocess):
             processes.assert_singleton('rover')
         try:
             execute(args.command, args, log)
