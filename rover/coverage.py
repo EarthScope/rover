@@ -1,4 +1,6 @@
 
+from pdb import set_trace
+
 from .utils import format_time, PushBackIterator
 
 
@@ -61,6 +63,7 @@ class Coverage:
         Calculate the timespans for which this instance has data, but the
         other instance does not.
         """
+        # set_trace()
         if not self.is_sncl(other.network, other.station, other.location, other.channel):
             raise Exception('Cannot subtract mismatched availabilities')
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
@@ -108,7 +111,7 @@ class Coverage:
                 # while they continue to face out next timespan.
                 if us_end <= them_end:
                     them.push((them_begin, them_end))
-                # but we also end after them.  so some of our timespan remains
-                # to face their next timespan.
+                # but we also end after them.  so some (perhaps all) of our timespan
+                # remains to face their next timespan.
                 else:
-                    us.push((them_end, us_end))
+                    us.push((max(them_end, us_begin), us_end))
