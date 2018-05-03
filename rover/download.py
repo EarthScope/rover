@@ -1,8 +1,11 @@
 
 from os import getpid, unlink, listdir
 from os.path import join, exists, basename
+from queue import Queue
+from threading import Thread
 from time import time
 
+from .workers import Workers
 from .config import DOWNLOAD
 from .index import Indexer
 from .ingest import MseedindexIngester
@@ -94,11 +97,24 @@ def download(args, log):
     downloader.download(args.args[0])
 
 
-class DownloadManager(SqliteSupport):
+class DownloadManager:
 
-    def __init__(self, dbpath, log):
-        super().__init__(dbpath, log)
+    def __init__(self, n_workers, log):
+        self._log = log
+        self._queue = Queue()
+        self._workers = Workers(n_workers, log)
+        Thread(target=self._main_loop).start()
 
     def download(self, coverage):
-        self._log.info('Download %s' % coverage)
+        # todo expand coverage to days
+        self._queue.put(coverage)
 
+    def wait_for_all(self):
+        self._queue.join()
+
+    def _main_loop(self):
+        while True:
+            # todo - change coverage to days
+            coverage = self._queue.get()
+            command = ''
+            self._workers.execute(command, callback=lambda cmd, ret: self._queue.task_done())

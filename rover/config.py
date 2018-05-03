@@ -25,6 +25,7 @@ NO = '--no-'
 AVAILABILITYURL = 'availability-url'
 DAEMON = 'daemon'
 DATASELECTURL = 'dataselect-url'
+DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
 F, FILE = 'f', 'file'
 HELP = 'help'
@@ -46,6 +47,7 @@ V, VERBOSITY = 'v', 'verbosity'
 
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1'
+DEFAULT_DOWNLOADWORKERS = 10
 DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = join('~', 'rover', 'leap-seconds.lst')
@@ -170,6 +172,7 @@ class RoverArgumentParser(ArgumentParser):
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='tolerance for overlapping timespans', metavar='SECS', type=float)
+        self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar='N', type=int)
 
         # commands / args
         self.add_argument('command', metavar='COMMAND', nargs='?', help='use "help" for further information')

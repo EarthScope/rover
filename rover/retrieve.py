@@ -23,9 +23,9 @@ class Retriever(SqliteSupport):
     (which are ingested and indexed by the Downloader).
     """
 
-    def __init__(self, dbpath, temp_dir, availability, tolerance, log):
+    def __init__(self, dbpath, temp_dir, availability, tolerance, n_workers, log):
         super().__init__(dbpath, log)
-        self._download_manager = DownloadManager(dbpath, log)
+        self._download_manager = DownloadManager(n_workers, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
@@ -152,7 +152,7 @@ def retrieve(args, log):
     """
     temp_dir = canonify(args.temp_dir)
     makedirs(temp_dir, exist_ok=True)
-    retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, args.timespan_tol, log)
+    retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, args.timespan_tol, args.download_workers, log)
     if len(args.args) == 0 or len(args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:

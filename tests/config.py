@@ -52,6 +52,8 @@ mseed-dir=~/rover/mseed
 mseed-workers=10
 # tolerance for overlapping timespans
 timespan-tol=0.1
+# number of download instances to run
+download-workers=10
 ''', contents
 
 
