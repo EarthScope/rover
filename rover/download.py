@@ -106,6 +106,18 @@ class DownloadManager:
     """
     An interface to downloader instances that restricts downloads to a fixed number of workers,
     each downloading data that is for a maximum duration of a day.
+
+    Used in two steps.  First, coverage data are added (via 'add).  Then these are expanded to
+    timespans that are processed as workers (in the 'run' method).
+
+    This acts as a buffer, soaking up all the requests from the Retriever so that can
+    run through the database as quicky as possible, but avoiding expanding that into too
+    many timespans (which could consume a lot of memory if the user requests a large
+    date range).
+
+    (I'm not sure this is actually worthwhile - is memory use really such a problem?  If
+    not then we could avoid the multi-threading here, simply expanding into memory and
+    then pushing those to workers).
     """
 
     def __init__(self, n_workers, dataselect, rover, mseedindex, verbosity, dev, log_unique, log):
@@ -119,7 +131,7 @@ class DownloadManager:
         self._dev = dev
         self._log_unique = log_unique
         self._coverages = []
-        self._queue = Queue()
+        self._queue = Queue(maxsize=n_workers * 2)
         self._workers = Workers(n_workers, log)
         Thread(target=self._main_loop, daemon=True).start()
 
@@ -129,7 +141,7 @@ class DownloadManager:
     def run(self):
         for coverage in self._coverages:
             for download in self._expand_timespans(coverage):
-                self._queue.put(download)
+                self._queue.put(download)  # this blocks so that we don't use too much memory
 
     def _end_of_day(self, day):
         right = datetime(day.year, day.month, day.day) + timedelta(hours=24)
@@ -171,4 +183,6 @@ class DownloadManager:
                 self._log.debug(command)
                 self._workers.execute(command, callback=self._callback)
             except Empty:
+                # important to clear these out so that they hit teh callback and empty
+                # the count for the queue, allowing the entire program to exit.
                 self._workers.check()
