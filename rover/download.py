@@ -103,6 +103,10 @@ def download(core):
 
 
 class DownloadManager:
+    """
+    An interface to downloader instances that restricts downloads to a fixed number of workers,
+    each downloading data that is for a maximum duration of a day.
+    """
 
     def __init__(self, n_workers, dataselect, rover, mseedindex, verbosity, dev, log_unique, log):
         self._log = log

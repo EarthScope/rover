@@ -16,7 +16,7 @@ from .help import help
 
 def execute(command, core):
     if not command or command == HELP:
-        help(core)
+        help(core.args, core.log)
     elif command == RESET_CONFIG:
         reset_config(core)
     elif command == INDEX:
