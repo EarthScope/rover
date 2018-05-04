@@ -91,13 +91,15 @@ class Indexer(SqliteSupport):
     and when there is a discrepancy either add or remove an entry.
     """
 
-    def __init__(self, mseedindex, dbpath, root, n_workers, leap, leap_expire, leap_file, leap_url, log):
-        super().__init__(dbpath, log)
-        self._dbpaths = PushBackIterator(DatabasePathIterator(dbpath, root, log))
+    def __init__(self, db, mseedindex, mseed_db, root, n_workers, leap, leap_expire, leap_file, leap_url, dev, log):
+        super().__init__(db, log)
+        self._dbpaths = PushBackIterator(DatabasePathIterator(db, root, log))
         self._fspaths = fileSystemPathIterator(root)
         self._mseedindex = mseedindex
+        self._mseed_db = mseed_db
         self._workers = Workers(n_workers, log)
         self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
+        self._dev = dev
         self._log = log
 
     def index(self):
@@ -136,14 +138,15 @@ class Indexer(SqliteSupport):
     def _index(self, path):
         self._log.debug('Scanning %s' % path)
         # todo - windows var
-        self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
-                              % (self._leap_file, self._mseedindex, self._dbpath, path))
+        self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
+                              % (self._leap_file, self._mseedindex, '-v -v' if self._dev else '', self._mseed_db, path))
 
 
-def index(args, log):
+def index(core):
     """
     Implement the index command.
     """
-    indexer = Indexer(args.mseed_cmd, args.mseed_db, args.mseed_dir, args.mseed_workers,
-                      args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
+    indexer = Indexer(core.db, core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir, core.args.mseed_workers,
+                      core.args.leap, core.args.leap_expire, core.args.leap_file, core.args.leap_url, core.args.dev,
+                      core.log)
     indexer.index()

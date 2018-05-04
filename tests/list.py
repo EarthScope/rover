@@ -15,9 +15,9 @@ from .test_utils import find_root, ingest_and_index
 
 def run_args(dir, args):
     root = find_root()
-    log, dbpath = ingest_and_index(dir, (join(root, 'tests', 'data'),))
+    log, db, dbpath = ingest_and_index(dir, (join(root, 'tests', 'data'),))
     stdout = buffer()
-    IndexLister(dbpath, log).list(args, stdout=stdout)
+    IndexLister(db, log).list(args, stdout=stdout)
     stdout.seek(0)
     return stdout.read()
 

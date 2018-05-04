@@ -34,8 +34,10 @@ LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
 LEAPURL = 'leap-url'
 LOGDIR = 'log-dir'
+LOGNAME = 'log-name'
 LOGVERBOSITY = 'log-verbosity'
 LOGSIZE = 'log-size'
+LOGUNIQUE = 'log-unique'
 LOGCOUNT = 'log-count'
 MSEEDCMD = 'mseed-cmd'
 MSEEDDB = 'mseed-db'
@@ -58,6 +60,7 @@ DEFAULT_LOGDIR = join('~', 'rover', 'logs')
 DEFAULT_LOGVERBOSITY = 5
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
+DEFAULT_LOGNAME = 'rover'
 DEFAULT_MSEEDCMD = 'mseedindex'
 DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
@@ -168,6 +171,8 @@ class RoverArgumentParser(ArgumentParser):
 
         # logging
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
+        self.add_argument(mm(LOGNAME), default=DEFAULT_LOGNAME, action='store', help='base file name for logs', metavar='NAME')
+        self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
@@ -209,7 +214,8 @@ class RoverArgumentParser(ArgumentParser):
             if arg.startswith(NO):
                 arg = '--' + arg[5:]
             for action in self._actions:
-                if '--' + action.dest == arg and type(action) is StoreBoolAction:
+                name = '--' + sub('_', '-', action.dest)
+                if name == arg and type(action) is StoreBoolAction:
                     indices.append(index)
         for index in reversed(indices):
             negative = args[index].startswith(NO)

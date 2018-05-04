@@ -2,23 +2,17 @@
 from fnmatch import fnmatch
 from os import listdir
 from os.path import dirname, join
-from sqlite3 import connect
 from tempfile import mktemp
 
 import rover
-from rover import init_log
+from rover.logs import init_log
+from rover.sqlite import init_db
 from rover.index import Indexer
 from rover.ingest import MseedindexIngester
 
 
 def find_root():
     return dirname(dirname(rover.__file__))
-
-def open_db(dbpath):
-    db = connect(dbpath)
-    c = db.cursor()
-    c.execute('PRAGMA foreign_keys = ON')
-    return db
 
 
 def assert_files(dir, *files):
@@ -35,13 +29,14 @@ def assert_files(dir, *files):
 
 def ingest_and_index(dir, data):
     root = find_root()
-    log = init_log(dir, 7, 1, 5, 0, 'test')
+    log = init_log(dir, 7, 1, 5, 0, 'test', False)
     dbpath = mktemp(dir=dir)
+    db = init_db(dbpath, log)
     mseedindex = join(root, '..', 'mseedindex', 'mseedindex')
-    ingester = MseedindexIngester(mseedindex, dbpath, dir, False, None, None, None, log)
+    ingester = MseedindexIngester(db, mseedindex, dbpath, dir, False, None, None, None, log)
     ingester.ingest(data)
-    indexer = Indexer(mseedindex, dbpath, dir, 10, False, None, None, None, log)
+    indexer = Indexer(db, mseedindex, dbpath, dir, 10, False, None, None, None, False, log)
     indexer.index()
-    return log, dbpath
+    return log, db, dbpath
 
 

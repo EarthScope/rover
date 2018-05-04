@@ -2,7 +2,7 @@
 from logging import getLogger, StreamHandler, Formatter, DEBUG, shutdown
 from logging.handlers import RotatingFileHandler
 from os.path import join, exists, isdir, expanduser
-from os import makedirs
+from os import makedirs, getpid
 import sys
 
 
@@ -14,12 +14,15 @@ def level(n):
     return 10 * (6 - (max(min(n, 5), 0)))
 
 
-def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, stderr=None):
+def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, unique, stderr=None):
     """
     Create a log with two handlers.
     One handler is a rotated file, the other stderr.
     The file is for details, stderr for errors to the user.
     """
+
+    if unique:
+        name = '%s.%d' % (name, getpid())
 
     log = getLogger(name)
     log.setLevel(DEBUG)

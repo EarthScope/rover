@@ -42,6 +42,10 @@ leap-file=~/rover/leap-seconds.lst
 leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 # directory for logs
 log-dir=~/rover/logs
+# base file name for logs
+log-name=rover
+# unique log names (with PIDs)?
+log-unique=False
 # log verbosity (0-5)
 log-verbosity=5
 # maximum log size (1-10)

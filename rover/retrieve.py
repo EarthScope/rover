@@ -22,9 +22,9 @@ class Retriever(SqliteSupport):
     (which are ingested and indexed by the Downloader).
     """
 
-    def __init__(self, dbpath, temp_dir, availability, tolerance, n_workers, dataselect, rover, mseedindex, log):
-        super().__init__(dbpath, log)
-        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, log)
+    def __init__(self, db, temp_dir, availability, tolerance, n_workers, dataselect, rover, mseedindex, verbosity, log):
+        super().__init__(db, log)
+        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, verbosity, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
@@ -43,6 +43,7 @@ class Retriever(SqliteSupport):
                 local = self._scan_index(remote.sncl)
                 self._log.debug('Local data: %s' % local)
                 self._request_download(remote.subtract(local))
+            self._download_manager.run()
             self._download_manager.wait_for_all()
         finally:
             unlink(down)
@@ -105,11 +106,12 @@ class Retriever(SqliteSupport):
             b, e = row
             b, e = parse_time(b), parse_time(e)
             availability.add_timespan(b, e)
+        c.close()
         return availability
 
     def _request_download(self, missing):
         self._log.debug('Data to download: %s' % missing)
-        self._download_manager.download(missing)
+        self._download_manager.add(missing)
 
 
 def temp_path(temp_dir, text):
@@ -145,28 +147,29 @@ def build_file(path, sncl, begin, end=None):
        print(*parts, file=req)
 
 
-def retrieve(args, log):
+def retrieve(core):
     """
     Implement the retrieve command - download data that is available and
     that we don't already have.
     """
     # check these two comands so we fail early
-    check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover', log)
-    check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
-    temp_dir = canonify(args.temp_dir)
+    check_cmd('%s -h' % core.args.rover_cmd, 'rover', 'rover', log)
+    check_cmd('%s -h' % core.args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
+    temp_dir = canonify(core.args.temp_dir)
     makedirs(temp_dir, exist_ok=True)
-    retriever = Retriever(args.mseed_db, temp_dir, args.availability_url, args.timespan_tol,
-                          args.download_workers, args.dataselect_url, args.rover_cmd, args.mseed_cmd, log)
-    if len(args.args) == 0 or len(args.args) > 3:
+    retriever = Retriever(core.db, temp_dir, core.args.availability_url, core.args.timespan_tol,
+                          core.args.download_workers, core.args.dataselect_url, core.args.rover_cmd,
+                          core.args.mseed_cmd, core.args.verbosity, core.log)
+    if len(core.args.args) == 0 or len(core.args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:
         # guarantee always called with temp file because we prepend options
-        path = temp_path(temp_dir, args.args[0])
+        path = temp_path(temp_dir, core.args.args[0])
         try:
-            if len(args.args) == 1:
-                copyfile(args.args[0], path)
+            if len(core.args.args) == 1:
+                copyfile(core.args.args[0], path)
             else:
-                build_file(path, *args.args)
+                build_file(path, *core.args.args)
             retriever.retrieve(path)
         finally:
             unlink(path)

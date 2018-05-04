@@ -60,11 +60,12 @@ class MseedindexIngester(BaseIngester, SqliteSupport):
     * Does not check for overlap, differences in sample rate, etc.
     """
 
-    def __init__(self, mseedindex, dbpath, root, leap, leap_expire, leap_file, leap_url, log):
-        SqliteSupport.__init__(self, dbpath, log)
+    def __init__(self, db, mseedindex, mseed_db ,root, leap, leap_expire, leap_file, leap_url, log):
+        SqliteSupport.__init__(self, db, log)
         BaseIngester.__init__(self, root, log)
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
+        self._mseed_db = mseed_db
         self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
         self._table = None
 
@@ -80,7 +81,7 @@ class MseedindexIngester(BaseIngester, SqliteSupport):
         self._drop_table()
         try:
             run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
-                % (self._leap_file, self._mseedindex, self._dbpath, self._table, file), self._log)
+                % (self._leap_file, self._mseedindex, self._mseed_db, self._table, file), self._log)
             rows = self._fetchall('''select network, station, starttime, endtime, byteoffset, bytes 
                                      from %s order by byteoffset''' % self._table)
             self._copy_rows(file, rows)
@@ -121,11 +122,12 @@ class MseedindexIngester(BaseIngester, SqliteSupport):
             raise Exception('File %s contains data from more than one day (%s-%s)' % (file, starttime, endtime))
 
 
-def ingest(args, log):
+def ingest(core):
     """
     Implement the ingest command - run an ingester and then index.
     """
-    ingester = MseedindexIngester(args.mseed_cmd, args.mseed_db, args.mseed_dir,
-                                  args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
-    ingester.ingest(args.args)
-    index(args, log)
+    ingester = MseedindexIngester(core.db, core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir,
+                                  core.args.leap, core.args.leap_expire, core.args.leap_file, core.args.leap_url,
+                                  core.log)
+    ingester.ingest(core.args.args)
+    index(core)

@@ -6,8 +6,8 @@ from .sqlite import SqliteSupport, NoResult
 
 class Processes(SqliteSupport):
 
-    def __init__(self, dbpath, log):
-        super().__init__(dbpath, log)
+    def __init__(self, db, log):
+        super().__init__(db, log)
         self._create_processes_table()
 
     def _create_processes_table(self):
@@ -34,6 +34,7 @@ class Processes(SqliteSupport):
             c.execute('insert into rover_processes (pid, name) values (?, ?)', (pid, name))
         finally:
             self._db.commit()
+            c.close()
 
     def remove_process(self):
         pid = getpid()

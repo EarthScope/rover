@@ -1,3 +1,4 @@
+
 from datetime import datetime, timedelta
 from os import getpid, unlink, listdir
 from os.path import join, exists, basename
@@ -6,7 +7,7 @@ from threading import Thread
 from time import time
 
 from .workers import Workers
-from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD
+from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD, VERBOSITY, LOGNAME, LOGUNIQUE
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport, NoResult
@@ -36,12 +37,12 @@ class Downloader(SqliteSupport):
     time.
     """
 
-    def __init__(self, dbpath, tmpdir, mseedindex, mseed_dir, leap, leap_expire, leap_file, leap_url, n_workers, log):
-        super().__init__(dbpath, log)
+    def __init__(self, db, tmpdir, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, n_workers, dev, log):
+        super().__init__(db, log)
         self._tmpdir = canonify(tmpdir)
         self._blocksize = 1024 * 1024
-        self._ingester = MseedindexIngester(mseedindex, dbpath, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
-        self._indexer = Indexer(mseedindex, dbpath, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, log)
+        self._ingester = MseedindexIngester(db, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
+        self._indexer = Indexer(db, mseedindex, mseed_db, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, dev, log)
         self._create_downloaderss_table()
         self._clean_tmp()
 
@@ -85,33 +86,40 @@ class Downloader(SqliteSupport):
         return get_to_file(url, path, self._log)
 
 
-def download(args, log):
+def download(core):
     """
     Implement the download command - download, ingest and index data.
     """
-    downloader = Downloader(args.mseed_db, args.temp_dir, args.mseed_cmd, args.mseed_dir,
-                           args.leap, args.leap_expire, args.leap_file, args.leap_url, args.mseed_workers, log)
-    if len(args.args) != 1:
+    downloader = Downloader(core.db, core.args.temp_dir, core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir,
+                            core.args.leap, core.args.leap_expire, core.args.leap_file, core.args.leap_url,
+                            core.args.mseed_workers, core.args.dev, core.log)
+    if len(core.args.args) != 1:
         raise Exception('Usage: rover %s url' % DOWNLOAD)
-    downloader.download(args.args[0])
+    downloader.download(core.args.args[0])
 
 
 class DownloadManager:
 
-    def __init__(self, n_workers, dataselect, rover, mseedindex, log):
+    def __init__(self, n_workers, dataselect, rover, mseedindex, verbosity, log):
         self._log = log
         self._dataselect = dataselect
         check_cmd('%s -h' % rover, 'rover', 'rover', log)
         self._rover = rover
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
+        self._verbosity = verbosity
+        self._coverages = []
         self._queue = Queue()
         self._workers = Workers(n_workers, log)
-        Thread(target=self._main_loop, daemon=False).start()
+        Thread(target=self._main_loop, daemon=True).start()
 
-    def download(self, coverage):
-        for download in self._expand_timespans(coverage):
-            self._queue.put(download)
+    def add(self, coverage):
+        self._coverages.append(coverage)
+
+    def run(self):
+        for coverage in self._coverages:
+            for download in self._expand_timespans(coverage):
+                self._queue.put(download)
 
     def _end_of_day(self, day):
         right = datetime(day.year, day.month, day.day) + timedelta(hours=24)
@@ -132,7 +140,7 @@ class DownloadManager:
 
     def wait_for_all(self):
         self._queue.join()
-        # no need to kill thread as it is non-daemon - ok to leave it blocked on empty queue
+        # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
 
     def _build_url(self, sncl, begin, end):
         return '%s?%s&start=%s&end=%s' % (self._dataselect, sncl.to_url_params(), format_time(begin), format_time(end))
@@ -145,6 +153,8 @@ class DownloadManager:
     def _main_loop(self):
         while True:
             sncl, begin, end = self._queue.get()
-            command = '%s --%s --%s \'%s\' %s %s' % (self._rover, MULTIPROCESS, MSEEDCMD, self._mseedindex,
-                                                    DOWNLOAD, self._build_url(sncl, begin, end))
+            command = '%s --%s --%s \'%s\' --%s %d --%s %s --%s --dev %s \'%s\'' % (
+                self._rover, MULTIPROCESS, MSEEDCMD, self._mseedindex, VERBOSITY, self._verbosity,
+                LOGNAME, DOWNLOAD, LOGUNIQUE, DOWNLOAD, self._build_url(sncl, begin, end))
+            self._log.debug(command)
             self._workers.execute(command, callback=self._callback)

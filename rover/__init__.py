@@ -1,3 +1,6 @@
+from os.path import join
+
+from .sqlite import init_db
 from .retrieve import retrieve
 from .subscribe import subscribe
 from .process import Processes
@@ -11,46 +14,54 @@ from .logs import init_log
 from .help import help
 
 
-def execute(command, args, log):
+def execute(command, core):
     if not command or command == HELP:
-        help(args, log)
+        help(core)
     elif command == RESET_CONFIG:
-        reset_config(args, log)
+        reset_config(core)
     elif command == INDEX:
-        index(args, log)
+        index(core)
     elif command == INGEST:
-        ingest(args, log)
+        ingest(core)
     elif command == LIST_INDEX:
-        list_index(args, log)
+        list_index(core)
     elif command == DOWNLOAD:
-        download(args, log)
+        download(core)
     elif command == RETRIEVE:
-
-        retrieve(args, log)
+        retrieve(core)
     elif command == SUBSCRIBE:
-        subscribe(args, log)
+        subscribe(core)
     else:
         raise Exception('Unknown command %s' % command)
 
 
-def main():
-    log, args = None, None
-    try:
+class Core:
+
+    def __init__(self):
         argparse = RoverArgumentParser()
-        args = argparse.parse_args()
-        log = init_log(args.log_dir, args.log_size, args.log_count, args.log_verbosity, args.verbosity, 'rover')
-        log.debug('args: %s' % args)
-        processes = Processes(args.mseed_db, log)
-        if not (args.daemon or args.multiprocess):
-            processes.assert_singleton('rover')
-        try:
-            execute(args.command, args, log)
-        finally:
-            processes.remove_process()
+        self.args = argparse.parse_args()
+        self.log = init_log(self.args.log_dir, self.args.log_size, self.args.log_count, self.args.log_verbosity,
+                            self.args.verbosity,  self. args.log_name, self.args.log_unique)
+        self.log.debug('Args: %s' % self.args)
+        self.db = init_db(self.args.mseed_db, self.log)
+
+
+
+def main():
+    core = None
+    try:
+        core = Core()
+        processes = Processes(core.db, core.log)
+        # if not (args.daemon or args.multiprocess):
+        #     processes.assert_singleton('rover')
+        # try:
+        execute(core.args.command, core)
+        # finally:
+            # processes.remove_process()
     except Exception as e:
-        if log:
-            log.error(str(e))
-            if not args or args.dev:
+        if core and core.log:
+            core.log.error(str(e))
+            if not core or not core.args or core.args.dev:
                 raise e
         else:
             raise e
