@@ -37,8 +37,8 @@ class DatabasePathIterator(SqliteSupport):
     files.
     """
 
-    def __init__(self, dbpath, root, log):
-        super().__init__(dbpath, log)
+    def __init__(self, db, root, log):
+        super().__init__(db, log)
         self._root = canonify(root)
         self._stem = 0
         self._prev_path = None
@@ -47,7 +47,9 @@ class DatabasePathIterator(SqliteSupport):
         # modification time if there's more than one value (not clear if mseedindex
         # updates all rows with the latest value).
         try:
-            self._cursor.execute('select distinct filemodtime, filename from tsindex order by filename asc, filemodtime desc')
+            sql = 'select distinct filemodtime, filename from tsindex order by filename asc, filemodtime desc'
+            self._log.debug('Execute: %s' % sql)
+            self._cursor.execute(sql)
         except OperationalError as e:
             # this is the case when there's no table yet, so no files
             self._cursor = None
@@ -56,15 +58,20 @@ class DatabasePathIterator(SqliteSupport):
         return self
 
     def __next__(self):
-        if self._cursor:
-            lastmod, path = next(self._cursor)
-            if not self._prev_path:
-                self._stem = find_stem(path, self._root, self._log)
-            if self._prev_path != path:
-                self._prev_path = path
-            return lastmod, join(self._root, path[self._stem+1:])
-        else:
-            raise StopIteration()
+        try:
+            if self._cursor:
+                lastmod, path = next(self._cursor)
+                if not self._prev_path:
+                    self._stem = find_stem(path, self._root, self._log)
+                if self._prev_path != path:
+                    self._prev_path = path
+                return lastmod, join(self._root, path[self._stem+1:])
+            else:
+                raise StopIteration()
+        except:
+            if self._cursor:
+                self._cursor.close()
+            raise
 
 
 def fileSystemPathIterator(root, depth=1):
@@ -93,25 +100,26 @@ class Indexer(SqliteSupport):
 
     def __init__(self, db, mseedindex, mseed_db, root, n_workers, leap, leap_expire, leap_file, leap_url, dev, log):
         super().__init__(db, log)
-        self._dbpaths = PushBackIterator(DatabasePathIterator(db, root, log))
-        self._fspaths = fileSystemPathIterator(root)
         self._mseedindex = mseedindex
         self._mseed_db = mseed_db
+        self._root = root
         self._workers = Workers(n_workers, log)
         self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
         self._dev = dev
         self._log = log
 
     def index(self):
+        dbpaths = PushBackIterator(DatabasePathIterator(self._db, self._root, self._log))
+        fspaths = fileSystemPathIterator(self._root)
         while True:
             # default values for paths work with ordering
             closed, dblastmod, dbpath, fspath = False, 0, ' ', ' '
             try:
-                dblastmod, dbpath = next(self._dbpaths)
+                dblastmod, dbpath = next(dbpaths)
             except StopIteration:
                 closed = True
             try:
-                fspath = next(self._fspaths)
+                fspath = next(fspaths)
             except StopIteration:
                 if closed:
                     self._workers.wait_for_all()
@@ -121,7 +129,7 @@ class Indexer(SqliteSupport):
             # that implies it will be indexed
             if fspath > dbpath:
                 if not closed:
-                    self._dbpaths.push((dblastmod, dbpath))
+                    dbpaths.push((dblastmod, dbpath))
                 dblastmod, dbpath = 0, fspath
             # extra entry in database, needs deleting
             if fspath < dbpath:

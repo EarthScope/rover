@@ -197,7 +197,8 @@ class IndexLister(SqliteSupport):
         self._log.debug('%s %s' % (sql, params))
         c = self._db.cursor()
         prev, join = [], self._flags[JOIN]
-        for row in c.execute(sql, params):
+
+        def callback(row):
             if join:
                 row = list(row)
                 if prev and prev[0:5] == row[0:5] and self._contiguous(prev[7], row[6]):
@@ -207,6 +208,8 @@ class IndexLister(SqliteSupport):
                     prev = row
             else:
                 print(*row)
+
+        self._foreachrow(sql, params. callback)
         if join and prev: print(file=stdout, *prev)
 
 

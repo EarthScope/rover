@@ -23,14 +23,14 @@ class Workers:
         Execute the command in a separate process.
         """
         self._wait_for_space()
-        self._log.debug('Adding worker for "%s"' % command)
         if not callback:
             callback = self._default_callback
+        self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
         self._workers.append((command, Popen(command, shell=True), callback))
 
     def _wait_for_space(self):
         while True:
-            self._check()
+            self.check()
             if len(self._workers) < self._size:
                 self._log.debug('Space for new worker')
                 return
@@ -42,13 +42,14 @@ class Workers:
         else:
             self._log.debug('"%s" succeeded' % (cmd,))
 
-    def _check(self):
+    def check(self):
         i = len(self._workers) - 1
         while i > -1:
-            cmd, process, callback = self._workers[i]
+            command, process, callback = self._workers[i]
             process.poll()
             if process.returncode is not None:
-                callback(cmd, process.returncode)
+                self._log.debug('Calling callback %s (command %s)' % (callback, command))
+                callback(command, process.returncode)
                 self._workers = self._workers[:i] + self._workers[i+1:]
             i -= 1
 
@@ -57,7 +58,7 @@ class Workers:
         Wait for all remaining processes to finish.
         """
         while True:
-            self._check()
+            self.check()
             if not self._workers:
                 self._log.debug('No workers remain')
                 return

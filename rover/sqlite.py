@@ -104,6 +104,12 @@ class SqliteSupport:
             self._log.debug('Fetchall: %s %s' % (sql, params))
             return c.execute(sql, params).fetchall()
 
+    def _foreachrow(self, sql, params, callback):
+        with self.cursor() as c:
+            self._log.debug('foreachrow: %s %s' % (sql, params))
+            for row in c.execute(sql, params):
+                callback(row)
+
     def _create_downloaderss_table(self):
         """
         Create the table used by the retriever.  This is here because the

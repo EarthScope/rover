@@ -22,9 +22,10 @@ class Retriever(SqliteSupport):
     (which are ingested and indexed by the Downloader).
     """
 
-    def __init__(self, db, temp_dir, availability, tolerance, n_workers, dataselect, rover, mseedindex, verbosity, log):
+    def __init__(self, db, temp_dir, availability, tolerance, n_workers, dataselect, rover, mseedindex,
+                 verbosity, dev, log_unique, log):
         super().__init__(db, log)
-        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, verbosity, log)
+        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, verbosity, dev, log_unique, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
@@ -97,16 +98,17 @@ class Retriever(SqliteSupport):
 
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
-        c = self._db.cursor()
         availability = Coverage(self._tolerance, sncl)
-        for row in c.execute('''select starttime, endtime 
-                                from tsindex 
-                                where network=? and station=? and location=? and channel=?
-                                order by starttime, endtime''', (sncl.net, sncl.sta, sncl.loc, sncl.cha)):
+        def callback(row):
             b, e = row
             b, e = parse_time(b), parse_time(e)
             availability.add_timespan(b, e)
-        c.close()
+        self._foreachrow('''select starttime, endtime 
+                                from tsindex 
+                                where network=? and station=? and location=? and channel=?
+                                order by starttime, endtime''',
+                         (sncl.net, sncl.sta, sncl.loc, sncl.cha),
+                         callback)
         return availability
 
     def _request_download(self, missing):
@@ -153,13 +155,13 @@ def retrieve(core):
     that we don't already have.
     """
     # check these two comands so we fail early
-    check_cmd('%s -h' % core.args.rover_cmd, 'rover', 'rover', log)
-    check_cmd('%s -h' % core.args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
+    check_cmd('%s -h' % core.args.rover_cmd, 'rover', 'rover', core.log)
+    check_cmd('%s -h' % core.args.mseed_cmd, 'mseedindex', 'mseed-cmd', core.log)
     temp_dir = canonify(core.args.temp_dir)
     makedirs(temp_dir, exist_ok=True)
     retriever = Retriever(core.db, temp_dir, core.args.availability_url, core.args.timespan_tol,
                           core.args.download_workers, core.args.dataselect_url, core.args.rover_cmd,
-                          core.args.mseed_cmd, core.args.verbosity, core.log)
+                          core.args.mseed_cmd, core.args.verbosity, core.args.dev, core.args.log_unique, core.log)
     if len(core.args.args) == 0 or len(core.args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:

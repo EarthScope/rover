@@ -2,12 +2,12 @@
 from datetime import datetime, timedelta
 from os import getpid, unlink, listdir
 from os.path import join, exists, basename
-from queue import Queue
+from queue import Queue, Empty
 from threading import Thread
 from time import time
 
 from .workers import Workers
-from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD, VERBOSITY, LOGNAME, LOGUNIQUE
+from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD, VERBOSITY, LOGNAME, LOGUNIQUE, mm, DEV
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport, NoResult
@@ -50,8 +50,12 @@ class Downloader(SqliteSupport):
         if exists(self._tmpdir):
             for file in listdir(self._tmpdir):
                 if basename(file).startswith(TMPFILE):
-                    if time() - lastmod(file) > TMPEXPIRE:
-                        self._log.warn('Deleting old download %s' % file)
+                    try:
+                        if time() - lastmod(file) > TMPEXPIRE:
+                            self._log.warn('Deleting old download %s' % file)
+                    except FileNotFoundError:
+                        pass  # was deleted from under us
+
 
     def download(self, url):
         """
@@ -100,7 +104,7 @@ def download(core):
 
 class DownloadManager:
 
-    def __init__(self, n_workers, dataselect, rover, mseedindex, verbosity, log):
+    def __init__(self, n_workers, dataselect, rover, mseedindex, verbosity, dev, log_unique, log):
         self._log = log
         self._dataselect = dataselect
         check_cmd('%s -h' % rover, 'rover', 'rover', log)
@@ -108,6 +112,8 @@ class DownloadManager:
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
         self._verbosity = verbosity
+        self._dev = dev
+        self._log_unique = log_unique
         self._coverages = []
         self._queue = Queue()
         self._workers = Workers(n_workers, log)
@@ -152,9 +158,13 @@ class DownloadManager:
 
     def _main_loop(self):
         while True:
-            sncl, begin, end = self._queue.get()
-            command = '%s --%s --%s \'%s\' --%s %d --%s %s --%s --dev %s \'%s\'' % (
-                self._rover, MULTIPROCESS, MSEEDCMD, self._mseedindex, VERBOSITY, self._verbosity,
-                LOGNAME, DOWNLOAD, LOGUNIQUE, DOWNLOAD, self._build_url(sncl, begin, end))
-            self._log.debug(command)
-            self._workers.execute(command, callback=self._callback)
+            try:
+                sncl, begin, end = self._queue.get(timeout=0.1)
+                command = '%s %s %s \'%s\' %s %d %s %s %s %s %s \'%s\'' % (
+                    self._rover, mm(MULTIPROCESS), mm(MSEEDCMD), self._mseedindex, mm(VERBOSITY), self._verbosity,
+                    mm(LOGNAME), DOWNLOAD, mm(LOGUNIQUE) if self._log_unique else '',  mm(DEV) if self._dev else '',
+                    DOWNLOAD, self._build_url(sncl, begin, end))
+                self._log.debug(command)
+                self._workers.execute(command, callback=self._callback)
+            except Empty:
+                self._workers.check()
