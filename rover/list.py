@@ -195,21 +195,21 @@ class IndexLister(SqliteSupport):
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
-        c = self._db.cursor()
-        prev, join = [], self._flags[JOIN]
+        prev, join = [[]], self._flags[JOIN]   # prev inside list as nonlocal not in python 2
 
         def callback(row):
+            # nonlocal prev[0]
             if join:
                 row = list(row)
-                if prev and prev[0:5] == row[0:5] and self._contiguous(prev[7], row[6]):
-                    prev[7] = row[7]
+                if prev[0] and prev[0][0:5] == row[0:5] and self._contiguous(prev[0][7], row[6]):
+                    prev[0][7] = row[7]
                 else:
-                    if prev: print(file=stdout, *prev)
-                    prev = row
+                    if prev[0]: print(file=stdout, *prev[0])
+                    prev[0] = row
             else:
                 print(*row)
 
-        self._foreachrow(sql, params. callback)
+        self._foreachrow(sql, params, callback)
         if join and prev: print(file=stdout, *prev)
 
 

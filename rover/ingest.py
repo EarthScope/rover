@@ -77,7 +77,7 @@ class MseedindexIngester(BaseIngester, SqliteSupport):
         self._execute('drop table if exists %s' % self._table)
 
     def _ingest_file(self, file):
-        self._log.info('Scanning %s for ingest' % file)
+        self._log.info('Indexing %s for ingest' % file)
         self._drop_table()
         try:
             run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
