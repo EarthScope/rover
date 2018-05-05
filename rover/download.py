@@ -163,12 +163,18 @@ class DownloadManager:
         self._run_called = True
         self._config = self._write_config()
         Thread(target=self._main_loop, daemon=True).start()
+        n_downloads = 0
         try:
             for coverage in self._coverages:
                 for download in self._expand_timespans(coverage):
                     self._queue.put(download)  # this blocks so that we don't use too much memory
+                    n_downloads += 1
             self._queue.join()
             # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
+            if n_downloads:
+                self._log.info('Comleted %d downloads')
+            else:
+                self._log.warn('No downloads')
         finally:
             unlink(self._config)
 
