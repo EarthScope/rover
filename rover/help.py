@@ -1,6 +1,6 @@
 
 from .config import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE
 
 DAEMON = 'daemon'
 USAGE = 'usage'
@@ -62,7 +62,14 @@ def usage():
     rover %s (file|sncl start [end])
       Compare the local index (config parameter %s) with the data 
       availabe remotely (config parameter %s), then download 
-      (config parameter %s) and ingest the missing files.
+      (config parameter %s) and ingest the missing files.  Use
+      %s (below) to see what data would be downloaded (without
+      doing the work).
+      
+    rover %s (file|sncl start [end])
+      Compare the local index (config parameter %s) with the data 
+      availabe remotely (config parameter %s), then display the
+      difference.
 
     rover %s ...
       List index entries for the local store (config parameter 
@@ -71,7 +78,8 @@ def usage():
 
     rover %s
       Delete and re-write the configuration file.
-''' % (RETRIEVE, MSEEDDB, AVAILABILITYURL, DATASELECTURL,
+''' % (RETRIEVE, MSEEDDB, AVAILABILITYURL, DATASELECTURL, COMPARE,
+       COMPARE, MSEEDDB, AVAILABILITYURL,
        LIST_INDEX, MSEEDDIR, LIST_INDEX,
        RESET_CONFIG))
 

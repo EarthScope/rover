@@ -11,7 +11,7 @@ def init_db(dbpath, log):
     db = connect(dbpath)
     # https://www.sqlite.org/foreignkeys.html
     db.execute('PRAGMA foreign_keys = ON')
-    # db.execute('PRAGMA case_sensitive_like = ON')
+    db.execute('PRAGMA case_sensitive_like = ON')  # as used by mseedindex
     # db.execute('PRAGMA busy_timeout = 10000')
     return db
 
@@ -38,7 +38,6 @@ class CursorContext:
             self._support._db.commit()
         self._cursor.close()
         return False  # propagate any exceptions
-
 
 
 class SqliteSupport:

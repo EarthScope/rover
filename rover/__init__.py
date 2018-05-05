@@ -1,6 +1,6 @@
 
 from .config import Arguments, reset_config, RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE
 from .download import download
 from .help import help
 from .index import index
@@ -26,8 +26,8 @@ def execute(command, core):
         list_index(core)
     elif command == DOWNLOAD:
         download(core)
-    elif command == RETRIEVE:
-        retrieve(core)
+    elif command in (RETRIEVE, COMPARE):
+        retrieve(core, command==RETRIEVE)
     elif command == SUBSCRIBE:
         subscribe(core)
     else:

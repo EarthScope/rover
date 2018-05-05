@@ -13,6 +13,7 @@ from .utils import canonify, uniqueish, get_to_file, PushBackIterator, format_ti
     clean_old_files, match_prefixes
 from .workers import Workers
 
+
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
 # in the download area
@@ -132,6 +133,14 @@ class DownloadManager:
         if self._run_called:
             raise Exception('Add coverage before expanding and downloading')
         self._coverages.append(coverage)
+
+    def display(self):
+        print()
+        for coverage in self._coverages:
+            for (i, timespan) in enumerate(coverage.timespans):
+                print('%18s ' % (str(coverage.sncl) + ' :' if i == 0 else ' '), end='')
+                print('%s - %s' % (format_time(timespan[0]), format_time(timespan[1])))
+        print()
 
     def run(self):
         self._run_called = True

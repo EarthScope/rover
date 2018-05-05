@@ -34,11 +34,13 @@ class Retriever(SqliteSupport):
         self._tolerance = tolerance
         clean_old_files(self._temp_dir, temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), log)
 
-    def retrieve(self, up):
+    def query(self, up):
         """
         Retrieve the data specified in the given file (format as for
-        availability service).
+        availability service) and compare with the index.  Afterwards, call either
+        fetch() or display().
         """
+        self._assert_single_use()
         self._prepend_options(up)
         down = self._post_availability(up)
         try:
@@ -48,9 +50,14 @@ class Retriever(SqliteSupport):
                 local = self._scan_index(remote.sncl)
                 self._log.debug('Local data: %s' % local)
                 self._request_download(remote.subtract(local))
-            self._download_manager.run()
         finally:
             unlink(down)
+
+    def fetch(self):
+        self._download_manager.run()
+
+    def display(self):
+        self._download_manager.display()
 
     def _prepend_options(self, up):
         tmp = temp_path(self._temp_dir, up)
@@ -152,7 +159,7 @@ def build_file(path, sncl, begin, end=None):
        print(*parts, file=req)
 
 
-def retrieve(core):
+def retrieve(core, fetch):
     """
     Implement the retrieve command - download data that is available and
     that we don't already have.
@@ -176,6 +183,10 @@ def retrieve(core):
                 copyfile(core.args.args[0], path)
             else:
                 build_file(path, *core.args.args)
-            retriever.retrieve(path)
+            retriever.query(path)
+            if fetch:
+                retriever.fetch()
+            else:
+                retriever.display()
         finally:
             unlink(path)

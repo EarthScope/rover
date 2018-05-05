@@ -11,6 +11,7 @@ from re import sub
 from .utils import create_parents, canonify
 
 
+COMPARE = 'compare'
 DOWNLOAD = 'download'
 HELP = 'help'
 INDEX = 'index'
