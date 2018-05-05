@@ -25,7 +25,7 @@ def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 
         logdir = join(dir, '.rover')
         stderr = StringIO()
-        log = init_log(logdir, 7, 1, log_level, stderr_level, 'rover', False, stderr=stderr)
+        log = init_log(logdir, 7, 1, log_level, stderr_level, 'rover', False, 0, stderr=stderr)
         log_all(log)
         stderr.seek(0)
         stderr_contents = stderr.read()

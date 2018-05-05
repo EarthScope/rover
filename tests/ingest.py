@@ -12,7 +12,7 @@ from .test_utils import find_root, assert_files
 def test_mseedindexingester():
     root = find_root()
     with TemporaryDirectory() as dir:
-        log = init_log(dir, 7, 1, 5, 0, 'test', False)
+        log = init_log(dir, 7, 1, 5, 0, 'test', False, 0)
         dbpath = mktemp(dir=dir)
         db = init_db(dbpath, log)
         ingester = MseedindexIngester(db, join(root, '..', 'mseedindex', 'mseedindex'),

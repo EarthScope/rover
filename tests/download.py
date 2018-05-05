@@ -12,7 +12,7 @@ from .test_utils import find_root, assert_files
 def test_dlownload():
     root = find_root()
     with TemporaryDirectory() as dir:
-        log = init_log(dir, 7, 1, 5, 3, 'test', False)
+        log = init_log(dir, 7, 1, 5, 3, 'test', False, 0)
         dbpath = mktemp(dir=dir)
         db = init_db(dbpath, log)
         downloader = Downloader(db, dir, join(root, '..', 'mseedindex', 'mseedindex'), dbpath, dir,

@@ -29,7 +29,7 @@ def assert_files(dir, *files):
 
 def ingest_and_index(dir, data):
     root = find_root()
-    log = init_log(dir, 7, 1, 5, 0, 'test', False)
+    log = init_log(dir, 7, 1, 5, 0, 'test', False, 0)
     dbpath = mktemp(dir=dir)
     db = init_db(dbpath, log)
     mseedindex = join(root, '..', 'mseedindex', 'mseedindex')

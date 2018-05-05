@@ -1,22 +1,23 @@
 
 from datetime import datetime, timedelta
-from os import getpid, unlink, listdir
-from os.path import join, exists, basename
+from os import getpid, unlink
+from os.path import join
 from queue import Queue, Empty
 from threading import Thread
-from time import time
 
-from .workers import Workers
-from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD, VERBOSITY, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
+from .config import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .index import Indexer
 from .ingest import MseedindexIngester
-from .sqlite import SqliteSupport, NoResult
-from .utils import canonify, lastmod, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd, unique_filename
+from .sqlite import SqliteSupport
+from .utils import canonify, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd, unique_filename, \
+    clean_old_files, match_prefixes
+from .workers import Workers
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
 # in the download area
 TMPFILE = 'rover_tmp'
+CONFIGFILE = 'rover_config'
 TMPEXPIRE = 60 * 60 * 24
 
 
@@ -44,18 +45,7 @@ class Downloader(SqliteSupport):
         self._ingester = MseedindexIngester(db, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
         self._indexer = Indexer(db, mseedindex, mseed_db, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, dev, log)
         self._create_downloaderss_table()
-        self._clean_tmp()
-
-    def _clean_tmp(self):
-        if exists(self._tmpdir):
-            for file in listdir(self._tmpdir):
-                if basename(file).startswith(TMPFILE):
-                    try:
-                        if time() - lastmod(file) > TMPEXPIRE:
-                            self._log.warn('Deleting old download %s' % file)
-                    except FileNotFoundError:
-                        pass  # was deleted from under us
-
+        clean_old_files(self._tmpdir, TMPEXPIRE, match_prefixes(TMPFILE, CONFIGFILE), log)
 
     def download(self, url):
         """
@@ -161,7 +151,7 @@ class DownloadManager:
             junk = str(self._coverages[0])
         else:
             junk = 'empty'
-        path = unique_filename(join(canonify(self._tmpdir), uniqueish('rover_config', junk)))
+        path = unique_filename(join(canonify(self._tmpdir), uniqueish(CONFIGFILE, junk)))
         self._log.debug('Writing config to %s' % path)
         Arguments().write_config(path, self._args)
         return path
@@ -195,6 +185,8 @@ class DownloadManager:
         while True:
             try:
                 sncl, begin, end = self._queue.get(timeout=0.1)
+                # we only pass arguments on the command line that are different from the
+                # default (which is in the file)
                 command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
                     self._rover, self._config, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
                     mm(LOGUNIQUE) if self._log_unique else '',  mm(DEV) if self._dev else '',

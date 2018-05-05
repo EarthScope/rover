@@ -41,7 +41,7 @@ class Core:
         argparse = Arguments()
         self.args = argparse.parse_args()
         self.log = init_log(self.args.log_dir, self.args.log_size, self.args.log_count, self.args.log_verbosity,
-                            self.args.verbosity,  self. args.log_name, self.args.log_unique)
+                            self.args.verbosity, self. args.log_name, self.args.log_unique, self.args.log_unique_expire)
         self.log.debug('Args: %s' % self.args)
         self.db = init_db(self.args.mseed_db, self.log)
 
@@ -52,12 +52,12 @@ def main():
     try:
         core = Core()
         processes = Processes(core.db, core.log)
-        # if not (args.daemon or args.multiprocess):
-        #     processes.assert_singleton('rover')
-        # try:
-        execute(core.args.command, core)
-        # finally:
-            # processes.remove_process()
+        if not (core.args.daemon or core.args.multiprocess):
+            processes.assert_singleton('rover')
+        try:
+            execute(core.args.command, core)
+        finally:
+            processes.remove_process()
     except Exception as e:
         if core and core.log:
             core.log.error(str(e))

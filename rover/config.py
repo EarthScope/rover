@@ -38,6 +38,7 @@ LOGNAME = 'log-name'
 LOGVERBOSITY = 'log-verbosity'
 LOGSIZE = 'log-size'
 LOGUNIQUE = 'log-unique'
+LOGUNIQUEEXPIRE = 'log-unique-expire'
 LOGCOUNT = 'log-count'
 MSEEDCMD = 'mseed-cmd'
 MSEEDDB = 'mseed-db'
@@ -61,6 +62,7 @@ DEFAULT_LOGVERBOSITY = 5
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
 DEFAULT_LOGNAME = 'rover'
+DEFAULT_LOGUNIQUE_EXPIRE = 7
 DEFAULT_MSEEDCMD = 'mseedindex'
 DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
@@ -173,6 +175,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
         self.add_argument(mm(LOGNAME), default=DEFAULT_LOGNAME, action='store', help='base file name for logs', metavar='NAME')
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
+        self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar='SECS')
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
@@ -197,13 +200,13 @@ class Arguments(ArgumentParser):
         '''
         if args is None:
             args = sys.argv[1:]
-        args = self.preprocess_booleans(args)
-        config, args = self.extract_config(args)
+        args = self._preprocess_booleans(args)
+        config, args = self._extract_config(args)
         self.write_config(config)
-        args = self.patch_config(args, config)
+        args = self._patch_config(args, config)
         return super().parse_args(args=args, namespace=namespace)
 
-    def preprocess_booleans(self, args):
+    def _preprocess_booleans(self, args):
         '''
         Replace --foo with '--foo True' and --no-foo with '--foo False'.
         This makes the interface consistent with the config file (which has
@@ -224,7 +227,7 @@ class Arguments(ArgumentParser):
             args.insert(index+1, str(not negative))
         return args
 
-    def extract_config(self, args):
+    def _extract_config(self, args):
         '''
         Find the config file, if given, otherwise use the default.
         This must be done before argument parsing because we need
@@ -269,7 +272,7 @@ class Arguments(ArgumentParser):
                             out.write('%s=%s\n' % (sub('_', '-', action.dest), value))
         return
 
-    def patch_config(self, args, config):
+    def _patch_config(self, args, config):
         '''
         Force the reading of the config file (ignored for update-config
         because we may be rewriting it because it has errors).

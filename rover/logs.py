@@ -4,6 +4,9 @@ from logging.handlers import RotatingFileHandler
 from os.path import join, exists, isdir, expanduser
 from os import makedirs, getpid
 import sys
+from re import match
+
+from .utils import clean_old_files
 
 
 def level(n):
@@ -14,14 +17,18 @@ def level(n):
     return 10 * (6 - (max(min(n, 5), 0)))
 
 
-def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, unique, stderr=None):
+def match_unique(name):
+    return match(r'\w+_\d+\.log', name)
+
+
+def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_unique, log_unique_expire, stderr=None):
     """
     Create a log with two handlers.
     One handler is a rotated file, the other stderr.
     The file is for details, stderr for errors to the user.
     """
 
-    if unique:
+    if log_unique:
         name = '%s.%d' % (name, getpid())
 
     log = getLogger(name)
@@ -48,5 +55,7 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, uniqu
     stdout_handler.setLevel(level(verbosity))
     stdout_handler.setFormatter(name_formatter)
     log.addHandler(stdout_handler)
+
+    clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
     return log

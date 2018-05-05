@@ -9,7 +9,7 @@ from rover.utils import check_leap
 
 def test_download_leap():
     with TemporaryDirectory() as dir:
-        log = init_log(dir, 7, 1, 5, 0, 'test', False)
+        log = init_log(dir, 7, 1, 5, 0, 'test', False, 0)
         path = join(dir, 'leap.txt')
         check_leap(True, DEFAULT_LEAPEXPIRE, path, DEFAULT_LEAPURL, log)
         assert exists(path)

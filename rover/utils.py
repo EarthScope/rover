@@ -1,7 +1,7 @@
 
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid
+from os import makedirs, stat, getpid, listdir
 from os.path import dirname, exists, isdir, expanduser, abspath
 from subprocess import Popen, check_output, STDOUT
 from time import time
@@ -173,3 +173,23 @@ class PushBackIterator:
         else:
             value = next(self._iter)
         return value
+
+
+def clean_old_files(dir, age_secs, match, log):
+    if exists(dir):
+        for file in listdir(dir):
+            if match(file):
+                try:
+                    if time() - lastmod(file) > age_secs:
+                        log.warn('Deleting old %s' % file)
+                except FileNotFoundError:
+                    pass  # was deleted from under us
+
+
+def match_prefixes(*prefixes):
+    def match(name):
+        for prefix in prefixes:
+            if name.startswith(prefix):
+                return True
+        return False
+    return match
