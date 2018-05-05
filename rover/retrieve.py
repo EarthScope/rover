@@ -6,7 +6,7 @@ from re import match
 from shutil import copyfile
 
 from .download import DownloadManager
-from .config import RETRIEVE, TMPEXPIRE
+from .config import RETRIEVE
 from .coverage import Coverage, Sncl
 from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd, clean_old_files, \
@@ -24,7 +24,7 @@ class Retriever(SqliteSupport):
     (which are ingested and indexed by the Downloader).
     """
 
-    def __init__(self, db, temp_dir, availability, tolerance, n_workers, dataselect, rover, mseedindex,
+    def __init__(self, db, temp_dir, temp_expire, availability, tolerance, n_workers, dataselect, rover, mseedindex,
                  verbosity, dev, log_unique, args, log):
         super().__init__(db, log)
         self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, temp_dir, verbosity, dev,
@@ -32,7 +32,7 @@ class Retriever(SqliteSupport):
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
-        clean_old_files(self._temp_dir, TMPEXPIRE, match_prefixes(RETRIEVEFILE), log)
+        clean_old_files(self._temp_dir, temp_expire, match_prefixes(RETRIEVEFILE), log)
 
     def retrieve(self, up):
         """
@@ -162,7 +162,7 @@ def retrieve(core):
     check_cmd('%s -h' % core.args.mseed_cmd, 'mseedindex', 'mseed-cmd', core.log)
     temp_dir = canonify(core.args.temp_dir)
     makedirs(temp_dir, exist_ok=True)
-    retriever = Retriever(core.db, temp_dir, core.args.availability_url, core.args.timespan_tol,
+    retriever = Retriever(core.db, temp_dir, core.args.temp_expire, core.args.availability_url, core.args.timespan_tol,
                           core.args.download_workers, core.args.dataselect_url, core.args.rover_cmd,
                           core.args.mseed_cmd, core.args.verbosity, core.args.dev, core.args.log_unique,
                           core.args, core.log)

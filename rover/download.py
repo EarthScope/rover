@@ -5,7 +5,7 @@ from os.path import join
 from queue import Queue, Empty
 from threading import Thread
 
-from .config import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TMPEXPIRE
+from .config import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport
@@ -37,14 +37,14 @@ class Downloader(SqliteSupport):
     time.
     """
 
-    def __init__(self, db, tmpdir, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, n_workers, dev, log):
+    def __init__(self, db, tempdir, temp_expire, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, n_workers, dev, log):
         super().__init__(db, log)
-        self._tmpdir = canonify(tmpdir)
+        self._temp_dir = canonify(tempdir)
         self._blocksize = 1024 * 1024
         self._ingester = MseedindexIngester(db, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
         self._indexer = Indexer(db, mseedindex, mseed_db, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, dev, log)
         self._create_downloaderss_table()
-        clean_old_files(self._tmpdir, TMPEXPIRE, match_prefixes(TMPFILE, CONFIGFILE), log)
+        clean_old_files(self._temp_dir, temp_expire, match_prefixes(TMPFILE, CONFIGFILE), log)
 
     def download(self, url):
         """
@@ -75,7 +75,7 @@ class Downloader(SqliteSupport):
         # previously we extracted the file name from the header, but the code
         # failed in python 2 (looked like a backport library bug), so since
         # the file will be deleted soon anyway we now use an arbitrary name
-        path = join(self._tmpdir, uniqueish(TMPFILE, url))
+        path = join(self._temp_dir, uniqueish(TMPFILE, url))
         return get_to_file(url, path, self._log)
 
 
@@ -83,7 +83,8 @@ def download(core):
     """
     Implement the download command - download, ingest and index data.
     """
-    downloader = Downloader(core.db, core.args.temp_dir, core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir,
+    downloader = Downloader(core.db, core.args.temp_dir, core.args.temp_expire,
+                            core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir,
                             core.args.leap, core.args.leap_expire, core.args.leap_file, core.args.leap_url,
                             core.args.mseed_workers, core.args.dev, core.log)
     if len(core.args.args) != 1:

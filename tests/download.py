@@ -15,7 +15,7 @@ def test_dlownload():
         log = init_log(dir, 7, 1, 5, 3, 'test', False, 0)
         dbpath = mktemp(dir=dir)
         db = init_db(dbpath, log)
-        downloader = Downloader(db, dir, join(root, '..', 'mseedindex', 'mseedindex'), dbpath, dir,
+        downloader = Downloader(db, dir, 0, join(root, '..', 'mseedindex', 'mseedindex'), dbpath, dir,
                                 False, None, None, None, 1, False, log)
         downloader.download('http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000')
         assert_files(join(dir, 'IU'), '2010')

@@ -11,8 +11,6 @@ from re import sub
 from .utils import create_parents, canonify
 
 
-TMPEXPIRE = 60 * 60 * 24
-
 DOWNLOAD = 'download'
 HELP = 'help'
 INDEX = 'index'
@@ -49,6 +47,7 @@ MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
 ROVERCMD = 'rover-cmd'
 TEMPDIR = 'temp-dir'
+TEMPEXPIRE = 'temp-expire'
 TIMESPANTOL = 'timespan-tol'
 V, VERBOSITY = 'v', 'verbosity'
 
@@ -71,6 +70,7 @@ DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_MSEEDWORKERS = 10
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
+DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANTOL = 0.1
 DEFAULT_VERBOSITY = 4
 
@@ -160,6 +160,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar='DIR')
         self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar='DIR')
         self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar='DIR')
+        self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='tolerance for overlapping timespans', metavar='SECS', type=float)
@@ -177,7 +178,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')
         self.add_argument(mm(LOGNAME), default=DEFAULT_LOGNAME, action='store', help='base file name for logs', metavar='NAME')
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
-        self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar='SECS')
+        self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar='DAYS', type=int)
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar='N', type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)

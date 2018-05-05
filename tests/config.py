@@ -24,6 +24,8 @@ availability-url=http://service.iris.edu/irisws/availability/1/query
 dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 # temporary storage for downloads
 temp-dir=~/rover/tmp
+# number of days before deleting temp files
+temp-expire=1
 # tolerance for overlapping timespans
 timespan-tol=0.1
 # number of download instances to run
@@ -46,6 +48,8 @@ log-dir=~/rover/logs
 log-name=rover
 # unique log names (with PIDs)?
 log-unique=False
+# number of days before deleting unique logs
+log-unique-expire=7
 # log verbosity (0-5)
 log-verbosity=5
 # maximum log size (1-10)
