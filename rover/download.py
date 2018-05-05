@@ -172,9 +172,9 @@ class DownloadManager:
             self._queue.join()
             # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
             if n_downloads:
-                self._log.info('Comleted %d downloads')
+                self._log.info('Completed %d downloads')
             else:
-                self._log.warn('No downloads')
+                self._log.warn('No data downloaded / ingested')
         finally:
             unlink(self._config)
 
