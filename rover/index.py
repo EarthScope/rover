@@ -1,11 +1,16 @@
 
+from datetime import datetime
 from os import listdir
 from os.path import join, isdir, split
 from sqlite3 import OperationalError
+from time import mktime
 
 from .workers import Workers
 from .sqlite import SqliteSupport
-from .utils import canonify, check_leap, lastmod, PushBackIterator
+from .utils import canonify, check_leap, lastmod, PushBackIterator, parse_time, parse_short_time
+
+
+EPOCH = datetime.utcfromtimestamp(0)
 
 
 def find_stem(path, root, log):
@@ -136,7 +141,8 @@ class Indexer(SqliteSupport):
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:
-                if lastmod(fspath) != dblastmod:
+                dbepoch = (parse_short_time(dblastmod) - EPOCH).total_seconds() + 1   # add one because it's rounded down
+                if lastmod(fspath) > dbepoch:
                     self._index(fspath)
 
     def _delete(self, path):
@@ -144,7 +150,7 @@ class Indexer(SqliteSupport):
         self._execute('delete from tsindex where filename like ?', (path,))
 
     def _index(self, path):
-        self._log.debug('Scanning %s' % path)
+        self._log.info('Indexing %s' % path)
         # todo - windows var
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
                               % (self._leap_file, self._mseedindex, '-v -v' if self._dev else '', self._mseed_db, path))

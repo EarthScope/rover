@@ -95,7 +95,7 @@ def lastmod(path):
     The last modified epoch for the file.
     """
     statinfo = stat(path)
-    return statinfo.st_atime
+    return statinfo.st_mtime
 
 
 def unique_filename(path):
@@ -143,6 +143,12 @@ def parse_time(time):
     if time.endswith('Z'):
         time = time[:-1]
     return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
+
+
+def parse_short_time(time):
+    if time.endswith('Z'):
+        time = time[:-1]
+    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
 
 
 def format_time(time):

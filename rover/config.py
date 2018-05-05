@@ -305,6 +305,7 @@ def reset_config(args, log):
     """
     Implement the reset-config command.
     """
+    # todo - save old version?
     argparse = Arguments()
     if exists(args.file):
         if not isfile(args.file):
