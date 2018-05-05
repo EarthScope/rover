@@ -11,6 +11,8 @@ from re import sub
 from .utils import create_parents, canonify
 
 
+TMPEXPIRE = 60 * 60 * 24
+
 DOWNLOAD = 'download'
 HELP = 'help'
 INDEX = 'index'

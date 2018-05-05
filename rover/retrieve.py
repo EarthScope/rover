@@ -6,10 +6,11 @@ from re import match
 from shutil import copyfile
 
 from .download import DownloadManager
-from .config import RETRIEVE
+from .config import RETRIEVE, TMPEXPIRE
 from .coverage import Coverage, Sncl
 from .sqlite import SqliteSupport
-from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd
+from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd, clean_old_files, \
+    match_prefixes
 
 
 RETRIEVEFILE = 'rover_retrieve'
@@ -31,6 +32,7 @@ class Retriever(SqliteSupport):
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
+        clean_old_files(self._temp_dir, TMPEXPIRE, match_prefixes(RETRIEVEFILE), log)
 
     def retrieve(self, up):
         """

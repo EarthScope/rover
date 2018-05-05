@@ -5,7 +5,7 @@ from os.path import join
 from queue import Queue, Empty
 from threading import Thread
 
-from .config import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
+from .config import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TMPEXPIRE
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport
@@ -18,7 +18,6 @@ from .workers import Workers
 # in the download area
 TMPFILE = 'rover_tmp'
 CONFIGFILE = 'rover_config'
-TMPEXPIRE = 60 * 60 * 24
 
 
 class Downloader(SqliteSupport):
