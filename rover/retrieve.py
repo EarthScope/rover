@@ -27,8 +27,8 @@ class Retriever(SqliteSupport):
     def __init__(self, db, temp_dir, temp_expire, availability, tolerance, n_workers, dataselect, rover, mseedindex,
                  verbosity, dev, log_unique, args, log):
         super().__init__(db, log)
-        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, temp_dir, verbosity, dev,
-                                                 log_unique, args, log)
+        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, temp_dir,
+                                                 verbosity, dev, log_unique, args, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance

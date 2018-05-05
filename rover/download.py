@@ -135,19 +135,31 @@ class DownloadManager:
         self._coverages.append(coverage)
 
     def display(self):
+        """
+        Display a asummary of the data.
+        """
         print()
+        total_seconds, total_sncls = 0, 0
         for coverage in self._coverages:
-            seconds = 0
+            sncl_seconds = 0
             for (begin, end) in coverage.timespans:
-                seconds += (end - begin).total_seconds()
-            print('  %s  (total %4.2f sec)' % (coverage.sncl, seconds))
-            for (begin, end) in coverage.timespans:
-                print('    %s - %s  (%4.2f sec)' % (format_time(begin), format_time(end), (end - begin).total_seconds()))
-        if not self._coverages:
-            print('  [no data]')
+                seconds = (end - begin).total_seconds()
+                sncl_seconds += seconds
+                total_seconds += seconds
+            if sncl_seconds:
+                total_sncls ++ 1
+                print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
+                for (begin, end) in coverage.timespans:
+                    print('    %s - %s  (%4.2f sec)' % (format_time(begin), format_time(end), (end - begin).total_seconds()))
+        if total_sncls:
+            print()
+        print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
 
     def run(self):
+        """
+        Expand the timespans into daily downloads, get the data and ingest.
+        """
         self._run_called = True
         self._config = self._write_config()
         Thread(target=self._main_loop, daemon=True).start()
@@ -177,6 +189,7 @@ class DownloadManager:
 
     def _expand_timespans(self, coverage):
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
+        # todo - use tolerance
         while True:
             begin, end = next(timespans)
             if begin.date == end.date:

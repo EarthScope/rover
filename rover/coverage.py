@@ -44,17 +44,18 @@ class Coverage:
         IMPORTANT: This assumes that the timestamps are added ordered
         by increasing start time.
         """
-        if not self.timespans:
-            self.timespans.append((begin, end))
-        else:
-            b, e = self.timespans[-1]
-            if begin < b:
-                raise Exception('Unsorted start times')
-            if begin <= e or (begin - e).total_seconds() < self._tolerance:
-                if end > e:
-                    self.timespans[-1] = (b, end)
-            else:
+        if (end - begin).total_seconds() > self._tolerance:
+            if not self.timespans:
                 self.timespans.append((begin, end))
+            else:
+                b, e = self.timespans[-1]
+                if begin < b:
+                    raise Exception('Unsorted start times')
+                if begin <= e or (begin - e).total_seconds() < self._tolerance:
+                    if end > e:
+                        self.timespans[-1] = (b, end)
+                else:
+                    self.timespans.append((begin, end))
 
     def __str__(self):
         return '%s: %d timespans from %s to %s' % (
