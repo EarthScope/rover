@@ -32,7 +32,7 @@ class Retriever(SqliteSupport):
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
-        clean_old_files(self._temp_dir, temp_expire, match_prefixes(RETRIEVEFILE), log)
+        clean_old_files(self._temp_dir, temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), log)
 
     def retrieve(self, up):
         """
