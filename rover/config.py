@@ -117,7 +117,7 @@ def m(string): return '-' + string
 def mm(string): return '--' + string
 
 
-class RoverArgumentParser(ArgumentParser):
+class Arguments(ArgumentParser):
 
     '''
     Extend the standard arg parsing to:
@@ -199,7 +199,7 @@ class RoverArgumentParser(ArgumentParser):
             args = sys.argv[1:]
         args = self.preprocess_booleans(args)
         config, args = self.extract_config(args)
-        self.generate_default_config(config)
+        self.write_config(config)
         args = self.patch_config(args, config)
         return super().parse_args(args=args, namespace=namespace)
 
@@ -250,7 +250,7 @@ class RoverArgumentParser(ArgumentParser):
         # value is the one that is used here
         return config, [mm(FILE), config] + args
 
-    def generate_default_config(self, path):
+    def write_config(self, path, values=None):
         '''
         If the config file is missing, fill it with default values.
         '''
@@ -260,9 +260,13 @@ class RoverArgumentParser(ArgumentParser):
                 for action in self._actions:
                     if action.dest not in (HELP, FILE):
                         if action.default is not None:
+                            if values:
+                                value = getattr(values, action.dest)
+                            else:
+                                value = action.default
                             if action.help:
                                 out.write('# %s\n' % action.help)
-                            out.write('%s=%s\n' % (sub('_', '-', action.dest), action.default))
+                            out.write('%s=%s\n' % (sub('_', '-', action.dest), value))
         return
 
     def patch_config(self, args, config):
@@ -278,7 +282,7 @@ class RoverArgumentParser(ArgumentParser):
 
     def convert_arg_line_to_args(self, arg_line):
         '''
-        Parse the config file, constructing '--name value" from name=value
+        Parse a line from the config file, constructing '--name value" from name=value
         and ignoring comments.
         '''
         arg_line = arg_line.strip()
@@ -295,11 +299,11 @@ def reset_config(args, log):
     """
     Implement the reset-config command.
     """
-    argparse = RoverArgumentParser()
+    argparse = Arguments()
     if exists(args.file):
         if not isfile(args.file):
             raise Exception('"%s" is not a file' % args.file)
         log.warn('Removing old config file "%s"' % args.file)
         unlink(args.file)
     log.info('Writing new config file "%s"' % args.file)
-    argparse.generate_default_config(args.file)
+    argparse.write_config(args.file)

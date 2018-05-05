@@ -23,9 +23,10 @@ class Retriever(SqliteSupport):
     """
 
     def __init__(self, db, temp_dir, availability, tolerance, n_workers, dataselect, rover, mseedindex,
-                 verbosity, dev, log_unique, log):
+                 verbosity, dev, log_unique, args, log):
         super().__init__(db, log)
-        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, verbosity, dev, log_unique, log)
+        self._download_manager = DownloadManager(n_workers, dataselect, rover, mseedindex, temp_dir, verbosity, dev,
+                                                 log_unique, args, log)
         self._temp_dir = canonify(temp_dir)
         self._availability = availability
         self._tolerance = tolerance
@@ -45,7 +46,6 @@ class Retriever(SqliteSupport):
                 self._log.debug('Local data: %s' % local)
                 self._request_download(remote.subtract(local))
             self._download_manager.run()
-            self._download_manager.wait_for_all()
         finally:
             unlink(down)
 
@@ -161,7 +161,8 @@ def retrieve(core):
     makedirs(temp_dir, exist_ok=True)
     retriever = Retriever(core.db, temp_dir, core.args.availability_url, core.args.timespan_tol,
                           core.args.download_workers, core.args.dataselect_url, core.args.rover_cmd,
-                          core.args.mseed_cmd, core.args.verbosity, core.args.dev, core.args.log_unique, core.log)
+                          core.args.mseed_cmd, core.args.verbosity, core.args.dev, core.args.log_unique,
+                          core.args, core.log)
     if len(core.args.args) == 0 or len(core.args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
     else:

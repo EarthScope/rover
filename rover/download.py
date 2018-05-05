@@ -7,11 +7,11 @@ from threading import Thread
 from time import time
 
 from .workers import Workers
-from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD, VERBOSITY, LOGNAME, LOGUNIQUE, mm, DEV
+from .config import DOWNLOAD, MULTIPROCESS, MSEEDCMD, VERBOSITY, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .index import Indexer
 from .ingest import MseedindexIngester
 from .sqlite import SqliteSupport, NoResult
-from .utils import canonify, lastmod, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd
+from .utils import canonify, lastmod, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd, unique_filename
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
@@ -120,28 +120,51 @@ class DownloadManager:
     then pushing those to workers).
     """
 
-    def __init__(self, n_workers, dataselect, rover, mseedindex, verbosity, dev, log_unique, log):
+    def __init__(self, n_workers, dataselect, rover, mseedindex, tmpdir, verbosity, dev, log_unique, args, log):
         self._log = log
         self._dataselect = dataselect
         check_cmd('%s -h' % rover, 'rover', 'rover', log)
         self._rover = rover
         check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
         self._mseedindex = mseedindex
+        self._tmpdir = tmpdir
         self._verbosity = verbosity
         self._dev = dev
         self._log_unique = log_unique
+        self._args = args
         self._coverages = []
         self._queue = Queue(maxsize=n_workers * 2)
         self._workers = Workers(n_workers, log)
-        Thread(target=self._main_loop, daemon=True).start()
+        self._run_called = False
+        self._config = None
 
     def add(self, coverage):
+        if self._run_called:
+            raise Exception('Add coverage before expanding and downloading')
         self._coverages.append(coverage)
 
     def run(self):
-        for coverage in self._coverages:
-            for download in self._expand_timespans(coverage):
-                self._queue.put(download)  # this blocks so that we don't use too much memory
+        self._run_called = True
+        self._config = self._write_config()
+        Thread(target=self._main_loop, daemon=True).start()
+        try:
+            for coverage in self._coverages:
+                for download in self._expand_timespans(coverage):
+                    self._queue.put(download)  # this blocks so that we don't use too much memory
+            self._queue.join()
+            # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
+        finally:
+            unlink(self._config)
+
+    def _write_config(self):
+        if self._coverages:
+            junk = str(self._coverages[0])
+        else:
+            junk = 'empty'
+        path = unique_filename(join(canonify(self._tmpdir), uniqueish('rover_config', junk)))
+        self._log.debug('Writing config to %s' % path)
+        Arguments().write_config(path, self._args)
+        return path
 
     def _end_of_day(self, day):
         right = datetime(day.year, day.month, day.day) + timedelta(hours=24)
@@ -160,10 +183,6 @@ class DownloadManager:
                 if right < end:
                     timespans.push((right, end))
 
-    def wait_for_all(self):
-        self._queue.join()
-        # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
-
     def _build_url(self, sncl, begin, end):
         return '%s?%s&start=%s&end=%s' % (self._dataselect, sncl.to_url_params(), format_time(begin), format_time(end))
 
@@ -176,9 +195,9 @@ class DownloadManager:
         while True:
             try:
                 sncl, begin, end = self._queue.get(timeout=0.1)
-                command = '%s %s %s \'%s\' %s %d %s %s %s %s %s \'%s\'' % (
-                    self._rover, mm(MULTIPROCESS), mm(MSEEDCMD), self._mseedindex, mm(VERBOSITY), self._verbosity,
-                    mm(LOGNAME), DOWNLOAD, mm(LOGUNIQUE) if self._log_unique else '',  mm(DEV) if self._dev else '',
+                command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
+                    self._rover, self._config, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
+                    mm(LOGUNIQUE) if self._log_unique else '',  mm(DEV) if self._dev else '',
                     DOWNLOAD, self._build_url(sncl, begin, end))
                 self._log.debug(command)
                 self._workers.execute(command, callback=self._callback)

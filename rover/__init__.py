@@ -8,7 +8,7 @@ from .download import download
 from .list import list_index
 from .ingest import ingest
 from .index import index
-from .config import RoverArgumentParser, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX, \
+from .config import Arguments, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD
 from .logs import init_log
 from .help import help
@@ -38,7 +38,7 @@ def execute(command, core):
 class Core:
 
     def __init__(self):
-        argparse = RoverArgumentParser()
+        argparse = Arguments()
         self.args = argparse.parse_args()
         self.log = init_log(self.args.log_dir, self.args.log_size, self.args.log_count, self.args.log_verbosity,
                             self.args.verbosity,  self. args.log_name, self.args.log_unique)

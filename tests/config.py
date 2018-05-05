@@ -2,13 +2,13 @@
 from tempfile import TemporaryDirectory
 from os.path import join
 
-from rover.config import RoverArgumentParser
+from rover.config import Arguments
 
 
 def test_write_config():
     with TemporaryDirectory() as dir:
         config = join(dir, '.rover')
-        argparse = RoverArgumentParser()
+        argparse = Arguments()
         args = argparse.parse_args(['-f', config])
         assert args.file == config
         with open(config, 'r') as input:
@@ -66,7 +66,7 @@ mseed-workers=10
 
 
 def test_enable_daemon():
-    argparse = RoverArgumentParser()
+    argparse = Arguments()
     args = argparse.parse_args(['--daemon'])
     assert args.daemon
 
@@ -77,16 +77,16 @@ def test_disable_daemon():
         with open(config, 'w') as output:
             output.write('daemon=True\n')
         # first test that config file enables daemons
-        argparse = RoverArgumentParser()
+        argparse = Arguments()
         args = argparse.parse_args(['-f', config])
         assert args.daemon
         # and then test that we can override that
-        argparse = RoverArgumentParser()
+        argparse = Arguments()
         args = argparse.parse_args(['-f', config, '--no-daemon'])
         assert not args.daemon
 
 
 def test_multiple_flags():
-    argparse = RoverArgumentParser()
+    argparse = Arguments()
     args = argparse.parse_args(['--daemon', '--no-daemon'])
     assert not args.daemon
