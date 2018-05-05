@@ -137,9 +137,14 @@ class DownloadManager:
     def display(self):
         print()
         for coverage in self._coverages:
-            for (i, timespan) in enumerate(coverage.timespans):
-                print('%18s ' % (str(coverage.sncl) + ' :' if i == 0 else ' '), end='')
-                print('%s - %s' % (format_time(timespan[0]), format_time(timespan[1])))
+            seconds = 0
+            for (begin, end) in coverage.timespans:
+                seconds += (end - begin).total_seconds()
+            print('  %s  (total %4.2f sec)' % (coverage.sncl, seconds))
+            for (begin, end) in coverage.timespans:
+                print('    %s - %s  (%4.2f sec)' % (format_time(begin), format_time(end), (end - begin).total_seconds()))
+        if not self._coverages:
+            print('  [no data]')
         print()
 
     def run(self):

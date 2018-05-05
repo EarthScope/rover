@@ -68,8 +68,9 @@ def usage():
       
     rover %s (file|sncl start [end])
       Compare the local index (config parameter %s) with the data 
-      availabe remotely (config parameter %s), then display the
-      difference.
+      availabe remotely (config parameter %s), then display 
+      the difference.  Note that the summary is printed to stdout, while
+      logging is to stderr.
 
     rover %s ...
       List index entries for the local store (config parameter 
