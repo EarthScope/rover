@@ -1,7 +1,7 @@
 
 from os import getpid, kill
 
-from .sqlite import SqliteSupport, NoResult
+from .sqlite import SqliteSupport
 
 
 class Processes(SqliteSupport):

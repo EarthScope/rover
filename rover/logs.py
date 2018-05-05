@@ -1,9 +1,9 @@
 
-from logging import getLogger, StreamHandler, Formatter, DEBUG, shutdown
-from logging.handlers import RotatingFileHandler
-from os.path import join, exists, isdir, expanduser
-from os import makedirs, getpid
 import sys
+from logging import getLogger, StreamHandler, Formatter, DEBUG
+from logging.handlers import RotatingFileHandler
+from os import makedirs, getpid
+from os.path import join, exists, isdir, expanduser
 from re import match
 
 from .utils import clean_old_files

@@ -1,6 +1,4 @@
 
-from pdb import set_trace
-
 from .utils import format_time, PushBackIterator
 
 

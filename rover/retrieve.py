@@ -11,6 +11,7 @@ from .coverage import Coverage, Sncl
 from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd
 
+
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime(1900, 1, 1)
 

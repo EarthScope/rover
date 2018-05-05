@@ -1,17 +1,16 @@
-from os.path import join
 
-from .sqlite import init_db
-from .retrieve import retrieve
-from .subscribe import subscribe
-from .process import Processes
-from .download import download
-from .list import list_index
-from .ingest import ingest
-from .index import index
-from .config import Arguments, reset_config, RESET_CONFIG, INDEX, MSEEDDB, MSEEDDIR, INGEST, LIST_INDEX, \
+from .config import Arguments, reset_config, RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD
-from .logs import init_log
+from .download import download
 from .help import help
+from .index import index
+from .ingest import ingest
+from .list import list_index
+from .logs import init_log
+from .process import Processes
+from .retrieve import retrieve
+from .sqlite import init_db
+from .subscribe import subscribe
 
 
 def execute(command, core):
@@ -44,7 +43,6 @@ class Core:
                             self.args.verbosity, self. args.log_name, self.args.log_unique, self.args.log_unique_expire)
         self.log.debug('Args: %s' % self.args)
         self.db = init_db(self.args.mseed_db, self.log)
-
 
 
 def main():
