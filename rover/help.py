@@ -1,6 +1,6 @@
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT, mm, ALL, NO, MSEEDCMD
 
 DAEMON = 'daemon'
 USAGE = 'usage'
@@ -8,13 +8,13 @@ LOWLEVEL = 'low-level'
 
 
 def help(args):
-    if not args:
+    if not args.args:
         welcome(args)
-    elif len(args) == 1 and args[0] == USAGE:
+    elif len(args.args) == 1 and args.args[0] == USAGE:
         usage()
-    elif len(args) == 1 and args[0] == DAEMON:
+    elif len(args.args) == 1 and args.args[0] == DAEMON:
         daemon()
-    elif len(args) == 1 and args[0] == LOWLEVEL:
+    elif len(args.args) == 1 and args.args[0] == LOWLEVEL:
         low_level()
     else:
         raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
@@ -113,17 +113,28 @@ def low_level():
       database index (config parameter %s).  Called by %s 
       when needed.
       
-    %s (file|dir) ...
-      Rewrite the specified files in the local store (config
-      parameter %s) removing duplicates and joining contiguous 
+    %s [file ...]
+      Rewrite mseed files, removing duplicates and joining contiguous 
       data, then update the database index (config parameter
       %s).  Called by %s when needed.
       
-    %s
-      Scan the mseed files in the local store (config parameter 
-      %s) and update the database index (config parameter 
-      %s).  Called by %s when needed.
+      If no arguments are given then any files in the local store
+      (config parameter %s) that have been modified since the 
+      store was last indexed are processed.  The config parameter
+      %s can be used to force processing of all files.  The config 
+      parameter %s can be used (eg %s on the command 
+      line) to avoid calling this command when ingesting data.
+            
+    %s [file ...]
+      Scan files and update the database index (config parameter 
+      %s) using the mseedindex command (config parameter %s).
+      Called by %s or %s when needed.
+      
+      If no arguments are given then any files in the local store
+      (config parameter %s) that have been modified since the 
+      store was last indexed are processed.  The config parameter
+      %s can be used to force processing of all files.
 ''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
        INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
-       COMPACT, MSEEDDIR, MSEEDDB, INGEST,
-       INDEX, MSEEDDIR, MSEEDDB, COMPACT))
+       COMPACT, MSEEDDB, INGEST, MSEEDDIR, ALL, COMPACT, NO+COMPACT,
+       INDEX, MSEEDDB, MSEEDCMD, COMPACT, INGEST, MSEEDDIR, ALL))

@@ -14,7 +14,7 @@ from .subscribe import subscribe
 
 def execute(command, config):
     if not command or command == HELP:
-        help(config.args.args)
+        help(config.args)
     elif command == RESET_CONFIG:
         reset_config(config)
     elif command == INDEX:
