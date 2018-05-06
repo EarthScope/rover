@@ -1,9 +1,9 @@
 
 from .utils import check_leap, check_cmd
-from .scan import MseedFileScanner
+from .scan import Scanner
 
 
-class Indexer(MseedFileScanner):
+class Indexer(Scanner):
     """
     Run mssedindex on modified files (and delete entries for missing files).
     """
@@ -17,7 +17,7 @@ class Indexer(MseedFileScanner):
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._dev = args.dev
 
-    def _process(self, path):
+    def process(self, path):
         self._log.info('Indexing %s' % path)
         # todo - windows var
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'

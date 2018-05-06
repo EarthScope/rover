@@ -4,6 +4,7 @@ from os.path import exists, isdir, join, isfile
 from re import match
 from datetime import datetime
 
+from .compact import Compacter
 from .index import index, Indexer
 from .utils import canonify, run, check_cmd, check_leap, create_parents
 from .sqlite import SqliteSupport
@@ -32,8 +33,10 @@ class Ingester(SqliteSupport):
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._table = None
         self._mseed_dir = canonify(args.mseed_dir)
+        self._compact = args.compact
         self._log = log
         self._indexer = Indexer(config)
+        self._compacter = Compacter(config)
 
     def ingest(self, args, table=TMPTABLE):
         self._table = table
@@ -45,7 +48,10 @@ class Ingester(SqliteSupport):
                 self._ingest_dir(arg)
             else:
                 self._ingest_file(arg)
-        self._indexer.run()
+        if self._compact:
+            self._compacter.run()
+        else:
+            self._indexer.run()
 
     def _ingest_dir(self, dir):
         for file in listdir(dir):

@@ -18,14 +18,6 @@ def test_write_config():
 daemon=False
 # development mode (show exceptions)?
 dev=False
-# availability service url
-availability-url=http://service.iris.edu/irisws/availability/1/query
-# dataselect service url
-dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
-# temporary storage for downloads
-temp-dir=~/rover/tmp
-# number of days before deleting temp files
-temp-expire=1
 # tolerance for overlapping timespans
 timespan-tol=0.1
 # number of download instances to run
@@ -34,14 +26,16 @@ download-workers=10
 multiprocess=False
 # command to run rover
 rover-cmd=rover
-# use leapseconds file?
-leap=True
-# number of days before refreshing file
-leap-expire=30
-# file for leapsecond data
-leap-file=~/rover/leap-seconds.lst
-# URL for leapsecond data
-leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
+# availability service url
+availability-url=http://service.iris.edu/irisws/availability/1/query
+# dataselect service url
+dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
+# temporary storage for downloads
+temp-dir=~/rover/tmp
+# number of days before deleting temp files
+temp-expire=1
+# call compact during ingest?
+compact=False
 # directory for logs
 log-dir=~/rover/logs
 # base file name for logs
@@ -58,6 +52,8 @@ log-size=6
 log-count=10
 # stdout verbosity (0-5)
 verbosity=4
+# process all files (not just modified)?
+all=False
 # mseedindex command
 mseed-cmd=mseedindex
 # mseedindex database (also used by rover)
@@ -66,6 +62,14 @@ mseed-db=~/rover/index.sql
 mseed-dir=~/rover/mseed
 # number of mseedindex instances to run
 mseed-workers=10
+# use leapseconds file?
+leap=True
+# number of days before refreshing file
+leap-expire=30
+# file for leapsecond data
+leap-file=~/rover/leap-seconds.lst
+# URL for leapsecond data
+leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 ''', contents
 
 

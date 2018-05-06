@@ -98,10 +98,11 @@ def fileSystemPathIterator(root, depth=1):
             yield path
 
 
-class MseedFileScanner(SqliteSupport):
+class Scanner(SqliteSupport):
     """
     Compare the filesystem and the database (using the iterators above)
-    and when there is a discrepancy either add or remove an entry.
+    and when there is a discrepancy eitehr remove a database entry or process
+    (via subclass) the file.
     """
 
     def __init__(self, config):
@@ -143,12 +144,15 @@ class MseedFileScanner(SqliteSupport):
             else:
                 dbepoch = (parse_short_time(dblastmod) - EPOCH).total_seconds() + 1   # add one because it's rounded down
                 if self._all or lastmod(fspath) > dbepoch:
-                    self._process(fspath)
+                    self.process(fspath)
+        self._done()
 
     def _delete(self, path):
         self._log.debug('Removing %s from index' % path)
         self._execute('delete from tsindex where filename like ?', (path,))
 
-    def _process(self, path):
+    def process(self, path):
         raise Exception('Unimplemented')
 
+    def done(self):
+        pass
