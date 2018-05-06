@@ -1,11 +1,11 @@
 
 from binascii import hexlify
+from datetime import datetime
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir
 from os.path import dirname, exists, isdir, expanduser, abspath
 from subprocess import Popen, check_output, STDOUT
 from time import time
-from datetime import datetime
 
 from requests import get, post
 
@@ -156,6 +156,32 @@ def format_time(time):
     return datetime.strftime(time, '%Y-%m-%dT%H:%M:%S.%f')
 
 
+def clean_old_files(dir, age_secs, match, log):
+    """
+    Delete old files that match the predicate.
+    """
+    if exists(dir):
+        for file in listdir(dir):
+            if match(file):
+                try:
+                    if time() - lastmod(file) > age_secs:
+                        log.warn('Deleting old %s' % file)
+                except FileNotFoundError:
+                    pass  # was deleted from under us
+
+
+def match_prefixes(*prefixes):
+    """
+    Match predicate (see above) using a prefix.
+    """
+    def match(name):
+        for prefix in prefixes:
+            if name.startswith(prefix):
+                return True
+        return False
+    return match
+
+
 class PushBackIterator:
     """
     Modify an iterator so that a (single) value can be pushed back
@@ -180,23 +206,3 @@ class PushBackIterator:
         else:
             value = next(self._iter)
         return value
-
-
-def clean_old_files(dir, age_secs, match, log):
-    if exists(dir):
-        for file in listdir(dir):
-            if match(file):
-                try:
-                    if time() - lastmod(file) > age_secs:
-                        log.warn('Deleting old %s' % file)
-                except FileNotFoundError:
-                    pass  # was deleted from under us
-
-
-def match_prefixes(*prefixes):
-    def match(name):
-        for prefix in prefixes:
-            if name.startswith(prefix):
-                return True
-        return False
-    return match

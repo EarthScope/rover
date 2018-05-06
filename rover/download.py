@@ -8,8 +8,8 @@ from threading import Thread
 from .ingest import Ingester
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .sqlite import SqliteSupport
-from .utils import canonify, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd, unique_filename, \
-    clean_old_files, match_prefixes
+from .utils import canonify, uniqueish, get_to_file, format_time, check_cmd, unique_filename, \
+    clean_old_files, match_prefixes, PushBackIterator
 from .workers import Workers
 
 
@@ -116,7 +116,6 @@ class DownloadManager:
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args.mseed_cmd
         self._temp_dir = canonify(args.temp_dir)
-        self._verbosity = args.verbosity
         self._dev = args.dev
         self._log_unique = args.log_unique
         self._args = args
@@ -144,7 +143,7 @@ class DownloadManager:
                 sncl_seconds += seconds
                 total_seconds += seconds
             if sncl_seconds:
-                total_sncls ++ 1
+                total_sncls += 1
                 print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
                 for (begin, end) in coverage.timespans:
                     print('    %s - %s  (%4.2f sec)' % (format_time(begin), format_time(end), (end - begin).total_seconds()))

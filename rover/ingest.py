@@ -45,7 +45,7 @@ class Ingester(SqliteSupport):
                 self._ingest_dir(arg)
             else:
                 self._ingest_file(arg)
-        self._indexer.index()
+        self._indexer.run()
 
     def _ingest_dir(self, dir):
         for file in listdir(dir):

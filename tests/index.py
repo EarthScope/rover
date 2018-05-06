@@ -21,6 +21,6 @@ def test_deleted_file():
         config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
         unlink(join(config.args.mseed_dir, 'IU', '2010', '58', 'ANMO.IU.2010.58'))
         indexer = Indexer(config)
-        indexer.index()
+        indexer.run()
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]
         assert n == 0, n
