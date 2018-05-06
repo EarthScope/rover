@@ -7,7 +7,7 @@ from time import mktime
 
 from .workers import Workers
 from .sqlite import SqliteSupport
-from .utils import canonify, check_leap, lastmod, PushBackIterator, parse_time, parse_short_time
+from .utils import canonify, check_leap, lastmod, PushBackIterator, parse_time, parse_short_time, check_cmd
 
 
 EPOCH = datetime.utcfromtimestamp(0)
@@ -42,9 +42,9 @@ class DatabasePathIterator(SqliteSupport):
     files.
     """
 
-    def __init__(self, db, root, log):
-        super().__init__(db, log)
-        self._root = canonify(root)
+    def __init__(self, config):
+        super().__init__(config)
+        self._mseed_dir = canonify(config.args.mseed_dir)
         self._stem = 0
         self._prev_path = None
         self._cursor = self._db.cursor()
@@ -67,10 +67,10 @@ class DatabasePathIterator(SqliteSupport):
             if self._cursor:
                 lastmod, path = next(self._cursor)
                 if not self._prev_path:
-                    self._stem = find_stem(path, self._root, self._log)
+                    self._stem = find_stem(path, self._mseed_dir, self._log)
                 if self._prev_path != path:
                     self._prev_path = path
-                return lastmod, join(self._root, path[self._stem+1:])
+                return lastmod, join(self._mseed_dir, path[self._stem + 1:])
             else:
                 raise StopIteration()
         except:
@@ -103,19 +103,22 @@ class Indexer(SqliteSupport):
     and when there is a discrepancy either add or remove an entry.
     """
 
-    def __init__(self, db, mseedindex, mseed_db, root, n_workers, leap, leap_expire, leap_file, leap_url, dev, log):
-        super().__init__(db, log)
-        self._mseedindex = mseedindex
-        self._mseed_db = mseed_db
-        self._root = root
-        self._workers = Workers(n_workers, log)
-        self._leap_file = check_leap(leap, leap_expire, leap_file, leap_url, log)
-        self._dev = dev
+    def __init__(self, config):
+        super().__init__(config)
+        args, log = config.args, config.log
+        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
+        self._mseed_cmd = args.mseed_cmd
+        self._mseed_db = args.mseed_db
+        self._mseed_dir = args.mseed_dir
+        self._workers = Workers(config, args.mseed_workers)
+        self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
+        self._dev = args.dev
         self._log = log
+        self._config = config
 
     def index(self):
-        dbpaths = PushBackIterator(DatabasePathIterator(self._db, self._root, self._log))
-        fspaths = fileSystemPathIterator(self._root)
+        dbpaths = PushBackIterator(DatabasePathIterator(self._config))
+        fspaths = fileSystemPathIterator(self._mseed_dir)
         while True:
             # default values for paths work with ordering
             closed, dblastmod, dbpath, fspath = False, 0, ' ', ' '
@@ -135,7 +138,7 @@ class Indexer(SqliteSupport):
             if fspath > dbpath:
                 if not closed:
                     dbpaths.push((dblastmod, dbpath))
-                dblastmod, dbpath = 0, fspath
+                dblastmod, dbpath = '1970-01-01T00:00:00', fspath
             # extra entry in database, needs deleting
             if fspath < dbpath:
                 self._delete(dbpath)
@@ -153,14 +156,12 @@ class Indexer(SqliteSupport):
         self._log.info('Indexing %s' % path)
         # todo - windows var
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
-                              % (self._leap_file, self._mseedindex, '-v -v' if self._dev else '', self._mseed_db, path))
+                              % (self._leap_file, self._mseed_cmd, '-v -v' if self._dev else '', self._mseed_db, path))
 
 
-def index(core):
+def index(config):
     """
     Implement the index command.
     """
-    indexer = Indexer(core.db, core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir, core.args.mseed_workers,
-                      core.args.leap, core.args.leap_expire, core.args.leap_file, core.args.leap_url, core.args.dev,
-                      core.log)
-    indexer.index()
+    # todo - check no args
+    Indexer(config).index()

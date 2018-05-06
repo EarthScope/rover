@@ -2,7 +2,7 @@
 from tempfile import TemporaryDirectory
 from os.path import join
 
-from rover.config import Arguments
+from rover.args import Arguments
 
 
 def test_write_config():

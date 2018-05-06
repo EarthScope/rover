@@ -45,9 +45,9 @@ class SqliteSupport:
     Utility class supporting various common database operations.
     '''
 
-    def __init__(self, db, log):
-        self._db = db
-        self._log = log
+    def __init__(self, config):
+        self._db = config.db
+        self._log = config.log
         self._used = False
 
     def cursor(self):

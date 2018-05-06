@@ -1,20 +1,20 @@
 
-from .config import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE
+from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT
 
 DAEMON = 'daemon'
 USAGE = 'usage'
 LOWLEVEL = 'low-level'
 
 
-def help(args, log):
-    if not args.args:
+def help(args):
+    if not args:
         welcome(args)
-    elif len(args.args) == 1 and args.args[0] == USAGE:
+    elif len(args) == 1 and args[0] == USAGE:
         usage()
-    elif len(args.args) == 1 and args.args[0] == DAEMON:
+    elif len(args) == 1 and args[0] == DAEMON:
         daemon()
-    elif len(args.args) == 1 and args.args[0] == LOWLEVEL:
+    elif len(args) == 1 and args[0] == LOWLEVEL:
         low_level()
     else:
         raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
@@ -109,8 +109,15 @@ def low_level():
   
     %s (file|dir) ...
       Add the specified files to the local store (config
-      parameter %s) and update the database index (config
-      parameter %s).  Called by %s when needed.
+      parameter %s), compact the contents, and update the 
+      database index (config parameter %s).  Called by %s 
+      when needed.
+      
+    %s (file|dir) ...
+      Rewrite the specified files in the local store (config
+      parameter %s) removing duplicates and joining contiguous 
+      data, then update the database index (config parameter
+      %s).  Called by %s when needed.
       
     %s
       Scan the mseed files in the local store (config parameter 
@@ -118,4 +125,5 @@ def low_level():
       %s).  Called by %s when needed.
 ''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
        INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
-       INDEX, MSEEDDIR, MSEEDDB, INGEST))
+       COMPACT, MSEEDDIR, MSEEDDB, INGEST,
+       INDEX, MSEEDDIR, MSEEDDB, COMPACT))

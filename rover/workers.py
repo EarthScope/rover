@@ -13,9 +13,9 @@ class Workers:
     we are not waiting on them to complete.
     """
 
-    def __init__(self, size, log):
-        self._log = log
-        self._size = size
+    def __init__(self, config, n_workers):
+        self._log = config.log
+        self._n_workers = n_workers
         self._workers = []  # (command, popen, callback)
 
     def execute(self, command, callback=None):
@@ -31,7 +31,7 @@ class Workers:
     def _wait_for_space(self):
         while True:
             self.check()
-            if len(self._workers) < self._size:
+            if len(self._workers) < self._n_workers:
                 self._log.debug('Space for new worker')
                 return
             sleep(0.1)

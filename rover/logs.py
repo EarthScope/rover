@@ -3,10 +3,10 @@ import sys
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 from logging.handlers import RotatingFileHandler
 from os import makedirs, getpid
-from os.path import join, exists, isdir, expanduser
+from os.path import join, exists, isdir
 from re import match
 
-from .utils import clean_old_files
+from .utils import clean_old_files, canonify
 
 
 def level(n):
@@ -34,7 +34,7 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     log = getLogger(name)
     log.setLevel(DEBUG)
 
-    dir = expanduser(log_dir)
+    dir = canonify(log_dir)
     if not exists(dir):
         makedirs(dir)
     if not isdir(dir):

@@ -2,13 +2,48 @@
 from fnmatch import fnmatch
 from os import listdir
 from os.path import dirname, join
+from re import sub
 from tempfile import mktemp
 
 import rover
+from rover.args import Arguments, MSEEDDIR, MSEEDDB, TEMPDIR, LOGDIR, LEAP, MSEEDCMD
+from rover.ingest import Ingester
 from rover.logs import init_log
 from rover.sqlite import init_db
-from rover.index import Indexer
-from rover.ingest import MseedindexIngester
+
+
+class TestArgs:
+
+    def __init__(self, **kargs):
+        self._kargs = kargs
+        self._argparser = Arguments()
+
+    def __getattr__(self, item):
+        if item in self._kargs:
+            value = self._kargs[item]
+        else:
+            value = self._argparser.get_default(item)
+        return value
+
+
+def _(text):
+    return sub(r'\-', '_', text)
+
+
+class TestConfig:
+
+    def __init__(self, dir, **kargs):
+        kargs = dict(kargs)
+        kargs[_(MSEEDDIR)] = join(dir, 'mseed')
+        kargs[_(MSEEDDB)] = join(dir, 'index.sql')
+        kargs[_(TEMPDIR)] = join(dir, 'tmp')
+        kargs[_(LOGDIR)] = join(dir, 'logs')
+        root = find_root()
+        kargs[_(MSEEDCMD)] = join(root, '..', 'mseedindex', 'mseedindex')
+        kargs[_(LEAP)] = False
+        self.args = TestArgs(**kargs)
+        self.log = init_log(self.args.log_dir, 7, 1, 5, 0, 'test', self.args.leap, 0)
+        self.db = init_db(self.args.mseed_db, self.log)
 
 
 def find_root():
@@ -29,14 +64,9 @@ def assert_files(dir, *files):
 
 def ingest_and_index(dir, data):
     root = find_root()
-    log = init_log(dir, 7, 1, 5, 0, 'test', False, 0)
-    dbpath = mktemp(dir=dir)
-    db = init_db(dbpath, log)
-    mseedindex = join(root, '..', 'mseedindex', 'mseedindex')
-    ingester = MseedindexIngester(db, mseedindex, dbpath, dir, False, None, None, None, log)
+    config = TestConfig(dir)
+    ingester = Ingester(config)
     ingester.ingest(data)
-    indexer = Indexer(db, mseedindex, dbpath, dir, 10, False, None, None, None, False, log)
-    indexer.index()
-    return log, db, dbpath
+    return config
 
 

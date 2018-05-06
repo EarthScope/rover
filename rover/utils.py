@@ -30,7 +30,7 @@ def check_cmd(cmd, name, param, log):
     except:
         log.error('Command "%s" failed' % cmd)
         log.error('Install %s or configure %s correctly' % (name, param))
-        raise Exception('Cannot find %s' % name)
+        raise Exception('Cannot find %s (using %s)' % (name, cmd))
 
 
 def canonify(path):
@@ -44,6 +44,7 @@ def run(cmd, log):
     """
     We can't use subprocess.run() because it doesn't exist for 2.7.
     """
+    log.debug('Running "%s"' % cmd)
     process = Popen(cmd, shell=True)
     process.wait()
     if process.returncode:

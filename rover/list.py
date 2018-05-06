@@ -21,8 +21,8 @@ class IndexLister(SqliteSupport):
     alters lister state)
     """
 
-    def __init__(self, db, log):
-        super().__init__(db, log)
+    def __init__(self, config):
+        super().__init__(config)
         self._multiple_constraints = {'station': [],
                                       'network': [],
                                       'channel': [],
@@ -213,6 +213,6 @@ class IndexLister(SqliteSupport):
         if join and prev: print(file=stdout, *prev)
 
 
-def list_index(core):
-    IndexLister(core.db, core.log).list(core.args.args)
+def list_index(config):
+    IndexLister(config).list(config.args.args)
 

@@ -5,9 +5,8 @@ from os.path import join
 from queue import Queue, Empty
 from threading import Thread
 
-from .config import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
-from .index import Indexer
-from .ingest import MseedindexIngester
+from .ingest import Ingester
+from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, PushBackIterator, format_time, check_cmd, unique_filename, \
     clean_old_files, match_prefixes
@@ -38,14 +37,14 @@ class Downloader(SqliteSupport):
     time.
     """
 
-    def __init__(self, db, tempdir, temp_expire, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, n_workers, dev, log):
-        super().__init__(db, log)
-        self._temp_dir = canonify(tempdir)
+    def __init__(self, config):
+        super().__init__(config)
+        args = config.args
+        self._temp_dir = canonify(args.temp_dir)
         self._blocksize = 1024 * 1024
-        self._ingester = MseedindexIngester(db, mseedindex, mseed_db, mseed_dir, leap, leap_expire, leap_file, leap_url, log)
-        self._indexer = Indexer(db, mseedindex, mseed_db, mseed_dir, n_workers, leap, leap_expire, leap_file, leap_url, dev, log)
+        self._ingester = Ingester(config)
         self._create_downloaderss_table()
-        clean_old_files(self._temp_dir, temp_expire, match_prefixes(TMPFILE, CONFIGFILE), log)
+        clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
     def download(self, url):
         """
@@ -57,7 +56,6 @@ class Downloader(SqliteSupport):
         try:
             path = self._do_download(url)
             self._ingester.ingest([path], table=table)
-            self._indexer.index()
         finally:
             if path: unlink(path)
             self._execute('drop table if exists %s' % table)
@@ -80,17 +78,15 @@ class Downloader(SqliteSupport):
         return get_to_file(url, path, self._log)
 
 
-def download(core):
+def download(config):
     """
     Implement the download command - download, ingest and index data.
     """
-    downloader = Downloader(core.db, core.args.temp_dir, core.args.temp_expire,
-                            core.args.mseed_cmd, core.args.mseed_db, core.args.mseed_dir,
-                            core.args.leap, core.args.leap_expire, core.args.leap_file, core.args.leap_url,
-                            core.args.mseed_workers, core.args.dev, core.log)
-    if len(core.args.args) != 1:
+    downloader = Downloader(config)
+    args = config.args.args
+    if len(args) != 1:
         raise Exception('Usage: rover %s url' % DOWNLOAD)
-    downloader.download(core.args.args[0])
+    downloader.download(args[0])
 
 
 class DownloadManager:
@@ -111,23 +107,24 @@ class DownloadManager:
     then pushing those to workers).
     """
 
-    def __init__(self, n_workers, dataselect, rover, mseedindex, tmpdir, verbosity, dev, log_unique, args, log):
+    def __init__(self, config):
+        args, log = config.args, config.log
         self._log = log
-        self._dataselect = dataselect
-        check_cmd('%s -h' % rover, 'rover', 'rover', log)
-        self._rover = rover
-        check_cmd('%s -h' % mseedindex, 'mseedindex', 'mseed-cmd', log)
-        self._mseedindex = mseedindex
-        self._tmpdir = tmpdir
-        self._verbosity = verbosity
-        self._dev = dev
-        self._log_unique = log_unique
+        self._dataselect = args.dataselect
+        check_cmd('%s -h' % args.rover, 'rover', 'rover', log)
+        self._rover = args.rover
+        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
+        self._mseed_cmd = args.mseed_cmd
+        self._temp_dir = canonify(args.temp_dir)
+        self._verbosity = args.verbosity
+        self._dev = args.dev
+        self._log_unique = args.log_unique
         self._args = args
         self._coverages = []
-        self._queue = Queue(maxsize=n_workers * 2)
-        self._workers = Workers(n_workers, log)
+        self._queue = Queue(maxsize=args.n_workers * 2)
+        self._workers = Workers(config, args.download_workers)
         self._run_called = False
-        self._config = None
+        self._config_path = None
 
     def add(self, coverage):
         if self._run_called:
@@ -161,7 +158,7 @@ class DownloadManager:
         Expand the timespans into daily downloads, get the data and ingest.
         """
         self._run_called = True
-        self._config = self._write_config()
+        self._config_path = self._write_config()
         Thread(target=self._main_loop, daemon=True).start()
         n_downloads = 0
         try:
@@ -176,14 +173,14 @@ class DownloadManager:
             else:
                 self._log.warn('No data downloaded / ingested')
         finally:
-            unlink(self._config)
+            unlink(self._config_path)
 
     def _write_config(self):
         if self._coverages:
             junk = str(self._coverages[0])
         else:
             junk = 'empty'
-        path = unique_filename(join(canonify(self._tmpdir), uniqueish(CONFIGFILE, junk)))
+        path = unique_filename(join(canonify(self._temp_dir), uniqueish(CONFIGFILE, junk)))
         self._log.debug('Writing config to %s' % path)
         Arguments().write_config(path, self._args)
         return path
@@ -221,8 +218,8 @@ class DownloadManager:
                 # we only pass arguments on the command line that are different from the
                 # default (which is in the file)
                 command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
-                    self._rover, self._config, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
-                    mm(LOGUNIQUE) if self._log_unique else '',  mm(DEV) if self._dev else '',
+                    self._rover, self._config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
+                    mm(LOGUNIQUE) if self._log_unique else '', mm(DEV) if self._dev else '',
                     DOWNLOAD, self._build_url(sncl, begin, end))
                 self._log.debug(command)
                 self._workers.execute(command, callback=self._callback)

@@ -5,7 +5,7 @@ from os.path import join
 from re import sub
 
 from rover.logs import init_log
-from rover.config import Arguments, DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
+from rover.args import Arguments, DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
 
 
 def log_all(log):

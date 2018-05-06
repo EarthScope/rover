@@ -13,6 +13,6 @@ class Subscriber(SqliteSupport):
 
 
 
-def subscribe(core):
-    subscriber = Subscriber(core.db, core.log)
+def subscribe(config):
+    subscriber = Subscriber(config.db, config.log)
     subscriber.subscribe()

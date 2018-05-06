@@ -6,8 +6,8 @@ from .sqlite import SqliteSupport
 
 class Processes(SqliteSupport):
 
-    def __init__(self, db, log):
-        super().__init__(db, log)
+    def __init__(self, config):
+        super().__init__(config)
         self._create_processes_table()
 
     def _create_processes_table(self):

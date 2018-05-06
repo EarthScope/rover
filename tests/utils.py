@@ -2,7 +2,7 @@
 from tempfile import TemporaryDirectory
 from os.path import join, exists
 
-from rover.config import DEFAULT_LEAPURL, DEFAULT_LEAPEXPIRE
+from rover.args import DEFAULT_LEAPURL, DEFAULT_LEAPEXPIRE
 from rover.logs import init_log
 from rover.utils import check_leap
 
