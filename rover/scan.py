@@ -109,6 +109,7 @@ class MseedFileScanner(SqliteSupport):
         args, log = config.args, config.log
         self._mseed_dir = args.mseed_dir
         self._workers = Workers(config, args.mseed_workers)
+        self._all = args.all
         self._log = log
         self._config = config
 
@@ -141,7 +142,7 @@ class MseedFileScanner(SqliteSupport):
             # fspath == dbpath so test if need to scan
             else:
                 dbepoch = (parse_short_time(dblastmod) - EPOCH).total_seconds() + 1   # add one because it's rounded down
-                if lastmod(fspath) > dbepoch:
+                if self._all or lastmod(fspath) > dbepoch:
                     self._process(fspath)
 
     def _delete(self, path):

@@ -5,8 +5,7 @@ from .scan import MseedFileScanner
 
 class Indexer(MseedFileScanner):
     """
-    Compare the filesystem and the database (using the iterators above)
-    and when there is a discrepancy either add or remove an entry.
+    Run mssedindex on modified files (and delete entries for missing files).
     """
 
     def __init__(self, config):
