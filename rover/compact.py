@@ -135,11 +135,6 @@ class Compacter(ModifiedScanner, DirectoryScanner):
             self._log.debug('Deleting copy at %s' % copy)
             unlink(copy)
 
-    def _signature(self, data, index):
-        return (data[index].stats.network, data[index].stats.station, data[index].stats.location,
-                data[index].stats.channel, data[index].stats.sampling_rate,
-                data[index].stats.starttime, data[index].stats.endtime)
-
     def _assert_int32(self, data):
         if data.dtype != np.int32:
             raise Exception("Unupported data type: %s" % data.dtype)
