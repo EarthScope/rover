@@ -1,16 +1,22 @@
-from _tracemalloc import start
+
 from functools import total_ordering
+from os import unlink
+from os.path import basename, join
+from shutil import move
 
 from obspy import read
 import numpy as np
 
-from .utils import canonify
+from .utils import canonify, unique_filename, create_parents
 from .index import Indexer
 from .scan import ModifiedScanner, DirectoryScanner
 
 
 @total_ordering
 class Signature:
+    """
+    Encapsulate the metadata and associated logic for a trace / block.
+    """
 
     def __init__(self, data, index, timespan_tol):
         self.net = data[index].stats.network
@@ -23,7 +29,7 @@ class Signature:
         self.end_time = data[index].stats.endtime
         self._timespan_tol = timespan_tol
 
-    def _snclqr(self):
+    def snclqr(self):
         return (self.net, self.sta, self.loc, self.cha, self.qua, self.sample_rate)
 
     def _tuple(self):
@@ -42,7 +48,7 @@ class Signature:
         return a - b > -self._timespan_tol
 
     def mergeable(self, other):
-        return (type(other) == type(self) and self._snclqr() == other._snclqr() and
+        return (type(other) == type(self) and self.snclqr() == other.snclqr() and
                 ((self._before(other.start_time, self.end_time) and self._after(other.end_time, self.start_time)) or
                  (self._before(self.start_time, other.end_time) and self._after(self.end_time, other.start_time))))
 
@@ -55,6 +61,9 @@ class Compacter(ModifiedScanner, DirectoryScanner):
     We do this by bubble-sorting the data blocks, merging data when
     appropriate.  This allows us to replace data with the latest (later
     in the file) values.
+
+    We also check whether duplciate data are mutated and raise an error
+    if so (unless --compact_mutate is set).
     """
 
     def __init__(self, config):
@@ -62,7 +71,10 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         DirectoryScanner.__init__(self, config)
         args = config.args
         self._mseed_dir = canonify(args.mseed_dir)
+        self._temp_dir = canonify(args.temp_dir)
         self._timespan_tol = args.timespan_tol
+        self._delete_files = args.delete_files
+        self._compact_mutate = args.compact_mutate
         self._indexer = Indexer(config)
 
     def run(self, args):
@@ -75,27 +87,40 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         self._log.info('Compacting %s' % path)
         self._compact(path)
         if path.startswith(self._mseed_dir):
-            raise Exception('Stopping before index')
             self._indexer.run([path])
         else:
             self._log.warn('Skipping index for file outside local store: %s' % path)
 
     def _compact(self, path):
         data = read(path)
-        index = 1
+        index, mutated = 1, False
         while index < len(data):
             lower, upper = Signature(data, index, self._timespan_tol), Signature(data, index-1, self._timespan_tol)
             if lower.mergeable(upper):
                 self._merge(data, index, lower, upper)
                 # follow merged block upwards unless at top
                 index = max(1, index-1)
+                mutated = True
             elif lower < upper:
                 self._swap(data, index)
                 # follow merged block upwards unless at top
                 index = max(1, index-1)
+                mutated = True
             else:
                 index += 1
-        # todo write
+        if mutated:
+            self._replace(path, data)
+
+    def _replace(self, path, data):
+        copy = unique_filename(join(self._temp_dir, basename(path)))
+        self._log.debug('Moving old file to %s' % copy)
+        create_parents(copy)
+        move(path, copy)
+        self._log.debug('Writing compacted data to %s' % path)
+        data.write(path, format='MSEED')
+        if self._delete_files:
+            self._log.debug('Deleting copy at %s' % copy)
+            unlink(copy)
 
     def _signature(self, data, index):
         return (data[index].stats.network, data[index].stats.station, data[index].stats.location,
@@ -122,7 +147,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         return offset, length
 
     def _merge(self, data, index, lower, upper):
-        self._log.debug('merge %d' % index)
+        self._log.info('Merging blocks %d and %d (%s.%s.%s.%s.%s %gHz)' % tuple([index-1, index] + list(lower.snclqr())))
         self._assert_int32(data[index-1].data)
         self._assert_int32(data[index].data)
         self._assert_size(upper.end_time - upper.start_time, upper.sample_rate, len(data[index-1].data))
@@ -139,16 +164,20 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         new_data[offset:offset+length] = data[index].data
         # then check oldest data was not modified
         offset, length = self._locate(start_time, upper)
-        # todo - allow via flag
         if not np.array_equal(new_data[offset:offset+length], data[index-1].data):
-            raise Exception('Modified data during merge')
+            msg = 'Modified data for %s.%s.%s.%s.% (%gHz) during merge' % lower.snclqr()
+            if self._compact_mutate:
+                self._log.warn(msg)
+            else:
+                raise Exception(msg)
         data[index-1].data = new_data
+        # endtime is calculated from these
         data[index-1].stats.starttime = start_time
         data[index-1].stats.npts = len(new_data)
         data.remove(data[index])
 
     def _swap(self, data, index):
-        self._log.debug('swap %d' % index)
+        self._log.info('Swapping blocks %d and %d' % (index-1, index))
         upper = data[index-1]
         data.remove(upper)
         data.insert(index, upper)

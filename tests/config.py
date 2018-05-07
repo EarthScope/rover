@@ -18,6 +18,10 @@ def test_write_config():
 daemon=False
 # development mode (show exceptions)?
 dev=False
+# delete temporary files?
+delete-files=True
+# delete temporary database tables?
+delete-tables=True
 # tolerance for overlapping timespans
 timespan-tol=0.1
 # number of download instances to run
@@ -36,6 +40,8 @@ temp-dir=~/rover/tmp
 temp-expire=1
 # call compact during ingest?
 compact=True
+# allow compact to mutate data?
+compact-mutate=False
 # process all files (not just modified)?
 all=False
 # when given a directory, process children?
