@@ -119,9 +119,9 @@ class Retriever(SqliteSupport):
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',
                              (sncl.net, sncl.sta, sncl.loc, sncl.cha),
-                             callback)
+                             callback, quiet=True)
         except OperationalError:
-            self._log.warn('No index')
+            self._log.debug('No index - first time using rover?')
         return availability
 
     def _request_download(self, missing):

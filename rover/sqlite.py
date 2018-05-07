@@ -24,8 +24,9 @@ class NoResult(Exception):
 
 class CursorContext:
 
-    def __init__(self, support):
+    def __init__(self, support, quiet):
         self._support = support
+        self._quiet = quiet
         self._cursor = support._db.cursor()
 
     def __enter__(self):
@@ -33,7 +34,10 @@ class CursorContext:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type:
-            self._support._log.error(exc_val)
+            if self._quiet:
+                self._support._log.debug(exc_val)
+            else:
+                self._support._log.error(exc_val)
         else:
             self._support._db.commit()
         self._cursor.close()
@@ -50,24 +54,24 @@ class SqliteSupport:
         self._log = config.log
         self._used = False
 
-    def cursor(self):
-        return CursorContext(self)
+    def cursor(self, quiet=False):
+        return CursorContext(self, quiet)
 
-    def _execute(self, sql, params=tuple()):
+    def _execute(self, sql, params=tuple(), quiet=False):
         """
         Execute a single command in a transaction.
         """
-        with self.cursor() as c:
+        with self.cursor(quiet=quiet) as c:
             self._log.debug('Execute: %s %s' % (sql, params))
             c.execute(sql, params)
 
-    def _fetchsingle(self, sql, params=tuple()):
+    def _fetchsingle(self, sql, params=tuple(), quiet=False):
         """
         Return a single value from a select.
 
         Raise NoResult if no value.
         """
-        with self.cursor() as c:
+        with self.cursor(quiet=quiet) as c:
             self._log.debug('Fetchsingle: %s %s' % (sql, params))
             result = c.execute(sql, params).fetchone()
             if result:
@@ -78,13 +82,13 @@ class SqliteSupport:
             else:
                 raise NoResult(sql, params)
 
-    def _fetchone(self, sql, params=tuple()):
+    def _fetchone(self, sql, params=tuple(), quiet=False):
         """
         Return a single row from a select.
 
         Raise NoResult if no row.
         """
-        with self.cursor() as c:
+        with self.cursor(quiet=quiet) as c:
             self._log.debug('Fetchone: %s %s' % (sql, params))
             result = c.execute(sql, params).fetchone()
             if result:
@@ -92,7 +96,7 @@ class SqliteSupport:
             else:
                 raise NoResult(sql, params)
 
-    def _fetchall(self, sql, params=tuple()):
+    def _fetchall(self, sql, params=tuple(), quiet=False):
         """
         Return a list of rows from a select.
 
@@ -103,8 +107,8 @@ class SqliteSupport:
             self._log.debug('Fetchall: %s %s' % (sql, params))
             return c.execute(sql, params).fetchall()
 
-    def _foreachrow(self, sql, params, callback):
-        with self.cursor() as c:
+    def _foreachrow(self, sql, params, callback, quiet=False):
+        with self.cursor(quiet=quiet) as c:
             self._log.debug('foreachrow: %s %s' % (sql, params))
             for row in c.execute(sql, params):
                 callback(row)
