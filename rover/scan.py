@@ -175,6 +175,7 @@ class DirectoryScanner:
         self.done()
 
     def _scan_dir(self, dir):
+        self._log.debug('Scanning directory %s' % dir)
         for file in listdir(dir):
             path = join(dir, file)
             if isfile(path):

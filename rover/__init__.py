@@ -1,7 +1,8 @@
 
+from .compact import compact
 from .config import Config, reset_config
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT
 from .download import download
 from .help import help
 from .index import index
@@ -27,6 +28,8 @@ def execute(command, config):
         download(config)
     elif command in (RETRIEVE, COMPARE):
         retrieve(config, command == RETRIEVE)
+    elif command == COMPACT:
+        compact(config)
     elif command == SUBSCRIBE:
         subscribe(config)
     else:
