@@ -27,6 +27,8 @@ ALL = 'all'
 AVAILABILITYURL = 'availability-url'
 DAEMON = 'daemon'
 DATASELECTURL = 'dataselect-url'
+DELETEFILES = 'delete-files'
+DELETETABLES = 'delete-tables'
 DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
 F, FILE = 'f', 'file'
@@ -158,6 +160,8 @@ class Arguments(ArgumentParser):
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes?', metavar='')
         self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
+        self.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
+        self.add_argument(mm(DELETETABLES), default=True, action='store_bool', help='delete temporary database tables?', metavar='')
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='tolerance for overlapping timespans', metavar='SECS', type=float)

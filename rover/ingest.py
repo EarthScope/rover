@@ -35,6 +35,7 @@ class Ingester(SqliteSupport, DirectoryScanner):
         self._table = None
         self._mseed_dir = canonify(args.mseed_dir)
         self._compact = args.compact
+        self._delete_tables = args.delete_tables
         self._log = log
         self._indexer = Indexer(config)
         self._compacter = Compacter(config)
@@ -52,7 +53,8 @@ class Ingester(SqliteSupport, DirectoryScanner):
         return join(self._mseed_dir, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
 
     def _drop_table(self):
-        self._execute('drop table if exists %s' % self._table)
+        if self._delete_tables:
+            self._execute('drop table if exists %s' % self._table)
 
     def process(self, file):
         self._log.info('Indexing %s for ingest' % file)
@@ -77,7 +79,8 @@ class Ingester(SqliteSupport, DirectoryScanner):
         with open(file, 'rb') as input:
             offset = 0
             for row in rows:
-                updated.add(self._copy_row(offset, input, file, *row))
+                offset, dest = self._copy_row(offset, input, file, *row)
+                updated.add(dest)
         return updated
 
     def _copy_row(self, offset, input, file, network, station, starttime, endtime, byteoffset, bytes):
@@ -93,7 +96,7 @@ class Ingester(SqliteSupport, DirectoryScanner):
         dest = self._make_destination(network, station, starttime)
         self._log.debug('Appending %d bytes from %s at offset %d to %s' % (bytes, file, byteoffset, dest))
         self._append_data(data, dest)
-        return dest
+        return offset, dest
 
     def _append_data(self, data, dest):
         if not exists(dest):

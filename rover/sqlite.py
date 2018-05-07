@@ -123,13 +123,6 @@ class SqliteSupport:
                            unique (pid, table_name, url)
                          )''')
 
-    def _clear_dead_retrievers(self):
-        for row in self._fetchall('select id, table_name from rover_downloaders where creation_epoch < ?', (time() - 60 * 60,)):
-            id, table = row
-            self._log.warn('Forcing deletion of table %s' % table)
-            self._execute('drop table if exists %s' % table)
-            self._execute('delete from rover_downloaders where id = ?', (id,))
-
     @staticmethod
     def _retrievers_table_name(url, pid):
         return uniqueish('rover_retriever', url)

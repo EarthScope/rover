@@ -4,6 +4,7 @@ from os import getpid, unlink
 from os.path import join
 from queue import Queue, Empty
 from threading import Thread
+from time import time
 
 from .ingest import Ingester
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
@@ -41,6 +42,8 @@ class Downloader(SqliteSupport):
         super().__init__(config)
         args = config.args
         self._temp_dir = canonify(args.temp_dir)
+        self._delete_files = args.delete_files
+        self._delete_tables = args.delete_tables
         self._blocksize = 1024 * 1024
         self._ingester = Ingester(config)
         self._create_downloaderss_table()
@@ -57,9 +60,10 @@ class Downloader(SqliteSupport):
             path = self._do_download(url)
             self._ingester.run([path], table=table)
         finally:
-            if path: unlink(path)
-            self._execute('drop table if exists %s' % table)
-            self._execute('delete from rover_downloaders where id = ?', (retrievers_id,))
+            if path and self._delete_files: unlink(path)
+            if self._delete_tables:
+                self._execute('drop table if exists %s' % table)
+                self._execute('delete from rover_downloaders where id = ?', (retrievers_id,))
 
     def _update_retrievers_table(self, url):
         self._clear_dead_retrievers()
@@ -69,6 +73,14 @@ class Downloader(SqliteSupport):
         id = self._fetchsingle('select id from rover_downloaders where pid = ? and table_name like ? and url like ?',
                                (pid, table, url))  # todo - auto retrieve key?
         return id, table
+
+    def _clear_dead_retrievers(self):
+        if self._delete_tables:
+            for row in self._fetchall('select id, table_name from rover_downloaders where creation_epoch < ?', (time() - 60 * 60,)):
+                id, table = row
+                self._log.warn('Forcing deletion of table %s' % table)
+                self._execute('drop table if exists %s' % table)
+                self._execute('delete from rover_downloaders where id = ?', (id,))
 
     def _do_download(self, url):
         # previously we extracted the file name from the header, but the code
