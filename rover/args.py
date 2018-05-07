@@ -47,6 +47,7 @@ MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
+RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
@@ -173,6 +174,7 @@ class Arguments(ArgumentParser):
         # compact and index
         self.add_argument(mm(COMPACT), default=True, action='store_bool', help='call compact during ingest?', metavar='')
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
+        self.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
 
         # logging
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar='DIR')

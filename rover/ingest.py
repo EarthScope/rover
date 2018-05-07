@@ -1,21 +1,20 @@
 
-from os import listdir
-from os.path import exists, isdir, join, isfile
+from os.path import exists, join
 from re import match
 from datetime import datetime
 
 from .compact import Compacter
-from .index import index, Indexer
-from .utils import canonify, run, check_cmd, check_leap, create_parents
+from .index import Indexer
+from .scan import DirectoryScanner
 from .sqlite import SqliteSupport
-
+from .utils import canonify, run, check_cmd, check_leap, create_parents
 
 # this is the table name when run directly from the command line.
 # when run as a worker from (multiple) retriever(s) a table is supplied.
 TMPTABLE = 'rover_tmpingest'
 
 
-class Ingester(SqliteSupport):
+class Ingester(SqliteSupport, DirectoryScanner):
     """
     The simplest possible ingester:
     * Uses mseedindx to parse the file.
@@ -25,7 +24,8 @@ class Ingester(SqliteSupport):
     """
 
     def __init__(self, config):
-        super().__init__(config)
+        SqliteSupport.__init__(self, config)
+        DirectoryScanner.__init__(self, config)
         args, log = config.args, config.log
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args. mseed_cmd
@@ -38,28 +38,11 @@ class Ingester(SqliteSupport):
         self._indexer = Indexer(config)
         self._compacter = Compacter(config)
 
-    def ingest(self, args, table=TMPTABLE):
+    def run(self, args, table=TMPTABLE):
         self._table = table
-        for arg in args:
-            arg = canonify(arg)
-            if not exists(arg):
-                raise Exception('Cannot find %s' % arg)
-            if isdir(arg):
-                self._ingest_dir(arg)
-            else:
-                self._ingest_file(arg)
-        if self._compact:
-            self._compacter.run()
-        else:
-            self._indexer.run()
-
-    def _ingest_dir(self, dir):
-        for file in listdir(dir):
-            path = join(dir, file)
-            if isfile(path):
-                self._ingest_file(path)
-            else:
-                self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
+        if not args:
+            raise Exception('No paths provided')
+        self.scan_dirs_and_files(args)
 
     def _make_destination(self, network, station, starttime):
         date_string = match(r'\d{4}-\d{2}-\d{2}', starttime).group(0)
@@ -70,7 +53,7 @@ class Ingester(SqliteSupport):
     def _drop_table(self):
         self._execute('drop table if exists %s' % self._table)
 
-    def _ingest_file(self, file):
+    def process(self, file):
         self._log.info('Indexing %s for ingest' % file)
         self._drop_table()
         try:
@@ -81,6 +64,10 @@ class Ingester(SqliteSupport):
             self._copy_rows(file, rows)
         finally:
             self._drop_table()
+        if self._compact:
+            self._compacter.run([file])
+        else:
+            self._indexer.run([file])
 
     def _copy_rows(self, file, rows):
         self._log.info('Ingesting %s' % file)
@@ -120,4 +107,4 @@ def ingest(config):
     """
     Implement the ingest command.
     """
-    Ingester(config).ingest(config.args.args)
+    Ingester(config).run(config.args.args)

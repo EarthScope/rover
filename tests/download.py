@@ -10,7 +10,7 @@ def test_download():
     with TemporaryDirectory() as dir:
         config = TestConfig(dir)
         downloader = Downloader(config)
-        downloader.download('http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000')
+        downloader.run('http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000')
         mseed_dir = config.args.mseed_dir
         assert_files(join(mseed_dir, 'IU'), '2010')
         assert_files(join(mseed_dir, 'IU', '2010'), '58')

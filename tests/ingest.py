@@ -11,7 +11,7 @@ def test_mseedindexingester():
         root = find_root()
         config = TestConfig(dir)
         ingester = Ingester(config)
-        ingester.ingest((join(root, 'tests', 'data'),))
+        ingester.run((join(root, 'tests', 'data'),))
         mseed_dir = config.args.mseed_dir
         assert_files(mseed_dir, 'IU')
         assert_files(join(mseed_dir, 'IU'), '2010')

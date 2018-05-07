@@ -1,21 +1,30 @@
 
+from .workers import Workers
 from .utils import check_leap, check_cmd
-from .scan import Scanner
+from .scan import ModifiedScanner, DirectoryScanner
 
 
-class Indexer(Scanner):
+class Indexer(ModifiedScanner, DirectoryScanner):
     """
     Run mssedindex on modified files (and delete entries for missing files).
     """
 
     def __init__(self, config):
-        super().__init__(config)
+        ModifiedScanner.__init__(self, config)
+        DirectoryScanner.__init__(self, config)
         args, log = config.args, config.log
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args.mseed_cmd
         self._mseed_db = args.mseed_db
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._dev = args.dev
+        self._workers = Workers(config, args.mseed_workers)
+
+    def run(self, args):
+        if not args:
+            self.scan_mseed_dir()
+        else:
+            self.scan_dirs_and_files(args)
 
     def process(self, path):
         self._log.info('Indexing %s' % path)
@@ -28,5 +37,4 @@ def index(config):
     """
     Implement the index command.
     """
-    # todo - check no args
-    Indexer(config).run()
+    Indexer(config).run(config.args.args)

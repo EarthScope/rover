@@ -46,7 +46,7 @@ class Downloader(SqliteSupport):
         self._create_downloaderss_table()
         clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
-    def download(self, url):
+    def run(self, url):
         """
         Download the give URL, then call ingest and index before deleting.
         """
@@ -55,7 +55,7 @@ class Downloader(SqliteSupport):
         path = None
         try:
             path = self._do_download(url)
-            self._ingester.ingest([path], table=table)
+            self._ingester.run([path], table=table)
         finally:
             if path: unlink(path)
             self._execute('drop table if exists %s' % table)
@@ -86,7 +86,7 @@ def download(config):
     args = config.args.args
     if len(args) != 1:
         raise Exception('Usage: rover %s url' % DOWNLOAD)
-    downloader.download(args[0])
+    downloader.run(args[0])
 
 
 class DownloadManager:
@@ -110,9 +110,9 @@ class DownloadManager:
     def __init__(self, config):
         args, log = config.args, config.log
         self._log = log
-        self._dataselect = args.dataselect
-        check_cmd('%s -h' % args.rover, 'rover', 'rover', log)
-        self._rover = args.rover
+        self._dataselect_url = args.dataselect_url
+        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover', log)
+        self._rover_cmd = args.rover_cmd
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args.mseed_cmd
         self._temp_dir = canonify(args.temp_dir)
@@ -120,13 +120,13 @@ class DownloadManager:
         self._log_unique = args.log_unique
         self._args = args
         self._coverages = []
-        self._queue = Queue(maxsize=args.n_workers * 2)
+        self._queue = Queue(maxsize=args.download_workers * 2)
         self._workers = Workers(config, args.download_workers)
-        self._run_called = False
+        self._download_called = False
         self._config_path = None
 
     def add(self, coverage):
-        if self._run_called:
+        if self._download_called:
             raise Exception('Add coverage before expanding and downloading')
         self._coverages.append(coverage)
 
@@ -152,11 +152,11 @@ class DownloadManager:
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
 
-    def run(self):
+    def download(self):
         """
         Expand the timespans into daily downloads, get the data and ingest.
         """
-        self._run_called = True
+        self._download_called = True
         self._config_path = self._write_config()
         Thread(target=self._main_loop, daemon=True).start()
         n_downloads = 0
@@ -168,7 +168,7 @@ class DownloadManager:
             self._queue.join()
             # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
             if n_downloads:
-                self._log.info('Completed %d downloads')
+                self._log.info('Completed %d downloads' % n_downloads)
             else:
                 self._log.warn('No data downloaded / ingested')
         finally:
@@ -203,7 +203,7 @@ class DownloadManager:
                     timespans.push((right, end))
 
     def _build_url(self, sncl, begin, end):
-        return '%s?%s&start=%s&end=%s' % (self._dataselect, sncl.to_url_params(), format_time(begin), format_time(end))
+        return '%s?%s&start=%s&end=%s' % (self._dataselect_url, sncl.to_url_params(), format_time(begin), format_time(end))
 
     def _callback(self, command, returncode):
         if returncode:
@@ -217,7 +217,7 @@ class DownloadManager:
                 # we only pass arguments on the command line that are different from the
                 # default (which is in the file)
                 command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
-                    self._rover, self._config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
+                    self._rover_cmd, self._config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
                     mm(LOGUNIQUE) if self._log_unique else '', mm(DEV) if self._dev else '',
                     DOWNLOAD, self._build_url(sncl, begin, end))
                 self._log.debug(command)

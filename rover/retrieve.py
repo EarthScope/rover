@@ -29,8 +29,8 @@ class Retriever(SqliteSupport):
         args = config.args
         self._download_manager = DownloadManager(config)
         self._temp_dir = canonify(args.temp_dir)
-        self._availability = args.availability
-        self._tolerance = args.tolerance
+        self._availability_url = args.availability_url
+        self.timespan_tol = args.timespan_tol
         clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
 
     def query(self, up):
@@ -53,7 +53,7 @@ class Retriever(SqliteSupport):
             unlink(down)
 
     def fetch(self):
-        self._download_manager.run()
+        self._download_manager.download()
 
     def display(self):
         self._download_manager.display()
@@ -74,7 +74,7 @@ class Retriever(SqliteSupport):
 
     def _post_availability(self, up):
         down = temp_path(self._temp_dir, up)
-        return post_to_file(self._availability, up, down, self._log)
+        return post_to_file(self._availability_url, up, down, self._log)
 
     def _sort_availability(self, down):
         tmp = temp_path(self._temp_dir, down)
@@ -100,14 +100,14 @@ class Retriever(SqliteSupport):
                         yield availability
                         availability = None
                     if not availability:
-                        availability = Coverage(self._tolerance, sncl)
+                        availability = Coverage(self.timespan_tol, sncl)
                     availability.add_timespan(b, e)
             if availability:
                 yield availability
 
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
-        availability = Coverage(self._tolerance, sncl)
+        availability = Coverage(self.timespan_tol, sncl)
         def callback(row):
             b, e = row
             b, e = parse_time(b), parse_time(e)

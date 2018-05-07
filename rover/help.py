@@ -113,28 +113,31 @@ def low_level():
       database index (config parameter %s).  Called by %s 
       when needed.
       
-    %s [file ...]
+    %s [(file|dir)...]
       Rewrite mseed files, removing duplicates and joining contiguous 
-      data, then update the database index (config parameter
-      %s).  Called by %s when needed.
+      data, then (for files in the local store) update the database 
+      index (config parameter %s).  Called by %s when needed.
       
-      If no arguments are given then any files in the local store
+      If no arguments are given then files in the local store
       (config parameter %s) that have been modified since the 
-      store was last indexed are processed.  The config parameter
-      %s can be used to force processing of all files.  The config 
-      parameter %s can be used (eg %s on the command 
-      line) to avoid calling this command when ingesting data.
+      store was last indexed are processed.  The config parameter 
+      %s can be used (eg %s on the command line) to force 
+      processing of all files in the store.
+      
+      The config parameter %s can be used (eg %s on the 
+      command line) to avoid calling this command when ingesting data.
             
-    %s [file ...]
+    %s [(file|dir) ...]
       Scan files and update the database index (config parameter 
-      %s) using the mseedindex command (config parameter %s).
-      Called by %s or %s when needed.
+      %s) using the mseedindex command (config parameter 
+      %s). Called by %s or %s when needed.
       
-      If no arguments are given then any files in the local store
+      If no arguments are given then files in the local store
       (config parameter %s) that have been modified since the 
-      store was last indexed are processed.  The config parameter
-      %s can be used to force processing of all files.
+      store was last indexed are processed.  The config parameter 
+      %s can be used (eg %s on the command line) to force 
+      processing of all files in the store.
 ''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
        INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
-       COMPACT, MSEEDDB, INGEST, MSEEDDIR, ALL, COMPACT, NO+COMPACT,
-       INDEX, MSEEDDB, MSEEDCMD, COMPACT, INGEST, MSEEDDIR, ALL))
+       COMPACT, MSEEDDB, INGEST, MSEEDDIR, ALL, mm(ALL), COMPACT, NO+COMPACT,
+       INDEX, MSEEDDB, MSEEDCMD, COMPACT, INGEST, MSEEDDIR, ALL, mm(ALL)))

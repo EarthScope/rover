@@ -1,9 +1,10 @@
 
+from .utils import canonify
 from .index import Indexer
-from .scan import Scanner
+from .scan import ModifiedScanner, DirectoryScanner
 
 
-class Compacter(Scanner):
+class Compacter(ModifiedScanner, DirectoryScanner):
     """
     Compact modified files (remove redundant mseed data and tidy).
 
@@ -13,11 +14,25 @@ class Compacter(Scanner):
     """
 
     def __init__(self, config):
-        super().__init__(config)
+        ModifiedScanner.__init__(self, config)
+        DirectoryScanner.__init__(self, config)
+        args = config.args
+        self._mseed_dir = canonify(args.mseed_dir)
         self._indexer = Indexer(config)
+
+    def run(self, args):
+        if args:
+            self.scan_dirs_and_files(args)
+        else:
+            self.scan_mseed_dir()
 
     def process(self, path):
         self._log.info('Compacting %s' % path)
+        self._compact(path)
+        if path.startswith(self._mseed_dir):
+            self._indexer.run(path)
+
+    def _compact(self, path):
         # todo - read
         index = 1
         data = None

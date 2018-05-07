@@ -2,7 +2,7 @@
 from datetime import datetime
 from genericpath import isdir
 from os import listdir
-from os.path import split, join
+from os.path import split, join, isfile, exists
 from sqlite3 import OperationalError
 
 from .utils import PushBackIterator
@@ -98,7 +98,7 @@ def fileSystemPathIterator(root, depth=1):
             yield path
 
 
-class Scanner(SqliteSupport):
+class ModifiedScanner(SqliteSupport):
     """
     Compare the filesystem and the database (using the iterators above)
     and when there is a discrepancy eitehr remove a database entry or process
@@ -109,12 +109,11 @@ class Scanner(SqliteSupport):
         super().__init__(config)
         args, log = config.args, config.log
         self._mseed_dir = args.mseed_dir
-        self._workers = Workers(config, args.mseed_workers)
         self._all = args.all
         self._log = log
         self._config = config
 
-    def run(self):
+    def scan_mseed_dir(self):
         dbpaths = PushBackIterator(DatabasePathIterator(self._config))
         fspaths = fileSystemPathIterator(self._mseed_dir)
         while True:
@@ -126,9 +125,9 @@ class Scanner(SqliteSupport):
                 closed = True
             try:
                 fspath = next(fspaths)
-            except StopIteration:
+            except StopIteration:  # todo - move to done in subclass along w workers
                 if closed:
-                    self._workers.wait_for_all()
+                    self.done()
                     return
             # extra entry in file system, so push current database value back,
             # and pretend this entry was in the database, but with a modified date
@@ -145,11 +144,45 @@ class Scanner(SqliteSupport):
                 dbepoch = (parse_short_time(dblastmod) - EPOCH).total_seconds() + 1   # add one because it's rounded down
                 if self._all or lastmod(fspath) > dbepoch:
                     self.process(fspath)
-        self._done()
 
     def _delete(self, path):
         self._log.debug('Removing %s from index' % path)
         self._execute('delete from tsindex where filename like ?', (path,))
+
+    def process(self, path):
+        raise Exception('Unimplemented')
+
+    def done(self):
+        pass
+
+
+class DirectoryScanner:
+
+    def __init__(self, config):
+        args, log = config.args, config.log
+        self._recurse = args.recurse
+        self._log = log
+
+    def scan_dirs_and_files(self, paths):
+        for path in paths:
+            path = canonify(path)
+            if not exists(path):
+                raise Exception('Cannot find %s' % path)
+            if isfile(path):
+                self.process(path)
+            else:
+                self._scan_dir(path)
+        self.done()
+
+    def _scan_dir(self, dir):
+        for file in listdir(dir):
+            path = join(dir, file)
+            if isfile(path):
+                self.process(path)
+            elif self._recurse:
+                self._scan_dir(path)
+            else:
+                self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
 
     def process(self, path):
         raise Exception('Unimplemented')

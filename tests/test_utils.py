@@ -66,7 +66,7 @@ def ingest_and_index(dir, data):
     root = find_root()
     config = TestConfig(dir)
     ingester = Ingester(config)
-    ingester.ingest(data)
+    ingester.run(data)
     return config
 
 
