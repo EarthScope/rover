@@ -172,7 +172,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
 
         # compact and index
-        self.add_argument(mm(COMPACT), default=True, action='store_bool', help='call compact during ingest?', metavar='')
+        self.add_argument(mm(COMPACT), default=False, action='store_bool', help='call compact during ingest?', metavar='')
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
         self.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
 

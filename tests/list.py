@@ -46,5 +46,5 @@ def test_two_flags():
 def test_count():
     with TemporaryDirectory() as dir:
         n = run_args(dir, ['count'])
-        assert int(n) == 9
+        assert int(n) == 9, n
 

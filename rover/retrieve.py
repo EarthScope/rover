@@ -4,6 +4,7 @@ from os import unlink, makedirs
 from os.path import join
 from re import match
 from shutil import copyfile
+from sqlite3 import OperationalError
 
 from .download import DownloadManager
 from .args import RETRIEVE
@@ -112,12 +113,15 @@ class Retriever(SqliteSupport):
             b, e = row
             b, e = parse_time(b), parse_time(e)
             availability.add_timespan(b, e)
-        self._foreachrow('''select starttime, endtime 
-                                from tsindex 
-                                where network=? and station=? and location=? and channel=?
-                                order by starttime, endtime''',
-                         (sncl.net, sncl.sta, sncl.loc, sncl.cha),
-                         callback)
+        try:
+            self._foreachrow('''select starttime, endtime 
+                                    from tsindex 
+                                    where network=? and station=? and location=? and channel=?
+                                    order by starttime, endtime''',
+                             (sncl.net, sncl.sta, sncl.loc, sncl.cha),
+                             callback)
+        except OperationalError:
+            self._log.warn('No index')
         return availability
 
     def _request_download(self, missing):

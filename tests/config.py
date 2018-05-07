@@ -35,7 +35,11 @@ temp-dir=~/rover/tmp
 # number of days before deleting temp files
 temp-expire=1
 # call compact during ingest?
-compact=False
+compact=True
+# process all files (not just modified)?
+all=False
+# when given a directory, process children?
+recurse=True
 # directory for logs
 log-dir=~/rover/logs
 # base file name for logs
@@ -52,8 +56,6 @@ log-size=6
 log-count=10
 # stdout verbosity (0-5)
 verbosity=4
-# process all files (not just modified)?
-all=False
 # mseedindex command
 mseed-cmd=mseedindex
 # mseedindex database (also used by rover)

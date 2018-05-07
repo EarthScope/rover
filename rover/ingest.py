@@ -7,7 +7,7 @@ from .compact import Compacter
 from .index import Indexer
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport
-from .utils import canonify, run, check_cmd, check_leap, create_parents
+from .utils import canonify, run, check_cmd, check_leap, create_parents, touch
 
 # this is the table name when run directly from the command line.
 # when run as a worker from (multiple) retriever(s) a table is supplied.
@@ -29,7 +29,8 @@ class Ingester(SqliteSupport, DirectoryScanner):
         args, log = config.args, config.log
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args. mseed_cmd
-        self._mseed_db = args.mseed_db
+        self._mseed_db = canonify(args.mseed_db)
+        touch(self._mseed_db)
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._table = None
         self._mseed_dir = canonify(args.mseed_dir)
@@ -56,25 +57,28 @@ class Ingester(SqliteSupport, DirectoryScanner):
     def process(self, file):
         self._log.info('Indexing %s for ingest' % file)
         self._drop_table()
+        updated = set()
         try:
             run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
                 % (self._leap_file, self._mseed_cmd, self._mseed_db, self._table, file), self._log)
             rows = self._fetchall('''select network, station, starttime, endtime, byteoffset, bytes 
                                      from %s order by byteoffset''' % self._table)
-            self._copy_rows(file, rows)
+            updated.update(self._copy_rows(file, rows))
         finally:
             self._drop_table()
         if self._compact:
-            self._compacter.run([file])
+            self._compacter.run(updated)
         else:
-            self._indexer.run([file])
+            self._indexer.run(updated)
 
     def _copy_rows(self, file, rows):
         self._log.info('Ingesting %s' % file)
+        updated = set()
         with open(file, 'rb') as input:
             offset = 0
             for row in rows:
-                offset = self._copy_row(offset, input, file, *row)
+                updated.add(self._copy_row(offset, input, file, *row))
+        return updated
 
     def _copy_row(self, offset, input, file, network, station, starttime, endtime, byteoffset, bytes):
         self._assert_single_day(file, starttime, endtime)
@@ -89,7 +93,7 @@ class Ingester(SqliteSupport, DirectoryScanner):
         dest = self._make_destination(network, station, starttime)
         self._log.debug('Appending %d bytes from %s at offset %d to %s' % (bytes, file, byteoffset, dest))
         self._append_data(data, dest)
-        return offset
+        return dest
 
     def _append_data(self, data, dest):
         if not exists(dest):

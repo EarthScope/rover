@@ -32,6 +32,9 @@ class Indexer(ModifiedScanner, DirectoryScanner):
         self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
                               % (self._leap_file, self._mseed_cmd, '-v -v' if self._dev else '', self._mseed_db, path))
 
+    def done(self):
+        self._workers.wait_for_all()
+
 
 def index(config):
     """

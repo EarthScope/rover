@@ -6,7 +6,7 @@ from rover.ingest import Ingester
 from .test_utils import find_root, assert_files, TestConfig
 
 
-def test_mseedindexingester():
+def test_ingester():
     with TemporaryDirectory() as dir:
         root = find_root()
         config = TestConfig(dir)

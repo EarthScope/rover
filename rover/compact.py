@@ -31,6 +31,8 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         self._compact(path)
         if path.startswith(self._mseed_dir):
             self._indexer.run(path)
+        else:
+            self._log.warn('Skipping index for file outside local store: %s' % path)
 
     def _compact(self, path):
         # todo - read
@@ -38,7 +40,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         data = None
         while index < len(data):
             lower, upper = self._signature(data, index), self._signature(data, index-1)
-            if self._meregable(lower, upper):
+            if self._mergeable(lower, upper):
                 self._merge(data, index)
                 # follow merged block upwards unless at top
                 index = max(1, index-1)
@@ -61,5 +63,3 @@ class Compacter(ModifiedScanner, DirectoryScanner):
     def _swap(self, data, index):
         pass
 
-    def done(self):
-        self._indexer.run()

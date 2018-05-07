@@ -8,7 +8,7 @@ from .test_utils import find_root, assert_files, TestConfig
 
 def test_download():
     with TemporaryDirectory() as dir:
-        config = TestConfig(dir)
+        config = TestConfig(dir, dev=True)
         downloader = Downloader(config)
         downloader.run('http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000')
         mseed_dir = config.args.mseed_dir

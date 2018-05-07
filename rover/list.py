@@ -32,7 +32,7 @@ class IndexLister(SqliteSupport):
         self._single_constraints = {BEGIN: None,
                                     END: None}
         self._flags = {COUNT: False, JOIN: False}
-        self._used = False
+        self._timespan_tol = config.args.timespan_tol
 
     def _display_help(self):
         print('''
@@ -191,7 +191,7 @@ class IndexLister(SqliteSupport):
         s = parse_time(starttime)
         e = parse_time(endtime)
         # todo - maybe this difference should be 1/sampleperiod
-        return s - e == timedelta(microseconds=1)
+        return (s - e).total_seconds() < self._timespan_tol
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
@@ -210,7 +210,7 @@ class IndexLister(SqliteSupport):
                 print(*row)
 
         self._foreachrow(sql, params, callback)
-        if join and prev: print(file=stdout, *prev)
+        if join and prev: print(file=stdout, *prev[0])
 
 
 def list_index(config):

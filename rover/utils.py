@@ -21,6 +21,11 @@ def create_parents(path):
         raise Exception('"%s" is not a directory' % dir)
 
 
+def touch(path):
+    create_parents(path)
+    open(path, 'a').close()
+
+
 def check_cmd(cmd, name, param, log):
     """
     Check the command exists and, if not, inform the user.
