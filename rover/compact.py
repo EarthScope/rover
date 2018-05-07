@@ -78,12 +78,18 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         self._indexer = Indexer(config)
 
     def run(self, args):
+        """
+        Invoke the command over the appropriate files (See super classes)
+        """
         if args:
             self.scan_dirs_and_files(args)
         else:
             self.scan_mseed_dir()
 
     def process(self, path):
+        """
+        Given a file, do the work and then index.
+        """
         self._log.info('Compacting %s' % path)
         self._compact(path)
         if path.startswith(self._mseed_dir):
@@ -92,6 +98,9 @@ class Compacter(ModifiedScanner, DirectoryScanner):
             self._log.warn('Skipping index for file outside local store: %s' % path)
 
     def _compact(self, path):
+        """
+        A modified (with merge) bubble sort.
+        """
         data = read(path)
         index, mutated = 1, False
         while index < len(data):
@@ -103,20 +112,24 @@ class Compacter(ModifiedScanner, DirectoryScanner):
                 mutated = True
             elif lower < upper:
                 self._swap(data, index)
-                # follow merged block upwards unless at top
+                # follow bubbling swapped block upwards unless at the top
                 index = max(1, index-1)
                 mutated = True
             else:
+                # nothing to do, so go down to the next bvlock
                 index += 1
         if mutated:
             self._replace(path, data)
+        else:
+            self._log.info('File unchanged')
 
     def _replace(self, path, data):
+        # do this carefully, so there's a backup if writing fails
         copy = unique_filename(join(self._temp_dir, basename(path)))
         self._log.debug('Moving old file to %s' % copy)
         create_parents(copy)
         move(path, copy)
-        self._log.debug('Writing compacted data to %s' % path)
+        self._log.info('Writing compacted data to %s' % path)
         data.write(path, format='MSEED')
         if self._delete_files:
             self._log.debug('Deleting copy at %s' % copy)
@@ -148,6 +161,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
 
     def _merge(self, data, index, lower, upper):
         self._log.info('Merging blocks %d and %d (%s.%s.%s.%s.%s %gHz)' % tuple([index-1, index] + list(lower.snclqr())))
+        # try to avoid harming data...
         self._assert_int32(data[index-1].data)
         self._assert_int32(data[index].data)
         self._assert_size(upper.end_time - upper.start_time, upper.sample_rate, len(data[index-1].data))
