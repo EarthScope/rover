@@ -1,6 +1,10 @@
 
 # Commands to Manage and Maintain the Local Store
 
+## Configuration
+
+* `rover reset-config` - will reset the configuration to the default.
+
 ## Indexing
 
 * `rover index` - will re-index any files that have been modified
