@@ -29,7 +29,7 @@ Idempotence](./reliability.md).
 
 * `rover compact --all --compact-mixed-types` - will merge and remove
    duplicate data without giving an eror if some duplicates are of
-   differnt types (duplicates of differeing types will not be merged).
+   differnt types (duplicates of differing types will not be merged).
 
 ## Ingest of Local Data
 
