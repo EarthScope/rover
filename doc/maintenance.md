@@ -9,6 +9,9 @@
 
 ## Compaction
 
+For background see [Reliability, Repeatability and
+Idempotence](./reliability.md).
+
 * `rover compact --all` - will check for duplicate data (rasing an
   error on the first file found containing duplicates).
 
