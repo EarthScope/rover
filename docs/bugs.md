@@ -1,7 +1,7 @@
 
 # Known Bugs and Limitations
 
-## Samping Frequency and Timespans
+## Sampling Frequency and Timespans
 
 MSEED files can contain data at multiple sampling frequencies.  When
 `rover retrieve` uses the index to assess what data already exist it

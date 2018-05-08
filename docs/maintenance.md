@@ -30,3 +30,11 @@ Idempotence](./reliability.md).
 * `rover compact --all --compact-mixed-types` - will merge and remove
    duplicate data without giving an eror if some duplicates are of
    differnt types (duplicates of differeing types will not be merged).
+
+## Ingest of Local Data
+
+* `rover ingest file.mseed` - will include a file from the local
+  sysytem into the store.
+
+  Note that repeated use of this command with the same file will give
+  [duplicated data]](./reliability.md).
