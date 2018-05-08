@@ -40,8 +40,8 @@ temp-dir=~/rover/tmp
 temp-expire=1
 # call compact after ingest?
 compact=False
-# allow compact to merge data?
-compact-merge=False
+# detect and list files with duplicate data?
+compact-list=False
 # allow duplicate data in mixed data types?
 compact-mixed-types=False
 # allow compact to mutate (replace) data?

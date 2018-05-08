@@ -19,12 +19,12 @@ def test_no_compact():
 def test_check_only():
     with TemporaryDirectory() as dir:
         root = find_root()
-        config = TestConfig(dir, compact=True)
+        config = TestConfig(dir, compact=True, compact_list=True)
         ingester = Ingester(config)
         try:
             ingester.run((join(root, 'tests', 'data'),))
         except Exception as e:
-            assert 'Overlapping' in str(e), e
+            assert 'duplicate' in str(e), e
         else:
             assert False, 'Expected exception'
 
@@ -32,7 +32,7 @@ def test_check_only():
 def test_merge():
     with TemporaryDirectory() as dir:
         root = find_root()
-        config = TestConfig(dir, compact=True, compact_merge=True)
+        config = TestConfig(dir, compact=True)
         ingester = Ingester(config)
         ingester.run((join(root, 'tests', 'data'),))
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]
