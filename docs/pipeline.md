@@ -34,4 +34,5 @@ When the `rover retrieve` command is used, the following steps are taken:
     check for and remove duplicate data.  See [Reliability,
     Repeatability and Idempotence](./reliability.md).
 
-  * **Indexing** - Finally, `rover index` updates the 
+  * **Indexing** - Finally, `rover index` updates the index for the
+    local store.
