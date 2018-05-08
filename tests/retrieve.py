@@ -16,4 +16,3 @@ def test_retrieve():
         assert n_downloads == 3, n_downloads
         n_sncls = retrieve(config, False)
         assert n_sncls == 0, n_sncls
-
