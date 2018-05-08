@@ -10,7 +10,7 @@
 ## Compaction
 
 * `rover compact --all` - will check for duplicate data (rasing an
-  error on te first file found).
+  error on the first file found containing duplicates).
 
 * `rover compact --all --compact-merge` - will try to merge (and so
   remove) duplicate data.
