@@ -14,20 +14,21 @@ be reset with `rover reset-config`.
 Use a text editor to change parameter values in the file.  A line
 starting with `#` is a comment.
 
-# Command Line Configuration
+## Command Line Configuration
 
 The same parameters can also be specified on the command line.  So,
 for example, th eparameter `temp-dir` in the configuration file could
 be specified as:
 
-  `rover --temp-dir /tmp ...`
+    `rover --temp-dir /tmp ...`
 
 Note that the syntax for boolean parameters on teh command line is
 different to the file.  They are simply given as flags, which can be
 negate dby prefixing with `no`::
 
-  `rover --compact ...`
-  `rover --no-compact` ...`
+    `rover --compact ...`
+ 
+    `rover --no-compact` ...`
 
 ## Configuration Parameters
 
