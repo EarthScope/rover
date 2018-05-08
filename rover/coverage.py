@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .utils import format_time, PushBackIterator
 
@@ -142,7 +142,7 @@ class UnorderedCoverageBuilder:
         for pair in timespans.split(','):
             pair = pair[1:-1]
             begin, end = map(float, pair.split(':'))
-            yield datetime.fromtimestamp(begin), datetime.fromtimestamp(end)
+            yield datetime.fromtimestamp(begin, timezone.utc), datetime.fromtimestamp(end, timezone.utc)
 
     def add_timespans(self, timespans):
         for begin, end in self._parse_timespans(timespans):

@@ -1,11 +1,11 @@
 
 from binascii import hexlify
-from datetime import datetime
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir
 from os.path import dirname, exists, isdir, expanduser, abspath
 from subprocess import Popen, check_output, STDOUT
-from time import time
+import time
+import datetime
 
 from requests import get, post
 
@@ -66,7 +66,7 @@ def check_leap(enabled, expire, file, url, log):
         file = canonify(file)
         if exists(file):
             statinfo = stat(file)
-            age = int(time()) - statinfo.st_atime
+            age = int(time.time()) - statinfo.st_atime
             log.debug('%s is %ds old' % (file, age))
             download = age > expire * 24 * 60 * 60
         else:
@@ -145,20 +145,22 @@ def post_to_file(url, up, down, log, unique=True):
     return _stream_output(request, down, unique=unique)
 
 
-def parse_time(time):
-    if time.endswith('Z'):
-        time = time[:-1]
-    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%f')
+def parse_time(date):
+    if date.endswith('Z'):
+        date = date[:-1]
+    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
+    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond, datetime.timezone.utc)
 
 
 def parse_short_time(time):
     if time.endswith('Z'):
         time = time[:-1]
-    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
+    dt = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
+    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, 0, datetime.timezone.utc)
 
 
 def format_time(time):
-    return datetime.strftime(time, '%Y-%m-%dT%H:%M:%S.%f')
+    return datetime.datetime.strftime(time, '%Y-%m-%dT%H:%M:%S.%f')
 
 
 def clean_old_files(dir, age_secs, match, log):
@@ -169,7 +171,7 @@ def clean_old_files(dir, age_secs, match, log):
         for file in listdir(dir):
             if match(file):
                 try:
-                    if time() - lastmod(file) > age_secs:
+                    if time.time() - lastmod(file) > age_secs:
                         log.warn('Deleting old %s' % file)
                 except FileNotFoundError:
                     pass  # was deleted from under us
