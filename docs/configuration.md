@@ -29,7 +29,7 @@ be specified as:
 
 Note that the syntax for boolean parameters on teh command line is
 different to the file.  They are simply given as flags, which can be
-negate dby prefixing with `no`::
+negated by prefixing with `no`:
 
     rover --compact ...
  
