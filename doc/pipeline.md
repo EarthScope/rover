@@ -30,7 +30,7 @@ When the `rover retrieve` command is used, the following steps are taken:
     offset and length of the block and appends that data to the
     existing data in the store.
 
-  * **Compact** - Optionally `rover compact` can be run.  This can
+  * **Compaction** - Optionally `rover compact` can be run.  This can
     check for and remove duplicate data.  See [Reliability,
     Repeatability and Idempotence](./reliability.md).
 
