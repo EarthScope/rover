@@ -37,5 +37,7 @@ or
 
     rover --no-compact ...
 
+Available parameters can be displayed using `rover -h`.
+
 ## Configuration Parameters
 
