@@ -1,5 +1,5 @@
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os import getpid, unlink
 from os.path import join
 from queue import Queue, Empty
@@ -163,6 +163,7 @@ class DownloadManager:
             print()
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
+        return total_sncls
 
     def download(self):
         """
@@ -185,6 +186,7 @@ class DownloadManager:
                 self._log.warn('No data downloaded / ingested')
         finally:
             unlink(self._config_path)
+        return n_downloads
 
     def _write_config(self):
         if self._coverages:
@@ -197,7 +199,7 @@ class DownloadManager:
         return path
 
     def _end_of_day(self, day):
-        right = datetime(day.year, day.month, day.day) + timedelta(hours=24)
+        right = datetime(day.year, day.month, day.day, tzinfo=timezone.utc) + timedelta(hours=24)
         left = right - timedelta(milliseconds=0.000001)
         return left, right
 

@@ -13,6 +13,7 @@ from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd, clean_old_files, \
     match_prefixes, check_leap
 
+
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime(1900, 1, 1)
 
@@ -55,10 +56,10 @@ class Retriever(SqliteSupport):
             unlink(down)
 
     def fetch(self):
-        self._download_manager.download()
+        return self._download_manager.download()
 
     def display(self):
-        self._download_manager.display()
+        return self._download_manager.display()
 
     def _prepend_options(self, up):
         tmp = temp_path(self._temp_dir, up)
@@ -185,8 +186,8 @@ def retrieve(config, fetch):
                 build_file(path, *args.args)
             retriever.query(path)
             if fetch:
-                retriever.fetch()
+                return retriever.fetch()
             else:
-                retriever.display()
+                return retriever.display()
         finally:
             unlink(path)
