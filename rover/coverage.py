@@ -1,4 +1,6 @@
 
+from datetime import datetime
+
 from .utils import format_time, PushBackIterator
 
 
@@ -127,3 +129,27 @@ class Coverage:
                 # remains to face their next timespan.
                 else:
                     us.push((max(them_end, us_begin), us_end))
+
+
+class UnorderedCoverageBuilder:
+
+    def __init__(self, tolerance, sncl):
+        self._tolerance = tolerance
+        self._sncl = sncl
+        self._timespans = []
+
+    def _parse_timespans(self, timespans):
+        for pair in timespans.split(','):
+            pair = pair[1:-1]
+            begin, end = map(float, pair.split(':'))
+            yield datetime.fromtimestamp(begin), datetime.fromtimestamp(end)
+
+    def add_timespans(self, timespans):
+        for begin, end in self._parse_timespans(timespans):
+            self._timespans.append((begin, end))
+
+    def coverage(self):
+        coverage = Coverage(self._tolerance, self._sncl)
+        for begin, end in sorted(self._timespans):
+            coverage.add_timespan(begin, end)
+        return coverage

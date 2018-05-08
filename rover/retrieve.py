@@ -8,11 +8,10 @@ from sqlite3 import OperationalError
 
 from .download import DownloadManager
 from .args import RETRIEVE
-from .coverage import Coverage, Sncl
+from .coverage import Coverage, Sncl, UnorderedCoverageBuilder
 from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd, clean_old_files, \
-    match_prefixes
-
+    match_prefixes, check_leap
 
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime(1900, 1, 1)
@@ -32,6 +31,8 @@ class Retriever(SqliteSupport):
         self._temp_dir = canonify(args.temp_dir)
         self._availability_url = args.availability_url
         self.timespan_tol = args.timespan_tol
+        # leap seconds not used here, but avoids multiple threads all downloading later
+        check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, self._log)
         clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
 
     def query(self, up):
@@ -108,13 +109,11 @@ class Retriever(SqliteSupport):
 
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
-        availability = Coverage(self.timespan_tol, sncl)
+        availability = UnorderedCoverageBuilder(self.timespan_tol, sncl)
         def callback(row):
-            b, e = row
-            b, e = parse_time(b), parse_time(e)
-            availability.add_timespan(b, e)
+            availability.add_timespans(row[0])
         try:
-            self._foreachrow('''select starttime, endtime 
+            self._foreachrow('''select timespans
                                     from tsindex 
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',
@@ -122,7 +121,7 @@ class Retriever(SqliteSupport):
                              callback, quiet=True)
         except OperationalError:
             self._log.debug('No index - first time using rover?')
-        return availability
+        return availability.coverage()
 
     def _request_download(self, missing):
         self._log.debug('Data to download: %s' % missing)
