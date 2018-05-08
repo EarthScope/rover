@@ -38,9 +38,13 @@ dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 temp-dir=~/rover/tmp
 # number of days before deleting temp files
 temp-expire=1
-# call compact during ingest?
-compact=True
-# allow compact to mutate data?
+# call compact after ingest?
+compact=False
+# allow compact to merge data?
+compact-merge=False
+# allow duplicate data in mixed data types?
+compact-mixed-types=False
+# allow compact to mutate (replace) data?
 compact-mutate=False
 # process all files (not just modified)?
 all=False

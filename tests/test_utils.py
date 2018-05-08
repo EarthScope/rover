@@ -62,8 +62,8 @@ def assert_files(dir, *files):
             raise Exception('Unexpected file: "%s"', file)
 
 
-def ingest_and_index(dir, data):
-    config = TestConfig(dir)
+def ingest_and_index(dir, data, **opts):
+    config = TestConfig(dir, **opts)
     ingester = Ingester(config)
     ingester.run(data)
     return config
