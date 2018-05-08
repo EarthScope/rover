@@ -25,7 +25,7 @@ NO = '--no-'
 
 ALL = 'all'
 AVAILABILITYURL = 'availability-url'
-COMPACTMERGE = 'compact-merge'
+COMPACTLIST = 'compact-list'
 COMPACTMUTATE = 'compact-mutate'
 COMPACTMIXEDTYPES = 'compact-mixed-types'
 DAEMON = 'daemon'
@@ -180,7 +180,7 @@ class Arguments(ArgumentParser):
 
         # compact and index
         self.add_argument(mm(COMPACT), default=False, action='store_bool', help='call compact after ingest?', metavar='')
-        self.add_argument(mm(COMPACTMERGE), default=False, action='store_bool', help='allow compact to merge data?', metavar='')
+        self.add_argument(mm(COMPACTLIST), default=False, action='store_bool', help='detect and list files with duplicate data?', metavar='')
         self.add_argument(mm(COMPACTMIXEDTYPES), default=False, action='store_bool', help='allow duplicate data in mixed data types?', metavar='')
         self.add_argument(mm(COMPACTMUTATE), default=False, action='store_bool', help='allow compact to mutate (replace) data?', metavar='')
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')

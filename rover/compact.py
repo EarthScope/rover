@@ -79,9 +79,10 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         self._temp_dir = canonify(args.temp_dir)
         self._timespan_tol = args.timespan_tol
         self._delete_files = args.delete_files
-        self._compact_merge = args.compact_merge
+        self._compact_list = args.compact_list
         self._compact_mutate = args.compact_mutate
         self._compact_mixed_types = args.compact_mixed_types
+        self._found_duplicates = False
         self._indexer = Indexer(config)
 
     def run(self, args):
@@ -97,12 +98,15 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         """
         Given a file, do the work and then index.
         """
+        self._found_duplicates = False
         self._log.info('Compacting %s' % path)
         self._compact(path)
         if path.startswith(self._mseed_dir):
             self._indexer.run([path])
         else:
             self._log.warn('Skipping index for file outside local store: %s' % path)
+        if self._found_duplicates:
+            raise Exception('Some files in the store contain duplicate data')
 
     def _compact(self, path):
         """
@@ -114,8 +118,12 @@ class Compacter(ModifiedScanner, DirectoryScanner):
             lower, upper = Signature(data[index_lower], self._timespan_tol), Signature(data[index_lower-1], self._timespan_tol)
             self._log.debug("%s %s %s" % (lower, upper, lower < upper))
             if lower.mergeable(upper):
-                if not self._compact_merge:
-                    raise Exception('Overlapping data in %s' % path)
+                if self._compact_list:
+                    if not self._found_duplicates:
+                        self._log.warn('Found duplicate data; logging file paths to stdout and will raise error on completion')
+                        self._found_duplicates = True
+                    print(path)
+                    return
                 self._merge(data, index_lower, lower, upper)
                 # follow merged block upwards unless at top
                 index_lower = max(1, index_lower-1)
@@ -131,7 +139,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         if mutated:
             self._replace(path, data)
         else:
-            self._log.info('File unchanged')
+            self._log.debug('File unchanged')
 
     def _replace(self, path, data):
         # do this carefully, so there's a backup if writing fails
