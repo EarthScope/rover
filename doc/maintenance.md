@@ -18,7 +18,7 @@ For background see [Reliability, Repeatability and
 Idempotence](./reliability.md).
 
 * `rover compact --all --compact-list` - will check for duplicate data
-  (rasing an error on the first file found containing duplicates).
+  (listing them to stdout and raising an error on completion).
 
 * `rover compact --all` - will try to merge (and so remove) duplicate
   data.
