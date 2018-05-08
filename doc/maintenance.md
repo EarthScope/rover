@@ -3,7 +3,8 @@
 
 ## Indexing
 
-* `rover index` - will re-index and changed files.
+* `rover index` - will re-index any files that have been modified
+  since they were last indexed.
 
 * `rover index --all` - will re-index all files.
 
