@@ -11,6 +11,11 @@ The default location for the configuration file is `~/rover/config`
 directory).  This file is generated when Rover is first used and can
 be reset with `rover reset-config`.
 
+If a file in a different location is used, the location can begiven
+with `-f` or `--file` on the command line:
+
+    rover -f /some/where/config ,,,
+
 Use a text editor to change parameter values in the file.  A line
 starting with `#` is a comment.
 
@@ -30,7 +35,7 @@ negate dby prefixing with `no`::
  
 or
 
-    rover --no-compact` ...
+    rover --no-compact ...
 
 ## Configuration Parameters
 
