@@ -125,7 +125,7 @@ class ModifiedScanner(SqliteSupport):
                 closed = True
             try:
                 fspath = next(fspaths)
-            except StopIteration:  # todo - move to done in subclass along w workers
+            except StopIteration:
                 if closed:
                     self.done()
                     return

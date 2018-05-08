@@ -1,6 +1,8 @@
 
 from genericpath import exists, isfile
 from os import unlink
+from os.path import basename
+from shutil import move
 
 from .args import Arguments
 from .logs import init_log
@@ -22,13 +24,18 @@ def reset_config(config):
     """
     Implement the reset-config command.
     """
-    # todo - save old version?
     argparse = Arguments()
     file, log = config.args.file, config.log
     if exists(file):
         if not isfile(file):
             raise Exception('"%s" is not a file' % file)
-        log.warn('Removing old config file "%s"' % file)
-        unlink(file)
+        old = file + "~"
+        if not exists(old) or isfile(old):
+            log.info('Moving old config file to "%s"' % basename(old))
+            if exists(old): unlink(old)
+            move(file, old)
+        else:
+            log.warn('Deleting %s' % file)
+            unlink(file)
     log.info('Writing new config file "%s"' % file)
     argparse.write_config(file)

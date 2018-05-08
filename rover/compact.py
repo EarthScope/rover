@@ -63,7 +63,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
     in the file) values.
 
     We also check whether duplciate data are mutated and raise an error
-    if so (unless --compact_mutate is set).
+    if so (unless --compact-mutate is set).
     """
 
     def __init__(self, config):
@@ -182,7 +182,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         data[index-1].data = new_data
         # endtime is calculated from these
         data[index-1].stats.starttime = start_time
-        data[index-1].stats.npts = len(new_data)
+        data[index-1].stats.npts = n_samples
         data.remove(data[index])
 
     def _swap(self, data, index):

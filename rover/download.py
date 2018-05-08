@@ -203,7 +203,6 @@ class DownloadManager:
 
     def _expand_timespans(self, coverage):
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
-        # todo - use tolerance
         while True:
             begin, end = next(timespans)
             if begin.date == end.date:
