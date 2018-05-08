@@ -129,7 +129,10 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         self._log.debug('Moving old file to %s' % copy)
         create_parents(copy)
         move(path, copy)
-        self._log.info('Writing compacted data to %s' % path)
+        self._log.info('Writing compacted (%d traces) data to %s' % (len(data), path))
+        for i in range(len(data)):
+            self._log.debug(data[i])
+            print(len(data[i].data))
         data.write(path, format='MSEED')
         if self._delete_files:
             self._log.debug('Deleting copy at %s' % copy)
