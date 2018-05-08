@@ -34,7 +34,7 @@ Idempotence](./reliability.md).
 ## Ingest of Local Data
 
 * `rover ingest file.mseed` - will include a file from the local
-  sysytem into the store.
+  filesystem into the store.
 
- Note that repeated use of this command with the same file will give
- [duplicated data](./reliability.md).
+  Note that repeated use of this command with the same file will give
+  [duplicated data](./reliability.md).
