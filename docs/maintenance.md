@@ -1,5 +1,5 @@
 
-# Commands to Manage and Maintain the Local Store
+# Example Commands to Manage and Maintain the Local Store
 
 ## Configuration
 
