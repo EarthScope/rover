@@ -24,7 +24,7 @@ displays all the configuration parameters.
 * Examples of commands for [downloading data](./download.md) and
   [maintaining the store](./maintenance.md).
 
-* An explanation of the [processing pipeline](*./pipeline.md) used
+* An explanation of the [processing pipeline](./pipeline.md) used
   during retrieval of data.
 
 * Discussions on [reliability](./reliability.md) and [known
