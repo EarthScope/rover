@@ -6,6 +6,9 @@ from re import match
 from shutil import copyfile
 from sqlite3 import OperationalError
 
+from .config import NewConfig
+from .compact import Compacter
+from .index import Indexer
 from .args import RETRIEVE
 from .coverage import SingleSNCLBuilder, parse_epoch, Coverage
 from .download import DownloadManager
@@ -31,6 +34,9 @@ class Retriever(SqliteSupport):
         self._temp_dir = canonify(args.temp_dir)
         self._availability_url = args.availability_url
         self.timespan_tol = args.timespan_tol
+        self._pre_index = args.pre_index
+        self._post_compact = args.post_compact
+        self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
         check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, self._log)
         clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
@@ -42,6 +48,10 @@ class Retriever(SqliteSupport):
         fetch() or display().
         """
         self._assert_single_use()
+        if self._pre_index:
+            self._log.info('Ensuring index is current before retrieval')
+            Indexer(self._config).run([])
+
         self._prepend_options(up)
         down = self._post_availability(up)
         try:
@@ -55,7 +65,12 @@ class Retriever(SqliteSupport):
             unlink(down)
 
     def fetch(self):
-        return self._download_manager.download()
+        result = self._download_manager.download()
+        if self._post_compact:
+            self._log.info('Checking for duplicate data')
+            Compacter(NewConfig(self._config, all=True, compact_list=True)).run([])
+        return result
+
 
     def display(self):
         return self._download_manager.display()

@@ -1,17 +1,12 @@
-
-from datetime import datetime
 from genericpath import isdir
 from os import listdir
 from os.path import split, join, isfile, exists
 from sqlite3 import OperationalError
 
-from .utils import PushBackIterator
+from .coverage import EPOCH_UTC
 from .sqlite import SqliteSupport
+from .utils import PushBackIterator
 from .utils import canonify, parse_short_time, lastmod
-from .workers import Workers
-
-
-EPOCH = datetime.utcfromtimestamp(0)
 
 
 def find_stem(path, root, log):
@@ -141,7 +136,7 @@ class ModifiedScanner(SqliteSupport):
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:
-                dbepoch = (parse_short_time(dblastmod) - EPOCH).total_seconds() + 1   # add one because it's rounded down
+                dbepoch = (parse_short_time(dblastmod) - EPOCH_UTC).total_seconds() + 1   # add one because it's rounded down
                 if self._all or lastmod(fspath) > dbepoch:
                     self.process(fspath)
 

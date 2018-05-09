@@ -45,4 +45,4 @@ Idempotence](./reliability.md).
   index.
 
 * `rover list-index net=XX join` - will show the timespan coverage for
-  all data beloging to the given network.
+  all data belonging to the given network.

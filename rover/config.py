@@ -20,6 +20,29 @@ class Config:
         self.db = init_db(self.args.mseed_db, self.log)
 
 
+class ArgsProxy:
+
+    def __init__(self, args, kargs):
+        self._args = args
+        self._kargs = kargs
+
+    def __getattr__(self, item):
+        if item.startswith('_'):
+            return super().__getattribute__(item)
+        elif item in self._kargs:
+            return self._kargs[item]
+        else:
+            return getattr(self._args, item)
+
+
+class NewConfig:
+
+    def __init__(self, config, **kargs):
+        self.args = ArgsProxy(config.args, kargs)
+        self.log = config.log
+        self.db = config.db
+
+
 def reset_config(config):
     """
     Implement the reset-config command.

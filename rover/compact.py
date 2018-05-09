@@ -99,10 +99,11 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         Given a file, do the work and then index.
         """
         self._found_duplicates = False
-        self._log.info('Compacting %s' % path)
-        self._compact(path)
+        self._log.debug('Compacting %s' % path)
+        mutated = self._compact(path)
         if path.startswith(self._mseed_dir):
-            self._indexer.run([path])
+            if mutated:
+                self._indexer.run([path])
         else:
             self._log.warn('Skipping index for file outside local store: %s' % path)
         if self._found_duplicates:
@@ -140,6 +141,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
             self._replace(path, data)
         else:
             self._log.debug('File unchanged')
+        return mutated
 
     def _replace(self, path, data):
         # do this carefully, so there's a backup if writing fails

@@ -10,7 +10,14 @@ BEGIN = 'begin'
 END = 'end'
 COUNT = 'count'
 JOIN = 'join'
+JOIN_SAMPLERATES = 'join-samplerates'
 
+STATION = 'station'
+NETWORK = 'network'
+CHANNEL = 'channel'
+LOCATION = 'location'
+QUALITY = 'quality'
+SAMPLERATE = 'samplerate'
 
 class IndexLister(SqliteSupport):
     """
@@ -22,15 +29,15 @@ class IndexLister(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        self._multiple_constraints = {'station': [],
-                                      'network': [],
-                                      'channel': [],
-                                      'location': [],
-                                      'quality': [],
-                                      'samplerate': []}
+        self._multiple_constraints = {STATION: [],
+                                      NETWORK: [],
+                                      CHANNEL: [],
+                                      LOCATION: [],
+                                      QUALITY: [],
+                                      SAMPLERATE: []}
         self._single_constraints = {BEGIN: None,
                                     END: None}
-        self._flags = {COUNT: False, JOIN: False}
+        self._flags = {COUNT: False, JOIN: False, JOIN_SAMPLERATES: False}
         self._timespan_tol = config.args.timespan_tol
 
     def _display_help(self):
@@ -60,6 +67,8 @@ class IndexLister(SqliteSupport):
   
     count - only the number of matches will be shown
     join - continguous time ranges will be joined
+    join-samplerates - the maximal timespan across all
+      samplerates is shown (as used by retrieve) 
     
   Examples:
   
@@ -104,6 +113,8 @@ class IndexLister(SqliteSupport):
                         self._set_time_limit(name, value)
                     else:
                         self._set_name_value(name, value)
+        if self._flags[JOIN_SAMPLERATES] and self._multiple_constraints[SAMPLERATE]:
+            raise Exception('Cannot specify samplerate AND join-smaplerates')
 
     def _assert_unset_flags(self, name1):
         for name2 in self._flags:
@@ -113,12 +124,12 @@ class IndexLister(SqliteSupport):
     def _set_snclq(self, snclq):
         components = snclq.split('.')
         if len(components) < 2 or len(components) > 5:
-            raise Exception('Cannot parsee %s (expect 2 to 5 values separated by "." for SNCLQ) % snclq')
-        self._set_name_value('network', components[0])
-        self._set_name_value('station', components[1])
-        if len(components) > 2: self._set_name_value('location', components[2])
-        if len(components) > 3: self._set_name_value('channel', components[3])
-        if len(components) > 4: self._set_name_value('quality', components[4])
+            raise Exception('Cannot parsee %s (expect 2 to 5 values separated by "." for SNCLQ)' % snclq)
+        self._set_name_value(NETWORK, components[0])
+        self._set_name_value(STATION, components[1])
+        if len(components) > 2: self._set_name_value(LOCATION, components[2])
+        if len(components) > 3: self._set_name_value(CHANNEL, components[3])
+        if len(components) > 4: self._set_name_value(QUALITY, components[4])
 
     def _set_time_limit(self, name, value):
         if self._single_constraints[name]:
@@ -150,7 +161,9 @@ class IndexLister(SqliteSupport):
         if self._flags[COUNT]:
             sql += 'count(*) '
         else:
-            sql += 'network, station, location, channel, quality, samplerate, timespans '
+            sql += 'network, station, location, channel, quality, timespans '
+            if not self._flags[JOIN_SAMPLERATES]:
+                sql += ', samplerate '
         sql += 'from tsindex '
         constrained = False
         for name in self._multiple_constraints:
@@ -192,12 +205,16 @@ class IndexLister(SqliteSupport):
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
-        builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN])
+        builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_SAMPLERATES])
 
         def callback(row):
             # nonlocal prev[0]
-            n, s, l, c, q, r, ts = row
-            builder.add_timespans('%s.%s.%s.%s.%s (%g)' % (n, s, l, c, q, r), ts)
+            if self._flags[JOIN_SAMPLERATES]:
+                n, s, l, c, q, ts = row
+                builder.add_timespans('%s.%s.%s.%s.%s' % (n, s, l, c, q), ts)
+            else:
+                n, s, l, c, q, ts, r = row
+                builder.add_timespans('%s.%s.%s.%s.%s (%g Hz)' % (n, s, l, c, q, r), ts)
 
         self._foreachrow(sql, params, callback)
         print()

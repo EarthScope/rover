@@ -22,6 +22,7 @@ class Indexer(ModifiedScanner, DirectoryScanner):
 
     def run(self, args):
         if not args:
+            self._log.info('Indexing all changed files')
             self.scan_mseed_dir()
         else:
             self.scan_dirs_and_files(args)

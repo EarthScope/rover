@@ -52,6 +52,8 @@ MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
+POSTCOMPACT = 'post-compact'
+PREINDEX = 'pre-index'
 RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
 TEMPDIR = 'temp-dir'
@@ -171,6 +173,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar='N', type=int)
         self.add_argument(mm(MULTIPROCESS), default=False, action='store_bool', help='allow multiple processes (internal use only)?', metavar='')
         self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')
+        self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
+        self.add_argument(mm(POSTCOMPACT), default=True, action='store_bool', help='call compact after retrieval?', metavar='')
 
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar='DIR')
