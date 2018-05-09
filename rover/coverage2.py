@@ -23,11 +23,12 @@ def parse_epoch(date):
 
 class Coverage:
 
-    def __init__(self, tolerance, sncl):
+    def __init__(self, tolerance, sncl, join=True):
         self._tolerance = tolerance
         # sncl here is an arbitrary string, so could include quality, smaple rate
         self.sncl = sncl
         self.timespans = []
+        self._join = join
 
     def add_epochs(self, begin, end):
         """
@@ -37,7 +38,7 @@ class Coverage:
         by increasing start time - see builders that guarantee that.
         """
         if end - begin > self._tolerance:
-            if not self.timespans:
+            if not self._join or not self.timespans:
                 self.timespans.append((begin, end))
             else:
                 b, e = self.timespans[-1]
@@ -69,6 +70,8 @@ class Coverage:
         """
         if not self.sncl == other.sncl:
             raise Exception('Cannot subtract mismatched availabilities')
+        if not (self._join and other._join):
+            raise Exception('Cannot subtract unjoined availabilities')
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
         difference = Coverage(self._tolerance, self.sncl)
         while True:
@@ -152,8 +155,9 @@ class SingleSNCLBuilder(BaseBuilder):
 
 class MultipleSNCLBuilder(BaseBuilder):
 
-    def __init__(self, tolerance):
+    def __init__(self, tolerance, join=True):
         super().__init__(tolerance)
+        self._join = join
         self._timespans = {}
 
     def add_timespans(self, sncl, timespans):
@@ -167,7 +171,7 @@ class MultipleSNCLBuilder(BaseBuilder):
     def coverages(self):
         for sncl in sorted(self._timespans.keys()):
             ts = self._timespans[sncl]
-            coverage = Coverage(self._tolerance, sncl)
+            coverage = Coverage(self._tolerance, sncl, join=self._join)
             for begin, end in sorted(ts):
                 coverage.add_epochs(begin, end)
             yield coverage

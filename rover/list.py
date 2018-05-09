@@ -1,11 +1,10 @@
 
-from re import match, sub
 import sys
-from datetime import timedelta
+from re import match, sub
 
-from .utils import parse_time
+from .coverage2 import MultipleSNCLBuilder, format_epoch
 from .sqlite import SqliteSupport
-
+from .utils import parse_time
 
 BEGIN = 'begin'
 END = 'end'
@@ -151,7 +150,7 @@ class IndexLister(SqliteSupport):
         if self._flags[COUNT]:
             sql += 'count(*) '
         else:
-            sql += 'network, station, location, channel, quality, samplerate, starttime, endtime '
+            sql += 'network, station, location, channel, quality, samplerate, timespans '
         sql += 'from tsindex '
         constrained = False
         for name in self._multiple_constraints:
@@ -177,8 +176,6 @@ class IndexLister(SqliteSupport):
         if self._single_constraints[END]:
             sql += 'and starttime < ?'
             params.append(self._single_constraints[END])
-        if not self._flags[COUNT]:
-            sql += 'order by network, station, location, channel, quality, samplerate, starttime'
         return sql, tuple(params)
 
     def _wildchars(self, value):
@@ -195,22 +192,20 @@ class IndexLister(SqliteSupport):
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
-        prev, join = [[]], self._flags[JOIN]   # prev inside list as nonlocal not in python 2
+        builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN])
 
         def callback(row):
             # nonlocal prev[0]
-            if join:
-                row = list(row)
-                if prev[0] and prev[0][0:5] == row[0:5] and self._contiguous(prev[0][7], row[6]):
-                    prev[0][7] = row[7]
-                else:
-                    if prev[0]: print(file=stdout, *prev[0])
-                    prev[0] = row
-            else:
-                print(*row)
+            n, s, l, c, q, r, ts = row
+            builder.add_timespans('%s.%s.%s.%s.%s (%g)' % (n, s, l, c, q, r), ts)
 
         self._foreachrow(sql, params, callback)
-        if join and prev: print(file=stdout, *prev[0])
+        print()
+        for coverage in builder.coverages():
+            print('  %s' % coverage.sncl)
+            for ts in coverage.timespans:
+                print('    %s - %s' % (format_epoch(ts[0]), format_epoch(ts[1])))
+            print()
 
 
 def list_index(config):
