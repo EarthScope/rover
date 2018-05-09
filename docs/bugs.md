@@ -16,3 +16,13 @@ downloaded.
 See the discussion on [reliability](./reliability.md).  In short,
 there are some occasions when `rover compact` should be used, and some
 occasions where that is insufficient.
+
+## Ingest Limited to Single Days
+
+The `rover ingest` command rejects files that span multiple calendar
+days.  This is because it works by blindly copying byte ranges based
+on the mseedindex output, and the targets for this data (the files in
+the local store) are per-day.
+
+This is not a problem for normal use (because files are donwloaded in
+day-sized chnuks), but is rstrictive when ingesting local files.

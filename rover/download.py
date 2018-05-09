@@ -7,12 +7,11 @@ from threading import Thread
 from time import time
 
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
-from .coverage import format_epoch, EPOCH_UTC
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
-    clean_old_files, match_prefixes, PushBackIterator, utc
-from .workers import Workers
+    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch
+from .workers import SingleSNCLDayWorkers
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
@@ -133,7 +132,7 @@ class DownloadManager:
         self._args = args
         self._coverages = []
         self._queue = Queue(maxsize=args.download_workers * 2)
-        self._workers = Workers(config, args.download_workers)
+        self._workers = SingleSNCLDayWorkers(config, args.download_workers)
         self._download_called = False
         self._config_path = None
 
@@ -239,8 +238,9 @@ class DownloadManager:
                     mm(LOGUNIQUE) if self._log_unique else '', mm(DEV) if self._dev else '',
                     DOWNLOAD, self._build_url(sncl, begin, end))
                 self._log.debug(command)
-                self._workers.execute(command, callback=self._callback)
+                key = '%s %s' % (sncl, format_day_epoch(begin))
+                self._workers.execute_with_lock(command, key, callback=self._callback)
             except Empty:
-                # important to clear these out so that they hit teh callback and empty
+                # important to clear these out so that they hit the callback and empty
                 # the count for the queue, allowing the entire program to exit.
                 self._workers.check()

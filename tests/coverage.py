@@ -1,5 +1,5 @@
 
-from rover.coverage import parse_epoch, format_epoch
+from rover.utils import format_epoch, parse_epoch
 
 
 def loop_date(d1, known=None):

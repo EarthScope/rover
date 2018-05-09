@@ -1,12 +1,11 @@
+
 from genericpath import isdir
-from os import listdir
+from os import listdir, makedirs
 from os.path import split, join, isfile, exists
 from sqlite3 import OperationalError
 
-from .coverage import EPOCH_UTC
 from .sqlite import SqliteSupport
-from .utils import PushBackIterator
-from .utils import canonify, parse_short_time, lastmod
+from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator
 
 
 def find_stem(path, root, log):
@@ -103,12 +102,15 @@ class ModifiedScanner(SqliteSupport):
     def __init__(self, config):
         super().__init__(config)
         args, log = config.args, config.log
-        self._mseed_dir = args.mseed_dir
+        self._mseed_dir = canonify(args.mseed_dir)
         self._all = args.all
         self._log = log
         self._config = config
 
     def scan_mseed_dir(self):
+        print(self._mseed_dir, exists(self._mseed_dir))
+        if not exists(self._mseed_dir):
+            makedirs(self._mseed_dir)
         dbpaths = PushBackIterator(DatabasePathIterator(self._config))
         fspaths = fileSystemPathIterator(self._mseed_dir)
         while True:
@@ -136,7 +138,7 @@ class ModifiedScanner(SqliteSupport):
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:
-                dbepoch = (parse_short_time(dblastmod) - EPOCH_UTC).total_seconds() + 1   # add one because it's rounded down
+                dbepoch = parse_short_epoch(dblastmod) + 1   # add one because it's rounded down
                 if self._all or lastmod(fspath) > dbepoch:
                     self.process(fspath)
 

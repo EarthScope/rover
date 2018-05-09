@@ -1,5 +1,5 @@
 
-from .workers import Workers
+from .workers import Workers, SingleSNCLDayWorkers
 from .utils import check_leap, check_cmd
 from .scan import ModifiedScanner, DirectoryScanner
 
@@ -18,7 +18,7 @@ class Indexer(ModifiedScanner, DirectoryScanner):
         self._mseed_db = args.mseed_db
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._dev = args.dev
-        self._workers = Workers(config, args.mseed_workers)
+        self._workers = SingleSNCLDayWorkers(config, args.mseed_workers)
 
     def run(self, args):
         if not args:
@@ -30,8 +30,9 @@ class Indexer(ModifiedScanner, DirectoryScanner):
     def process(self, path):
         self._log.info('Indexing %s' % path)
         # todo - windows var
-        self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
-                              % (self._leap_file, self._mseed_cmd, '-v -v' if self._dev else '', self._mseed_db, path))
+        self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
+                                        % (self._leap_file, self._mseed_cmd, '-v -v' if self._dev else '', self._mseed_db, path),
+                                        path)
 
     def done(self):
         self._workers.wait_for_all()

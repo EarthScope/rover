@@ -145,24 +145,6 @@ def post_to_file(url, up, down, log, unique=True):
     return _stream_output(request, down, unique=unique)
 
 
-def parse_time(date):
-    if date.endswith('Z'):
-        date = date[:-1]
-    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
-    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond, utc)
-
-
-def parse_short_time(time):
-    if time.endswith('Z'):
-        time = time[:-1]
-    dt = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
-    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, 0, utc)
-
-
-def format_time(time):
-    return datetime.datetime.strftime(time, '%Y-%m-%dT%H:%M:%S.%f')
-
-
 def clean_old_files(dir, age_secs, match, log):
     """
     Delete old files that match the predicate.
@@ -232,3 +214,30 @@ class UTC(datetime.tzinfo):
 
 
 utc = UTC()
+EPOCH = datetime.datetime.utcfromtimestamp(0)
+EPOCH_UTC = EPOCH.replace(tzinfo=utc)
+
+
+def format_epoch(epoch):
+    dt = datetime.datetime.fromtimestamp(epoch, utc)
+    return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S.%f')
+
+
+def format_day_epoch(epoch):
+    dt = datetime.datetime.fromtimestamp(epoch, utc)
+    return datetime.datetime.strftime(dt, '%Y-%m-%d')
+
+
+def parse_epoch(date):
+    if date.endswith('Z'):
+        date = date[:-1]
+    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
+    return (dt - EPOCH).total_seconds()
+
+
+def parse_short_epoch(date):
+    if date.endswith('Z'):
+        date = date[:-1]
+    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+    return (dt - EPOCH).total_seconds()
+

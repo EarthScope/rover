@@ -30,6 +30,10 @@ download-workers=10
 multiprocess=False
 # command to run rover
 rover-cmd=rover
+# index before retrieval?
+pre-index=True
+# call compact after retrieval?
+post-compact=True
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url

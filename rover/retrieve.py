@@ -6,15 +6,16 @@ from re import match
 from shutil import copyfile
 from sqlite3 import OperationalError
 
-from .config import NewConfig
-from .compact import Compacter
-from .index import Indexer
 from .args import RETRIEVE
-from .coverage import SingleSNCLBuilder, parse_epoch, Coverage
+from .compact import Compacter
+from .config import NewConfig
+from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
+from .index import Indexer
 from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap
+    match_prefixes, check_leap, parse_epoch
+
 
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime.datetime(1900, 1, 1)

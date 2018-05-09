@@ -2,9 +2,10 @@
 import sys
 from re import match, sub
 
-from .coverage import MultipleSNCLBuilder, format_epoch
+from .coverage import MultipleSNCLBuilder
 from .sqlite import SqliteSupport
-from .utils import parse_time
+from .utils import format_epoch
+
 
 BEGIN = 'begin'
 END = 'end'
@@ -18,6 +19,7 @@ CHANNEL = 'channel'
 LOCATION = 'location'
 QUALITY = 'quality'
 SAMPLERATE = 'samplerate'
+
 
 class IndexLister(SqliteSupport):
     """
@@ -196,12 +198,6 @@ class IndexLister(SqliteSupport):
 
     def _count(self, sql, params, stdout):
         print(self._fetchsingle(sql, params), file=stdout)
-
-    def _contiguous(self, endtime, starttime):
-        s = parse_time(starttime)
-        e = parse_time(endtime)
-        # todo - maybe this difference should be 1/sampleperiod
-        return (s - e).total_seconds() < self._timespan_tol
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))

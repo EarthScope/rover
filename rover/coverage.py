@@ -1,24 +1,7 @@
 
-import datetime
 from sys import intern
 
-from .utils import PushBackIterator, utc
-
-
-EPOCH = datetime.datetime.utcfromtimestamp(0)
-EPOCH_UTC = EPOCH.replace(tzinfo=utc)
-
-
-def format_epoch(epoch):
-    dt = datetime.datetime.fromtimestamp(epoch, utc)
-    return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S.%f')
-
-
-def parse_epoch(date):
-    if date.endswith('Z'):
-        date = date[:-1]
-    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
-    return (dt - EPOCH).total_seconds()
+from .utils import PushBackIterator, format_epoch
 
 
 class Coverage:

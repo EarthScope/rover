@@ -129,6 +129,8 @@ Add the specified files to the local store (config parameter
 mseed-dir), compact the contents, and update the database index
 (config parameter mseed-db).  Called by retrieve when needed.
       
+TODO: Document day restriction (online help too).
+
 ### Compact
 
     rover compact [(file|dir)...]
