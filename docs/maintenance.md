@@ -38,3 +38,11 @@ Idempotence](./reliability.md).
 
   Note that repeated use of this command with the same file will give
   [duplicated data](./reliability.md).
+
+## Inspection
+
+* `rover list-index count` - will give the number of entries in the 
+  index.
+
+* `rover list-index net=XX join` - will show the timespan coverage for
+  all data beloging to the given network.
