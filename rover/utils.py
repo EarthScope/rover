@@ -149,14 +149,14 @@ def parse_time(date):
     if date.endswith('Z'):
         date = date[:-1]
     dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
-    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond, datetime.timezone.utc)
+    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond, utc)
 
 
 def parse_short_time(time):
     if time.endswith('Z'):
         time = time[:-1]
     dt = datetime.datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
-    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, 0, datetime.timezone.utc)
+    return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, 0, utc)
 
 
 def format_time(time):
@@ -173,7 +173,7 @@ def clean_old_files(dir, age_secs, match, log):
                 try:
                     if time.time() - lastmod(file) > age_secs:
                         log.warn('Deleting old %s' % file)
-                except FileNotFoundError:
+                except:   # py2.7 no FileNotFound
                     pass  # was deleted from under us
 
 
@@ -213,3 +213,22 @@ class PushBackIterator:
         else:
             value = next(self._iter)
         return value
+
+
+ZERO = datetime.timedelta(0)
+
+
+class UTC(datetime.tzinfo):
+    """UTC"""
+
+    def utcoffset(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return ZERO
+
+
+utc = UTC()

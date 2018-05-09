@@ -2,14 +2,15 @@
 import datetime
 from sys import intern
 
-from .utils import PushBackIterator
+from .utils import PushBackIterator, utc
 
 
 EPOCH = datetime.datetime.utcfromtimestamp(0)
+EPOCH_UTC = EPOCH.replace(tzinfo=utc)
 
 
 def format_epoch(epoch):
-    dt = datetime.datetime.fromtimestamp(epoch, datetime.timezone.utc)
+    dt = datetime.datetime.fromtimestamp(epoch, utc)
     return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S.%f')
 
 
@@ -20,21 +21,20 @@ def parse_epoch(date):
     return (dt - EPOCH).total_seconds()
 
 
-
 class Coverage:
 
     def __init__(self, tolerance, sncl):
         self._tolerance = tolerance
+        # sncl here is an arbitrary string, so could include quality, smaple rate
         self.sncl = sncl
         self.timespans = []
 
     def add_epochs(self, begin, end):
         """
-        Add a timesspan to those that already exist, merging if
-        necessary.
+        Add a timesspan to those that already exist, merging if necessary.
 
         IMPORTANT: This assumes that the timestamps are added ordered
-        by increasing start time.
+        by increasing start time - see builders that guarantee that.
         """
         if end - begin > self._tolerance:
             if not self.timespans:
@@ -154,21 +154,20 @@ class MultipleSNCLBuilder(BaseBuilder):
 
     def __init__(self, tolerance):
         super().__init__(tolerance)
-        self._timepsans = {}
+        self._timespans = {}
 
     def add_timespans(self, sncl, timespans):
         sncl = intern(sncl)
-        if sncl not in self._timepsans:
-            self._timepsans[sncl] = []
-        timespans = self._timepsans[sncl]
+        if sncl not in self._timespans:
+            self._timespans[sncl] = []
+        ts = self._timespans[sncl]
         for begin, end in self._parse_timespans(timespans):
-            timespans.append((begin, end))
+            ts.append((begin, end))
 
     def coverages(self):
-        for sncl in sorted(self._timepsans.keys()):
-            timespans = self._timepsans[sncl]
+        for sncl in sorted(self._timespans.keys()):
+            ts = self._timespans[sncl]
             coverage = Coverage(self._tolerance, sncl)
-            for begin, end in sorted(timespans):
+            for begin, end in sorted(ts):
                 coverage.add_epochs(begin, end)
             yield coverage
-

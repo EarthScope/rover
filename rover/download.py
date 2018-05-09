@@ -1,18 +1,18 @@
 
-from datetime import datetime, timedelta, timezone
+import datetime
 from os import getpid, unlink
 from os.path import join
 from queue import Queue, Empty
 from threading import Thread
 from time import time
 
-from .ingest import Ingester
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
+from .coverage2 import format_epoch, EPOCH_UTC
+from .ingest import Ingester
 from .sqlite import SqliteSupport
-from .utils import canonify, uniqueish, get_to_file, format_time, check_cmd, unique_filename, \
-    clean_old_files, match_prefixes, PushBackIterator
+from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
+    clean_old_files, match_prefixes, PushBackIterator, utc
 from .workers import Workers
-
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
@@ -151,14 +151,14 @@ class DownloadManager:
         for coverage in self._coverages:
             sncl_seconds = 0
             for (begin, end) in coverage.timespans:
-                seconds = (end - begin).total_seconds()
+                seconds = end - begin
                 sncl_seconds += seconds
                 total_seconds += seconds
             if sncl_seconds:
                 total_sncls += 1
                 print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
                 for (begin, end) in coverage.timespans:
-                    print('    %s - %s  (%4.2f sec)' % (format_time(begin), format_time(end), (end - begin).total_seconds()))
+                    print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
         if total_sncls:
             print()
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
@@ -171,7 +171,9 @@ class DownloadManager:
         """
         self._download_called = True
         self._config_path = self._write_config()
-        Thread(target=self._main_loop, daemon=True).start()
+        daemon = Thread(target=self._main_loop)
+        daemon.daemon = True  # py2.7 not available in constructor
+        daemon.start()
         n_downloads = 0
         try:
             for coverage in self._coverages:
@@ -198,16 +200,18 @@ class DownloadManager:
         Arguments().write_config(path, self._args)
         return path
 
-    def _end_of_day(self, day):
-        right = datetime(day.year, day.month, day.day, tzinfo=timezone.utc) + timedelta(hours=24)
-        left = right - timedelta(milliseconds=0.000001)
+    def _end_of_day(self, epoch):
+        day = datetime.datetime.fromtimestamp(epoch, utc)
+        right = (datetime.datetime(day.year, day.month, day.day, tzinfo=utc)
+                 + datetime.timedelta(hours=24) - EPOCH_UTC).total_seconds()
+        left = right - 0.000001
         return left, right
 
     def _expand_timespans(self, coverage):
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
         while True:
             begin, end = next(timespans)
-            if begin.date == end.date:
+            if begin == end:
                 yield sncl, begin, end
             else:
                 left, right = self._end_of_day(begin)
@@ -216,7 +220,8 @@ class DownloadManager:
                     timespans.push((right, end))
 
     def _build_url(self, sncl, begin, end):
-        return '%s?%s&start=%s&end=%s' % (self._dataselect_url, sncl.to_url_params(), format_time(begin), format_time(end))
+        url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('.'))
+        return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
     def _callback(self, command, returncode):
         if returncode:

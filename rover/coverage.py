@@ -1,7 +1,7 @@
 
-from datetime import datetime, timezone
+from datetime import datetime
 
-from .utils import format_time, PushBackIterator
+from .utils import format_time, PushBackIterator, utc
 
 
 class Sncl:
@@ -142,7 +142,7 @@ class UnorderedCoverageBuilder:
         for pair in timespans.split(','):
             pair = pair[1:-1]
             begin, end = map(float, pair.split(':'))
-            yield datetime.fromtimestamp(begin, timezone.utc), datetime.fromtimestamp(end, timezone.utc)
+            yield datetime.fromtimestamp(begin, utc), datetime.fromtimestamp(end, utc)
 
     def add_timespans(self, timespans):
         for begin, end in self._parse_timespans(timespans):

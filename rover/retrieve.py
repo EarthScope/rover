@@ -1,21 +1,20 @@
 
-from datetime import datetime
+import datetime
 from os import unlink, makedirs
-from os.path import join
+from os.path import join, exists
 from re import match
 from shutil import copyfile
 from sqlite3 import OperationalError
 
-from .download import DownloadManager
 from .args import RETRIEVE
-from .coverage import Coverage, Sncl, UnorderedCoverageBuilder
+from .coverage2 import SingleSNCLBuilder, parse_epoch, Coverage
+from .download import DownloadManager
 from .sqlite import SqliteSupport
-from .utils import uniqueish, canonify, post_to_file, unique_filename, run, parse_time, check_cmd, clean_old_files, \
+from .utils import uniqueish, canonify, post_to_file, unique_filename, run, check_cmd, clean_old_files, \
     match_prefixes, check_leap
 
-
 RETRIEVEFILE = 'rover_retrieve'
-EARLY = datetime(1900, 1, 1)
+EARLY = datetime.datetime(1900, 1, 1)
 
 
 class Retriever(SqliteSupport):
@@ -91,7 +90,7 @@ class Retriever(SqliteSupport):
 
     def _parse_line(self, line):
         n, s, l, c, b, e = line.split()
-        return Sncl(n, s, l, c), parse_time(b), parse_time(e)
+        return "%s.%s.%s.%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
 
     def _parse_availability(self, down):
         with open(down, 'r') as input:
@@ -104,13 +103,13 @@ class Retriever(SqliteSupport):
                         availability = None
                     if not availability:
                         availability = Coverage(self.timespan_tol, sncl)
-                    availability.add_timespan(b, e)
+                    availability.add_epochs(b, e)
             if availability:
                 yield availability
 
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
-        availability = UnorderedCoverageBuilder(self.timespan_tol, sncl)
+        availability = SingleSNCLBuilder(self.timespan_tol, sncl)
         def callback(row):
             availability.add_timespans(row[0])
         try:
@@ -118,7 +117,7 @@ class Retriever(SqliteSupport):
                                     from tsindex 
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',
-                             (sncl.net, sncl.sta, sncl.loc, sncl.cha),
+                             sncl.split('.'),
                              callback, quiet=True)
         except OperationalError:
             self._log.debug('No index - first time using rover?')
@@ -172,7 +171,8 @@ def retrieve(config, fetch):
     check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover', config.log)
     check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', config.log)
     temp_dir = canonify(args.temp_dir)
-    makedirs(temp_dir, exist_ok=True)
+    if not exists(temp_dir):
+        makedirs(temp_dir)
     retriever = Retriever(config)
     if len(args.args) == 0 or len(args.args) > 3:
         raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)

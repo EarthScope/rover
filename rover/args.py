@@ -284,7 +284,7 @@ class Arguments(ArgumentParser):
                 for action in self._actions:
                     if action.dest not in (HELP, FILE):
                         if action.default is not None:
-                            if values:
+                            if values is not None:  # py2.7 no __bool__ on values
                                 value = getattr(values, action.dest)
                             else:
                                 value = action.default
