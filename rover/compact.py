@@ -7,7 +7,7 @@ from shutil import move
 from obspy import read
 import numpy as np
 
-from .utils import canonify, unique_filename, create_parents
+from .utils import canonify, unique_filename, create_parents, format_epoch
 from .index import Indexer
 from .scan import ModifiedScanner, DirectoryScanner
 
@@ -102,8 +102,8 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         self._log.debug('Compacting %s' % path)
         mutated = self._compact(path)
         if path.startswith(self._mseed_dir):
-            if mutated:
-                self._indexer.run([path])
+            # do this even if file unchanged, as we may be part of pipeline
+            self._indexer.run([path])
         else:
             self._log.warn('Skipping index for file outside local store: %s' % path)
         if self._found_duplicates:
@@ -117,7 +117,6 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         index_lower, mutated = 1, False
         while index_lower < len(data):
             lower, upper = Signature(data[index_lower], self._timespan_tol), Signature(data[index_lower-1], self._timespan_tol)
-            self._log.debug("%s %s %s" % (lower, upper, lower < upper))
             if lower.mergeable(upper):
                 if self._compact_list:
                     if not self._found_duplicates:
@@ -177,6 +176,9 @@ class Compacter(ModifiedScanner, DirectoryScanner):
 
     def _merge(self, data, index, lower, upper):
         self._log.info('Merging blocks %d and %d (%s.%s.%s.%s.%s %gHz)' % self._append_snclqr((index-1, index), lower))
+        self._log.debug(' %s - %s / %s - %s' %
+                        (format_epoch(upper.start_time), format_epoch(upper.end_time),
+                         format_epoch(lower.start_time), format_epoch(lower.end_time)))
         # try to avoid harming data...
         if lower.data_type != upper.data_type:
             msg = 'Mixed data types: %s and %s (%s.%s.%s.%s.%s %gHz)' %\
