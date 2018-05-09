@@ -7,7 +7,7 @@ from shutil import copyfile
 from sqlite3 import OperationalError
 
 from .args import RETRIEVE
-from .coverage2 import SingleSNCLBuilder, parse_epoch, Coverage
+from .coverage import SingleSNCLBuilder, parse_epoch, Coverage
 from .download import DownloadManager
 from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, check_cmd, clean_old_files, \

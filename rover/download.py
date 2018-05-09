@@ -7,7 +7,7 @@ from threading import Thread
 from time import time
 
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
-from .coverage2 import format_epoch, EPOCH_UTC
+from .coverage import format_epoch, EPOCH_UTC
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \

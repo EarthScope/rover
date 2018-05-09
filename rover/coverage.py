@@ -22,10 +22,16 @@ def parse_epoch(date):
 
 
 class Coverage:
+    """
+    The data coverage (timespans) with the indx for a given sncl.
+
+    This includes the logic to merge timespans.  The sncl parameter is
+    a free string (or arbitrary object) and so this class can be used
+    for SNCLS, SNCL + sampling rate, etc.
+    """
 
     def __init__(self, tolerance, sncl, join=True):
         self._tolerance = tolerance
-        # sncl here is an arbitrary string, so could include quality, smaple rate
         self.sncl = sncl
         self.timespans = []
         self._join = join
@@ -136,6 +142,11 @@ class BaseBuilder:
 
 
 class SingleSNCLBuilder(BaseBuilder):
+    """
+    Sort the teimstamp information before creating the coverage.
+
+    The mseedindex schema design make it difficult to sort this information in SQL.
+    """
 
     def __init__(self, tolerance, sncl):
         super().__init__(tolerance)
@@ -154,6 +165,11 @@ class SingleSNCLBuilder(BaseBuilder):
 
 
 class MultipleSNCLBuilder(BaseBuilder):
+    """
+    Sort the teimstamp information before creating the coverage (and support multiple SNCLSs).
+
+    The mseedindex schema design make it difficult to sort this information in SQL.
+    """
 
     def __init__(self, tolerance, join=True):
         super().__init__(tolerance)

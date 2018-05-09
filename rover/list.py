@@ -2,7 +2,7 @@
 import sys
 from re import match, sub
 
-from .coverage2 import MultipleSNCLBuilder, format_epoch
+from .coverage import MultipleSNCLBuilder, format_epoch
 from .sqlite import SqliteSupport
 from .utils import parse_time
 
