@@ -24,7 +24,8 @@ logging is to stderr.
 
 ### List Index
 
-    rover list-index [network=...|station=...|location=...|channel=..|quality=...|samplerate=...]* [S.N.C.L.q]* [begin=...] [end=...] [count|join\join-samplerates]
+    rover list-index [network=...|station=...|location=...|channel=..|quality=...|samplerate=...]*
+      [S.N.C.L.q]* [begin=...] [end=...] [count|join\join-samplerates]
     
 List index entries for the local store (config parameter mseed-dir)
 that match the given constraints.  For more information, run "rover
