@@ -13,6 +13,18 @@ availabe remotely (config parameter availability-url), then download
 compare (below) to see what data would be downloaded (without doing
 the work).
 
+##### Examples
+
+    rover retrieve targets.list
+
+will retrieve everything in the given file (that is not already present
+in the local store).
+
+    rover compare IU.ANMO.00.BH1 2017-01-01
+
+will list the downloads needed to retrieve missing data for
+IU.ANMO.00.BH1 from Jan 1 2017 onwards.
+
 ### Compare
       
     rover compare (file|sncl start [end])
@@ -22,11 +34,12 @@ availabe remotely (config parameter availability-url), then display
 the difference.  Note that the summary is printed to stdout, while
 logging is to stderr.
 
-#### Examples
+##### Examples
 
     rover compare targets.list
 
-will list the downloads needed to retrieve everything in the given file.
+will list the downloads needed to retrieve everything in the given
+file (that is not already present in the local store).
 
     rover compare IU.ANMO.00.BH1 2017-01-01
 
