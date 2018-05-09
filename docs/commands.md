@@ -22,10 +22,21 @@ availabe remotely (config parameter availability-url), then display
 the difference.  Note that the summary is printed to stdout, while
 logging is to stderr.
 
+#### Examples
+
+    rover compare targets.list
+
+will list the downloads needed to retrieve everything in the given file.
+
+    rover compare IU.ANMO.00.BH1 2017-01-01
+
+will list the downloads needed to retrieve missing data for
+IU.ANMO.00.BH1 from Jan 1 2017 onwards.
+
 ### List Index
 
     rover list-index [network=...|station=...|location=...|channel=..|quality=...|samplerate=...]*
-      [S.N.C.L.q]* [begin=...] [end=...] [count|join\join-samplerates]
+      [S.N.C.L.Q]* [begin=...] [end=...] [count|join\join-samplerates]
     
 List index entries for the local store (config parameter mseed-dir)
 that match the given constraints.  For more information, run "rover
