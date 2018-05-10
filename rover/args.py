@@ -329,16 +329,38 @@ class Arguments(ArgumentParser):
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
 
-    def write_docs(self):
+    def _documentation(self):
+        for action in self._actions:
+            name = sub('_', '-', action.dest)
+            default = action.default
+            help = action.help
+            if help:
+                help = help[0].upper() + help[1:]
+            if name == 'file':
+                name += ' / -f'
+            elif name == 'help':
+                name += ' / -h'
+                default = False
+                help = help.replace('this', 'the')
+            yield name, default, help
+
+    def write_docs_text(self):
         """
         Generate markdown dodumcentation.  Run by hand from Python.
         """
-        for action in self._actions:
-            print('### %s' % (sub('_', '-', action.dest)))
+
+        for name, default, help in self._documentation():
+            print('### %s' % name)
             print()
-            if action.default is not None:
-                print('Default: %s' % action.default)
+            if default is not None:
+                print('Default: %s' % default)
                 print()
-            if action.help:
-                print("%s" % action.help)
-            print()
+            if help:
+                print(help)
+                print()
+
+    def write_docs_table(self):
+        print('| Name | Default | Description |')
+        print('|------|---------|-------------|')
+        for name, default, help in self._documentation():
+            print('| %s | %s | %s |' % (name, default, help))
