@@ -52,7 +52,6 @@ class Retriever(SqliteSupport, SingleUse):
         if self._pre_index:
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
-
         self._prepend_options(up)
         down = self._post_availability(up)
         try:
@@ -71,7 +70,6 @@ class Retriever(SqliteSupport, SingleUse):
             self._log.info('Checking for duplicate data')
             Compacter(NewConfig(self._config, all=True, compact_list=True)).run([])
         return result
-
 
     def display(self):
         return self._download_manager.display()

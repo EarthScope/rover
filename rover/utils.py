@@ -254,3 +254,10 @@ class SingleUse:
         """
         if self._used: raise Exception('Cannot reuse %s' % self.__class__.name)
         self._used = True
+
+
+def in_memory(iterator):
+    """
+    Pull an entire iterator into memory and then re-expose as an iterator.
+    """
+    return iter(list(iterator))

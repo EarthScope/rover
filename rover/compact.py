@@ -122,7 +122,6 @@ class Compacter(ModifiedScanner, DirectoryScanner):
                     if not self._found_duplicates:
                         self._log.warn('Found duplicate data; logging file paths to stdout and will raise error on completion')
                         self._found_duplicates = True
-                    print(path)
                     return
                 self._merge(data, index_lower, lower, upper)
                 # follow merged block upwards unless at top

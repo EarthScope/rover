@@ -5,7 +5,7 @@ from os.path import split, join, isfile, exists
 from sqlite3 import OperationalError
 
 from .sqlite import SqliteSupport
-from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator
+from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator, in_memory
 
 
 def find_stem(path, root, log):
@@ -108,10 +108,10 @@ class ModifiedScanner(SqliteSupport):
         self._config = config
 
     def scan_mseed_dir(self):
-        print(self._mseed_dir, exists(self._mseed_dir))
         if not exists(self._mseed_dir):
             makedirs(self._mseed_dir)
-        dbpaths = PushBackIterator(DatabasePathIterator(self._config))
+        # pull into memory here to avoid open database when processing
+        dbpaths = PushBackIterator(in_memory(DatabasePathIterator(self._config)))
         fspaths = fileSystemPathIterator(self._mseed_dir)
         while True:
             # default values for paths work with ordering
