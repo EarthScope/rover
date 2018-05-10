@@ -248,11 +248,17 @@ class SingleUse:
     def __init__(self):
         self._used = False
 
-    def _assert_single_use(self):
+    def _assert_not_used(self):
         """
-        Some classes can only be used once.
+        Call from any initialisation method used before the "use once' method.
         """
         if self._used: raise Exception('Cannot reuse %s' % self.__class__.name)
+
+    def _assert_single_use(self):
+        """
+        Call from a method that should be used just once.
+        """
+        self._assert_not_used()
         self._used = True
 
 

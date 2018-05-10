@@ -2,8 +2,6 @@
 import datetime
 from os import getpid, unlink
 from os.path import join, exists
-from queue import Queue, Empty
-from threading import Thread
 from time import time
 
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
@@ -12,7 +10,6 @@ from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse
 from .workers import SingleSNCLDayWorkers
-
 
 """
 The 'rover download' command (and the DownloadManager buffer that 'rover retrieve'
@@ -127,7 +124,7 @@ def download(config):
     downloader.run(args[0])
 
 
-class DownloadManager:
+class DownloadManager(SingleUse):
     """
     An interface to downloader instances that restricts downloads to a fixed number of workers,
     each downloading data that is for a maximum duration of a day.
@@ -139,13 +136,10 @@ class DownloadManager:
     run through the database as quickly as possible, but avoiding expanding that into too
     many timespans (which could consume a lot of memory if the user requests a large
     date range).
-
-    (I'm not sure this is actually worthwhile - is memory use really such a problem?  If
-    not then we could avoid the multi-threading here, simply expanding into memory and
-    then pushing those to workers).
     """
 
     def __init__(self, config):
+        super().__init__()
         args, log = config.args, config.log
         self._log = log
         self._dataselect_url = args.dataselect_url
@@ -158,9 +152,7 @@ class DownloadManager:
         self._log_unique = args.log_unique
         self._args = args
         self._coverages = []
-        self._queue = Queue(maxsize=args.download_workers * 2)
         self._workers = SingleSNCLDayWorkers(config, args.download_workers)
-        self._download_called = False
         self._config_path = None
 
     def add(self, coverage):
@@ -168,14 +160,14 @@ class DownloadManager:
         Add a required coverage (SNCL and date range).  This will be expanded
         into one or more downloads when
         """
-        if self._download_called:
-            raise Exception('Add coverage before expanding and downloading')
+        self._assert_not_used()
         self._coverages.append(coverage)
 
     def display(self):
         """
         Display a asummary of the data.
         """
+        self._assert_single_use()
         print()
         total_seconds, total_sncls = 0, 0
         for coverage in self._coverages:
@@ -195,24 +187,19 @@ class DownloadManager:
         print()
         return total_sncls
 
-    # todo - remove threading!
-
     def download(self):
         """
         Expand the timespans into daily downloads, get the data and ingest.
         """
-        self._download_called = True
+        self._assert_not_used()
         self._config_path = self._write_config()
-        daemon = Thread(target=self._main_loop)
-        daemon.daemon = True  # py2.7 not available in constructor
-        daemon.start()
         n_downloads = 0
         try:
             for coverage in self._coverages:
-                for download in self._expand_timespans(coverage):
-                    self._queue.put(download)  # this blocks so that we don't use too much memory
+                for sncl, begin, end in self._expand_timespans(coverage):
+                    self._new_worker(sncl, begin, end)
                     n_downloads += 1
-            self._queue.join()
+            self._workers.wait_for_all()
             # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
             if n_downloads:
                 self._log.info('Completed %d downloads' % n_downloads)
@@ -232,13 +219,6 @@ class DownloadManager:
         Arguments().write_config(path, self._args)
         return path
 
-    def _end_of_day(self, epoch):
-        day = datetime.datetime.fromtimestamp(epoch, utc)
-        right = (datetime.datetime(day.year, day.month, day.day, tzinfo=utc)
-                 + datetime.timedelta(hours=24) - EPOCH_UTC).total_seconds()
-        left = right - 0.000001
-        return left, right
-
     def _expand_timespans(self, coverage):
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
         while True:
@@ -251,29 +231,25 @@ class DownloadManager:
                 if right < end:
                     timespans.push((right, end))
 
+    def _end_of_day(self, epoch):
+        day = datetime.datetime.fromtimestamp(epoch, utc)
+        right = (datetime.datetime(day.year, day.month, day.day, tzinfo=utc)
+                 + datetime.timedelta(hours=24) - EPOCH_UTC).total_seconds()
+        left = right - 0.000001
+        return left, right
+
+    def _new_worker(self, sncl, begin, end):
+        # we only pass arguments on the command line that are different from the
+        # default (which is in the file)
+        command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
+            self._rover_cmd, self._config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
+            mm(LOGUNIQUE) if self._log_unique else '', mm(DEV) if self._dev else '',
+            DOWNLOAD, self._build_url(sncl, begin, end))
+        self._log.debug(command)
+        key = '%s %s' % (sncl, format_day_epoch(begin))
+        self._workers.execute_with_lock(command, key)
+
     def _build_url(self, sncl, begin, end):
         url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('.'))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
-    def _callback(self, command, returncode):
-        if returncode:
-            self._log.error('Download %s returned %d' % (command, returncode))
-        self._queue.task_done()
-
-    def _main_loop(self):
-        while True:
-            try:
-                sncl, begin, end = self._queue.get(timeout=0.1)
-                # we only pass arguments on the command line that are different from the
-                # default (which is in the file)
-                command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
-                    self._rover_cmd, self._config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
-                    mm(LOGUNIQUE) if self._log_unique else '', mm(DEV) if self._dev else '',
-                    DOWNLOAD, self._build_url(sncl, begin, end))
-                self._log.debug(command)
-                key = '%s %s' % (sncl, format_day_epoch(begin))
-                self._workers.execute_with_lock(command, key, callback=self._callback)
-            except Empty:
-                # important to clear these out so that they hit the callback and empty
-                # the count for the queue, allowing the entire program to exit.
-                self._workers.check()
