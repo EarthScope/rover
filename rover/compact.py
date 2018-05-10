@@ -12,6 +12,11 @@ from .index import Indexer
 from .scan import ModifiedScanner, DirectoryScanner
 
 
+"""
+The 'rover compact' command.
+"""
+
+
 @total_ordering
 class Signature:
     """
@@ -67,8 +72,14 @@ class Compacter(ModifiedScanner, DirectoryScanner):
     appropriate.  This allows us to replace data with the latest (later
     in the file) values.
 
-    We also check whether duplciate data are mutated and raise an error
+    We also check whether duplicate data are mutated and raise an error
     if so (unless --compact-mutate is set).
+
+    If --compact-list then simply list prooblems, don't fic them.
+
+    Note that sorting seems to have no effect - the obspy code doesn't respect the
+    changed order on writing (in fact the order appears to be already sorted and
+    doesn't reflect the actual ordering in the file).
     """
 
     def __init__(self, config):
@@ -141,7 +152,11 @@ class Compacter(ModifiedScanner, DirectoryScanner):
             self._log.debug('File unchanged')
 
     def _replace(self, path, data):
-        # do this carefully, so there's a backup if writing fails
+        """
+        Replace the existing file with the modified version.
+
+        Do this carefully, so there's a backup if writing fails.
+        """
         copy = unique_filename(join(self._temp_dir, basename(path)))
         self._log.debug('Moving old file to %s' % copy)
         create_parents(copy)
@@ -173,6 +188,11 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         return tuple(list(params) + list(signature.snclqr()))
 
     def _merge(self, data, index, lower, upper):
+        """
+        Merge two adjacent traces.  The more recent is lower and overwrites the older (upper).
+
+        We check that the overwritten data have not changed unless --compact-mutate is set.
+        """
         self._log.info('Merging blocks %d and %d (%s.%s.%s.%s.%s %gHz)' % self._append_snclqr((index-1, index), lower))
         self._log.debug(' %s - %s / %s - %s' %
                         (format_epoch(upper.start_time), format_epoch(upper.end_time),
@@ -212,6 +232,9 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         data.remove(data[index])
 
     def _swap(self, data, index):
+        """
+        Swap the order.  IN practice, never called because the data appear to be sorted on read.
+        """
         self._log.info('Swapping blocks %d and %d' % (index-1, index))
         upper = data[index-1]
         data.remove(upper)
@@ -219,4 +242,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
 
 
 def compact(config):
+    """
+    Implement the compact command - remove or report on duplicate data.
+    """
     Compacter(config).run(config.args.args)

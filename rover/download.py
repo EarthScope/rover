@@ -14,6 +14,12 @@ from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename,
 from .workers import SingleSNCLDayWorkers
 
 
+"""
+The 'rover download' command (and the DownloadManager buffer that 'rover retrieve'
+calls, which spawns multiple Downloaders). 
+"""
+
+
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
 # in the download area
@@ -23,19 +29,19 @@ CONFIGFILE = 'rover_config'
 
 class Downloader(SqliteSupport, SingleUse):
     """
-    Download a single request (typically for a day), ingest and index it.
+    Download a single request (typically for a day), ingest and index it (ingest calls
+    index, so we just call ingest).
 
-    The only complex thing here is that these may run in parallel and call ingest.
-    That means that multiple ingest instances can be running in parallel, all using
-    temp tables in the database.  So we need to manage temp table names and clear
-    out old tables from crashed processes.
+    The only complex thing here is that these may run in parallel.  That means that
+    multiple ingest instances can be running in parallel, all using  mseedindex.
+    To avoid conflict over sqlite access we use a different database file for each,
+    so we need to track and delete those.
 
-    To do this we have another table that is a list of retrievers, along with
-    URLs, PIDs, table names and epochs.
+    To do this we have a table that lists ingesters, along with URLs, PIDs,
+    database paths and epochs.
 
-    This isn't a problem for the main ingest command because only
-    a sin=gle instance of the command line command runs at any one
-    time.
+    This isn't a problem for the main ingest command because only a sin=gle instance 
+    of the command line command runs at any one time.
     """
 
     def __init__(self, config):
@@ -46,7 +52,7 @@ class Downloader(SqliteSupport, SingleUse):
         self._delete_files = args.delete_files
         self._blocksize = 1024 * 1024
         self._ingester = Ingester(config)
-        self._create_downloaderss_table()
+        self._create_ingesters_table()
         clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
     def run(self, url):
@@ -54,7 +60,7 @@ class Downloader(SqliteSupport, SingleUse):
         Download the give URL, then call ingest and index before deleting.
         """
         self._assert_single_use()
-        retrievers_id, db_path = self._update_retrievers_table(url)
+        retrievers_id, db_path = self._update_downloaders_table(url)
         path = None
         try:
             path = self._do_download(url)
@@ -65,25 +71,25 @@ class Downloader(SqliteSupport, SingleUse):
                     unlink(path)
                 if exists(db_path):
                     unlink(db_path)
-                self.execute('delete from rover_downloaders where id = ?', (retrievers_id,))
+                self.execute('delete from rover_ingesters where id = ?', (retrievers_id,))
 
-    def _update_retrievers_table(self, url):
+    def _update_downloaders_table(self, url):
         self._clear_dead_retrievers()
         pid = getpid()
-        db_path = self._retrievers_db_path(url, pid)
-        self.execute('insert into rover_downloaders (pid, db_path, url) values (?, ?, ?)', (pid, db_path, url))
-        id = self.fetchsingle('select id from rover_downloaders where pid = ? and db_path like ? and url like ?',
+        db_path = self._ingesters_db_path(url, pid)
+        self.execute('insert into rover_ingesters (pid, db_path, url) values (?, ?, ?)', (pid, db_path, url))
+        id = self.fetchsingle('select id from rover_ingesters where pid = ? and db_path like ? and url like ?',
                               (pid, db_path, url))  # todo - auto retrieve key?
         return id, db_path
 
     def _clear_dead_retrievers(self):
         if self._delete_files:
-            for row in self.fetchall('select id, db_path from rover_downloaders where creation_epoch < ?', (time() - 60 * 60,)):
+            for row in self.fetchall('select id, db_path from rover_ingesters where creation_epoch < ?', (time() - 60 * 60,)):
                 id, file = row
                 if exists(file):
                     self._log.warn('Forcing deletion of temp database %s' % file)
                     unlink(file)
-                self.execute('delete from rover_downloaders where id = ?', (id,))
+                self.execute('delete from rover_ingesters where id = ?', (id,))
 
     def _do_download(self, url):
         # previously we extracted the file name from the header, but the code
@@ -92,12 +98,12 @@ class Downloader(SqliteSupport, SingleUse):
         path = join(self._temp_dir, uniqueish(TMPFILE, url))
         return get_to_file(url, path, self._log)
 
-    def _create_downloaderss_table(self):
+    def _create_ingesters_table(self):
         """
         Create the table used by the retriever.  This is here because the
         table may be created by either a retriever or a download manager.
         """
-        self.execute('''create table if not exists rover_downloaders (
+        self.execute('''create table if not exists rover_ingesters (
                            id integer primary key autoincrement,
                            pid integer,
                            db_path text unique,
@@ -105,8 +111,8 @@ class Downloader(SqliteSupport, SingleUse):
                            url text not null
                          )''')
 
-    def _retrievers_db_path(self, url, pid):
-        name = uniqueish('rover_retriever', url)
+    def _ingesters_db_path(self, url, pid):
+        name = uniqueish('rover_ingester', url)
         return unique_filename(join(self._temp_dir, name))
 
 
@@ -126,11 +132,11 @@ class DownloadManager:
     An interface to downloader instances that restricts downloads to a fixed number of workers,
     each downloading data that is for a maximum duration of a day.
 
-    Used in two steps.  First, coverage data are added (via 'add).  Then these are expanded to
-    timespans that are processed as workers (in the 'run' method).
+    Used in two steps.  First, coverage data are added (via 'add()').  These are expanded to
+    timespans that are processed as workers when 'display()' or 'download()' is called.
 
     This acts as a buffer, soaking up all the requests from the Retriever so that can
-    run through the database as quicky as possible, but avoiding expanding that into too
+    run through the database as quickly as possible, but avoiding expanding that into too
     many timespans (which could consume a lot of memory if the user requests a large
     date range).
 
@@ -158,6 +164,10 @@ class DownloadManager:
         self._config_path = None
 
     def add(self, coverage):
+        """
+        Add a required coverage (SNCL and date range).  This will be expanded
+        into one or more downloads when
+        """
         if self._download_called:
             raise Exception('Add coverage before expanding and downloading')
         self._coverages.append(coverage)
@@ -184,6 +194,8 @@ class DownloadManager:
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
         return total_sncls
+
+    # todo - remove threading!
 
     def download(self):
         """

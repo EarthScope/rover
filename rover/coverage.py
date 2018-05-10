@@ -4,9 +4,15 @@ from sys import intern
 from .utils import PushBackIterator, format_epoch
 
 
+"""
+Interface to the SNCL / timepsan data in tsindex - how much data do we have
+for particular channels?
+"""
+
+
 class Coverage:
     """
-    The data coverage (timespans) with the indx for a given sncl.
+    The data coverage (timespans) with the index for a given sncl.
 
     This includes the logic to merge timespans.  The sncl parameter is
     a free string (or arbitrary object) and so this class can be used
@@ -112,7 +118,17 @@ class Coverage:
                     us.push((max(them_end, us_begin), us_end))
 
 
+# builders are needed to buffer the data read from the database and sort it,
+# this is because:
+# (1) the add_epochs() method requires sorted data to correctly merge timespans
+# (2) the timespans are squashed into strings that are not easy to use at the SQL
+#     level (so we need to read and then sort in-memory).
+
+
 class BaseBuilder:
+    """
+    Shared functionality for all coverage builders.
+    """
 
     def __init__(self, tolerance):
         self._tolerance = tolerance
@@ -126,9 +142,9 @@ class BaseBuilder:
 
 class SingleSNCLBuilder(BaseBuilder):
     """
-    Sort the teimstamp information before creating the coverage.
+    Sort the timestamp information before creating the coverage (for a single SNCL)
 
-    The mseedindex schema design make it difficult to sort this information in SQL.
+    The mseedindex schema design makes it difficult to sort this information in SQL.
     """
 
     def __init__(self, tolerance, sncl):
@@ -149,9 +165,9 @@ class SingleSNCLBuilder(BaseBuilder):
 
 class MultipleSNCLBuilder(BaseBuilder):
     """
-    Sort the teimstamp information before creating the coverage (and support multiple SNCLSs).
+    Sort the teimstamp information before creating the coverage (for multiple SNCLSs).
 
-    The mseedindex schema design make it difficult to sort this information in SQL.
+    The mseedindex schema design makes it difficult to sort this information in SQL.
     """
 
     def __init__(self, tolerance, join=True):

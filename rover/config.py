@@ -9,7 +9,16 @@ from .logs import init_log
 from .sqlite import init_db
 
 
+"""
+Package common data used in all/most classes (db connection, lgs and parameters).
+"""
+
+
 class Config:
+    """
+    A container that encapsulates the core compoennts common to all commands.  Used to
+    reduce the amount of argument passing and simplify chaining commands.
+    """
 
     def __init__(self):
         argparse = Arguments()
@@ -21,6 +30,9 @@ class Config:
 
 
 class ArgsProxy:
+    """
+    A wrapper that allows new values to override existing arguments.
+    """
 
     def __init__(self, args, kargs):
         self._args = args
@@ -36,6 +48,9 @@ class ArgsProxy:
 
 
 class NewConfig:
+    """
+    Add new arguments (parameters) to an existing Config.
+    """
 
     def __init__(self, config, **kargs):
         self.args = ArgsProxy(config.args, kargs)
@@ -45,7 +60,8 @@ class NewConfig:
 
 def reset_config(config):
     """
-    Implement the reset-config command.
+    Implement the reset-config command - write the default parameters to the file
+    given by -f (or default).
     """
     argparse = Arguments()
     file, log = config.args.file, config.log

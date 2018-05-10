@@ -10,6 +10,12 @@ from re import sub
 from .utils import create_parents, canonify
 
 
+"""
+Command line / file configuration parameters.
+"""
+
+
+# commands
 COMPACT = 'compact'
 COMPARE = 'compare'
 DOWNLOAD = 'download'
@@ -21,8 +27,12 @@ RESET_CONFIG = 'reset-config'
 RETRIEVE = 'retrieve'
 SUBSCRIBE = 'subscribe'
 
+
+# flag negation
 NO = '--no-'
 
+
+# parameters
 ALL = 'all'
 AVAILABILITYURL = 'availability-url'
 COMPACTLIST = 'compact-list'
@@ -60,6 +70,8 @@ TEMPEXPIRE = 'temp-expire'
 TIMESPANTOL = 'timespan-tol'
 V, VERBOSITY = 'v', 'verbosity'
 
+
+# default values (for non-boolean parameters)
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADWORKERS = 10
@@ -95,7 +107,6 @@ def parse_bool(value):
 
 
 class StoreBoolAction(Action):
-
     '''
     We need a special action for booleans because we must covertly
     parse them as '--foo True' even though the user only types '--foo'.
@@ -125,7 +136,6 @@ class StoreBoolAction(Action):
         setattr(namespace, self.dest, values[0])
 
 
-
 def m(string): return '-' + string
 def mm(string): return '--' + string
 
@@ -139,8 +149,7 @@ class Arguments(ArgumentParser):
     * read config file before command line args
 
     To do this correctly for boolean flags (which behave differently on
-    the command line and in the config file) we also have to
-    pre-process those.
+    the command line and in the config file) we also have to pre-process those.
 
     The aim is to:
     * have (almost) all config duplcaited, both in config and command line
