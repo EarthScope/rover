@@ -13,7 +13,7 @@ from .scan import ModifiedScanner, DirectoryScanner
 
 
 """
-The 'rover compact' command.
+The 'rover compact' command - remove or dodumcnt duplicate data (and then call index).
 """
 
 

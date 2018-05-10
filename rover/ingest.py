@@ -11,6 +11,11 @@ from .sqlite import SqliteSupport, SqliteContext
 from .utils import canonify, run, check_cmd, check_leap, create_parents, touch
 
 
+"""
+The 'rover ingest' command - copy downloaded data into the local store (and then call compact or index).
+"""
+
+
 # this is the table name when run directly from the command line.
 # when run as a worker from (multiple) retriever(s) a table is supplied.
 TMPFILE = 'rover_tmp_ingest'
@@ -32,7 +37,6 @@ class Ingester(SqliteSupport, DirectoryScanner):
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args. mseed_cmd
         self._mseed_db = canonify(args.mseed_db)
-        touch(self._mseed_db)
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._db_path = None
         self._mseed_dir = canonify(args.mseed_dir)
@@ -40,20 +44,24 @@ class Ingester(SqliteSupport, DirectoryScanner):
         self._log = log
         self._indexer = Indexer(config)
         self._compacter = Compacter(config)
+        touch(self._mseed_db)  # so that scanning against tsindex works, if the database didn't exist
 
     def run(self, args, db_path=TMPFILE):
+        """
+        We only support explicit paths - modified file scanning makes no sense because
+        the files are external, downloaded data.
+
+        To avoid database contention we can run mseedindex into a unique database path.
+        """
         self._db_path = db_path
         if not args:
             raise Exception('No paths provided')
         self.scan_dirs_and_files(args)
 
-    def _make_destination(self, network, station, starttime):
-        date_string = match(r'\d{4}-\d{2}-\d{2}', starttime).group(0)
-        time_data = datetime.strptime(date_string, '%Y-%m-%d').timetuple()
-        year, day = time_data.tm_year, time_data.tm_yday
-        return join(self._mseed_dir, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
-
     def process(self, file):
+        """
+        Run mseedindex and, move across the bytes, and then call follow-up tasks.
+        """
         self._log.info('Indexing %s for ingest' % file)
         if exists(self._db_path):
             self._log.warn('Temp file %s exists (deleting)' % self._db_path)
@@ -65,7 +73,7 @@ class Ingester(SqliteSupport, DirectoryScanner):
             with SqliteContext(self._db_path, self._log) as db:
                 rows = db.fetchall('''select network, station, starttime, endtime, byteoffset, bytes
                                   from tsindex order by byteoffset''')
-                updated.update(self._copy_rows(file, rows))
+                updated.update(self._copy_all_rows(file, rows))
         finally:
             unlink(self._db_path)
         if self._compact:
@@ -73,17 +81,17 @@ class Ingester(SqliteSupport, DirectoryScanner):
         else:
             self._indexer.run(updated)
 
-    def _copy_rows(self, file, rows):
+    def _copy_all_rows(self, file, rows):
         self._log.info('Ingesting %s' % file)
         updated = set()
         with open(file, 'rb') as input:
             offset = 0
             for row in rows:
-                offset, dest = self._copy_row(offset, input, file, *row)
+                offset, dest = self._copy_single_row(offset, input, file, *row)
                 updated.add(dest)
         return updated
 
-    def _copy_row(self, offset, input, file, network, station, starttime, endtime, byteoffset, bytes):
+    def _copy_single_row(self, offset, input, file, network, station, starttime, endtime, byteoffset, bytes):
         self._assert_single_day(file, starttime, endtime)
         if offset < byteoffset:
             self._log.warn('Non-contiguous bytes in %s - skipping %d bytes' % (file, byteoffset - offset))
@@ -97,6 +105,12 @@ class Ingester(SqliteSupport, DirectoryScanner):
         self._log.debug('Appending %d bytes from %s at offset %d to %s' % (bytes, file, byteoffset, dest))
         self._append_data(data, dest)
         return offset, dest
+
+    def _make_destination(self, network, station, starttime):
+        date_string = match(r'\d{4}-\d{2}-\d{2}', starttime).group(0)
+        time_data = datetime.strptime(date_string, '%Y-%m-%d').timetuple()
+        year, day = time_data.tm_year, time_data.tm_yday
+        return join(self._mseed_dir, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
 
     def _append_data(self, data, dest):
         if not exists(dest):

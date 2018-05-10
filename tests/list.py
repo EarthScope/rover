@@ -17,7 +17,7 @@ def run_args(dir, args):
     root = find_root()
     config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
     stdout = buffer()
-    IndexLister(config).list(args, stdout=stdout)
+    IndexLister(config).run(args, stdout=stdout)
     stdout.seek(0)
     return stdout.read()
 

@@ -9,6 +9,11 @@ from re import match
 from .utils import clean_old_files, canonify
 
 
+"""
+Support for logging.
+"""
+
+
 def level(n):
     '''
     Our log levels are 0-5 (silent - verbose).

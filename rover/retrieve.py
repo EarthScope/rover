@@ -1,7 +1,7 @@
 
 import datetime
 from os import unlink, makedirs
-from os.path import join, exists
+from os.path import exists
 from re import match
 from shutil import copyfile
 from sqlite3 import OperationalError
@@ -13,8 +13,14 @@ from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
-from .utils import uniqueish, canonify, post_to_file, unique_filename, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, SingleUse
+from .utils import canonify, post_to_file, run, check_cmd, clean_old_files, \
+    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path
+
+
+"""
+The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
+"""
+
 
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime.datetime(1900, 1, 1)
@@ -37,18 +43,43 @@ class Retriever(SqliteSupport, SingleUse):
         self.timespan_tol = args.timespan_tol
         self._pre_index = args.pre_index
         self._post_compact = args.post_compact
+        self._rover_cmd = args.rover_cmd
+        self._mseed_cmd = args.mseed_cmd
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
         check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, self._log)
         clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
 
-    def query(self, up):
-        """
-        Retrieve the data specified in the given file (format as for
-        availability service) and compare with the index.  Afterwards, call either
-        fetch() or display().
-        """
+    def run(self, args, fetch):
         self._assert_single_use()
+        # check these so we fail early
+        check_cmd('%s -h' % self._rover_cmd, 'rover', 'rover', self._log)
+        check_cmd('%s -h' % self._mseed_cmd, 'mseedindex', 'mseed-cmd', self._log)
+        if not exists(self._temp_dir):
+            makedirs(self._temp_dir)
+        if len(args) == 0 or len(args) > 3:
+            raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
+        else:
+            # input is a temp file as we prepend parameters
+            path = unique_path(self._temp_dir, RETRIEVEFILE, args[0])
+            try:
+                if len(args) == 1:
+                    copyfile(args[0], path)
+                else:
+                    build_file(path, *args)
+                self._query(path)
+                if fetch:
+                    return self._fetch()
+                else:
+                    return self._display()
+            finally:
+                unlink(path)
+
+    def _query(self, up):
+        """
+        Populate teh download manager by comparing the data from the
+        availability service with the local index.
+        """
         if self._pre_index:
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
@@ -64,18 +95,24 @@ class Retriever(SqliteSupport, SingleUse):
         finally:
             unlink(down)
 
-    def fetch(self):
+    def _fetch(self):
+        """
+        Fetch data from the download manager.
+        """
         result = self._download_manager.download()
         if self._post_compact:
             self._log.info('Checking for duplicate data')
             Compacter(NewConfig(self._config, all=True, compact_list=True)).run([])
         return result
 
-    def display(self):
+    def _display(self):
+        """
+        Display data from the download manager.
+        """
         return self._download_manager.display()
 
     def _prepend_options(self, up):
-        tmp = temp_path(self._temp_dir, up)
+        tmp = unique_path(self._temp_dir, RETRIEVEFILE, up)
         self._log.debug('Prepending options to %s via %s' % (up, tmp))
         try:
             with open(tmp, 'w') as output:
@@ -89,11 +126,11 @@ class Retriever(SqliteSupport, SingleUse):
             unlink(tmp)
 
     def _post_availability(self, up):
-        down = temp_path(self._temp_dir, up)
+        down = unique_path(self._temp_dir, RETRIEVEFILE, up)
         return post_to_file(self._availability_url, up, down, self._log)
 
     def _sort_availability(self, down):
-        tmp = temp_path(self._temp_dir, down)
+        tmp = unique_path(self._temp_dir, RETRIEVEFILE, down)
         try:
             self._log.debug('Sorting %s via %s' % (down, tmp))
             run('sort %s > %s' % (down, tmp), self._log)  # todo - windows
@@ -142,14 +179,6 @@ class Retriever(SqliteSupport, SingleUse):
         self._download_manager.add(missing)
 
 
-def temp_path(temp_dir, text):
-    """
-    Generate a unique path to a temporary file.
-    """
-    name = uniqueish(RETRIEVEFILE, text)
-    return unique_filename(join(temp_dir, name))
-
-
 def assert_valid_time(time):
     """
     Check timestamp format.
@@ -177,31 +206,6 @@ def build_file(path, sncl, begin, end=None):
 
 def retrieve(config, fetch):
     """
-    Implement the retrieve command - download data that is available and
-    that we don't already have.
+    Implement the retrieve command.
     """
-    # check these two comands so we fail early
-    args = config.args
-    check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover', config.log)
-    check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', config.log)
-    temp_dir = canonify(args.temp_dir)
-    if not exists(temp_dir):
-        makedirs(temp_dir)
-    retriever = Retriever(config)
-    if len(args.args) == 0 or len(args.args) > 3:
-        raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
-    else:
-        # guarantee always called with temp file because we prepend options
-        path = temp_path(temp_dir, args.args[0])
-        try:
-            if len(args.args) == 1:
-                copyfile(args.args[0], path)
-            else:
-                build_file(path, *args.args)
-            retriever.query(path)
-            if fetch:
-                return retriever.fetch()
-            else:
-                return retriever.display()
-        finally:
-            unlink(path)
+    return Retriever(config).run(config.args.args, fetch)

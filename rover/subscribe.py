@@ -3,6 +3,11 @@
 from .sqlite import SqliteSupport
 
 
+"""
+The 'rvoer subscribe' command.
+"""
+
+
 class Subscriber(SqliteSupport):
 
     def __init__(self, config):
@@ -14,4 +19,7 @@ class Subscriber(SqliteSupport):
 
 
 def subscribe(config):
+    """
+    Implement the subscribe command - TODO
+    """
     Subscriber(config).run(config.args.args)

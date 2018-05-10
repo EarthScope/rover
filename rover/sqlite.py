@@ -1,11 +1,18 @@
 
-from time import time
 from sqlite3 import connect
 
-from .utils import canonify, uniqueish
+from .utils import canonify
+
+
+"""
+Support for database access.
+"""
 
 
 def init_db(dbpath, log):
+    """
+    Open a connection to the database.
+    """
     dbpath = canonify(dbpath)
     log.debug('Connecting to sqlite3 %s' % dbpath)
     db = connect(dbpath)
@@ -17,12 +24,18 @@ def init_db(dbpath, log):
 
 
 class NoResult(Exception):
+    """
+    Exception thrown when no results available.
+    """
 
     def __init__(self, sql, params):
         super().__init__('%s %s' % (sql, params))
 
 
 class CursorContext:
+    """
+    Create a curseor for the duration of the scope (and then close it).
+    """
 
     def __init__(self, support, quiet):
         self._support = support
@@ -45,6 +58,9 @@ class CursorContext:
 
 
 class SqliteDb:
+    """
+    Base class with utilities for accessing database.
+    """
 
     def __init__(self, db, log):
         self._db = db
@@ -97,13 +113,16 @@ class SqliteDb:
         Return a list of rows from a select.
 
         Note that it may be better (eg in list-index) to iterate over
-        the curosr explicitly.
+        the cursor explicitly (see foreachrow).
         """
         with self.cursor() as c:
             self._log.debug('Fetchall: %s %s' % (sql, params))
             return c.execute(sql, params).fetchall()
 
     def foreachrow(self, sql, params, callback, quiet=False):
+        """
+        Call the callback for each row in the results.
+        """
         with self.cursor(quiet=quiet) as c:
             self._log.debug('foreachrow: %s %s' % (sql, params))
             for row in c.execute(sql, params):
@@ -114,6 +133,9 @@ class SqliteDb:
 
 
 class SqliteContext:
+    """
+    Create a database connection for the duration of the scope.
+    """
 
     def __init__(self, file, log):
         self._db = SqliteDb(connect(file), log)
@@ -127,6 +149,9 @@ class SqliteContext:
 
 
 class SqliteSupport(SqliteDb):
+    """
+    Alternative constructor for SqliteDb.
+    """
 
     def __init__(self, config):
         super().__init__(config.db, config.log)

@@ -1,13 +1,18 @@
 
+import datetime
+import time
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir
-from os.path import dirname, exists, isdir, expanduser, abspath
+from os.path import dirname, exists, isdir, expanduser, abspath, join
 from subprocess import Popen, check_output, STDOUT
-import time
-import datetime
 
 from requests import get, post
+
+
+"""
+Assorted utilities.
+"""
 
 
 def create_parents(path):
@@ -22,6 +27,9 @@ def create_parents(path):
 
 
 def touch(path):
+    """
+    Create or 'modify' a file.
+    """
     create_parents(path)
     open(path, 'a').close()
 
@@ -87,21 +95,21 @@ def hash(text):
     return hexlify(hash.digest()).decode('ascii')
 
 
-def uniqueish(prefix, text, pid=None):
-    """
-    Generate a unique(ish) name, from a prefix, text (hashed) and pid.
-    """
-    if pid is None:
-        pid = getpid()
-    return '%s_%s_%d' % (prefix, hash(text)[:6], pid)
-
-
 def lastmod(path):
     """
     The last modified epoch for the file.
     """
     statinfo = stat(path)
     return statinfo.st_mtime
+
+
+def uniqueish(prefix, salt, pid=None):
+    """
+    Generate a unique(ish) name, from a prefix, text (hashed) and pid.
+    """
+    if pid is None:
+        pid = getpid()
+    return '%s_%s_%d' % (prefix, hash(salt)[:6], pid)
 
 
 def unique_filename(path):
@@ -119,6 +127,14 @@ def unique_filename(path):
         return path
 
 
+def unique_path(dir, filename, salt):
+    """
+    Generate a unique path to a temporary file.
+    """
+    name = uniqueish(filename, salt)
+    return unique_filename(join(dir, name))
+
+
 def _stream_output(request, down, unique=True):
     down = canonify(down)
     create_parents(down)
@@ -132,12 +148,18 @@ def _stream_output(request, down, unique=True):
 
 
 def get_to_file(url, down, log, unique=True):
+    """
+    Execute an HTTP GET request, with output to a file.
+    """
     log.info('Downloading %s from %s' % (down, url))
     request = get(url, stream=True)
     return _stream_output(request, down, unique=unique)
 
 
 def post_to_file(url, up, down, log, unique=True):
+    """
+    Execute an HTTP POST request, with output to a file.
+    """
     up = canonify(up)
     log.info('Downloading %s from %s with %s' % (down, url, up))
     with open(up, 'rb') as input:
@@ -201,7 +223,7 @@ ZERO = datetime.timedelta(0)
 
 
 class UTC(datetime.tzinfo):
-    """UTC"""
+    """UTC timezone (needed for Py2.7)"""
 
     def utcoffset(self, dt):
         return ZERO
@@ -219,16 +241,25 @@ EPOCH_UTC = EPOCH.replace(tzinfo=utc)
 
 
 def format_epoch(epoch):
+    """
+    Format an epoch in the standard format.
+    """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
     return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S.%f')
 
 
 def format_day_epoch(epoch):
+    """
+    Format an epoch, without time.
+    """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
     return datetime.datetime.strftime(dt, '%Y-%m-%d')
 
 
 def parse_epoch(date):
+    """
+    Parse a date in the standard format.
+    """
     if date.endswith('Z'):
         date = date[:-1]
     dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
@@ -236,6 +267,9 @@ def parse_epoch(date):
 
 
 def parse_short_epoch(date):
+    """
+    Parse a date without fractional seconds.
+    """
     if date.endswith('Z'):
         date = date[:-1]
     dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
@@ -244,6 +278,9 @@ def parse_short_epoch(date):
 
 
 class SingleUse:
+    """
+    Base class to enforce single use semantics.
+    """
 
     def __init__(self):
         self._used = False

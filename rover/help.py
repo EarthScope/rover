@@ -2,12 +2,21 @@
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT, mm, ALL, NO, MSEEDCMD
 
+
+"""
+The 'rover help' command.
+"""
+
+
 DAEMON = 'daemon'
 USAGE = 'usage'
 LOWLEVEL = 'low-level'
 
 
 def help(args):
+    """
+    Dispatch to topic.
+    """
     if not args.args:
         welcome(args)
     elif len(args.args) == 1 and args.args[0] == USAGE:

@@ -3,14 +3,19 @@ from subprocess import Popen
 from time import sleep
 
 
+"""
+Support for running multiple sub-processes.
+"""
+
+
 class Workers:
     """
     A collection of processes that run asynchronously.  Note that the Python
     code here does NOT run asynchonously - it will block if there are no free
     workers.
 
-    The idea is that we run N meedindex processes in the background so that
-    we are not waiting on them to complete.
+    The idea is that (for example) we run N meedindex processes in the background
+    so that we are not waiting on them to complete.
     """
 
     def __init__(self, config, n_workers):
@@ -65,12 +70,12 @@ class Workers:
             sleep(0.1)
 
 
-class SingleSNCLDayWorkers(Workers):
+class NoConflictWorkers(Workers):
     """
-    Extend the above to block attempts to have two processes for the same
-    SNCL and day (ie the same file in the store).  This avoid simultaneous
-    modification of the file by mutliple processes without usng file locking
-    (which is has problems with NFS, isn't great cross-platform, and wouldn't
+    Extend the above to block attempts to have two processes for the same key
+    (typically SNCL and day, or the path to the file in the store).  This avoid
+    simultaneous modification of the file by mutliple processes without using file
+    locking (which is has problems with NFS, isn't great cross-platform, and wouldn't
     play well with Compacter which rewrites files).
     """
 

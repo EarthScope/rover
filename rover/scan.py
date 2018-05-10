@@ -8,6 +8,12 @@ from .sqlite import SqliteSupport
 from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator, in_memory
 
 
+"""
+Iterators over files on the file system, or in the database, and - building
+on that - an iterator over modified files.
+"""
+
+
 def find_stem(path, root, log):
     """
     Find the initial part of path that matches root (and return the length).
@@ -74,7 +80,7 @@ class DatabasePathIterator(SqliteSupport):
             raise
 
 
-def fileSystemPathIterator(root, depth=1):
+def localStoreIterator(root, depth=1):
     """
     Ordered iterator over the filesystem, returning only files from
     the fourth directory level, corresponding to the data files in
@@ -86,7 +92,7 @@ def fileSystemPathIterator(root, depth=1):
         path = join(root, file)
         if isdir(path) and depth < 4:
             # cannot use 'yield from' as 3to2 doesn't translate it
-            for path in fileSystemPathIterator(path, depth=depth+1):
+            for path in localStoreIterator(path, depth=depth + 1):
                 yield path
         elif depth == 4:
             yield path
@@ -112,7 +118,7 @@ class ModifiedScanner(SqliteSupport):
             makedirs(self._mseed_dir)
         # pull into memory here to avoid open database when processing
         dbpaths = PushBackIterator(in_memory(DatabasePathIterator(self._config)))
-        fspaths = fileSystemPathIterator(self._mseed_dir)
+        fspaths = localStoreIterator(self._mseed_dir)
         while True:
             # default values for paths work with ordering
             closed, dblastmod, dbpath, fspath = False, 0, ' ', ' '

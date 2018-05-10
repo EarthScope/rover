@@ -4,6 +4,13 @@ from os import getpid, kill
 from .sqlite import SqliteSupport
 
 
+"""
+Process management (daemons, the command line process etc).
+
+See also the workers module.
+"""
+
+
 class Processes(SqliteSupport):
 
     def __init__(self, config):

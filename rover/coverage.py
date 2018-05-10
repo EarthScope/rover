@@ -5,7 +5,7 @@ from .utils import PushBackIterator, format_epoch
 
 
 """
-Interface to the SNCL / timepsan data in tsindex - how much data do we have
+Interface to the SNCL / timespan data in tsindex - how much data do we have
 for particular channels?
 """
 

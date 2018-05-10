@@ -6,6 +6,12 @@ from .coverage import MultipleSNCLBuilder
 from .sqlite import SqliteSupport
 from .utils import format_epoch, SingleUse
 
+
+"""
+The 'rover list-index' command - display timespans from the local index.
+"""
+
+
 BEGIN = 'begin'
 END = 'end'
 COUNT = 'count'
@@ -23,9 +29,6 @@ SAMPLERATE = 'samplerate'
 class IndexLister(SqliteSupport, SingleUse):
     """
     List entries in the index that match the given constraints.
-    
-    WARNING - do not re-use instance after single query (parsing
-    alters lister state)
     """
 
     def __init__(self, config):
@@ -85,7 +88,7 @@ class IndexLister(SqliteSupport, SingleUse):
   printed to stdout.
 ''')
 
-    def list(self, args, stdout=None):
+    def run(self, args, stdout=None):
         if not stdout: stdout = sys.stdout
         if not args:
             self._display_help()
@@ -193,7 +196,8 @@ class IndexLister(SqliteSupport, SingleUse):
             params.append(self._single_constraints[END])
         return sql, tuple(params)
 
-    def _wildchars(self, value):
+    @staticmethod
+    def _wildchars(value):
         return sub(r'\?', '_', sub(r'\*', '%', value))
 
     def _count(self, sql, params, stdout):
@@ -222,5 +226,8 @@ class IndexLister(SqliteSupport, SingleUse):
 
 
 def list_index(config):
-    IndexLister(config).list(config.args.args)
+    """
+    Implement the list-index command.
+    """
+    IndexLister(config).run(config.args.args)
 
