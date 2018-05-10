@@ -241,3 +241,16 @@ def parse_short_epoch(date):
     dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
     return (dt - EPOCH).total_seconds()
 
+
+
+class SingleUse:
+
+    def __init__(self):
+        self._used = False
+
+    def _assert_single_use(self):
+        """
+        Some classes can only be used once.
+        """
+        if self._used: raise Exception('Cannot reuse %s' % self.__class__.name)
+        self._used = True

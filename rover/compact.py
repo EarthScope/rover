@@ -100,7 +100,7 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         """
         self._found_duplicates = False
         self._log.debug('Compacting %s' % path)
-        mutated = self._compact(path)
+        self._compact(path)
         if path.startswith(self._mseed_dir):
             # do this even if file unchanged, as we may be part of pipeline
             self._indexer.run([path])
@@ -140,7 +140,6 @@ class Compacter(ModifiedScanner, DirectoryScanner):
             self._replace(path, data)
         else:
             self._log.debug('File unchanged')
-        return mutated
 
     def _replace(self, path, data):
         # do this carefully, so there's a backup if writing fails

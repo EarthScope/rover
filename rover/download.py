@@ -1,7 +1,7 @@
 
 import datetime
 from os import getpid, unlink
-from os.path import join
+from os.path import join, exists
 from queue import Queue, Empty
 from threading import Thread
 from time import time
@@ -10,17 +10,18 @@ from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
-    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch
+    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse
 from .workers import SingleSNCLDayWorkers
+
 
 # if a download process fails or hangs, we need to clear out
 # the file, so use a specific name and check for old files
 # in the download area
-TMPFILE = 'rover_tmp'
+TMPFILE = 'rover_tmp_download'
 CONFIGFILE = 'rover_config'
 
 
-class Downloader(SqliteSupport):
+class Downloader(SqliteSupport, SingleUse):
     """
     Download a single request (typically for a day), ingest and index it.
 
@@ -38,11 +39,11 @@ class Downloader(SqliteSupport):
     """
 
     def __init__(self, config):
-        super().__init__(config)
+        SqliteSupport.__init__(self, config)
+        SingleUse.__init__(self)
         args = config.args
         self._temp_dir = canonify(args.temp_dir)
         self._delete_files = args.delete_files
-        self._delete_tables = args.delete_tables
         self._blocksize = 1024 * 1024
         self._ingester = Ingester(config)
         self._create_downloaderss_table()
@@ -53,33 +54,36 @@ class Downloader(SqliteSupport):
         Download the give URL, then call ingest and index before deleting.
         """
         self._assert_single_use()
-        retrievers_id, table = self._update_retrievers_table(url)
+        retrievers_id, db_path = self._update_retrievers_table(url)
         path = None
         try:
             path = self._do_download(url)
-            self._ingester.run([path], table=table)
+            self._ingester.run([path], db_path=db_path)
         finally:
-            if path and self._delete_files: unlink(path)
-            if self._delete_tables:
-                self._execute('drop table if exists %s' % table)
-                self._execute('delete from rover_downloaders where id = ?', (retrievers_id,))
+            if self._delete_files:
+                if path:
+                    unlink(path)
+                if exists(db_path):
+                    unlink(db_path)
+                self.execute('delete from rover_downloaders where id = ?', (retrievers_id,))
 
     def _update_retrievers_table(self, url):
         self._clear_dead_retrievers()
         pid = getpid()
-        table = self._retrievers_table_name(url, pid)
-        self._execute('insert into rover_downloaders (pid, table_name, url) values (?, ?, ?)', (pid, table, url))
-        id = self._fetchsingle('select id from rover_downloaders where pid = ? and table_name like ? and url like ?',
-                               (pid, table, url))  # todo - auto retrieve key?
-        return id, table
+        db_path = self._retrievers_db_path(url, pid)
+        self.execute('insert into rover_downloaders (pid, db_path, url) values (?, ?, ?)', (pid, db_path, url))
+        id = self.fetchsingle('select id from rover_downloaders where pid = ? and db_path like ? and url like ?',
+                              (pid, db_path, url))  # todo - auto retrieve key?
+        return id, db_path
 
     def _clear_dead_retrievers(self):
-        if self._delete_tables:
-            for row in self._fetchall('select id, table_name from rover_downloaders where creation_epoch < ?', (time() - 60 * 60,)):
-                id, table = row
-                self._log.warn('Forcing deletion of table %s' % table)
-                self._execute('drop table if exists %s' % table)
-                self._execute('delete from rover_downloaders where id = ?', (id,))
+        if self._delete_files:
+            for row in self.fetchall('select id, db_path from rover_downloaders where creation_epoch < ?', (time() - 60 * 60,)):
+                id, file = row
+                if exists(file):
+                    self._log.warn('Forcing deletion of temp database %s' % file)
+                    unlink(file)
+                self.execute('delete from rover_downloaders where id = ?', (id,))
 
     def _do_download(self, url):
         # previously we extracted the file name from the header, but the code
@@ -87,6 +91,23 @@ class Downloader(SqliteSupport):
         # the file will be deleted soon anyway we now use an arbitrary name
         path = join(self._temp_dir, uniqueish(TMPFILE, url))
         return get_to_file(url, path, self._log)
+
+    def _create_downloaderss_table(self):
+        """
+        Create the table used by the retriever.  This is here because the
+        table may be created by either a retriever or a download manager.
+        """
+        self.execute('''create table if not exists rover_downloaders (
+                           id integer primary key autoincrement,
+                           pid integer,
+                           db_path text unique,
+                           creation_epoch int default (cast(strftime('%s', 'now') as int)),
+                           url text not null
+                         )''')
+
+    def _retrievers_db_path(self, url, pid):
+        name = uniqueish('rover_retriever', url)
+        return unique_filename(join(self._temp_dir, name))
 
 
 def download(config):

@@ -11,7 +11,7 @@ class Processes(SqliteSupport):
         self._create_processes_table()
 
     def _create_processes_table(self):
-        self._execute('''create table if not exists rover_processes (
+        self.execute('''create table if not exists rover_processes (
                            id integer primary key autoincrement,
                            pid integer unique,
                            name text not null,
@@ -38,4 +38,4 @@ class Processes(SqliteSupport):
 
     def remove_process(self):
         pid = getpid()
-        self._execute('delete from rover_processes where pid = ?', (pid,))
+        self.execute('delete from rover_processes where pid = ?', (pid,))

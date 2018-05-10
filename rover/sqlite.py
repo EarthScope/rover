@@ -44,20 +44,16 @@ class CursorContext:
         return False  # propagate any exceptions
 
 
-class SqliteSupport:
-    '''
-    Utility class supporting various common database operations.
-    '''
+class SqliteDb:
 
-    def __init__(self, config):
-        self._db = config.db
-        self._log = config.log
-        self._used = False
+    def __init__(self, db, log):
+        self._db = db
+        self._log = log
 
     def cursor(self, quiet=False):
         return CursorContext(self, quiet)
 
-    def _execute(self, sql, params=tuple(), quiet=False):
+    def execute(self, sql, params=tuple(), quiet=False):
         """
         Execute a single command in a transaction.
         """
@@ -65,7 +61,7 @@ class SqliteSupport:
             self._log.debug('Execute: %s %s' % (sql, params))
             c.execute(sql, params)
 
-    def _fetchsingle(self, sql, params=tuple(), quiet=False):
+    def fetchsingle(self, sql, params=tuple(), quiet=False):
         """
         Return a single value from a select.
 
@@ -82,7 +78,7 @@ class SqliteSupport:
             else:
                 raise NoResult(sql, params)
 
-    def _fetchone(self, sql, params=tuple(), quiet=False):
+    def fetchone(self, sql, params=tuple(), quiet=False):
         """
         Return a single row from a select.
 
@@ -96,7 +92,7 @@ class SqliteSupport:
             else:
                 raise NoResult(sql, params)
 
-    def _fetchall(self, sql, params=tuple(), quiet=False):
+    def fetchall(self, sql, params=tuple(), quiet=False):
         """
         Return a list of rows from a select.
 
@@ -107,33 +103,30 @@ class SqliteSupport:
             self._log.debug('Fetchall: %s %s' % (sql, params))
             return c.execute(sql, params).fetchall()
 
-    def _foreachrow(self, sql, params, callback, quiet=False):
+    def foreachrow(self, sql, params, callback, quiet=False):
         with self.cursor(quiet=quiet) as c:
             self._log.debug('foreachrow: %s %s' % (sql, params))
             for row in c.execute(sql, params):
                 callback(row)
 
-    def _create_downloaderss_table(self):
-        """
-        Create the table used by the retriever.  This is here because the
-        table may be created by either a retriever or a download manager.
-        """
-        self._execute('''create table if not exists rover_downloaders (
-                           id integer primary key autoincrement,
-                           pid integer,
-                           table_name text unique,
-                           creation_epoch int default (cast(strftime('%s', 'now') as int)),
-                           url text not null,
-                           unique (pid, table_name, url)
-                         )''')
+    def close(self):
+        self._db.close()
 
-    @staticmethod
-    def _retrievers_table_name(url, pid):
-        return uniqueish('rover_retriever', url)
 
-    def _assert_single_use(self):
-        """
-        Some classes can only be used once.
-        """
-        if self._used: raise Exception('Cannot reuse %s' % self.__class__.name)
-        self._used = True
+class SqliteContext:
+
+    def __init__(self, file, log):
+        self._db = SqliteDb(connect(file), log)
+
+    def __enter__(self):
+        return self._db
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._db.close()
+        return False  # propagate any exceptions
+
+
+class SqliteSupport(SqliteDb):
+
+    def __init__(self, config):
+        super().__init__(config.db, config.log)

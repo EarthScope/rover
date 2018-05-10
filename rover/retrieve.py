@@ -14,14 +14,13 @@ from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .utils import uniqueish, canonify, post_to_file, unique_filename, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch
-
+    match_prefixes, check_leap, parse_epoch, SingleUse
 
 RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime.datetime(1900, 1, 1)
 
 
-class Retriever(SqliteSupport):
+class Retriever(SqliteSupport, SingleUse):
     """
     Call the availability service, compare with the index, and
     then call the DownloadManager to retrieve the missing data
@@ -29,7 +28,8 @@ class Retriever(SqliteSupport):
     """
 
     def __init__(self, config):
-        super().__init__(config)
+        SqliteSupport.__init__(self, config)
+        SingleUse.__init__(self)
         args = config.args
         self._download_manager = DownloadManager(config)
         self._temp_dir = canonify(args.temp_dir)
@@ -129,12 +129,12 @@ class Retriever(SqliteSupport):
         def callback(row):
             availability.add_timespans(row[0])
         try:
-            self._foreachrow('''select timespans
+            self.foreachrow('''select timespans
                                     from tsindex 
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',
-                             sncl.split('.'),
-                             callback, quiet=True)
+                            sncl.split('.'),
+                            callback, quiet=True)
         except OperationalError:
             self._log.debug('No index - first time using rover?')
         return availability.coverage()

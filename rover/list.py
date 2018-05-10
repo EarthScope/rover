@@ -4,8 +4,7 @@ from re import match, sub
 
 from .coverage import MultipleSNCLBuilder
 from .sqlite import SqliteSupport
-from .utils import format_epoch
-
+from .utils import format_epoch, SingleUse
 
 BEGIN = 'begin'
 END = 'end'
@@ -21,7 +20,7 @@ QUALITY = 'quality'
 SAMPLERATE = 'samplerate'
 
 
-class IndexLister(SqliteSupport):
+class IndexLister(SqliteSupport, SingleUse):
     """
     List entries in the index that match the given constraints.
     
@@ -30,7 +29,8 @@ class IndexLister(SqliteSupport):
     """
 
     def __init__(self, config):
-        super().__init__(config)
+        SqliteSupport.__init__(self, config)
+        SingleUse.__init__(self)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
@@ -197,7 +197,7 @@ class IndexLister(SqliteSupport):
         return sub(r'\?', '_', sub(r'\*', '%', value))
 
     def _count(self, sql, params, stdout):
-        print(self._fetchsingle(sql, params), file=stdout)
+        print(self.fetchsingle(sql, params), file=stdout)
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
@@ -212,7 +212,7 @@ class IndexLister(SqliteSupport):
                 n, s, l, c, q, ts, r = row
                 builder.add_timespans('%s.%s.%s.%s.%s (%g Hz)' % (n, s, l, c, q, r), ts)
 
-        self._foreachrow(sql, params, callback)
+        self.foreachrow(sql, params, callback)
         print()
         for coverage in builder.coverages():
             print('  %s' % coverage.sncl)

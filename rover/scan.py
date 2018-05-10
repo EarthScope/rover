@@ -144,7 +144,7 @@ class ModifiedScanner(SqliteSupport):
 
     def _delete(self, path):
         self._log.debug('Removing %s from index' % path)
-        self._execute('delete from tsindex where filename like ?', (path,))
+        self.execute('delete from tsindex where filename like ?', (path,))
 
     def process(self, path):
         raise Exception('Unimplemented')

@@ -1,17 +1,19 @@
 
+from datetime import datetime
+from os import unlink
 from os.path import exists, join
 from re import match
-from datetime import datetime
 
 from .compact import Compacter
 from .index import Indexer
 from .scan import DirectoryScanner
-from .sqlite import SqliteSupport
+from .sqlite import SqliteSupport, SqliteContext
 from .utils import canonify, run, check_cmd, check_leap, create_parents, touch
+
 
 # this is the table name when run directly from the command line.
 # when run as a worker from (multiple) retriever(s) a table is supplied.
-TMPTABLE = 'rover_tmpingest'
+TMPFILE = 'rover_tmp_ingest'
 
 
 class Ingester(SqliteSupport, DirectoryScanner):
@@ -32,16 +34,15 @@ class Ingester(SqliteSupport, DirectoryScanner):
         self._mseed_db = canonify(args.mseed_db)
         touch(self._mseed_db)
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
-        self._table = None
+        self._db_path = None
         self._mseed_dir = canonify(args.mseed_dir)
         self._compact = args.compact
-        self._delete_tables = args.delete_tables
         self._log = log
         self._indexer = Indexer(config)
         self._compacter = Compacter(config)
 
-    def run(self, args, table=TMPTABLE):
-        self._table = table
+    def run(self, args, db_path=TMPFILE):
+        self._db_path = db_path
         if not args:
             raise Exception('No paths provided')
         self.scan_dirs_and_files(args)
@@ -52,22 +53,21 @@ class Ingester(SqliteSupport, DirectoryScanner):
         year, day = time_data.tm_year, time_data.tm_yday
         return join(self._mseed_dir, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
 
-    def _drop_table(self):
-        if self._delete_tables:
-            self._execute('drop table if exists %s' % self._table)
-
     def process(self, file):
         self._log.info('Indexing %s for ingest' % file)
-        self._drop_table()
+        if exists(self._db_path):
+            self._log.warn('Temp file %s exists (deleting)' % self._db_path)
+            unlink(self._db_path)
         updated = set()
         try:
-            run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s -table %s %s'
-                % (self._leap_file, self._mseed_cmd, self._mseed_db, self._table, file), self._log)
-            rows = self._fetchall('''select network, station, starttime, endtime, byteoffset, bytes 
-                                     from %s order by byteoffset''' % self._table)
-            updated.update(self._copy_rows(file, rows))
+            run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
+                % (self._leap_file, self._mseed_cmd, self._db_path, file), self._log)
+            with SqliteContext(self._db_path, self._log) as db:
+                rows = db.fetchall('''select network, station, starttime, endtime, byteoffset, bytes
+                                  from tsindex order by byteoffset''')
+                updated.update(self._copy_rows(file, rows))
         finally:
-            self._drop_table()
+            unlink(self._db_path)
         if self._compact:
             self._compacter.run(updated)
         else:

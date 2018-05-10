@@ -24,5 +24,5 @@ days.  This is because it works by blindly copying byte ranges based
 on the mseedindex output, and the targets for this data (the files in
 the local store) are per-day.
 
-This is not a problem for normal use (because files are donwloaded in
-day-sized chnuks), but is rstrictive when ingesting local files.
+This is not a problem for normal use (because files are downloaded in
+day-sized chunks), but is restrictive when ingesting local files.
