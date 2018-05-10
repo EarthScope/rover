@@ -342,11 +342,10 @@ class Arguments(ArgumentParser):
                 name += ' / -h'
                 default = False
                 help = help.replace('this', 'the')
-            elif name == COMMAND:
-                help = 'the rover command to execute'
             if help:
                 help = help[0].upper() + help[1:]
-            yield name, default, help
+            if name not in (COMMAND, ARGS):
+                yield name, default, help
 
     def write_docs_text(self):
         """
@@ -364,8 +363,6 @@ class Arguments(ArgumentParser):
                 print()
 
     def write_docs_table(self):
-        print('| Name | Default | Description |')
-        print('|------|---------|-------------|')
         for name, default, help in self._documentation():
             if default is None: default = ''
             print('| %s | %s | %s |' % (name, default, help))
