@@ -208,7 +208,6 @@ class IndexLister(SqliteSupport, SingleUse):
         builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_SAMPLERATES])
 
         def callback(row):
-            # nonlocal prev[0]
             if self._flags[JOIN_SAMPLERATES]:
                 n, s, l, c, q, ts = row
                 builder.add_timespans('%s.%s.%s.%s.%s' % (n, s, l, c, q), ts)

@@ -329,4 +329,16 @@ class Arguments(ArgumentParser):
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
 
-
+    def write_docs(self):
+        """
+        Generate markdown dodumcentation.  Run by hand from Python.
+        """
+        for action in self._actions:
+            print('### %s' % (sub('_', '-', action.dest)))
+            print()
+            if action.default is not None:
+                print('Default: %s' % action.default)
+                print()
+            if action.help:
+                print("%s" % action.help)
+            print()

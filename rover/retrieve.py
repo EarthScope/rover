@@ -51,6 +51,9 @@ class Retriever(SqliteSupport, SingleUse):
         clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
 
     def run(self, args, fetch):
+        """
+        Set-up environment, parse commands, and delegate to sub-methods as appropriate.
+        """
         self._assert_single_use()
         # check these so we fail early
         check_cmd('%s -h' % self._rover_cmd, 'rover', 'rover', self._log)
@@ -77,7 +80,7 @@ class Retriever(SqliteSupport, SingleUse):
 
     def _query(self, up):
         """
-        Populate teh download manager by comparing the data from the
+        Populate the download manager by comparing the data from the
         availability service with the local index.
         """
         if self._pre_index:

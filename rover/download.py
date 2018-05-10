@@ -38,7 +38,7 @@ class Downloader(SqliteSupport, SingleUse):
     To do this we have a table that lists ingesters, along with URLs, PIDs,
     database paths and epochs.
 
-    This isn't a problem for the main ingest command because only a sin=gle instance 
+    This isn't a problem for the main ingest command because only a single instance
     of the command line command runs at any one time.
     """
 
@@ -192,7 +192,7 @@ class DownloadManager(SingleUse):
         """
         Expand the timespans into daily downloads, get the data and ingest.
         """
-        self._assert_not_used()
+        self._assert_single_use()
         self._config_path = self._write_config()
         n_downloads = 0
         try:
