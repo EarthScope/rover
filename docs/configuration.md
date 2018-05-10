@@ -80,5 +80,5 @@ Available parameters can be displayed using `rover -h`.
 | leap-expire | 30 | Number of days before refreshing file |
 | leap-file | ~/rover/leap-seconds.lst | File for leapsecond data |
 | leap-url | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data |
-| command | None | Use "help" for further information |
-| args | None | Depends on the command - see above |
+| command |  | the rover command to execute |
+| args |  | Command arguments (depend on the command) |

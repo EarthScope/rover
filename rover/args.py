@@ -34,7 +34,9 @@ NO = '--no-'
 
 # parameters
 ALL = 'all'
+ARGS = 'args'
 AVAILABILITYURL = 'availability-url'
+COMMAND = 'command'
 COMPACTLIST = 'compact-list'
 COMPACTMUTATE = 'compact-mutate'
 COMPACTMIXEDTYPES = 'compact-mixed-types'
@@ -220,8 +222,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
 
         # commands / args
-        self.add_argument('command', metavar='COMMAND', nargs='?', help='use "help" for further information')
-        self.add_argument('args', nargs='*', help='depends on the command - see above')
+        self.add_argument(COMMAND, metavar='COMMAND', nargs='?', help='use "help" for further information')
+        self.add_argument(ARGS, nargs='*', help='command arguments (depend on the command)')
 
     def parse_args(self, args=None, namespace=None):
         '''
@@ -336,12 +338,14 @@ class Arguments(ArgumentParser):
             help = action.help
             if help:
                 help = help[0].upper() + help[1:]
-            if name == 'file':
+            if name == FILE:
                 name += ' / -f'
-            elif name == 'help':
+            elif name == HELP:
                 name += ' / -h'
                 default = False
                 help = help.replace('this', 'the')
+            elif name == COMMAND:
+                help = 'the rover command to execute'
             yield name, default, help
 
     def write_docs_text(self):
@@ -363,4 +367,5 @@ class Arguments(ArgumentParser):
         print('| Name | Default | Description |')
         print('|------|---------|-------------|')
         for name, default, help in self._documentation():
+            if default is None: default = ''
             print('| %s | %s | %s |' % (name, default, help))
