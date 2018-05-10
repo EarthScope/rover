@@ -336,8 +336,6 @@ class Arguments(ArgumentParser):
             name = sub('_', '-', action.dest)
             default = action.default
             help = action.help
-            if help:
-                help = help[0].upper() + help[1:]
             if name == FILE:
                 name += ' / -f'
             elif name == HELP:
@@ -346,6 +344,8 @@ class Arguments(ArgumentParser):
                 help = help.replace('this', 'the')
             elif name == COMMAND:
                 help = 'the rover command to execute'
+            if help:
+                help = help[0].upper() + help[1:]
             yield name, default, help
 
     def write_docs_text(self):
