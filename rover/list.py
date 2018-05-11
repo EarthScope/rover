@@ -69,10 +69,10 @@ value:
 
 @timespan-tol
 @mseed-db
+@verbosity
 @log-dir
 @log-name
 @log-verbosity
-@verbosity
 
 #### Examples
 

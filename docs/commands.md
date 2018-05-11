@@ -29,11 +29,10 @@ This command also indexes modified data in the store before processing and runs 
 | rover-cmd           | rover                | Command to run rover            |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)         |
 | log-dir             | ~/rover/logs         | Directory for logs              |
 | log-name            | rover                | Base file name for logs         |
 | log-verbosity       | 5                    | Log verbosity (0-5)             |
-| verbosity           | 4                    | Stdout verbosity (0-5)          |
-
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
 
@@ -42,6 +41,34 @@ In addition, parameters for sub-commands (download, ingest, index, compact) will
     rover retrieve sncls.txt
 
     rover retrieve 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+
+
+### Compare
+
+    rover compare file
+
+    rover compare N.S.L.C begin [end]
+
+Compare available data with the local store, then display what data would be downloaded.  So this command whows what \`rover retrieve\` would actually retrieve.
+
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+##### Examples
+
+    rover compare sncls.txt
+
+    rover compare 'U.ANMO.00.BH1 2017-01-01 2017-01-04
 
 
 ### List Index
@@ -82,10 +109,10 @@ The following parameters are simple flags that change the output format.  They a
 | ------------------- | -------------------- | ------------------------------- |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)         |
 | log-dir             | ~/rover/logs         | Directory for logs              |
 | log-name            | rover                | Base file name for logs         |
 | log-verbosity       | 5                    | Log verbosity (0-5)             |
-| verbosity           | 4                    | Stdout verbosity (0-5)          |
 
 #### Examples
 
@@ -125,11 +152,10 @@ This command also indexes modified data in the store before processing and runs 
 | rover-cmd           | rover                | Command to run rover            |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)         |
 | log-dir             | ~/rover/logs         | Directory for logs              |
 | log-name            | rover                | Base file name for logs         |
 | log-verbosity       | 5                    | Log verbosity (0-5)             |
-| verbosity           | 4                    | Stdout verbosity (0-5)          |
-
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
 

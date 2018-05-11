@@ -72,7 +72,7 @@ Available parameters can be displayed using `rover -h`.
 | log-verbosity       | 5                    | Log verbosity (0-5)             |
 | log-size            | 6                    | Maximum log size (1-10)         |
 | log-count           | 10                   | Maximum number of logs          |
-| verbosity           | 4                    | Stdout verbosity (0-5)          |
+| verbosity           | 4                    | Console verbosity (0-5)         |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |

@@ -55,11 +55,10 @@ afterwards to check for duplicate data.
 @rover-cmd
 @mseed-cmd
 @mseed-db
+@verbosity
 @log-dir
 @log-name
 @log-verbosity
-@verbosity
-
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those
 commands for more details.
@@ -258,6 +257,36 @@ class Retriever(BaseRetriever):
 
 
 class Comparer(BaseRetriever):
+    """
+### Compare
+
+    rover compare file
+
+    rover compare N.S.L.C begin [end]
+
+Compare available data with the local store, then display what data would be downloaded.  So this command
+whows what `rover retrieve` would actually retrieve.
+
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
+service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a
+(single-line) file will be automatically constructed containing that data.
+
+##### Significant Parameters
+
+@availability-url
+@mseed-db
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+##### Examples
+
+    rover compare sncls.txt
+
+    rover compare 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+
+"""
 
     def __init__(self, config):
         super().__init__(config)
