@@ -5,25 +5,36 @@
 
 ### Retrieve
 
-    rover retrieve (file|sncl start [end])
+    rover retrieve file
 
-Compare the local index (config parameter mseed-db) with the data
-availabe remotely (config parameter availability-url), then download
-(config parameter dataselect-url) and ingest the missing files.  Use
-compare (below) to see what data would be downloaded (without doing
-the work).
+    rover retrieve N.S.L.C begin [end]
+
+Compare available data with the local store, then download, ingest and index data.
+
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
+
+The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
+
+This command also indexes modified data in the store before processing and runs `rover compact --compact-list1 afterwards to check for duplicate data.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
+| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+| pre-index           | True                 | Index before retrieval?         |
+| post-compact        | True                 | Call compact after retrieval?   |
+| rover-cmd           | rover                | Command to run rover            |
+| mseed-cmd           | mseedindex           | Mseedindex command              |
+
+In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
 
 ##### Examples
 
-    rover retrieve targets.list
+    rover retrieve sncls.txt
 
-will retrieve everything in the given file (that is not already present
-in the local store).
-
-    rover compare IU.ANMO.00.BH1 2017-01-01
-
-will list the downloads needed to retrieve missing data for
-IU.ANMO.00.BH1 from Jan 1 2017 onwards.
+    rover retrieve 'U.ANMO.00.BH1 2017-01-01 2017-01-04
 
 ### Compare
       
