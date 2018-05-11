@@ -232,7 +232,7 @@ In addition, parameters for sub-commands (index, and possibly compact) will be u
 
     
 
-Compact
+### Compact
 
     rover compact [--compact-list]
 

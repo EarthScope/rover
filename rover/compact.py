@@ -66,7 +66,7 @@ class Signature:
 
 class Compacter(ModifiedScanner, DirectoryScanner):
     """
-Compact
+### Compact
 
     rover compact [--compact-list]
 
