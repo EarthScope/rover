@@ -1,3 +1,4 @@
+from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT, mm, ALL, NO, MSEEDCMD, Arguments
@@ -182,12 +183,17 @@ class Helper:
                 else:
                     arguments.print_docs_text(line[1:])
             elif self._md_format:
-                print(line)
+                print(self._escape(line))
             elif line.startswith('#'):
                 print(line.lstrip(' #'))
             else:
                 for short in self._splitlines(line):
                     print(short)
+
+    def _escape(self, text):
+        text = sub(r'\\', '\\\\', text)
+        text = sub(r'`', '\\`', text)
+        return text
 
     def _paras(self, text):
         lines = text.splitlines()

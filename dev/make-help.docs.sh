@@ -50,8 +50,6 @@ EOF
 
 python -c 'from rover.args import Arguments; Arguments().print_docs_table()' >> docs/configuration.md
 
-exit 
-
 cat <<EOF > docs/commands.md
 
 # Rover Commands
