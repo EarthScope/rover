@@ -60,7 +60,7 @@ class NewConfig:
 
 class ConfigResetter:
     """
-Reset Config
+### Reset Config
 
     rover reset-config
 

@@ -127,7 +127,7 @@ will display the number of entries for all time, and any quality or smaplerate.
 will list all entries in the index after the year 2000.
     
 
-Reset Config
+### Reset Config
 
     rover reset-config
 
