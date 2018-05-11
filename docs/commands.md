@@ -16,7 +16,7 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 
 The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
 
-This command also indexes modified data in the store before processing and runs \`rover compact --compact-list1 afterwards to check for duplicate data.
+This command also indexes modified data in the store before processing and runs `rover compact --compact-list1 afterwards to check for duplicate data.
 
 ##### Significant Parameters
 
@@ -51,7 +51,7 @@ In addition, parameters for sub-commands (download, ingest, index, compact) will
 
     rover compare N.S.L.C begin [end]
 
-Compare available data with the local store, then display what data would be downloaded.  So this command whows what \`rover retrieve\` would actually retrieve.
+Compare available data with the local store, then display what data would be downloaded.  So this command whows what `rover retrieve` would actually retrieve.
 
 The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
 
@@ -199,9 +199,9 @@ In addition, parameters for sub-commands (ingest, index, and possibly compact) w
 
 Add the contents of the file (MSEED format) to the local store and index the new data.
 
-The \`mseedindex\` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the local store.
+The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the local store.
 
-Optionally, \`rover compact\` can be called to remove duplicate data (use \`--compact\`).
+Optionally, `rover compact` can be called to remove duplicate data (use `--compact`).
 
 The file should not contain data that spans multiple calendar days.
 
@@ -240,13 +240,13 @@ In addition, parameters for sub-commands (index, and possibly compact) will be u
 
 Remove (or simply log) duplicate data and then index the file.
 
-When no argument is give all files in the local store are processed.  When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless \`--no-recurse\` is specified.
+When no argument is give all files in the local store are processed.  When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
-If \`--compact-list\` is given then details of duplicate data are printed to stdou, but no action is taken.
+If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.
 
-if \`--compact-mutate\` is given then duplicate data do not have to agree; th emore recent data (appearing later in the file) are preserved.
+if `--compact-mutate` is given then duplicate data do not have to agree; th emore recent data (appearing later in the file) are preserved.
 
-If \`--compact-mixed-types\` is given then it is not a fatal error for the duplicate data to have different types (but still, such data will not be de-duplicated).
+If `--compact-mixed-types` is given then it is not a fatal error for the duplicate data to have different types (but still, such data will not be de-duplicated).
 
 ##### Significant Parameters
 

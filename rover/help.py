@@ -192,7 +192,7 @@ class Helper:
 
     def _escape(self, text):
         text = sub(r'\\', '\\\\', text)
-        text = sub(r'`', '\\`', text)
+        # text = sub(r'`', '\\`', text)
         return text
 
     def _paras(self, text):
