@@ -11,11 +11,45 @@ The 'rover index' command - call mseeedindex to update the tsindex table.
 
 class Indexer(ModifiedScanner, DirectoryScanner):
     """
-    Run mssedindex on appropriate files (and delete entries for missing files).
+### Index
 
-    Most of the work is done in the scanner superclasses which find the files
-    to modify, and in the worker that runs mseedindex.
+    rover index [--all]
+
+    rover index (file|dir)+
+
+Index the files (add or change entires in the tsindex table in the mseed database).
+
+When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
+
+When a directory is given, all files contained in that directory are processed, along with the contents of
+sub-directories, unless `--no-recurse` is specified.
+
+##### Significant Parameters
+
+@all
+@mseed-cmd
+@mseed-dir
+@mseed-db
+@mseed-workers
+@leap
+@leap-expire
+@leap-file
+@leap-url
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+##### Examples
+
+    rover index --all
+
+will index the entire store.
+
     """
+
+# Most of the work is done in the scanner superclasses which find the files
+# to modify, and in the worker that runs mseedindex.
 
     def __init__(self, config):
         ModifiedScanner.__init__(self, config)

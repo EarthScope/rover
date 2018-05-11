@@ -68,15 +68,16 @@ class Compacter(ModifiedScanner, DirectoryScanner):
     """
 ### Compact
 
-    rover compact [--compact-list]
+    rover compact  [--all] [--compact-list]
 
     rover compact (file|dir)+ [--no-recurse] [--compact-list]
 
 Remove (or simply log) duplicate data and then index the file.
 
-When no argument is give all files in the local store are processed.  When a directory is given, all files
-contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse`
-is specified.
+When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
+
+When a directory is given, all files contained in that directory are processed, along with the contents of
+sub-directories, unless `--no-recurse` is specified.
 
 If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.
 
@@ -88,6 +89,7 @@ still, such data will not be de-duplicated).
 
 ##### Significant Parameters
 
+@all
 @mseed-dir
 @temp-dir
 @compact-list

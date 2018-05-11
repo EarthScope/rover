@@ -31,6 +31,7 @@ This command also indexes modified data in the store before processing and runs 
 | rover-cmd           | rover                | Command to run rover            |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| download-workers    | 10                   | Number of download instances to run |
 | verbosity           | 4                    | Console verbosity (0-5)         |
 | log-dir             | ~/rover/logs         | Directory for logs              |
 | log-name            | rover                | Base file name for logs         |
@@ -234,13 +235,15 @@ In addition, parameters for sub-commands (index, and possibly compact) will be u
 
 ### Compact
 
-    rover compact [--compact-list]
+    rover compact  [--all] [--compact-list]
 
     rover compact (file|dir)+ [--no-recurse] [--compact-list]
 
 Remove (or simply log) duplicate data and then index the file.
 
-When no argument is give all files in the local store are processed.  When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
+When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
+
+When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
 If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.
 
@@ -252,6 +255,7 @@ If `--compact-mixed-types` is given then it is not a fatal error for the duplica
 
 |  Name               | Default              | Description                     |
 | ------------------- | -------------------- | ------------------------------- |
+| all                 | False                | Process all files (not just modified)? |
 | mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | compact-list        | False                | Detect and list files with duplicate data? |
@@ -273,7 +277,40 @@ will check the entire store for duplicate data.
 
     
 
-    Run mssedindex on appropriate files (and delete entries for missing files).
+### Index
 
-    Most of the work is done in the scanner superclasses which find the files     to modify, and in the worker that runs mseedindex.
+    rover index [--all]
+
+    rover index (file|dir)+
+
+Index the files (add or change entires in the tsindex table in the mseed database).
+
+When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
+
+When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| all                 | False                | Process all files (not just modified)? |
+| mseed-cmd           | mseedindex           | Mseedindex command              |
+| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-workers       | 10                   | Number of mseedindex instances to run |
+| leap                | True                 | Use leapseconds file?           |
+| leap-expire         | 30                   | Number of days before refreshing file |
+| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data        |
+| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data         |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+##### Examples
+
+    rover index --all
+
+will index the entire store.
+
     

@@ -57,6 +57,7 @@ afterwards to check for duplicate data.
 @rover-cmd
 @mseed-cmd
 @mseed-db
+@download-workers
 @verbosity
 @log-dir
 @log-name
