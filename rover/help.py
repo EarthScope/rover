@@ -226,7 +226,7 @@ class Helper:
                 word, next_space, next_line = self._slurp(line)
                 if len(short + space + word) > 78:
                     yield short
-                    short, space = '', ''
+                    short, space = indentation, ''
                 else:
                     short = short + space + word
                     space, line = next_space, next_line

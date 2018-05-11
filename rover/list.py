@@ -30,60 +30,50 @@ class IndexLister(SqliteSupport, SingleUse):
     """
 ### List Index
 
-    rover list-index [network=...|station=...|location=...|channel=..|quality=...|samplerate=...]*
-      [S.N.C.L.Q]* [begin=...] [end=...] [count|join\join-samplerates]
+    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* \\
+    [count|join|join-samplerates]
 
-List index entries for the local store (config parameter mseed-dir)
-that match the given constraints.  For more information, run "rover
-list-index" (with no arguments).
+    rover list-index [S.N.C.L.Q]* [begin=...] [end=...] \\
+    [count|join|join-samplerates]
 
-The list_store command prints entries from the index that match
-the query parameters.  Parameters generally have the form
-name=value (no spaces).
+List index entries for the local store (config parameter mseed-dir) that match the given constraints.
+
+Note that console logging is to stderr, while the command results are listed to stdout.
 
 #### SNCLQ and Samplerate
 
-The following parameters take '*' and '?' as wildcards, can be
-repeated for multiple matches (combined with 'OR"), and the name only
-has to match unambiguously (so cha=HHZ is OK): station, network,
-channel, location, quality, samplerate.
+Query parameters can be named (network, station, location, channel, qualit, samplerate) and unambiguous abbreviations
+are accepted.  Alternative SNCLQ can be supplied (which can be truncated on the right, but must contain at least one
+period).
 
-The short form N.S.L.C.Q can also be used (at a minimum N.S must be
-supplied).
+The wildcards '*' and '?' can be used.
 
 #### Time Range
 
-The following parameters can be given only once, must be of
-the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the
-right), and define a range of times over which the block must
-appear (at least partially) to be included:
-
-  begin, end
+The 'begin' and 'end' parameters can be given only once.  They must be of the form YYYY-MM-DDTHH:MM:SS.SSSSSS
+(may be truncated on the right).  They define a range of times over which the data must appear (at least partially)
+to be included:
 
 #### Flags
 
-The following parameters are simple flags that change the
-output format.  They are mutually exclusive and take no
+The following parameters are simple flags that change the output format.  They are mutually exclusive and take no
 value:
 
   count - only the number of matches will be shown
+
   join - continguous time ranges will be joined
-  join-samplerates - the maximal timespan across all
-    samplerates is shown (as used by retrieve)
+
+  join-samplerates - the maximal timespan across all samplerates is shown (as used by retrieve)
 
 #### Examples
 
     rover list-index IU.ANMO.00.BH? count
 
-will display the number of entries for all time, any quality or
-smaplerate.
+will display the number of entries for all time, any quality or smaplerate.
 
     rover list-index net=* begin=2001-01-01
 
 will list all entries in the index after the year 2000.
-
-Note that console logging is to stderr, while results are
-printed to stdout.
     """
 
     def __init__(self, config):
