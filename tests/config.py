@@ -20,6 +20,8 @@ daemon=False
 dev=False
 # delete temporary files?
 delete-files=True
+# display help in markdown format?
+md-format=False
 # tolerance for overlapping timespans
 timespan-tol=0.1
 # number of download instances to run
@@ -66,7 +68,7 @@ log-verbosity=5
 log-size=6
 # maximum number of logs
 log-count=10
-# stdout verbosity (0-5)
+# console verbosity (0-5)
 verbosity=4
 # mseedindex command
 mseed-cmd=mseedindex

@@ -9,6 +9,12 @@ The 'rvoer subscribe' command.
 
 
 class Subscriber(SqliteSupport):
+    """"
+### Subscribe
+
+    rover subscribe
+
+    """
 
     def __init__(self, config):
         super().__init__(config)
@@ -17,9 +23,3 @@ class Subscriber(SqliteSupport):
         raise Exception('implement subscriber')
 
 
-
-def subscribe(config):
-    """
-    Implement the subscribe command - TODO
-    """
-    Subscriber(config).run(config.args.args)

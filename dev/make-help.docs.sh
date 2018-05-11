@@ -68,7 +68,7 @@ cat <<EOF >> docs/commands.md
 
 EOF
 
-dev/rover help retrieve --md-format >> docs/commands.md
+dev/rover help subscribe --md-format >> docs/commands.md
 
 cat <<EOF >> docs/commands.md
 ## Low-Level Commands

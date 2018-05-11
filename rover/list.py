@@ -276,11 +276,3 @@ will list all entries in the index after the year 2000.
             for ts in coverage.timespans:
                 print('    %s - %s' % (format_epoch(ts[0]), format_epoch(ts[1])))
             print()
-
-
-def list_index(config):
-    """
-    Implement the list-index command.
-    """
-    IndexLister(config).run(config.args.args)
-

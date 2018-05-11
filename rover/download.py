@@ -118,13 +118,6 @@ class Downloader(SqliteSupport, SingleUse):
         return unique_filename(join(self._temp_dir, name))
 
 
-def download(config):
-    """
-    Implement the download command - download, ingest and index data.
-    """
-    Downloader(config).run(config.args.args)
-
-
 class DownloadManager(SingleUse):
     """
     An interface to downloader instances that restricts downloads to a fixed number of workers,

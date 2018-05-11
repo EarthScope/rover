@@ -122,10 +122,3 @@ class Ingester(SqliteSupport, DirectoryScanner):
     def _assert_single_day(self, file, starttime, endtime):
         if starttime[:10] != endtime[:10]:
             raise Exception('File %s contains data from more than one day (%s-%s)' % (file, starttime, endtime))
-
-
-def ingest(config):
-    """
-    Implement the ingest command.
-    """
-    Ingester(config).run(config.args.args)

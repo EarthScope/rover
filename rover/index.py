@@ -51,10 +51,3 @@ class Indexer(ModifiedScanner, DirectoryScanner):
 
     def done(self):
         self._workers.wait_for_all()
-
-
-def index(config):
-    """
-    Implement the index command.
-    """
-    Indexer(config).run(config.args.args)

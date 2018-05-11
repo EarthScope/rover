@@ -254,7 +254,7 @@ class Retriever(BaseRetriever):
         super().__init__(config)
 
     def run(self, args):
-        super().run(args, True)
+        return super().run(args, True)
 
 
 class Comparer(BaseRetriever):
@@ -294,16 +294,4 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
         super().__init__(config)
 
     def run(self, args):
-        super().run(args, False)
-
-
-
-def retrieve(config):
-    """
-    Implement the retrieve command.
-    """
-    return Retriever(config).run(config.args.args)
-
-
-def compare(config):
-    return Comparer(config).run(config.args.args)
+        return super().run(args, False)

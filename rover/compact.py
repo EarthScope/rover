@@ -239,10 +239,3 @@ class Compacter(ModifiedScanner, DirectoryScanner):
         upper = data[index-1]
         data.remove(upper)
         data.insert(index, upper)
-
-
-def compact(config):
-    """
-    Implement the compact command - remove or report on duplicate data.
-    """
-    Compacter(config).run(config.args.args)

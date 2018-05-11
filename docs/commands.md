@@ -152,46 +152,11 @@ Write default values to the config file.
     
 ## Advanced Usage (Daemon Mode)
 
+" ### Subscribe
 
-### Retrieve
+    rover subscribe
 
-    rover retrieve file
-
-    rover retrieve N.S.L.C begin [end]
-
-Compare available data with the local store, then download, ingest and index data.
-
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
-
-The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
-
-This command also indexes modified data in the store before processing and runs \`rover compact --compact-list1 afterwards to check for duplicate data.
-
-##### Significant Parameters
-
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
-| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
-| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
-| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
-| pre-index           | True                 | Index before retrieval?         |
-| post-compact        | True                 | Call compact after retrieval?   |
-| rover-cmd           | rover                | Command to run rover            |
-| mseed-cmd           | mseedindex           | Mseedindex command              |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
-
-In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
-
-##### Examples
-
-    rover retrieve sncls.txt
-
-    rover retrieve 'U.ANMO.00.BH1 2017-01-01 2017-01-04
-
+    
 ## Low-Level Commands
 
 The following commands are used internally, but are usually not useful
