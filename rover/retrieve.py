@@ -50,6 +50,7 @@ afterwards to check for duplicate data.
 
 @temp-dir
 @availability-url
+@timespan-tol
 @pre-index
 @post-compact
 @rover-cmd
@@ -78,7 +79,7 @@ commands for more details.
         self._download_manager = DownloadManager(config)
         self._temp_dir = canonify(args.temp_dir)
         self._availability_url = args.availability_url
-        self.timespan_tol = args.timespan_tol
+        self._timespan_tol = args.timespan_tol
         self._pre_index = args.pre_index
         self._post_compact = args.post_compact
         self._rover_cmd = args.rover_cmd
@@ -194,14 +195,14 @@ commands for more details.
                         yield availability
                         availability = None
                     if not availability:
-                        availability = Coverage(self.timespan_tol, sncl)
+                        availability = Coverage(self._timespan_tol, sncl)
                     availability.add_epochs(b, e)
             if availability:
                 yield availability
 
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
-        availability = SingleSNCLBuilder(self.timespan_tol, sncl)
+        availability = SingleSNCLBuilder(self._timespan_tol, sncl)
         def callback(row):
             availability.add_timespans(row[0])
         try:
@@ -274,6 +275,7 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 ##### Significant Parameters
 
 @availability-url
+@timespan-tol
 @mseed-db
 @verbosity
 @log-dir

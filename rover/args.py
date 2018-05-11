@@ -392,7 +392,7 @@ class Arguments(ArgumentParser):
     def print_docs_text(self, name):
         name, default, description = self._documentation(name)
         left = '| %-*s | %-*s' % (self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default)
-        if len(left) + len(description) > 80:
+        if len(left) + len(description) > 78:
             print('%s\n%78s |' % (left, description))
         else:
             print('%s | %-*s |' % (left, self.DESCRIPTION_WIDTH, description))

@@ -59,6 +59,28 @@ class NewConfig:
 
 
 class ConfigResetter:
+    """
+Reset Config
+
+    rover reset-config
+
+Write default values to the config file.
+
+##### Significant Parameters
+
+@file
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+##### Examples
+
+    rover reset-config
+
+    rover reset-config --f .roverrc
+
+    """
 
     def __init__(self, config):
         self._log = config.log

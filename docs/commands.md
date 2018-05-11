@@ -24,6 +24,7 @@ This command also indexes modified data in the store before processing and runs 
 | ------------------- | -------------------- | ------------------------------- |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | pre-index           | True                 | Index before retrieval?         |
 | post-compact        | True                 | Call compact after retrieval?   |
 | rover-cmd           | rover                | Command to run rover            |
@@ -58,6 +59,7 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 |  Name               | Default              | Description                     |
 | ------------------- | -------------------- | ------------------------------- |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | verbosity           | 4                    | Console verbosity (0-5)         |
 | log-dir             | ~/rover/logs         | Directory for logs              |
@@ -124,6 +126,30 @@ will display the number of entries for all time, and any quality or smaplerate.
 
 will list all entries in the index after the year 2000.
     
+
+Reset Config
+
+    rover reset-config
+
+Write default values to the config file.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| file / -f           | ~/rover/config       | Specify configuration file      |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+##### Examples
+
+    rover reset-config
+
+    rover reset-config --f .roverrc
+
+    
 ## Advanced Usage (Daemon Mode)
 
 
@@ -147,6 +173,7 @@ This command also indexes modified data in the store before processing and runs 
 | ------------------- | -------------------- | ------------------------------- |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | pre-index           | True                 | Index before retrieval?         |
 | post-compact        | True                 | Call compact after retrieval?   |
 | rover-cmd           | rover                | Command to run rover            |
