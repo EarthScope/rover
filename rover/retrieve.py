@@ -54,6 +54,12 @@ afterwards to check for duplicate data.
 @post-compact
 @rover-cmd
 @mseed-cmd
+@mseed-db
+@log-dir
+@log-name
+@log-verbosity
+@verbosity
+
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those
 commands for more details.

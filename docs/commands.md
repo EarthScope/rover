@@ -28,6 +28,12 @@ This command also indexes modified data in the store before processing and runs 
 | post-compact        | True                 | Call compact after retrieval?   |
 | rover-cmd           | rover                | Command to run rover            |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Stdout verbosity (0-5)          |
+
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
 
@@ -70,11 +76,22 @@ The following parameters are simple flags that change the output format.  They a
 
   join-samplerates - the maximal timespan across all samplerates is shown (as used by retrieve)
 
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Stdout verbosity (0-5)          |
+
 #### Examples
 
     rover list-index IU.ANMO.00.BH? count
 
-will display the number of entries for all time, any quality or smaplerate.
+will display the number of entries for all time, and any quality or smaplerate.
 
     rover list-index net=* begin=2001-01-01
 
@@ -107,6 +124,12 @@ This command also indexes modified data in the store before processing and runs 
 | post-compact        | True                 | Call compact after retrieval?   |
 | rover-cmd           | rover                | Command to run rover            |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Stdout verbosity (0-5)          |
+
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
 

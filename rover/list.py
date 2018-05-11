@@ -65,11 +65,20 @@ value:
 
   join-samplerates - the maximal timespan across all samplerates is shown (as used by retrieve)
 
+##### Significant Parameters
+
+@timespan-tol
+@mseed-db
+@log-dir
+@log-name
+@log-verbosity
+@verbosity
+
 #### Examples
 
     rover list-index IU.ANMO.00.BH? count
 
-will display the number of entries for all time, any quality or smaplerate.
+will display the number of entries for all time, and any quality or smaplerate.
 
     rover list-index net=* begin=2001-01-01
 
