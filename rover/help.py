@@ -193,7 +193,7 @@ class Helper:
         lines = text.splitlines()
         i = 1
         while i < len(lines):
-            if lines[i].strip() and lines[i-1].strip() and not lines[i].startswith('@'):
+            if lines[i].strip() and lines[i-1].strip() and not lines[i].startswith('@') and not lines[i-1].endswith('\\'):
                 lines[i-1] = lines[i-1].rstrip() + ' ' + lines[i]
                 lines[i:] = lines[i+1:]
             else:
