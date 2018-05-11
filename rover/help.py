@@ -230,7 +230,7 @@ class Helper:
             line = line.lstrip()
             while line:
                 word, next_space, next_line = self._slurp(line)
-                if len(short + space + word) > 78:
+                if short.strip() and len(short + space + word) > 78:
                     yield short
                     short, space = indentation, ''
                 else:

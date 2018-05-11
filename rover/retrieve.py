@@ -50,6 +50,7 @@ afterwards to check for duplicate data.
 
 @temp-dir
 @availability-url
+@dataselect-url
 @timespan-tol
 @pre-index
 @post-compact

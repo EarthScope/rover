@@ -24,6 +24,7 @@ This command also indexes modified data in the store before processing and runs 
 | ------------------- | -------------------- | ------------------------------- |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url          |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | pre-index           | True                 | Index before retrieval?         |
 | post-compact        | True                 | Call compact after retrieval?   |
@@ -164,13 +165,32 @@ The following commands are used internally, but are usually not useful
 from the command line:
 
 
-    Download a single request (typically for a day), ingest and index it (ingest calls     index, so we just call ingest).
+### Download
 
-    The only complex thing here is that these may run in parallel.  That means that     multiple ingest instances can be running in parallel, all using  mseedindex.     To avoid conflict over sqlite access we use a different database file for each,     so we need to track and delete those.
+    rover download url
 
-    To do this we have a table that lists ingesters, along with URLs, PIDs,     database paths and epochs.
+Download a single request (typically for a day), ingest and index it.  After processing, the downloaded data file is deleted.
 
-    This isn't a problem for the main ingest command because only a single instance     of the command line command runs at any one time.
+The url should be for a Data Select service, and should not request data that spans multiple calendar days.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
+| delete-files        | True                 | Delete temporary files?         |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+In addition, parameters for sub-commands (ingest, index, and possibly compact) will be used - see help for those commands for more details.
+
+##### Examples
+
+    rover download \
+    http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
+
     
 
     The simplest possible ingester:     * Uses mseedindx to parse the file.     * For each section, appends to any existing file using byte offsets     * Refuses to handle blocks that cross day boundaries     * Does not check for overlap, differences in sample rate, etc. (see compact)

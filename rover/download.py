@@ -28,20 +28,44 @@ CONFIGFILE = 'rover_config'
 
 class Downloader(SqliteSupport, SingleUse):
     """
-    Download a single request (typically for a day), ingest and index it (ingest calls
-    index, so we just call ingest).
+### Download
 
-    The only complex thing here is that these may run in parallel.  That means that
-    multiple ingest instances can be running in parallel, all using  mseedindex.
-    To avoid conflict over sqlite access we use a different database file for each,
-    so we need to track and delete those.
+    rover download url
 
-    To do this we have a table that lists ingesters, along with URLs, PIDs,
-    database paths and epochs.
+Download a single request (typically for a day), ingest and index it.  After processing, the downloaded data file is
+deleted.
 
-    This isn't a problem for the main ingest command because only a single instance
-    of the command line command runs at any one time.
+The url should be for a Data Select service, and should not request data that spans multiple calendar days.
+
+##### Significant Parameters
+
+@temp-dir
+@delete-files
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+In addition, parameters for sub-commands (ingest, index, and possibly compact) will be used - see help for those
+commands for more details.
+
+##### Examples
+
+    rover download \\
+    http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
+
     """
+
+# The only complex thing here is that these may run in parallel.  That means that
+# multiple ingest instances can be running in parallel, all using  mseedindex.
+# To avoid conflict over sqlite access we use a different database file for each,
+# so we need to track and delete those.
+#
+# To do this we have a table that lists ingesters, along with URLs, PIDs,
+# database paths and epochs.
+#
+# This isn't a problem for the main ingest command because only a single instance
+# of the command line command runs at any one time.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
