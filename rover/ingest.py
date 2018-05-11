@@ -60,7 +60,7 @@ for more details.
 
     rover ingest /tmp/IU.ANMO.00.*.mseed --compact
 
-    """
+"""
 
 # The simplest possible ingester:
 # * Uses mseedindx to parse the file.

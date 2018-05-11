@@ -127,7 +127,7 @@ will display the number of entries for all time, and any quality or smaplerate.
     rover list-index net=* begin=2001-01-01
 
 will list all entries in the index after the year 2000.
-    
+
 
 ### Reset Config
 
@@ -192,7 +192,6 @@ In addition, parameters for sub-commands (ingest, index, and possibly compact) w
     rover download \
     http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
 
-    
 
 ### Ingest
 
@@ -231,7 +230,6 @@ In addition, parameters for sub-commands (index, and possibly compact) will be u
 
     rover ingest /tmp/IU.ANMO.00.*.mseed --compact
 
-    
 
 ### Compact
 
@@ -275,7 +273,6 @@ In addition, parameters for the sub-command index will be used - see help for th
 
 will check the entire store for duplicate data.
 
-    
 
 ### Index
 
@@ -288,6 +285,8 @@ Index the files (add or change entires in the tsindex table in the mseed databas
 When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
 
 When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
+
+The `mseedindex` command is used to index the data.
 
 ##### Significant Parameters
 
@@ -313,4 +312,3 @@ When a directory is given, all files contained in that directory are processed, 
 
 will index the entire store.
 
-    

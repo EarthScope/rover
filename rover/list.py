@@ -83,7 +83,8 @@ will display the number of entries for all time, and any quality or smaplerate.
     rover list-index net=* begin=2001-01-01
 
 will list all entries in the index after the year 2000.
-    """
+
+"""
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)

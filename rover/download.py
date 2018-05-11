@@ -54,7 +54,7 @@ commands for more details.
     rover download \\
     http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
 
-    """
+"""
 
 # The only complex thing here is that these may run in parallel.  That means that
 # multiple ingest instances can be running in parallel, all using  mseedindex.

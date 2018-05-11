@@ -24,6 +24,8 @@ When no argument is give all modified files in the local store are processed.  T
 When a directory is given, all files contained in that directory are processed, along with the contents of
 sub-directories, unless `--no-recurse` is specified.
 
+The `mseedindex` command is used to index the data.
+
 ##### Significant Parameters
 
 @all
@@ -46,7 +48,7 @@ sub-directories, unless `--no-recurse` is specified.
 
 will index the entire store.
 
-    """
+"""
 
 # Most of the work is done in the scanner superclasses which find the files
 # to modify, and in the worker that runs mseedindex.

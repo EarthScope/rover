@@ -109,7 +109,7 @@ In addition, parameters for the sub-command index will be used - see help for th
 
 will check the entire store for duplicate data.
 
-    """
+"""
 
 # We bubble-sort the data blocks, merging data when appropriate.  This allows us to replace data with the
 # latest (later in the file) values.
