@@ -29,6 +29,8 @@ def welcome(args):
         
     rover %s %s
       Lists lower-level commands that are less likely to be used.
+      
+  Individual commands also have help.  See "rover %s %s".
         
   For more information on configuration parameters, which can be 
   provided via a file or using command line flags:
@@ -44,6 +46,7 @@ def welcome(args):
 ''' % (HELP, USAGE,
        HELP, DAEMON,
        HELP, LOWLEVEL,
+       HELP, HELP,
        args.file))
 
 
@@ -136,9 +139,9 @@ def low_level():
 
 
 GENERAL = {
-    DAEMON: daemon,
-    USAGE: usage,
-    LOWLEVEL: low_level
+    USAGE: (usage, 'General interactive use'),
+    DAEMON: (daemon, 'Advanced use with rover in the backgrround'),
+    LOWLEVEL: (low_level, 'Rarely used, low-level commands')
 }
 
 
@@ -159,10 +162,10 @@ class Helper:
                 self._help()
                 return
             if command in COMMANDS:
-                self._print_formatted(COMMANDS[command].__doc__)
+                self._print_formatted(COMMANDS[command][0].__doc__)
                 return
             elif command in GENERAL:
-                GENERAL[command](self._args)
+                GENERAL[command][0](self._args)
                 return
         raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
 
@@ -231,6 +234,23 @@ class Helper:
                 yield short
 
     def _help(self):
-        # todo - list commands etc
+        from rover import COMMANDS   # avoid import loop
         print('''
+Help
+
+Gives help on the various commands.
+        
+Help is available for the following commands:
         ''')
+        for command in sorted(COMMANDS.keys()):
+            print('%15s: %s' % (command, COMMANDS[command][1]))
+        print('''
+Help is also available for the following general topics: 
+''')
+        for command in GENERAL.keys():
+            print('%15s: %s' % (command, GENERAL[command][1]))
+        print('''
+For example:
+
+    rover help retrieve
+''')

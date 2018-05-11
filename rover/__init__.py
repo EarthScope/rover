@@ -13,15 +13,15 @@ from .subscribe import Subscriber
 
 
 COMMANDS = {
-    RESET_CONFIG: ConfigResetter,
-    INDEX: Indexer,
-    INGEST: Ingester,
-    LIST_INDEX: IndexLister,
-    DOWNLOAD: Downloader,
-    RETRIEVE: Retriever,
-    COMPARE: Comparer,
-    COMPACT: Compacter,
-    SUBSCRIBE: Subscriber
+    RESET_CONFIG: (ConfigResetter, 'Reset the configuration'),
+    INDEX: (Indexer, 'Index the local store'),
+    INGEST: (Ingester, 'Ingest data from a file into the local store'),
+    LIST_INDEX: (IndexLister, 'List the contents of the local store'),
+    DOWNLOAD: (Downloader, 'Download data from a remote service'),
+    RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
+    COMPARE: (Comparer, 'Show what data "rover retrieve" will download'),
+    COMPACT: (Compacter, 'Detect and remove duplicate data'),
+    SUBSCRIBE: (Subscriber, 'TODO')
 }
 
 
@@ -30,9 +30,9 @@ def execute(command, config):
     if not command:
         command = 'help'
     commands = dict(COMMANDS)
-    commands[HELP] = Helper
+    commands[HELP] = (Helper, '')
     if command in commands:
-        commands[command](config).run(config.args.args)
+        commands[command][0](config).run(config.args.args)
     else:
         raise Exception('Unknown command %s' % command)
 
