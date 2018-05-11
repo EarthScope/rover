@@ -193,7 +193,43 @@ In addition, parameters for sub-commands (ingest, index, and possibly compact) w
 
     
 
-    The simplest possible ingester:     * Uses mseedindx to parse the file.     * For each section, appends to any existing file using byte offsets     * Refuses to handle blocks that cross day boundaries     * Does not check for overlap, differences in sample rate, etc. (see compact)
+### Ingest
+
+    rover ingest file
+
+Add the contents of the file (MSEED format) to the local store and index the new data.
+
+The \`mseedindex\` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the local store.
+
+Optionally, \`rover compact\` can be called to remove duplicate data (use \`--compact\`).
+
+The file should not contain data that spans multiple calendar days.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| mseed-cmd           | mseedindex           | Mseedindex command              |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
+| compact             | False                | Call compact after ingest?      |
+| leap                | True                 | Use leapseconds file?           |
+| leap-expire         | 30                   | Number of days before refreshing file |
+| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data        |
+| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data         |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+In addition, parameters for sub-commands (index, and possibly compact) will be used - see help for those commands for more details.
+
+##### Examples
+
+    rover ingest /tmp/IU.ANMo.00.*.mseed
+
+    rover ingest /tmp/IU.ANMo.00.*.mseed --compact
+
     
 
     Compact modified files (remove redundant mseed data and tidy).

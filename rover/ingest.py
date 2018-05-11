@@ -23,12 +23,50 @@ TMPFILE = 'rover_tmp_ingest'
 
 class Ingester(SqliteSupport, DirectoryScanner):
     """
-    The simplest possible ingester:
-    * Uses mseedindx to parse the file.
-    * For each section, appends to any existing file using byte offsets
-    * Refuses to handle blocks that cross day boundaries
-    * Does not check for overlap, differences in sample rate, etc. (see compact)
+### Ingest
+
+    rover ingest file
+
+Add the contents of the file (MSEED format) to the local store and index the new data.
+
+The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte
+ranges are then appended to the appropriate files in the local store.
+
+Optionally, `rover compact` can be called to remove duplicate data (use `--compact`).
+
+The file should not contain data that spans multiple calendar days.
+
+##### Significant Parameters
+
+@mseed-cmd
+@mseed-db
+@mseed-dir
+@compact
+@leap
+@leap-expire
+@leap-file
+@leap-url
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+In addition, parameters for sub-commands (index, and possibly compact) will be used - see help for those commands
+for more details.
+
+##### Examples
+
+    rover ingest /tmp/IU.ANMo.00.*.mseed
+
+    rover ingest /tmp/IU.ANMo.00.*.mseed --compact
+
     """
+
+# The simplest possible ingester:
+# * Uses mseedindx to parse the file.
+# * For each section, appends to any existing file using byte offsets
+# * Refuses to handle blocks that cross day boundaries
+# * Does not check for overlap, differences in sample rate, etc. (see compact)
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
