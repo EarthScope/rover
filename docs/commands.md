@@ -152,7 +152,8 @@ Write default values to the config file.
     
 ## Advanced Usage (Daemon Mode)
 
-" ### Subscribe
+
+### Subscribe
 
     rover subscribe
 

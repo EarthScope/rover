@@ -9,7 +9,7 @@ The 'rvoer subscribe' command.
 
 
 class Subscriber(SqliteSupport):
-    """"
+    """
 ### Subscribe
 
     rover subscribe
