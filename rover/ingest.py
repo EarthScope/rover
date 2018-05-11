@@ -56,9 +56,9 @@ for more details.
 
 ##### Examples
 
-    rover ingest /tmp/IU.ANMo.00.*.mseed
+    rover ingest /tmp/IU.ANMO.00.*.mseed
 
-    rover ingest /tmp/IU.ANMo.00.*.mseed --compact
+    rover ingest /tmp/IU.ANMO.00.*.mseed --compact
 
     """
 

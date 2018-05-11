@@ -66,21 +66,56 @@ class Signature:
 
 class Compacter(ModifiedScanner, DirectoryScanner):
     """
-    Compact modified files (remove redundant mseed data and tidy).
+Compact
 
-    We do this by bubble-sorting the data blocks, merging data when
-    appropriate.  This allows us to replace data with the latest (later
-    in the file) values.
+    rover compact [--compact-list]
 
-    We also check whether duplicate data are mutated and raise an error
-    if so (unless --compact-mutate is set).
+    rover compact (file|dir)+ [--no-recurse] [--compact-list]
 
-    If --compact-list then simply list prooblems, don't fic them.
+Remove (or simply log) duplicate data and then index the file.
 
-    Note that sorting seems to have no effect - the obspy code doesn't respect the
-    changed order on writing (in fact the order appears to be already sorted and
-    doesn't reflect the actual ordering in the file).
+When no argument is give all files in the local store are processed.  When a directory is given, all files
+contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse`
+is specified.
+
+If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.
+
+if `--compact-mutate` is given then duplicate data do not have to agree; th emore recent data (appearing later in the
+file) are preserved.
+
+If `--compact-mixed-types` is given then it is not a fatal error for the duplicate data to have different types (but
+still, such data will not be de-duplicated).
+
+##### Significant Parameters
+
+@mseed-dir
+@temp-dir
+@compact-list
+@compact-mutate
+@compact-mixed-types
+@timespan-tol
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+In addition, parameters for the sub-command index will be used - see help for that command for more details.
+
+##### Examples
+
+    rover compact --compact-list
+
+will check the entire store for duplicate data.
+
     """
+
+# We bubble-sort the data blocks, merging data when appropriate.  This allows us to replace data with the
+# latest (later in the file) values.
+#
+# We also check whether duplicate data are mutated and raise an error if so (unless --compact-mutate is set).
+#
+# Note that sorting seems to have no effect - the obspy code doesn't respect the changed order on writing (in ' \
+# fact the order appears to be already sorted and doesn't reflect the actual ordering in the file).
 
     def __init__(self, config):
         ModifiedScanner.__init__(self, config)

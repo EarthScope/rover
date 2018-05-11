@@ -226,21 +226,51 @@ In addition, parameters for sub-commands (index, and possibly compact) will be u
 
 ##### Examples
 
-    rover ingest /tmp/IU.ANMo.00.*.mseed
+    rover ingest /tmp/IU.ANMO.00.*.mseed
 
-    rover ingest /tmp/IU.ANMo.00.*.mseed --compact
+    rover ingest /tmp/IU.ANMO.00.*.mseed --compact
 
     
 
-    Compact modified files (remove redundant mseed data and tidy).
+Compact
 
-    We do this by bubble-sorting the data blocks, merging data when     appropriate.  This allows us to replace data with the latest (later     in the file) values.
+    rover compact [--compact-list]
 
-    We also check whether duplicate data are mutated and raise an error     if so (unless --compact-mutate is set).
+    rover compact (file|dir)+ [--no-recurse] [--compact-list]
 
-    If --compact-list then simply list prooblems, don't fic them.
+Remove (or simply log) duplicate data and then index the file.
 
-    Note that sorting seems to have no effect - the obspy code doesn't respect the     changed order on writing (in fact the order appears to be already sorted and     doesn't reflect the actual ordering in the file).
+When no argument is give all files in the local store are processed.  When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless \`--no-recurse\` is specified.
+
+If \`--compact-list\` is given then details of duplicate data are printed to stdou, but no action is taken.
+
+if \`--compact-mutate\` is given then duplicate data do not have to agree; th emore recent data (appearing later in the file) are preserved.
+
+If \`--compact-mixed-types\` is given then it is not a fatal error for the duplicate data to have different types (but still, such data will not be de-duplicated).
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
+| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
+| compact-list        | False                | Detect and list files with duplicate data? |
+| compact-mutate      | False                | Allow compact to mutate (replace) data? |
+| compact-mixed-types | False                | Allow duplicate data in mixed data types? |
+| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+In addition, parameters for the sub-command index will be used - see help for that command for more details.
+
+##### Examples
+
+    rover compact --compact-list
+
+will check the entire store for duplicate data.
+
     
 
     Run mssedindex on appropriate files (and delete entries for missing files).
