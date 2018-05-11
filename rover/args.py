@@ -58,6 +58,7 @@ LOGSIZE = 'log-size'
 LOGUNIQUE = 'log-unique'
 LOGUNIQUEEXPIRE = 'log-unique-expire'
 LOGCOUNT = 'log-count'
+MDFORMAT = 'md-format'
 MSEEDCMD = 'mseed-cmd'
 MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
@@ -176,6 +177,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes?', metavar='')
         self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
         self.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
+        self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='tolerance for overlapping timespans', metavar='SECS', type=float)
@@ -331,28 +333,39 @@ class Arguments(ArgumentParser):
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
 
-    def _documentation(self):
+    def _document_action(self, action):
+        name = sub('_', '-', action.dest)
+        default = action.default
+        help = action.help
+        if name == FILE:
+            name += ' / -f'
+        elif name == HELP:
+            name += ' / -h'
+            default = False
+            help = help.replace('this', 'the')
+        if help:
+            help = help[0].upper() + help[1:]
+        return name, default, help
+
+
+    def _documentation(self, name):
+        for action in self._actions:
+            if name == sub('_', '-', action.dest):
+                return self._document_action(action)
+        raise Exception('Unonwn parameter %s' % name)
+
+    def _documentation_names(self):
         for action in self._actions:
             name = sub('_', '-', action.dest)
-            default = action.default
-            help = action.help
-            if name == FILE:
-                name += ' / -f'
-            elif name == HELP:
-                name += ' / -h'
-                default = False
-                help = help.replace('this', 'the')
-            if help:
-                help = help[0].upper() + help[1:]
             if name not in (COMMAND, ARGS):
-                yield name, default, help
+                yield name
 
     def write_docs_text(self):
         """
         Generate markdown dodumcentation.  Run by hand from Python.
         """
 
-        for name, default, help in self._documentation():
+        for name, default, help in self._documentation_all():
             print('### %s' % name)
             print()
             if default is not None:
@@ -362,7 +375,33 @@ class Arguments(ArgumentParser):
                 print(help)
                 print()
 
-    def write_docs_table(self):
-        for name, default, help in self._documentation():
-            if default is None: default = ''
-            print('| %s | %s | %s |' % (name, default, help))
+    NAME_WIDTH = 19
+    DEFAULT_WIDTH = 20
+    DESCRIPTION_WIDTH = 31
+
+    def _print_docs_format(self, name, default, description):
+        print('| %-*s | %-*s | %-*s |' %(self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default, self.DESCRIPTION_WIDTH, description))
+
+    def print_docs_header(self):
+        self._print_docs_format(' Name', 'Default', 'Description')
+        self._print_docs_format('-' * self.NAME_WIDTH, '-' * self.DEFAULT_WIDTH, '-' * self.DESCRIPTION_WIDTH)
+
+    def print_docs_row(self, name):
+        self._print_docs_format(*self._documentation(name))
+
+    def print_docs_text(self, name):
+        name, default, description = self._documentation(name)
+        left = '| %-*s | %-*s' % (self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default)
+        if len(left) + len(description) > 80:
+            print('%s\n%78s |' % (left, description))
+        else:
+            print('%s | %-*s |' % (left, self.DESCRIPTION_WIDTH, description))
+
+    def _print_docs_rows(self):
+        for name in self._documentation_names():
+           self.print_docs_row(name)
+
+    def print_docs_table(self):
+        self.print_docs_header()
+        self._print_docs_rows()
+

@@ -58,23 +58,28 @@ class NewConfig:
         self.db = config.db
 
 
-def reset_config(config):
-    """
-    Implement the reset-config command - write the default parameters to the file
-    given by -f (or default).
-    """
-    argparse = Arguments()
-    file, log = config.args.file, config.log
-    if exists(file):
-        if not isfile(file):
-            raise Exception('"%s" is not a file' % file)
-        old = file + "~"
-        if not exists(old) or isfile(old):
-            log.info('Moving old config file to "%s"' % basename(old))
-            if exists(old): unlink(old)
-            move(file, old)
-        else:
-            log.warn('Deleting %s' % file)
-            unlink(file)
-    log.info('Writing new config file "%s"' % file)
-    argparse.write_config(file)
+class ConfigResetter:
+
+    def __init__(self, config):
+        self._log = config.log
+        self._file = config.args.file
+
+    def run(self, args):
+        """
+        Implement the reset-config command - write the default parameters to the file
+        given by -f (or default).
+        """
+        argparse = Arguments()
+        if exists(self._file):
+            if not isfile(self._file):
+                raise Exception('"%s" is not a file' % self._file)
+            old = self._file + "~"
+            if not exists(old) or isfile(old):
+                self._log.info('Moving old config file to "%s"' % basename(old))
+                if exists(old): unlink(old)
+                move(self._file, old)
+            else:
+                self._log.warn('Deleting %s' % self._file)
+                unlink(self._file)
+        log.info('Writing new config file "%s"' % self._file)
+        argparse.write_config(self._file)

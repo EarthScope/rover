@@ -11,6 +11,7 @@ from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename,
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse
 from .workers import NoConflictWorkers
 
+
 """
 The 'rover download' command - download data from a URL (and then call ingest).
 
@@ -53,10 +54,13 @@ class Downloader(SqliteSupport, SingleUse):
         self._create_ingesters_table()
         clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
-    def run(self, url):
+    def run(self, args):
         """
         Download the give URL, then call ingest and index before deleting.
         """
+        if len(args) != 1:
+            raise Exception('Usage: rover %s url' % DOWNLOAD)
+        url = args[0]
         self._assert_single_use()
         retrievers_id, db_path = self._update_downloaders_table(url)
         path = None
@@ -118,11 +122,7 @@ def download(config):
     """
     Implement the download command - download, ingest and index data.
     """
-    downloader = Downloader(config)
-    args = config.args.args
-    if len(args) != 1:
-        raise Exception('Usage: rover %s url' % DOWNLOAD)
-    downloader.run(args[0])
+    Downloader(config).run(config.args.args)
 
 
 class DownloadManager(SingleUse):

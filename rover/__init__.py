@@ -1,37 +1,38 @@
 
-from .compact import compact
-from .config import Config, reset_config
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT
-from .download import download
-from .help import help
-from .index import index
-from .ingest import ingest
-from .list import list_index
+from .compact import Compacter
+from .config import Config, ConfigResetter
+from .download import Downloader
+from .index import Indexer
+from .ingest import Ingester
+from .list import IndexLister
 from .process import Processes
-from .retrieve import retrieve
-from .subscribe import subscribe
+from .retrieve import Retriever, Comparer
+from .subscribe import Subscriber
+
+
+COMMANDS = {
+    RESET_CONFIG: ConfigResetter,
+    INDEX: Indexer,
+    INGEST: Ingester,
+    LIST_INDEX: IndexLister,
+    DOWNLOAD: Downloader,
+    RETRIEVE: Retriever,
+    COMPARE: Comparer,
+    COMPACT: Compacter,
+    SUBSCRIBE: Subscriber
+}
 
 
 def execute(command, config):
-    if not command or command == HELP:
-        help(config.args)
-    elif command == RESET_CONFIG:
-        reset_config(config)
-    elif command == INDEX:
-        index(config)
-    elif command == INGEST:
-        ingest(config)
-    elif command == LIST_INDEX:
-        list_index(config)
-    elif command == DOWNLOAD:
-        download(config)
-    elif command in (RETRIEVE, COMPARE):
-        retrieve(config, command == RETRIEVE)
-    elif command == COMPACT:
-        compact(config)
-    elif command == SUBSCRIBE:
-        subscribe(config)
+    from .help import Helper   # avoid import loop
+    if not command:
+        command = 'help'
+    commands = dict(COMMANDS)
+    commands[HELP] = Helper
+    if command in commands:
+        commands[command](config).run(config.args.args)
     else:
         raise Exception('Unknown command %s' % command)
 

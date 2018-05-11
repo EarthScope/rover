@@ -26,12 +26,45 @@ RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime.datetime(1900, 1, 1)
 
 
-class Retriever(SqliteSupport, SingleUse):
+class BaseRetriever(SqliteSupport, SingleUse):
     """
-    Call the availability service, compare with the index, and
-    then call the DownloadManager to retrieve the missing data
-    (which are ingested and indexed by the Downloader).
-    """
+### Retrieve
+
+    rover retrieve file
+
+    rover retrieve N.S.L.C begin [end]
+
+Compare available data with the local store, then download, ingest and index data.
+
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
+service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a
+(single-line) file will be automatically constructed containing that data.
+
+The list of available data is retrieved from the service and compared with the local index.  Data not
+available locally are downloaded and ingested.
+
+This command also indexes modified data in the store before processing and runs `rover compact --compact-list1
+afterwards to check for duplicate data.
+
+##### Significant Parameters
+
+@temp-dir
+@availability-url
+@pre-index
+@post-compact
+@rover-cmd
+@mseed-cmd
+
+In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those
+commands for more details.
+
+##### Examples
+
+    rover retrieve sncls.txt
+
+    rover retrieve 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+
+"""
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
@@ -207,8 +240,33 @@ def build_file(path, sncl, begin, end=None):
        print(*parts, file=req)
 
 
-def retrieve(config, fetch):
+class Retriever(BaseRetriever):
+
+    __doc__ = BaseRetriever.__doc__
+
+    def __init__(self, config):
+        super().__init__(config)
+
+    def run(self, args):
+        super().run(args, True)
+
+
+class Comparer(BaseRetriever):
+
+    def __init__(self, config):
+        super().__init__(config)
+
+    def run(self, args):
+        super().run(args, False)
+
+
+
+def retrieve(config):
     """
     Implement the retrieve command.
     """
-    return Retriever(config).run(config.args.args, fetch)
+    return Retriever(config).run(config.args.args)
+
+
+def compare(config):
+    return Comparer(config).run(config.args.args)

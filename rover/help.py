@@ -1,7 +1,6 @@
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT, mm, ALL, NO, MSEEDCMD
-
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT, mm, ALL, NO, MSEEDCMD, Arguments
 
 """
 The 'rover help' command.
@@ -11,22 +10,6 @@ The 'rover help' command.
 DAEMON = 'daemon'
 USAGE = 'usage'
 LOWLEVEL = 'low-level'
-
-
-def help(args):
-    """
-    Dispatch to topic.
-    """
-    if not args.args:
-        welcome(args)
-    elif len(args.args) == 1 and args.args[0] == USAGE:
-        usage()
-    elif len(args.args) == 1 and args.args[0] == DAEMON:
-        daemon()
-    elif len(args.args) == 1 and args.args[0] == LOWLEVEL:
-        low_level()
-    else:
-        raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
 
 
 def welcome(args):
@@ -150,3 +133,104 @@ def low_level():
        INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
        COMPACT, MSEEDDB, INGEST, MSEEDDIR, ALL, mm(ALL), COMPACT, NO+COMPACT,
        INDEX, MSEEDDB, MSEEDCMD, COMPACT, INGEST, MSEEDDIR, ALL, mm(ALL)))
+
+
+GENERAL = {
+    DAEMON: daemon,
+    USAGE: usage,
+    LOWLEVEL: low_level
+}
+
+
+class Helper:
+
+    def __init__(self, config):
+        self._args = config.args
+        self._md_format = self._args.md_format
+
+    def run(self, args):
+        from rover import COMMANDS   # avoid import loop
+        if not args:
+            welcome(self._args)
+            return
+        elif len(args) == 1:
+            command = args[0].lower()
+            if command == 'help':
+                self._help()
+                return
+            if command in COMMANDS:
+                self._print_formatted(COMMANDS[command].__doc__)
+                return
+            elif command in GENERAL:
+                GENERAL[command](self._args)
+                return
+        raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
+
+    def _print_formatted(self, text):
+        arguments = Arguments()
+        first_param = True
+        for line in self._paras(text):
+            if line.startswith('@'):
+                if first_param:
+                    arguments.print_docs_header()
+                    first_param = False
+                if self._md_format:
+                    arguments.print_docs_row(line[1:])
+                else:
+                    arguments.print_docs_text(line[1:])
+            elif self._md_format:
+                print(line)
+            elif line.startswith('#'):
+                print(line.lstrip(' #'))
+            else:
+                for short in self._splitlines(line):
+                    print(short)
+
+    def _paras(self, text):
+        lines = text.splitlines()
+        i = 1
+        while i < len(lines):
+            if lines[i].strip() and lines[i-1].strip() and not lines[i].startswith('@'):
+                lines[i-1] = lines[i-1].rstrip() + ' ' + lines[i]
+                lines[i:] = lines[i+1:]
+            else:
+                i += 1
+        return lines
+
+    def _slurp(self, line):
+        word = ''
+        space = ''
+        while line and not line[0] == ' ':
+            word += line[0]
+            line = line[1:]
+        while line and line[0] == ' ':
+            space += line[0]
+            line = line[1:]
+        return word, space, line
+
+    def _splitlines(self, line):
+        indentation = ''
+        while line and line.startswith(' '):
+            indentation += line[0]
+            line = line[1:]
+        if not line:
+            yield ''
+            return
+        while line:
+            short, space = indentation, ''
+            line = line.lstrip()
+            while line:
+                word, next_space, next_line = self._slurp(line)
+                if len(short + space + word) > 78:
+                    yield short
+                    short, space = '', ''
+                else:
+                    short = short + space + word
+                    space, line = next_space, next_line
+            if short:
+                yield short
+
+    def _help(self):
+        # todo - list commands etc
+        print('''
+        ''')
