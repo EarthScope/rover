@@ -1,6 +1,19 @@
 
 # Rover Commands
 
+* [Normal Usage](#normal-usage)
+  * [Retrieve](#retrieve)
+  * [Compare](#compare)
+  * [List Index](#list-index)
+  * [Reset Config](#reset-config)
+* [Advanced Usage](#advanced-usage)
+  * [Subscribe](#subscribe)
+* [Low-Level Commands](#low-level-commands)
+  * [Download](#download)
+  * [Ingest](#ingest)
+  * [Compact](#compact)
+  * [Index](#index)
+
 ## Normal Usage
 
 
