@@ -2,6 +2,7 @@
 import sys
 from re import match, sub
 
+from .help import Formatter
 from .coverage import MultipleSNCLBuilder
 from .sqlite import SqliteSupport
 from .utils import format_epoch, SingleUse
@@ -26,7 +27,7 @@ QUALITY = 'quality'
 SAMPLERATE = 'samplerate'
 
 
-class IndexLister(SqliteSupport, SingleUse):
+class IndexLister(SqliteSupport, SingleUse, Formatter):
     """
 ### List Index
 
@@ -89,6 +90,7 @@ will list all entries in the index after the year 2000.
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
+        Formatter.__init__(self, False)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
@@ -101,46 +103,51 @@ will list all entries in the index after the year 2000.
         self._timespan_tol = config.args.timespan_tol
 
     def _display_help(self):
-        print('''
-  The list_store command prints entries from the index that match 
-  the query parameters.  Parameters generally have the form 
-  name=value (no spaces).
-  
-  The following parameters take '*' and '?' as wildcards, can be
-  repeated for multiple matches (combined with 'OR"), and the name
-  only has to match unambiguously (so cha=HHZ is OK):
-  
-    station, network, channel, location, quality, samplerate
-    
-  The short form N.S.L.C.Q can also be used.
+        self._print('''
+The list_store command prints entries from the index that match 
+the query parameters.  Parameters generally have the form 
+name=value (no spaces).
 
-  The following parameters can be given only once, must be of
-  the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the
-  right), and define a range of times over which the block must 
-  appear (at least partially) to be included:
-  
-    begin, end
-    
-  The following parameters are simple flags that change the
-  output format.  They are mutually exclusive and take no
-  value:
-  
-    count - only the number of matches will be shown
-    join - continguous time ranges will be joined
-    join-qsr - the maximal timespan across all quality and 
-      samplerates is shown (as used by retrieve) 
-    
-  Examples:
-  
+The following parameters take '*' and '?' as wildcards, can be
+repeated for multiple matches (combined with 'OR"), and the name
+only has to match unambiguously (so cha=HHZ is OK):
+
+  station, network, channel, location, quality, samplerate
+
+The short form N.S.L.C.Q can also be used.
+
+The following parameters can be given only once, must be of
+the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the
+right), and define a range of times over which the block must 
+appear (at least partially) to be included:
+
+  begin, end
+
+The following parameters are simple flags that change the
+output format.  They are mutually exclusive and take no
+value:
+
+  count - only the number of matches will be shown
+
+  join - continguous time ranges will be joined
+
+  join-qsr - the maximal timespan across all quality and 
+  samplerates is shown (as used by retrieve) 
+
+Examples:
+
     rover list-index IU.ANMO.00.BH? count
-      will display the number of entries for all time, any
-      quality or smaplerate.
-      
+
+will display the number of entries for all time, any
+quality or smaplerate.
+
     rover list-index net=* begin=2001-01-01
-      will list all entries in the index after the year 2000.
-      
-  Note that console logging is to stderr, while results are
-  printed to stdout.
+
+will list all entries in the index after the year 2000.
+  
+Note that console logging is to stderr, while results are
+printed to stdout.
+
 ''')
 
     def run(self, args, stdout=None):

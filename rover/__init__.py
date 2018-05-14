@@ -51,6 +51,10 @@ def main():
     except Exception as e:
         if config and config.log:
             config.log.error(str(e))
+            if config.args.command in COMMANDS:
+                config.log.info('See "rover help %s"' % config.args.command)
+            elif config.args.command != HELP:
+                config.log.info('See "rover help help" for a list of commands')
             if not config or not config.args or config.args.dev:
                 raise e
         else:
