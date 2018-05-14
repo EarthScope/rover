@@ -238,6 +238,9 @@ class HelpFormatter:
 
 
 class Helper(HelpFormatter):
+    """
+    Either print markdown verbatim. or strip markdown and re-justify for 80 columns.
+    """
 
     def __init__(self, config):
         super().__init__(config.args.md_format)
