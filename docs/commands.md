@@ -56,7 +56,11 @@ In addition, parameters for sub-commands (download, ingest, index, compact) will
 
     rover retrieve sncls.txt
 
-    rover retrieve 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+will download, ingest, and index any data missing from the local store that are present in the given file.
+
+    rover retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
+
+will download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local store.
 
 
 ### Compare
@@ -181,9 +185,9 @@ from the command line:
 
 ### Download
 
-    rover download url
+    rover download url [path]
 
-Download a single request (typically for a day), ingest and index it.  After processing, the downloaded data file is deleted.
+Download a single request (typically for a day) to teh given path, ingest and index it.  If no path is given then a temporary file is created and deleted after use.
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
 
@@ -204,6 +208,12 @@ In addition, parameters for sub-commands (ingest, index, and possibly compact) w
 
     rover download \
     http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
+
+will download, ingest and index data from the given URL..
+
+    rover download http://.... --compact
+
+will download, ingest and index data from the given URL and remove duplicate data from the store.
 
 
 ### Ingest
@@ -241,7 +251,11 @@ In addition, parameters for sub-commands (index, and possibly compact) will be u
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
+will add all the data in the given file to the local store.
+
     rover ingest /tmp/IU.ANMO.00.*.mseed --compact
+
+will add all the data in the given file to the local store and then remove any duplicate data.
 
 
 ### Compact
@@ -256,9 +270,9 @@ When no argument is give all modified files in the local store are processed.  T
 
 When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
-If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.
+If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.  Typically, this option will be used with `--no-index` since there the file is not changed and so doe snot need to be re-indexed.
 
-if `--compact-mutate` is given then duplicate data do not have to agree; th emore recent data (appearing later in the file) are preserved.
+if `--compact-mutate` is given then duplicate data do not have to agree; the more recent data (appearing later in the file) are preserved.
 
 If `--compact-mixed-types` is given then it is not a fatal error for the duplicate data to have different types (but still, such data will not be de-duplicated).
 
@@ -273,19 +287,6 @@ If `--compact-mixed-types` is given then it is not a fatal error for the duplica
 | compact-mutate      | False                | Allow compact to mutate (replace) data? |
 | compact-mixed-types | False                | Allow duplicate data in mixed data types? |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
-
-In addition, parameters for the sub-command index will be used - see help for that command for more details.
-
-##### Examples
-
-    rover compact --compact-list
-
-will check the entire store for duplicate data.
-
 
 ### Index
 

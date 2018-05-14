@@ -8,7 +8,8 @@ from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
-    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse
+    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse, \
+    create_parents, unique_path
 from .workers import NoConflictWorkers
 
 
@@ -30,10 +31,10 @@ class Downloader(SqliteSupport, SingleUse):
     """
 ### Download
 
-    rover download url
+    rover download url [path]
 
-Download a single request (typically for a day), ingest and index it.  After processing, the downloaded data file is
-deleted.
+Download a single request (typically for a day) to teh given path, ingest and index it.  If no path is given then
+a temporary file is created and deleted after use.
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
 
@@ -53,6 +54,12 @@ commands for more details.
 
     rover download \\
     http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
+
+will download, ingest and index data from the given URL..
+
+    rover download http://.... --compact
+
+will download, ingest and index data from the given URL and remove duplicate data from the store.
 
 """
 
@@ -82,18 +89,21 @@ commands for more details.
         """
         Download the give URL, then call ingest and index before deleting.
         """
-        if len(args) != 1:
-            raise Exception('Usage: rover %s url' % DOWNLOAD)
+        if len(args) < 1 or len(args) > 2:
+            raise Exception('Usage: rover %s url [path]' % DOWNLOAD)
         url = args[0]
+        if len(args) == 2:
+            path, delete = args[2], False
+        else:
+            path, delete = unique_path(self._temp_dir, TMPFILE, url), True
         self._assert_single_use()
         retrievers_id, db_path = self._update_downloaders_table(url)
-        path = None
         try:
-            path = self._do_download(url)
+            self._do_download(url, path)
             self._ingester.run([path], db_path=db_path)
         finally:
             if self._delete_files:
-                if path:
+                if path and delete:
                     unlink(path)
                 if exists(db_path):
                     unlink(db_path)
@@ -117,11 +127,12 @@ commands for more details.
                     unlink(file)
                 self.execute('delete from rover_ingesters where id = ?', (id,))
 
-    def _do_download(self, url):
+    def _do_download(self, url, path):
         # previously we extracted the file name from the header, but the code
-        # failed in python 2 (looked like a backport library bug), so since
-        # the file will be deleted soon anyway we now use an arbitrary name
-        path = join(self._temp_dir, uniqueish(TMPFILE, url))
+        # failed in python 2 (looked like a backport library bug), so now we let the user specify,
+        if exists(path):
+            raise Exception('Path %s for download already exists' % path)
+        create_parents(path)
         return get_to_file(url, path, self._log)
 
     def _create_ingesters_table(self):

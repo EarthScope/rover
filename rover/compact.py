@@ -79,9 +79,10 @@ When no argument is give all modified files in the local store are processed.  T
 When a directory is given, all files contained in that directory are processed, along with the contents of
 sub-directories, unless `--no-recurse` is specified.
 
-If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.
+If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.  Typically,
+this option will be used with `--no-index` since there the file is not changed and so doe snot need to be re-indexed.
 
-if `--compact-mutate` is given then duplicate data do not have to agree; th emore recent data (appearing later in the
+if `--compact-mutate` is given then duplicate data do not have to agree; the more recent data (appearing later in the
 file) are preserved.
 
 If `--compact-mixed-types` is given then it is not a fatal error for the duplicate data to have different types (but
@@ -96,6 +97,7 @@ still, such data will not be de-duplicated).
 @compact-mutate
 @compact-mixed-types
 @timespan-tol
+@index
 @verbosity
 @log-dir
 @log-name
@@ -105,9 +107,13 @@ In addition, parameters for the sub-command index will be used - see help for th
 
 ##### Examples
 
-    rover compact --compact-list
+    rover compact --compact-list --no-index
 
 will check the entire store for duplicate data.
+
+    rover compact path/to/file --compact-mutate
+
+will compact the give file, keeping the latest version of duplicate data.
 
 """
 

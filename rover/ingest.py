@@ -58,7 +58,11 @@ for more details.
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
+will add all the data in the given file to the local store.
+
     rover ingest /tmp/IU.ANMO.00.*.mseed --compact
+
+will add all the data in the given file to the local store and then remove any duplicate data.
 
 """
 

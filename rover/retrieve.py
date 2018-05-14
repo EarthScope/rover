@@ -70,7 +70,12 @@ commands for more details.
 
     rover retrieve sncls.txt
 
-    rover retrieve 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+will download, ingest, and index any data missing from the local store that are present in the given file.
+
+    rover retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
+
+will download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local
+store.
 
 """
 
@@ -146,7 +151,7 @@ commands for more details.
         result = self._download_manager.download()
         if self._post_compact:
             self._log.info('Checking for duplicate data')
-            Compacter(NewConfig(self._config, all=True, compact_list=True)).run([])
+            Compacter(NewConfig(self._config, all=True, compact_list=True, no_index=True)).run([])
         return result
 
     def _display(self):
