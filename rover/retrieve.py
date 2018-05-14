@@ -43,6 +43,9 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 The list of available data is retrieved from the service and compared with the local index.  Data not
 available locally are downloaded and ingested.
 
+In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
+and samplerate information is "merged").
+
 This command also indexes modified data in the store before processing and runs `rover compact --compact-list1
 afterwards to check for duplicate data.
 
@@ -296,7 +299,11 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 
     rover compare sncls.txt
 
-    rover compare 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+will display the data missing form the local store to match what is available for the stations in the given file.
+
+    rover compare IU.ANMO.00.BH1 2017-01-01 2017-01-04
+
+will display the data missing from the local store to match what is available for IU.ANMO.00.BH1.
 
 """
 

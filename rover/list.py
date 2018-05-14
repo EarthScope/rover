@@ -16,7 +16,7 @@ BEGIN = 'begin'
 END = 'end'
 COUNT = 'count'
 JOIN = 'join'
-JOIN_SAMPLERATES = 'join-samplerates'
+JOIN_QSR = 'join-qsr'
 
 STATION = 'station'
 NETWORK = 'network'
@@ -97,7 +97,7 @@ will list all entries in the index after the year 2000.
                                       SAMPLERATE: []}
         self._single_constraints = {BEGIN: None,
                                     END: None}
-        self._flags = {COUNT: False, JOIN: False, JOIN_SAMPLERATES: False}
+        self._flags = {COUNT: False, JOIN: False, JOIN_QSR: False}
         self._timespan_tol = config.args.timespan_tol
 
     def _display_help(self):
@@ -127,7 +127,7 @@ will list all entries in the index after the year 2000.
   
     count - only the number of matches will be shown
     join - continguous time ranges will be joined
-    join-samplerates - the maximal timespan across all
+    join-qsr - the maximal timespan across all quality and 
       samplerates is shown (as used by retrieve) 
     
   Examples:
@@ -173,8 +173,9 @@ will list all entries in the index after the year 2000.
                         self._set_time_limit(name, value)
                     else:
                         self._set_name_value(name, value)
-        if self._flags[JOIN_SAMPLERATES] and self._multiple_constraints[SAMPLERATE]:
-            raise Exception('Cannot specify samplerate AND join-smaplerates')
+        if self._flags[JOIN_QSR] and (
+                self._multiple_constraints[SAMPLERATE] or self._multiple_constraints[QUALITY]):
+            raise Exception('Cannot specify %s / %s AND %s' % (QUALITY, SAMPLERATE, JOIN_QSR))
 
     def _assert_unset_flags(self, name1):
         for name2 in self._flags:
@@ -221,9 +222,9 @@ will list all entries in the index after the year 2000.
         if self._flags[COUNT]:
             sql += 'count(*) '
         else:
-            sql += 'network, station, location, channel, quality, timespans '
-            if not self._flags[JOIN_SAMPLERATES]:
-                sql += ', samplerate '
+            sql += 'network, station, location, channel, timespans '
+            if not self._flags[JOIN_QSR]:
+                sql += ', quality, samplerate '
         sql += 'from tsindex '
         constrained = False
         for name in self._multiple_constraints:
@@ -260,14 +261,14 @@ will list all entries in the index after the year 2000.
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
-        builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_SAMPLERATES])
+        builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_QSR])
 
         def callback(row):
-            if self._flags[JOIN_SAMPLERATES]:
-                n, s, l, c, q, ts = row
-                builder.add_timespans('%s.%s.%s.%s.%s' % (n, s, l, c, q), ts)
+            if self._flags[JOIN_QSR]:
+                n, s, l, c, ts = row
+                builder.add_timespans('%s.%s.%s.%s' % (n, s, l, c), ts)
             else:
-                n, s, l, c, q, ts, r = row
+                n, s, l, c, ts, q, r = row
                 builder.add_timespans('%s.%s.%s.%s.%s (%g Hz)' % (n, s, l, c, q, r), ts)
 
         self.foreachrow(sql, params, callback)

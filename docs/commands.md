@@ -29,29 +29,31 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 
 The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
 
+In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality and samplerate information is "merged").
+
 This command also indexes modified data in the store before processing and runs `rover compact --compact-list1 afterwards to check for duplicate data.
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
-| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
-| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url          |
+| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
+| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
-| pre-index           | True                 | Index before retrieval?         |
-| ingest              | True                 | Call ingest after retrieval?    |
-| compact             | False                | Call compact after ingest?      |
+| pre-index           | True                 | Index before retrieval?        |
+| ingest              | True                 | Call ingest after retrieval?   |
+| compact             | False                | Call compact after ingest?     |
 | index               | True                 | Call index after compaction/ingest? |
-| post-compact        | True                 | Call compact after retrieval?   |
-| rover-cmd           | rover                | Command to run rover            |
-| mseed-cmd           | mseedindex           | Mseedindex command              |
+| post-compact        | True                 | Call compact after retrieval?  |
+| rover-cmd           | rover                | Command to run rover           |
+| mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | download-workers    | 10                   | Number of download instances to run |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
 
@@ -78,21 +80,25 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
-| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
 
     rover compare sncls.txt
 
-    rover compare 'U.ANMO.00.BH1 2017-01-01 2017-01-04
+will display the data missing form the local store to match what is available for the stations in the given file.
+
+    rover compare IU.ANMO.00.BH1 2017-01-01 2017-01-04
+
+will display the data missing from the local store to match what is available for IU.ANMO.00.BH1.
 
 
 ### List Index
@@ -129,14 +135,14 @@ The following parameters are simple flags that change the output format.  They a
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 #### Examples
 
@@ -157,13 +163,13 @@ Write default values to the config file.
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
-| file / -f           | ~/rover/config       | Specify configuration file      |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| file / -f           | ~/rover/config       | Specify configuration file     |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
 
@@ -196,17 +202,17 @@ The url should be for a Data Select service, and should not request data that sp
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
-| delete-files        | True                 | Delete temporary files?         |
-| ingest              | True                 | Call ingest after retrieval?    |
-| compact             | False                | Call compact after ingest?      |
+| delete-files        | True                 | Delete temporary files?        |
+| ingest              | True                 | Call ingest after retrieval?   |
+| compact             | False                | Call compact after ingest?     |
 | index               | True                 | Call index after compaction/ingest? |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for sub-commands (ingest, index, and possibly compact) will be used - see help for those commands for more details.
 
@@ -236,21 +242,21 @@ The file should not contain data that spans multiple calendar days.
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
-| mseed-cmd           | mseedindex           | Mseedindex command              |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
-| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
-| compact             | False                | Call compact after ingest?      |
+| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
+| compact             | False                | Call compact after ingest?     |
 | index               | True                 | Call index after compaction/ingest? |
-| leap                | True                 | Use leapseconds file?           |
+| leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
-| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data        |
-| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data         |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data       |
+| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for sub-commands (index, and possibly compact) will be used - see help for those commands for more details.
 
@@ -285,20 +291,20 @@ If `--compact-mixed-types` is given then it is not a fatal error for the duplica
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
-| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
+| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | compact-list        | False                | Detect and list files with duplicate data? |
 | compact-mutate      | False                | Allow compact to mutate (replace) data? |
 | compact-mixed-types | False                | Allow duplicate data in mixed data types? |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | index               | True                 | Call index after compaction/ingest? |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for the sub-command index will be used - see help for that command for more details.
 
@@ -325,25 +331,25 @@ When no argument is give all modified files in the local store are processed.  T
 
 When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
-The `mseedindex` command is used to index the data.
+The `mseedindex` command is used to index the data.  This optionally uses a file of leap-second data.  By default (unless `--no-leap`) a file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older than `--leap-expire` days.
 
 ##### Significant Parameters
 
-|  Name               | Default              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
-| mseed-cmd           | mseedindex           | Mseedindex command              |
-| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
+| mseed-cmd           | mseedindex           | Mseedindex command             |
+| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | mseed-workers       | 10                   | Number of mseedindex instances to run |
-| leap                | True                 | Use leapseconds file?           |
+| leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
-| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data        |
-| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data         |
-| verbosity           | 4                    | Console verbosity (0-5)         |
-| log-dir             | ~/rover/logs         | Directory for logs              |
-| log-name            | rover                | Base file name for logs         |
-| log-verbosity       | 5                    | Log verbosity (0-5)             |
+| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data       |
+| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
 

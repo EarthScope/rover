@@ -24,7 +24,9 @@ When no argument is give all modified files in the local store are processed.  T
 When a directory is given, all files contained in that directory are processed, along with the contents of
 sub-directories, unless `--no-recurse` is specified.
 
-The `mseedindex` command is used to index the data.
+The `mseedindex` command is used to index the data.  This optionally uses a file of leap-second data.  By default
+(unless `--no-leap`) a file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older
+than `--leap-expire` days.
 
 ##### Significant Parameters
 

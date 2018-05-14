@@ -2,7 +2,7 @@
 # Rover's Processing Pipeline
 
 **Expert use only** - the default configuration should "just work".
-The options described here give precise control over th epipelin
+The options described here give precise control over the pipeline
 workflow for special cases.
 
 When the `rover retrieve` command is used, the following steps are taken:

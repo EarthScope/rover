@@ -104,7 +104,7 @@ will download, ingest and index data from the given URL and remove duplicate dat
         retrievers_id, db_path = self._update_downloaders_table(url)
         try:
             self._do_download(url, path)
-            if self._indgest:
+            if self._ingest:
                 Ingester(self._config).run([path], db_path=db_path)
         finally:
             if self._delete_files:

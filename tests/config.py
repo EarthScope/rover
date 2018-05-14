@@ -34,6 +34,12 @@ rover-cmd=rover
 pre-index=True
 # call compact after retrieval?
 post-compact=True
+# call ingest after retrieval?
+ingest=True
+# call compact after ingest?
+compact=False
+# call index after compaction/ingest?
+index=True
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
@@ -42,8 +48,6 @@ dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 temp-dir=~/rover/tmp
 # number of days before deleting temp files
 temp-expire=1
-# call compact after ingest?
-compact=False
 # detect and list files with duplicate data?
 compact-list=False
 # allow duplicate data in mixed data types?

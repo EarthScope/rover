@@ -379,7 +379,7 @@ class Arguments(ArgumentParser):
 
     NAME_WIDTH = 19
     DEFAULT_WIDTH = 20
-    DESCRIPTION_WIDTH = 31
+    DESCRIPTION_WIDTH = 30
 
     def _print_docs_format(self, name, default, description):
         print('| %-*s | %-*s | %-*s |' %(self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default, self.DESCRIPTION_WIDTH, description))
@@ -394,10 +394,11 @@ class Arguments(ArgumentParser):
     def print_docs_text(self, name):
         name, default, description = self._documentation(name)
         left = '| %-*s | %-*s' % (self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default)
-        if len(left) + len(description) > 78:
-            print('%s\n%78s |' % (left, description))
+        right = ' | %-*s |' % (self.DESCRIPTION_WIDTH, description)
+        if len(left + right) > 79:
+            print('%s\n%77s |' % (left, description))
         else:
-            print('%s | %-*s |' % (left, self.DESCRIPTION_WIDTH, description))
+            print(left + right)
 
     def _print_docs_rows(self):
         for name in self._documentation_names():
