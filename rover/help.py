@@ -162,15 +162,15 @@ GENERAL = {
 }
 
 
-class Formatter:
+class HelpFormatter:
 
     def __init__(self, md_format):
         self._md_format = md_format
 
-    def _print(self, text):
+    def print(self, text):
         arguments = Arguments()
         first_param = True
-        for line in self._paras(text):
+        for line in self.__paras(text):
             if line.startswith('@'):
                 if first_param:
                     arguments.print_docs_header()
@@ -180,19 +180,19 @@ class Formatter:
                 else:
                     arguments.print_docs_text(line[1:])
             elif self._md_format:
-                print(self._escape(line))
+                print(self.__escape(line))
             elif line.startswith('#'):
                 print(line.lstrip(' #'))
             else:
-                for short in self._splitlines(line):
+                for short in self.__splitlines(line):
                     print(short)
 
-    def _escape(self, text):
+    def __escape(self, text):
         text = sub(r'\\', '\\\\', text)
         # text = sub(r'`', '\\`', text)
         return text
 
-    def _paras(self, text):
+    def __paras(self, text):
         lines = text.splitlines()
         i = 1
         while i < len(lines):
@@ -203,7 +203,7 @@ class Formatter:
                 i += 1
         return lines
 
-    def _slurp(self, line):
+    def __slurp(self, line):
         word = ''
         space = ''
         while line and not line[0] == ' ':
@@ -214,7 +214,7 @@ class Formatter:
             line = line[1:]
         return word, space, line
 
-    def _splitlines(self, line):
+    def __splitlines(self, line):
         indentation = ''
         while line and line.startswith(' '):
             indentation += line[0]
@@ -226,7 +226,7 @@ class Formatter:
             short, space = indentation, ''
             line = line.lstrip()
             while line:
-                word, next_space, next_line = self._slurp(line)
+                word, next_space, next_line = self.__slurp(line)
                 if short.strip() and len(short + space + word) > 78:
                     yield short
                     short, space = indentation, ''
@@ -237,15 +237,16 @@ class Formatter:
                 yield short
 
 
-class Helper(Formatter):
+class Helper(HelpFormatter):
 
     def __init__(self, config):
         super().__init__(config.args.md_format)
+        self._args = config.args
 
     def run(self, args):
         from rover import COMMANDS   # avoid import loop
         if not args:
-            self._print(welcome(self._args))
+            self.print(welcome(self._args))
             return
         elif len(args) == 1:
             command = args[0].lower()
@@ -253,17 +254,17 @@ class Helper(Formatter):
                 self._help()
                 return
             if command in COMMANDS:
-                self._print(COMMANDS[command][0].__doc__)
+                self.print(COMMANDS[command][0].__doc__)
                 return
             elif command in GENERAL:
-                self._print(GENERAL[command][0](self._args))
+                self.print(GENERAL[command][0](self._args))
                 return
         raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
 
     def _help(self):
         from rover import COMMANDS   # avoid import loop
-        print('''
-Help
+        self.print('''
+### Help
 
 Gives help on the various commands.
         

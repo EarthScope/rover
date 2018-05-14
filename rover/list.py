@@ -2,7 +2,7 @@
 import sys
 from re import match, sub
 
-from .help import Formatter
+from .help import HelpFormatter
 from .coverage import MultipleSNCLBuilder
 from .sqlite import SqliteSupport
 from .utils import format_epoch, SingleUse
@@ -27,7 +27,7 @@ QUALITY = 'quality'
 SAMPLERATE = 'samplerate'
 
 
-class IndexLister(SqliteSupport, SingleUse, Formatter):
+class IndexLister(SqliteSupport, SingleUse, HelpFormatter):
     """
 ### List Index
 
@@ -90,7 +90,7 @@ will list all entries in the index after the year 2000.
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
-        Formatter.__init__(self, False)
+        HelpFormatter.__init__(self, False)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
