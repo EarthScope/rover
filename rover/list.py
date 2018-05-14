@@ -103,7 +103,7 @@ will list all entries in the index after the year 2000.
         self._timespan_tol = config.args.timespan_tol
 
     def _display_help(self):
-        self._print('''
+        self.print('''
 The list_store command prints entries from the index that match 
 the query parameters.  Parameters generally have the form 
 name=value (no spaces).
