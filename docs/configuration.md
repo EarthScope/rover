@@ -55,11 +55,13 @@ Available parameters can be displayed using `rover -h`.
 | rover-cmd           | rover                | Command to run rover            |
 | pre-index           | True                 | Index before retrieval?         |
 | post-compact        | True                 | Call compact after retrieval?   |
+| ingest              | True                 | Call ingest after retrieval?    |
+| compact             | False                | Call compact after ingest?      |
+| index               | True                 | Call index after compaction/ingest? |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url        |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url          |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | temp-expire         | 1                    | Number of days before deleting temp files |
-| compact             | False                | Call compact after ingest?      |
 | compact-list        | False                | Detect and list files with duplicate data? |
 | compact-mixed-types | False                | Allow duplicate data in mixed data types? |
 | compact-mutate      | False                | Allow compact to mutate (replace) data? |

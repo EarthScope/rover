@@ -53,6 +53,9 @@ afterwards to check for duplicate data.
 @dataselect-url
 @timespan-tol
 @pre-index
+@ingest
+@compact
+@index
 @post-compact
 @rover-cmd
 @mseed-cmd

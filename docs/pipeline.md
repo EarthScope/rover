@@ -1,6 +1,10 @@
 
 # Rover's Processing Pipeline
 
+**Expert use only** - the default configuration should "just work".
+The options described here give precise control over th epipelin
+workflow for special cases.
+
 When the `rover retrieve` command is used, the following steps are taken:
 
 * **Indexing** - Any modified files in the local store are indexed.
@@ -56,5 +60,5 @@ with `--no-pre-index` and `--no-post-compact`.
 
 These options also affect low-level commands thare are used
 individually.  So using `--no-index` with `rover ingest` would mean
-that `rover index` was not called avter ingesting data.  Similarly,
+that `rover index` was not called after ingesting data.  Similarly,
 compaction can be enabled with `rover ingest --compact`.

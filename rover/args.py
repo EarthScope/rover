@@ -186,6 +186,9 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
         self.add_argument(mm(POSTCOMPACT), default=True, action='store_bool', help='call compact after retrieval?', metavar='')
+        self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
+        self.add_argument(mm(COMPACT), default=False, action='store_bool', help='call compact after ingest?', metavar='')
+        self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after compaction/ingest?', metavar='')
 
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar='DIR')
@@ -194,7 +197,6 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
 
         # compact and index
-        self.add_argument(mm(COMPACT), default=False, action='store_bool', help='call compact after ingest?', metavar='')
         self.add_argument(mm(COMPACTLIST), default=False, action='store_bool', help='detect and list files with duplicate data?', metavar='')
         self.add_argument(mm(COMPACTMIXEDTYPES), default=False, action='store_bool', help='allow duplicate data in mixed data types?', metavar='')
         self.add_argument(mm(COMPACTMUTATE), default=False, action='store_bool', help='allow compact to mutate (replace) data?', metavar='')

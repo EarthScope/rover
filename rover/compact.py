@@ -136,8 +136,9 @@ will compact the give file, keeping the latest version of duplicate data.
         self._compact_list = args.compact_list
         self._compact_mutate = args.compact_mutate
         self._compact_mixed_types = args.compact_mixed_types
+        self._index = args.index
+        self._config = config
         self._found_duplicates = False
-        self._indexer = Indexer(config)
 
     def run(self, args):
         """
@@ -155,11 +156,12 @@ will compact the give file, keeping the latest version of duplicate data.
         self._found_duplicates = False
         self._log.debug('Compacting %s' % path)
         self._compact(path)
-        if path.startswith(self._mseed_dir):
-            # do this even if file unchanged, as we may be part of pipeline
-            self._indexer.run([path])
-        else:
-            self._log.warn('Skipping index for file outside local store: %s' % path)
+        if self._index:
+            if path.startswith(self._mseed_dir):
+                # do this even if file unchanged, as we may be part of pipeline
+                Indexer(self._config).run([path])
+            else:
+                self._log.warn('Skipping index for file outside local store: %s' % path)
         if self._found_duplicates:
             raise Exception('Some files in the store contain duplicate data')
 

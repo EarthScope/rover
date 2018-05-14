@@ -42,6 +42,9 @@ The url should be for a Data Select service, and should not request data that sp
 
 @temp-dir
 @delete-files
+@ingest
+@compact
+@index
 @verbosity
 @log-dir
 @log-name
@@ -81,7 +84,8 @@ will download, ingest and index data from the given URL and remove duplicate dat
         self._temp_dir = canonify(args.temp_dir)
         self._delete_files = args.delete_files
         self._blocksize = 1024 * 1024
-        self._ingester = Ingester(config)
+        self._ingest = args.ingest
+        self._config = config
         self._create_ingesters_table()
         clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
@@ -100,7 +104,8 @@ will download, ingest and index data from the given URL and remove duplicate dat
         retrievers_id, db_path = self._update_downloaders_table(url)
         try:
             self._do_download(url, path)
-            self._ingester.run([path], db_path=db_path)
+            if self._indgest:
+                Ingester(self._config).run([path], db_path=db_path)
         finally:
             if self._delete_files:
                 if path and delete:

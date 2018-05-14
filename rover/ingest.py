@@ -42,6 +42,7 @@ The file should not contain data that spans multiple calendar days.
 @mseed-db
 @mseed-dir
 @compact
+@index
 @leap
 @leap-expire
 @leap-file
@@ -83,9 +84,9 @@ will add all the data in the given file to the local store and then remove any d
         self._db_path = None
         self._mseed_dir = canonify(args.mseed_dir)
         self._compact = args.compact
+        self._index = args.index
+        self._config = config
         self._log = log
-        self._indexer = Indexer(config)
-        self._compacter = Compacter(config)
         touch(self._mseed_db)  # so that scanning against tsindex works, if the database didn't exist
 
     def run(self, args, db_path=TMPFILE):
@@ -119,9 +120,9 @@ will add all the data in the given file to the local store and then remove any d
         finally:
             unlink(self._db_path)
         if self._compact:
-            self._compacter.run(updated)
-        else:
-            self._indexer.run(updated)
+            Compacter(self._config).run(updated)
+        elif self._index:
+            Indexer(self._config).run(updated)
 
     def _copy_all_rows(self, file, rows):
         self._log.info('Ingesting %s' % file)

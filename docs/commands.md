@@ -40,6 +40,9 @@ This command also indexes modified data in the store before processing and runs 
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url          |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | pre-index           | True                 | Index before retrieval?         |
+| ingest              | True                 | Call ingest after retrieval?    |
+| compact             | False                | Call compact after ingest?      |
+| index               | True                 | Call index after compaction/ingest? |
 | post-compact        | True                 | Call compact after retrieval?   |
 | rover-cmd           | rover                | Command to run rover            |
 | mseed-cmd           | mseedindex           | Mseedindex command              |
@@ -197,6 +200,9 @@ The url should be for a Data Select service, and should not request data that sp
 | ------------------- | -------------------- | ------------------------------- |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | delete-files        | True                 | Delete temporary files?         |
+| ingest              | True                 | Call ingest after retrieval?    |
+| compact             | False                | Call compact after ingest?      |
+| index               | True                 | Call index after compaction/ingest? |
 | verbosity           | 4                    | Console verbosity (0-5)         |
 | log-dir             | ~/rover/logs         | Directory for logs              |
 | log-name            | rover                | Base file name for logs         |
@@ -236,6 +242,7 @@ The file should not contain data that spans multiple calendar days.
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | mseed-dir           | ~/rover/mseed        | Root of mseed data dirs         |
 | compact             | False                | Call compact after ingest?      |
+| index               | True                 | Call index after compaction/ingest? |
 | leap                | True                 | Use leapseconds file?           |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data        |
@@ -287,6 +294,24 @@ If `--compact-mixed-types` is given then it is not a fatal error for the duplica
 | compact-mutate      | False                | Allow compact to mutate (replace) data? |
 | compact-mixed-types | False                | Allow duplicate data in mixed data types? |
 | timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| index               | True                 | Call index after compaction/ingest? |
+| verbosity           | 4                    | Console verbosity (0-5)         |
+| log-dir             | ~/rover/logs         | Directory for logs              |
+| log-name            | rover                | Base file name for logs         |
+| log-verbosity       | 5                    | Log verbosity (0-5)             |
+
+In addition, parameters for the sub-command index will be used - see help for that command for more details.
+
+##### Examples
+
+    rover compact --compact-list --no-index
+
+will check the entire store for duplicate data.
+
+    rover compact path/to/file --compact-mutate
+
+will compact the give file, keeping the latest version of duplicate data.
+
 
 ### Index
 
