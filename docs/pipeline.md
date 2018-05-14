@@ -46,10 +46,15 @@ When the `rover retrieve` command is used, the following steps are taken:
     data.  This can be omitted with `--no-post-compact`
 
 By default, all steps except the per-file `rover compact` are run.
-This can be enabled with `--compact`.
+Compaction can be enabled with `--compact`.
 
 The options `--no-ingest` and `--no-index` can be used to stop the
-pipelin short.
+pipeline short.
 
 Initial indexing and final check for duplicate data can be omitted
 with `--no-pre-index` and `--no-post-compact`.
+
+These options also affect low-level commands thare are used
+individually.  So using `--no-index` with `rover ingest` would mean
+that `rover index` was not called avter ingesting data.  Similarly,
+compaction can be enabled with `rover ingest --compact`.
