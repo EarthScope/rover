@@ -4,7 +4,7 @@ from os import unlink
 from os.path import exists, join
 from re import match
 
-from .lock import DatabaseBasedLockFactory
+from .lock import DatabaseBasedLockFactory, MSEED
 from .compact import Compacter
 from .index import Indexer
 from .scan import DirectoryScanner
@@ -87,7 +87,7 @@ will add all the data in the given file to the local store and then remove any d
         self._index = args.index
         self._config = config
         self._log = log
-        self._lock_factory = DatabaseBasedLockFactory(config, "mseed")
+        self._lock_factory = DatabaseBasedLockFactory(config, MSEED)
         touch(self._mseed_db)  # so that scanning against tsindex works, if the database didn't exist
 
     def run(self, args, db_path=TMPFILE):

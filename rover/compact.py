@@ -279,7 +279,7 @@ will compact the give file, keeping the latest version of duplicate data.
 
     def _swap(self, data, index):
         """
-        Swap the order.  IN practice, never called because the data appear to be sorted on read.
+        Swap the order.
         """
         self._log.debug('Swapping blocks %d and %d' % (index-1, index))
         upper = data[index-1]

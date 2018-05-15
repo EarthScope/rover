@@ -1,4 +1,5 @@
 
+from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .utils import check_leap, check_cmd, canonify
 from .workers import NoConflictPerDatabaseWorkers
@@ -64,7 +65,7 @@ will index the entire store.
         self._mseed_db = canonify(args.mseed_db)
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._dev = args.dev
-        self._workers = NoConflictPerDatabaseWorkers(config, args.mseed_workers, "mseed")
+        self._workers = NoConflictPerDatabaseWorkers(config, args.mseed_workers, MSEED)
 
     def run(self, args):
         """

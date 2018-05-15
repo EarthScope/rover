@@ -7,7 +7,22 @@ from .utils import format_epoch
 from .sqlite import SqliteSupport
 
 
+"""
+Locking of named resources via the database.
+"""
+
+
+# name used for locking the mseed data file
+MSEED = "mseed"
+
+
 class DatabaseBasedLockFactory(SqliteSupport):
+    """
+    Support locking against some string (eg name of file) via the database.
+    We're trying to avoid file locking because of NFS and cross-platform issues, so use this instead.
+    A new instance of the factory must be generated for each kind of resource locked.  Multiple instances
+    can exist for the same kind of resource (in different processes) - that's the whole point.
+    """
 
     def __init__(self, config, name):
         super().__init__(config)
@@ -28,6 +43,9 @@ class DatabaseBasedLockFactory(SqliteSupport):
 
 
 class LockContext(SqliteSupport):
+    """
+    Both context and acquire/release syntax are supported here.
+    """
 
     def __init__(self, config, table, key):
         super().__init__(config)
@@ -40,6 +58,7 @@ class LockContext(SqliteSupport):
     def acquire(self):
         while True:
             try:
+                # very careful with transactions here - want entire process to be in a single transaction
                 with self._db:  # commits or rolls back
                     c = self._db.cursor()
                     c.execute('begin')
