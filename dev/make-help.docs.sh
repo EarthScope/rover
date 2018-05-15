@@ -44,11 +44,20 @@ or
 
 Available parameters can be displayed using \`rover -h\`.
 
+## File Variables
+
+The value \`\${CURDIR}\` in any file value is replaced by the directory
+in which the configuration file is located.  This is useful in tests.
+
+An escaped value \`\$\${...}\` is replaced by \`\${...}\`.
+
+Any other variable (of the form \`\${...}\`) raises an error.
+
 ## Configuration Parameters
 
 EOF
 
-python -c 'from rover.args import Arguments; Arguments().print_docs_table()' >> docs/configuration.md
+python -c 'from rover.args import Arguments; Arguments().print_docs_table_md()' >> docs/configuration.md
 
 cat <<EOF > docs/commands.md
 

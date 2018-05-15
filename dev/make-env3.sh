@@ -8,5 +8,6 @@ pip install requests
 pip install obspy
 pip install nose
 pip install future
+pip install robotframework
 
 echo "source env3/bin/activate"

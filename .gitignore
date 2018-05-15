@@ -6,3 +6,10 @@ env2
 *.pyc
 bug-urllib
 *~
+*.html
+*.log
+run
+tmp
+target
+*.xml
+#*

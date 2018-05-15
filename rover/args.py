@@ -1,11 +1,10 @@
 
-from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
-
-from os.path import exists, join
+from os.path import exists, join, dirname
 from textwrap import dedent
 import sys
+from re import sub, compile
 
-from re import sub
+from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
 
 from .utils import create_parents, canonify
 
@@ -229,6 +228,8 @@ class Arguments(ArgumentParser):
         self.add_argument(COMMAND, metavar='COMMAND', nargs='?', help='use "help" for further information')
         self.add_argument(ARGS, nargs='*', help='command arguments (depend on the command)')
 
+        self._curdir = None
+
     def parse_args(self, args=None, namespace=None):
         '''
         Intercept normal arg parsing to:
@@ -238,13 +239,17 @@ class Arguments(ArgumentParser):
         '''
         if args is None:
             args = sys.argv[1:]
-        args = self._preprocess_booleans(args)
-        config, args = self._extract_config(args)
+        args = self.__preprocess_booleans(args)
+        config, args = self.__extract_config(args)
         self.write_config(config)
-        args = self._patch_config(args, config)
-        return super().parse_args(args=args, namespace=namespace)
+        args = self.__patch_config(args, config)
+        try:
+            self._curdir = dirname(config)
+            return super().parse_args(args=args, namespace=namespace)
+        finally:
+            self._curdir = None
 
-    def _preprocess_booleans(self, args):
+    def __preprocess_booleans(self, args):
         '''
         Replace --foo with '--foo True' and --no-foo with '--foo False'.
         This makes the interface consistent with the config file (which has
@@ -265,7 +270,7 @@ class Arguments(ArgumentParser):
             args.insert(index+1, str(not negative))
         return args
 
-    def _extract_config(self, args):
+    def __extract_config(self, args):
         '''
         Find the config file, if given, otherwise use the default.
         This must be done before argument parsing because we need
@@ -281,7 +286,7 @@ class Arguments(ArgumentParser):
                     raise Exception('No argument for %s' % arg)
                 indices.append(index)
                 config = args[index+1]
-        # remove all occurences
+        # remove all occurrences
         for index in reversed(indices):
             args = args[:index] + args[index+2:]
         if not config:
@@ -310,9 +315,9 @@ class Arguments(ArgumentParser):
                             out.write('%s=%s\n' % (sub('_', '-', action.dest), value))
         return
 
-    def _patch_config(self, args, config):
+    def __patch_config(self, args, config):
         '''
-        Force the reading of the config file (ignored for update-config
+        Force the reading of the config file (ignored for reset-config
         because we may be rewriting it because it has errors).
         '''
         if RESET_CONFIG in args:
@@ -320,6 +325,19 @@ class Arguments(ArgumentParser):
         else:
             return ['@'+config] + args
 
+    CURDIR = compile(r'([^$]|^)\$\{(\w+)\}')
+    ESC_VAR = compile(r'\$(\$\{\w+\})')
+
+    def __variable(self, match):
+        if match.group(2) == 'CURDIR':
+            return match.group(1) + self._curdir
+        else:
+            raise Exception('Unknown variable %s' % match.group(2))
+
+    def __expand_var(self, value):
+        value = sub(self.CURDIR, self.__variable, value)
+        value = sub(self.ESC_VAR, '\\1', value)
+        return value
 
     def convert_arg_line_to_args(self, arg_line):
         '''
@@ -331,11 +349,11 @@ class Arguments(ArgumentParser):
             return []
         elif '=' in arg_line:
             name, value = arg_line.split('=', 1)
-            return [mm(name), value]
+            return [mm(name), self.__expand_var(value)]
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
 
-    def _document_action(self, action):
+    def __document_action(self, action):
         name = sub('_', '-', action.dest)
         default = action.default
         help = action.help
@@ -350,49 +368,43 @@ class Arguments(ArgumentParser):
         return name, default, help
 
 
-    def _documentation(self, name):
+    def __documentation(self, name):
         for action in self._actions:
             if name == sub('_', '-', action.dest):
-                return self._document_action(action)
+                return self.__document_action(action)
         raise Exception('Unonwn parameter %s' % name)
 
-    def _documentation_names(self):
+    def __documentation_names(self):
         for action in self._actions:
             name = sub('_', '-', action.dest)
             if name not in (COMMAND, ARGS):
                 yield name
 
-    def write_docs_text(self):
-        """
-        Generate markdown dodumcentation.  Run by hand from Python.
-        """
-
-        for name, default, help in self._documentation_all():
-            print('### %s' % name)
-            print()
-            if default is not None:
-                print('Default: %s' % default)
-                print()
-            if help:
-                print(help)
-                print()
-
     NAME_WIDTH = 19
     DEFAULT_WIDTH = 20
     DESCRIPTION_WIDTH = 30
 
-    def _print_docs_format(self, name, default, description):
+    def __print_docs_table_row(self, name, default, description):
         print('| %-*s | %-*s | %-*s |' %(self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default, self.DESCRIPTION_WIDTH, description))
 
     def print_docs_header(self):
-        self._print_docs_format(' Name', 'Default', 'Description')
-        self._print_docs_format('-' * self.NAME_WIDTH, '-' * self.DEFAULT_WIDTH, '-' * self.DESCRIPTION_WIDTH)
+        """
+        Print the table header row.
+        """
+        self.__print_docs_table_row(' Name', 'Default', 'Description')
+        self.__print_docs_table_row('-' * self.NAME_WIDTH, '-' * self.DEFAULT_WIDTH, '-' * self.DESCRIPTION_WIDTH)
 
-    def print_docs_row(self, name):
-        self._print_docs_format(*self._documentation(name))
+    def print_docs_row_md(self, name):
+        """
+        Print a table entry for the give argument, markdown formatted
+        """
+        self.__print_docs_table_row(*self.__documentation(name))
 
-    def print_docs_text(self, name):
-        name, default, description = self._documentation(name)
+    def print_docs_row_text(self, name):
+        """
+        Print a table entry for the give argument, text formatted
+        """
+        name, default, description = self.__documentation(name)
         left = '| %-*s | %-*s' % (self.NAME_WIDTH, name, self.DEFAULT_WIDTH, default)
         right = ' | %-*s |' % (self.DESCRIPTION_WIDTH, description)
         if len(left + right) > 79:
@@ -400,11 +412,14 @@ class Arguments(ArgumentParser):
         else:
             print(left + right)
 
-    def _print_docs_rows(self):
-        for name in self._documentation_names():
-           self.print_docs_row(name)
+    def __print_docs_rows_md(self):
+        for name in self.__documentation_names():
+           self.print_docs_row_md(name)
 
-    def print_docs_table(self):
+    def print_docs_table_md(self):
+        """
+        Print all arguents ina table (called externally from python to generate docs).
+        """
         self.print_docs_header()
-        self._print_docs_rows()
+        self.__print_docs_rows_md()
 

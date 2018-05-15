@@ -175,7 +175,11 @@ Write default values to the config file.
 
     rover reset-config
 
-    rover reset-config --f .roverrc
+will reset the configuraton in the default location.
+
+    rover reset-config -f ~/.roverrc
+
+will write the config to the given file.
 
     
 ## Advanced Usage (Daemon Mode)

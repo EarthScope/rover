@@ -1,3 +1,4 @@
+
 from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
@@ -179,9 +180,9 @@ class HelpFormatter:
                     arguments.print_docs_header()
                     first_param = False
                 if self._md_format:
-                    arguments.print_docs_row(line[1:])
+                    arguments.print_docs_row_md(line[1:])
                 else:
-                    arguments.print_docs_text(line[1:])
+                    arguments.print_docs_row_text(line[1:])
             elif self._md_format:
                 print(self.__escape(line))
             elif line.startswith('#'):

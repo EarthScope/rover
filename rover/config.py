@@ -78,7 +78,11 @@ Write default values to the config file.
 
     rover reset-config
 
-    rover reset-config --f .roverrc
+will reset the configuraton in the default location.
+
+    rover reset-config -f ~/.roverrc
+
+will write the config to the given file.
 
     """
 
@@ -103,5 +107,5 @@ Write default values to the config file.
             else:
                 self._log.warn('Deleting %s' % self._file)
                 unlink(self._file)
-        log.info('Writing new config file "%s"' % self._file)
+        self._log.info('Writing new config file "%s"' % self._file)
         argparse.write_config(self._file)

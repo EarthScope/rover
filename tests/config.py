@@ -118,3 +118,43 @@ def test_multiple_flags():
     argparse = Arguments()
     args = argparse.parse_args(['--daemon', '--no-daemon'])
     assert not args.daemon
+
+
+def test_curdir_start():
+      with TemporaryDirectory() as dir:
+        config = join(dir, '.rover')
+        with open(config, 'w') as output:
+            output.write('temp-dir=${CURDIR}/foo\n')
+            output.write('mseed-dir=$${CURDIR}/foo\n')
+        argparse = Arguments()
+        args = argparse.parse_args(['-f', config])
+        assert args.temp_dir
+        assert args.temp_dir == dir + '/foo', args.temp_dir
+        assert args.mseed_dir
+        assert args.mseed_dir == '${CURDIR}/foo', args.mseed_dir
+
+def test_curdir_middle():
+      with TemporaryDirectory() as dir:
+        config = join(dir, '.rover')
+        with open(config, 'w') as output:
+            output.write('temp-dir=xx${CURDIR}/foo\n')
+            output.write('mseed-dir=xx$${CURDIR}/foo\n')
+        argparse = Arguments()
+        args = argparse.parse_args(['-f', config])
+        assert args.temp_dir
+        assert args.temp_dir == 'xx' + dir + '/foo', args.temp_dir
+        assert args.mseed_dir
+        assert args.mseed_dir == 'xx${CURDIR}/foo', args.mseed_dir
+
+def test_curdir_bad():
+      with TemporaryDirectory() as dir:
+        config = join(dir, '.rover')
+        with open(config, 'w') as output:
+            output.write('temp-dir=${FOO}\n')
+        argparse = Arguments()
+        try:
+            argparse.parse_args(['-f', config])
+        except Exception as e:
+            assert 'Unknown variable' in str(e), str(e)
+        else:
+            assert False, 'Expected exception'

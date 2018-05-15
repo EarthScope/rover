@@ -39,6 +39,15 @@ or
 
 Available parameters can be displayed using `rover -h`.
 
+## File Variables
+
+The value `${CURDIR}` in any file value is replaced by the directory
+in which the configuration file is located.  This is useful in tests.
+
+An escaped value `$${...}` is replaced by `${...}`.
+
+Any other variable (of the form `${...}`) raises an error.
+
 ## Configuration Parameters
 
 |  Name               | Default              | Description                    |
