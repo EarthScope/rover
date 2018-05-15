@@ -1,5 +1,6 @@
 
 from os import getpid, kill
+from sqlite3 import OperationalError
 from time import sleep
 
 from .utils import format_epoch
@@ -38,13 +39,16 @@ class LockContext(SqliteSupport):
 
     def acquire(self):
         while True:
-            with self._db:  # commits or rolls back
-                c = self._db.cursor()
-                c.execute('begin')
-                if not c.execute('select count(*) from %s where key = ?' % self._table, (self._key,)).fetchone()[0]:
-                    self._log.debug('Acquired lock on %s with %s' % (self._table, self._key))
-                    c.execute('insert into %s (pid, key) values (?, ?)' % self._table, (getpid(), self._key))
-                    return
+            try:
+                with self._db:  # commits or rolls back
+                    c = self._db.cursor()
+                    c.execute('begin')
+                    if not c.execute('select count(*) from %s where key = ?' % self._table, (self._key,)).fetchone()[0]:
+                        self._log.debug('Acquired lock on %s with %s' % (self._table, self._key))
+                        c.execute('insert into %s (pid, key) values (?, ?)' % self._table, (getpid(), self._key))
+                        return
+            except OperationalError:
+                pass  # database was locked
             if not self._clean():
                 self._log.debug('Sleeping on lock %s with %s' % (self._table, self._key))
                 sleep(1)

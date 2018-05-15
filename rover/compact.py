@@ -191,10 +191,11 @@ will compact the give file, keeping the latest version of duplicate data.
             else:
                 # nothing to do, so go down to the next bvlock
                 index_lower += 1
-        if mutated:
-            self._replace(path, data)
-        else:
-            self._log.debug('File unchanged')
+        if not self._compact_list:  # avoid writing mutations due to swapping
+            if mutated:
+                self._replace(path, data)
+            else:
+                self._log.debug('File unchanged')
 
     def _replace(self, path, data):
         """
@@ -280,7 +281,7 @@ will compact the give file, keeping the latest version of duplicate data.
         """
         Swap the order.  IN practice, never called because the data appear to be sorted on read.
         """
-        self._log.info('Swapping blocks %d and %d' % (index-1, index))
+        self._log.debug('Swapping blocks %d and %d' % (index-1, index))
         upper = data[index-1]
         data.remove(upper)
         data.insert(index, upper)

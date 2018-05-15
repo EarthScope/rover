@@ -119,7 +119,8 @@ will add all the data in the given file to the local store and then remove any d
                                   from tsindex order by byteoffset''')
                 updated.update(self._copy_all_rows(file, rows))
         finally:
-            unlink(self._db_path)
+            if exists(self._db_path):
+                unlink(self._db_path)
         if self._compact:
             Compacter(self._config).run(updated)
         elif self._index:
