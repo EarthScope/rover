@@ -54,6 +54,7 @@ class LockContext(SqliteSupport):
         return False
 
     def release(self):
+        self._log.debug('Releasing lock on %s with %s' % (self._table, self._key))
         self.execute('delete from %s where key = ?' % self._table, (self._key,))
 
     def _clean(self):
