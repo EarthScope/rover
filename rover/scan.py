@@ -5,8 +5,7 @@ from os.path import split, join, isfile, exists
 from sqlite3 import OperationalError
 
 from .sqlite import SqliteSupport
-from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator, in_memory
-
+from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator, in_memory, canonify_dir_and_make
 
 """
 Iterators over files on the file system, or in the database, and - building
@@ -45,7 +44,7 @@ class DatabasePathIterator(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        self._mseed_dir = canonify(config.args.mseed_dir)
+        self._mseed_dir = canonify_dir_and_make(config.args.mseed_dir)
         self._stem = 0
         self._prev_path = None
         self._cursor = self._db.cursor()
@@ -108,7 +107,7 @@ class ModifiedScanner(SqliteSupport):
     def __init__(self, config):
         super().__init__(config)
         args, log = config.args, config.log
-        self._mseed_dir = canonify(args.mseed_dir)
+        self._mseed_dir = canonify_dir_and_make(args.mseed_dir)
         self._all = args.all
         self._log = log
         self._config = config

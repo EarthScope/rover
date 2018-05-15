@@ -4,12 +4,12 @@ from os import unlink
 from os.path import exists, join
 from re import match
 
+from .lock import DatabaseBasedLockFactory
 from .compact import Compacter
 from .index import Indexer
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import canonify, run, check_cmd, check_leap, create_parents, touch
-
+from .utils import canonify, run, check_cmd, check_leap, create_parents, touch, canonify_dir_and_make
 
 """
 The 'rover ingest' command - copy downloaded data into the local store (and then call compact or index).
@@ -82,11 +82,12 @@ will add all the data in the given file to the local store and then remove any d
         self._mseed_db = canonify(args.mseed_db)
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._db_path = None
-        self._mseed_dir = canonify(args.mseed_dir)
+        self._mseed_dir = canonify_dir_and_make(args.mseed_dir)
         self._compact = args.compact
         self._index = args.index
         self._config = config
         self._log = log
+        self._lock_factory = DatabaseBasedLockFactory(config, "mseed")
         touch(self._mseed_db)  # so that scanning against tsindex works, if the database didn't exist
 
     def run(self, args, db_path=TMPFILE):
@@ -159,8 +160,9 @@ will add all the data in the given file to the local store and then remove any d
         if not exists(dest):
             create_parents(dest)
             open(dest, 'w').close()
-        with open(dest, 'ba') as output:
-            output.write(data)
+        with self._lock_factory.lock(dest):
+            with open(dest, 'ba') as output:
+                output.write(data)
 
     def _assert_single_day(self, file, starttime, endtime):
         if starttime[:10] != endtime[:10]:

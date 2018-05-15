@@ -2,6 +2,8 @@
 from subprocess import Popen
 from time import sleep
 
+from .lock import DatabaseBasedLockFactory
+
 
 """
 Support for running multiple sub-processes.
@@ -70,7 +72,7 @@ class Workers:
             sleep(0.1)
 
 
-class NoConflictWorkers(Workers):
+class NoConflictPerProcessWorkers(Workers):
     """
     Extend the above to block attempts to have two processes for the same key
     (typically SNCL and day, or the path to the file in the store).  This avoid
@@ -102,7 +104,7 @@ class NoConflictWorkers(Workers):
                               lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))
 
     def execute(self, command, callback=None):
-        raise Exception('Use execute_wit_lock()')
+        raise Exception('Use execute_with_lock()')
 
     def _unlocking_callback(self, cmd, rtn, callback, key):
         self._log.debug('Unlocking %s' % key)
@@ -111,3 +113,35 @@ class NoConflictWorkers(Workers):
             super()._default_callback(cmd, rtn)
         else:
             callback(cmd, rtn)
+
+
+class NoConflictPerDatabaseWorkers(Workers):
+
+    def __init__(self, config, n_workers, name):
+        super().__init__(config, n_workers)
+        self._lock_factory = DatabaseBasedLockFactory(config, name)
+        self._locks = {}
+
+
+    def execute_with_lock(self, command, key, callback=None):
+        self._wait_for_space()
+        # this is single threaded - the locking is across processes
+        self._locks[key] = self._lock_factory.lock(key)
+        self._locks[key].acquire()
+        self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
+        self._workers.append((command, Popen(command, shell=True),
+                              lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))
+
+    def execute(self, command, callback=None):
+        raise Exception('Use execute_with_lock()')
+
+    def _unlocking_callback(self, cmd, rtn, callback, key):
+        self._log.debug('Unlocking %s' % key)
+        # again, this is single threaed - the locking is across processes
+        self._locks[key].release()
+        self._locks[key] = None
+        if not callback:
+            super()._default_callback(cmd, rtn)
+        else:
+            callback(cmd, rtn)
+

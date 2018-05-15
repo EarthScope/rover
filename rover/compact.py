@@ -7,7 +7,7 @@ from shutil import move
 from obspy import read
 import numpy as np
 
-from .utils import canonify, unique_filename, create_parents, format_epoch
+from .utils import canonify, unique_filename, create_parents, format_epoch, canonify_dir_and_make
 from .index import Indexer
 from .scan import ModifiedScanner, DirectoryScanner
 
@@ -129,8 +129,8 @@ will compact the give file, keeping the latest version of duplicate data.
         ModifiedScanner.__init__(self, config)
         DirectoryScanner.__init__(self, config)
         args = config.args
-        self._mseed_dir = canonify(args.mseed_dir)
-        self._temp_dir = canonify(args.temp_dir)
+        self._mseed_dir = canonify_dir_and_make(args.mseed_dir)
+        self._temp_dir = canonify_dir_and_make(args.temp_dir)
         self._timespan_tol = args.timespan_tol
         self._delete_files = args.delete_files
         self._compact_list = args.compact_list

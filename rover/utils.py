@@ -53,6 +53,18 @@ def canonify(path):
     return abspath(expanduser(path))
 
 
+def canonify_dir_and_make(path):
+    """
+    We need to canonify and make sure some dirs exist.
+    """
+    path = canonify(path)
+    if not exists(path):
+        makedirs(path)
+    if not isdir(path):
+        raise Exception('%s is not a directory')
+    return path
+
+
 def run(cmd, log):
     """
     We can't use subprocess.run() because it doesn't exist for 2.7.

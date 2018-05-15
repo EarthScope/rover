@@ -9,8 +9,8 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse, \
-    create_parents, unique_path
-from .workers import NoConflictWorkers
+    create_parents, unique_path, canonify_dir_and_make
+from .workers import NoConflictPerProcessWorkers
 
 
 """
@@ -81,7 +81,7 @@ will download, ingest and index data from the given URL and remove duplicate dat
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
         args = config.args
-        self._temp_dir = canonify(args.temp_dir)
+        self._temp_dir = canonify_dir_and_make(args.temp_dir)
         self._delete_files = args.delete_files
         self._blocksize = 1024 * 1024
         self._ingest = args.ingest
@@ -181,12 +181,12 @@ class DownloadManager(SingleUse):
         self._rover_cmd = args.rover_cmd
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args.mseed_cmd
-        self._temp_dir = canonify(args.temp_dir)
+        self._temp_dir = canonify_dir_and_make(args.temp_dir)
         self._dev = args.dev
         self._log_unique = args.log_unique
         self._args = args
         self._coverages = []
-        self._workers = NoConflictWorkers(config, args.download_workers)
+        self._workers = NoConflictPerProcessWorkers(config, args.download_workers)
         self._config_path = None
 
     def add(self, coverage):

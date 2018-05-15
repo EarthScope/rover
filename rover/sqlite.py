@@ -52,7 +52,7 @@ class CursorContext:
             else:
                 self._support._log.error(exc_val)
         else:
-            self._support._db.commit()
+            self._support._db.commit()  # probably implied by close?
         self._cursor.close()
         return False  # propagate any exceptions
 

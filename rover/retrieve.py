@@ -14,8 +14,7 @@ from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .utils import canonify, post_to_file, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path
-
+    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path, canonify_dir_and_make
 
 """
 The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
@@ -90,7 +89,7 @@ store.
         SingleUse.__init__(self)
         args = config.args
         self._download_manager = DownloadManager(config)
-        self._temp_dir = canonify(args.temp_dir)
+        self._temp_dir = canonify_dir_and_make(args.temp_dir)
         self._availability_url = args.availability_url
         self._timespan_tol = args.timespan_tol
         self._pre_index = args.pre_index
@@ -128,7 +127,7 @@ store.
                 else:
                     return self._display()
             finally:
-                unlink(path)
+                if exists(path): unlink(path)
 
     def _query(self, up):
         """
