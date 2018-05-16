@@ -21,7 +21,7 @@ significant if they exceed the minimum sample time (multiplied by
 
 See the discussion on [reliability](./reliability.md).  In short,
 there are some occasions when `rover compact` should be used, and some
-occasions where that is insufficient.
+occasions when that is insufficient.
 
 ## Ingest Limited to Single Days
 
