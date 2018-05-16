@@ -64,7 +64,7 @@ will index the entire store.
         self._mseed_cmd = args.mseed_cmd
         self._mseed_db = canonify(args.mseed_db)
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
-        self._dev = args.dev
+        self._verbose = args.dev and args.verbosity == 5
         self._workers = NoConflictPerDatabaseWorkers(config, args.mseed_workers, MSEED)
 
     def run(self, args):
@@ -84,7 +84,7 @@ will index the entire store.
         self._log.info('Indexing %s' % path)
         # todo - windows var
         self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
-                                        % (self._leap_file, self._mseed_cmd, '-v -v' if self._dev else '',
+                                        % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
                                            self._mseed_db, path),
                                         path)
 

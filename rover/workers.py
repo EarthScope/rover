@@ -1,4 +1,5 @@
 
+from os import O_WRONLY, open
 from subprocess import Popen
 from time import sleep
 
@@ -33,7 +34,7 @@ class Workers:
         if not callback:
             callback = self._default_callback
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        self._workers.append((command, Popen(command, shell=True), callback))
+        self._workers.append((command, self._popen(command), callback))
 
     def _wait_for_space(self):
         while True:
@@ -71,8 +72,11 @@ class Workers:
                 return
             sleep(0.1)
 
+    def _popen(self ,command):
+        return Popen(command, shell=True)
 
-class NoConflictPerProcessWorkers(Workers):
+
+class NoConflictPerProcesgsWorkers(Workers):
     """
     Extend the above to block attempts to have two processes for the same key
     (typically SNCL and day, or the path to the file in the store).  This avoid
@@ -100,7 +104,7 @@ class NoConflictPerProcessWorkers(Workers):
             sleep(0.1)
             self.check()
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        self._workers.append((command, Popen(command, shell=True),
+        self._workers.append((command, self._popen(command),
                               lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))
 
     def execute(self, command, callback=None):
@@ -129,7 +133,7 @@ class NoConflictPerDatabaseWorkers(Workers):
         self._locks[key] = self._lock_factory.lock(key)
         self._locks[key].acquire()
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        self._workers.append((command, Popen(command, shell=True),
+        self._workers.append((command, self._popen(command),
                               lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))
 
     def execute(self, command, callback=None):
