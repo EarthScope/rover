@@ -1,6 +1,6 @@
 
 import datetime
-from os import getpid, unlink
+from os import getpid
 from os.path import join, exists
 from time import time
 
@@ -10,8 +10,7 @@ from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse, \
     create_parents, unique_path, canonify_dir_and_make, safe_unlink
-from .workers import NoConflictPerProcessWorkers
-
+from .workers import Workers
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -185,7 +184,7 @@ class DownloadManager(SingleUse):
         self._log_unique = args.log_unique
         self._args = args
         self._coverages = []
-        self._workers = NoConflictPerProcessWorkers(config, args.download_workers)
+        self._workers = Workers(config, args.download_workers)
         self._config_path = None
 
     def add(self, coverage):
@@ -279,8 +278,7 @@ class DownloadManager(SingleUse):
             mm(LOGUNIQUE) if self._log_unique else '', mm(DEV) if self._dev else '',
             DOWNLOAD, self._build_url(sncl, begin, end))
         self._log.debug(command)
-        key = '%s %s' % (sncl, format_day_epoch(begin))
-        self._workers.execute_with_lock(command, key)
+        self._workers.execute(command)
 
     def _build_url(self, sncl, begin, end):
         url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('.'))

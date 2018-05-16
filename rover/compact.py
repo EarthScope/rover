@@ -1,16 +1,15 @@
 
 from functools import total_ordering
-from os import unlink
 from os.path import basename, join
 from shutil import move
 
-from obspy import read
 import numpy as np
+from obspy import read
 
-from .utils import canonify, unique_filename, create_parents, format_epoch, canonify_dir_and_make, safe_unlink
 from .index import Indexer
+from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import ModifiedScanner, DirectoryScanner
-
+from .utils import unique_filename, create_parents, format_epoch, canonify_dir_and_make, safe_unlink
 
 """
 The 'rover compact' command - remove or dodumcnt duplicate data (and then call index).
@@ -138,6 +137,7 @@ will compact the give file, keeping the latest version of duplicate data.
         self._compact_mixed_types = args.compact_mixed_types
         self._index = args.index
         self._config = config
+        self._lock_factory = DatabaseBasedLockFactory(config, MSEED)
         self._found_duplicates = False
 
     def run(self, args):
@@ -154,8 +154,9 @@ will compact the give file, keeping the latest version of duplicate data.
         Given a file, do the work and then index.
         """
         self._found_duplicates = False
-        self._log.debug('Compacting %s' % path)
-        self._compact(path)
+        with self._lock_factory.lock(path):
+            self._log.debug('Compacting %s' % path)
+            self._compact(path)
         if self._index:
             if path.startswith(self._mseed_dir):
                 # do this even if file unchanged, as we may be part of pipeline
