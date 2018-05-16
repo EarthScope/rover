@@ -40,12 +40,14 @@ Individual commands also have help.  See "rover %s %s".
 For more information on configuration parameters, which can be 
 provided via a file or using command line flags:
 
-rover -h
-  Displays the command line parameters.
+  rover -h
+
+    Displays the command line parameters.
   
-%s
-  Contains the defaults for these parameters and can be edited 
-  to change the default behaviour.
+  %s
+
+    Contains the defaults for these parameters and can be edited 
+    to change the default behaviour.
     
 To display this screen again, type "rover" or "rover help".
 
