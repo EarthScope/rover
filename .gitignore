@@ -10,6 +10,5 @@ bug-urllib
 *.log
 run
 tmp
-target
 *.xml
 #*
