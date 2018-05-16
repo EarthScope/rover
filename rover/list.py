@@ -193,7 +193,7 @@ printed to stdout.
     def _set_snclq(self, snclq):
         components = snclq.split('.')
         if len(components) < 2 or len(components) > 5:
-            raise Exception('Cannot parsee %s (expect 2 to 5 values separated by "." for SNCLQ)' % snclq)
+            raise Exception('Cannot parse %s (expect 2 to 5 values separated by "." for SNCLQ)' % snclq)
         self._set_name_value(NETWORK, components[0])
         self._set_name_value(STATION, components[1])
         if len(components) > 2: self._set_name_value(LOCATION, components[2])
