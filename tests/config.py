@@ -22,8 +22,8 @@ dev=False
 delete-files=True
 # display help in markdown format?
 md-format=False
-# tolerance for overlapping timespans
-timespan-tol=0.1
+# fractional tolerance for overlapping timespans
+timespan-tol=1.5
 # number of download instances to run
 download-workers=10
 # allow multiple processes (internal use only)?

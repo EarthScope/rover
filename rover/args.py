@@ -94,7 +94,7 @@ DEFAULT_MSEEDWORKERS = 10
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
 DEFAULT_TEMPEXPIRE = 1
-DEFAULT_TIMESPANTOL = 0.1
+DEFAULT_TIMESPANTOL = 1.5
 DEFAULT_VERBOSITY = 4
 
 
@@ -179,7 +179,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
 
         # retrieval
-        self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='tolerance for overlapping timespans', metavar='SECS', type=float)
+        self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
         self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar='N', type=int)
         self.add_argument(mm(MULTIPROCESS), default=False, action='store_bool', help='allow multiple processes (internal use only)?', metavar='')
         self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')

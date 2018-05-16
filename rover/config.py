@@ -1,13 +1,12 @@
 
 from genericpath import exists, isfile
-from os import unlink
 from os.path import basename
 from shutil import move
 
 from .args import Arguments
 from .logs import init_log
 from .sqlite import init_db
-
+from .utils import safe_unlink
 
 """
 Package common data used in all/most classes (db connection, lgs and parameters).
@@ -102,10 +101,10 @@ will write the config to the given file.
             old = self._file + "~"
             if not exists(old) or isfile(old):
                 self._log.info('Moving old config file to "%s"' % basename(old))
-                if exists(old): unlink(old)
+                safe_unlink(old)
                 move(self._file, old)
             else:
                 self._log.warn('Deleting %s' % self._file)
-                unlink(self._file)
+                safe_unlink(self._file)
         self._log.info('Writing new config file "%s"' % self._file)
         argparse.write_config(self._file)

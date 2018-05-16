@@ -14,7 +14,7 @@ from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .utils import canonify, post_to_file, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path, canonify_dir_and_make
+    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path, canonify_dir_and_make, safe_unlink
 
 """
 The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
@@ -127,7 +127,7 @@ store.
                 else:
                     return self._display()
             finally:
-                if exists(path): unlink(path)
+                safe_unlink(path)
 
     def _query(self, up):
         """
@@ -147,7 +147,7 @@ store.
                 self._log.debug('Local data: %s' % local)
                 self._request_download(remote.subtract(local))
         finally:
-            unlink(down)
+            safe_unlink(down)
 
     def _fetch(self):
         """
@@ -174,10 +174,10 @@ store.
                 print('mergesamplerate=true', file=output)
                 with open(up, 'r') as input:
                     print(input.readline(), file=output, end='')
-            unlink(up)
+            safe_unlink(up)
             copyfile(tmp, up)
         finally:
-            unlink(tmp)
+            safe_unlink(tmp)
 
     def _post_availability(self, up):
         down = unique_path(self._temp_dir, RETRIEVEFILE, up)
@@ -188,10 +188,10 @@ store.
         try:
             self._log.debug('Sorting %s via %s' % (down, tmp))
             run('sort %s > %s' % (down, tmp), self._log)  # todo - windows
-            unlink(down)
+            safe_unlink(down)
             copyfile(tmp, down)
         finally:
-            unlink(tmp)
+            safe_unlink(tmp)
 
     def _parse_line(self, line):
         n, s, l, c, b, e = line.split()
@@ -207,18 +207,20 @@ store.
                         yield availability
                         availability = None
                     if not availability:
-                        availability = Coverage(self._timespan_tol, sncl)
+                        availability = Coverage(self._log, self._timespan_tol, sncl)
                     availability.add_epochs(b, e)
             if availability:
                 yield availability
 
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
-        availability = SingleSNCLBuilder(self._timespan_tol, sncl)
+        availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
+
         def callback(row):
-            availability.add_timespans(row[0])
+            availability.add_timespans(row[0], row[1])
+
         try:
-            self.foreachrow('''select timespans
+            self.foreachrow('''select timespans, samplerate
                                     from tsindex 
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',

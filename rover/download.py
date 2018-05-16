@@ -9,7 +9,7 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse, \
-    create_parents, unique_path, canonify_dir_and_make
+    create_parents, unique_path, canonify_dir_and_make, safe_unlink
 from .workers import NoConflictPerProcessWorkers
 
 
@@ -109,9 +109,8 @@ will download, ingest and index data from the given URL and remove duplicate dat
         finally:
             if self._delete_files:
                 if path and delete:
-                    unlink(path)
-                if exists(db_path):
-                    unlink(db_path)
+                    safe_unlink(path)
+                safe_unlink(db_path)
                 self.execute('delete from rover_ingesters where id = ?', (retrievers_id,))
 
     def _update_downloaders_table(self, url):
@@ -129,7 +128,7 @@ will download, ingest and index data from the given URL and remove duplicate dat
                 id, file = row
                 if exists(file):
                     self._log.warn('Forcing deletion of temp database %s' % file)
-                    unlink(file)
+                    safe_unlink(file)
                 self.execute('delete from rover_ingesters where id = ?', (id,))
 
     def _do_download(self, url, path):
@@ -240,7 +239,7 @@ class DownloadManager(SingleUse):
             else:
                 self._log.warn('No data downloaded / ingested')
         finally:
-            unlink(self._config_path)
+            safe_unlink(self._config_path)
         return n_downloads
 
     def _write_config(self):

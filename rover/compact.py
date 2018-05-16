@@ -7,7 +7,7 @@ from shutil import move
 from obspy import read
 import numpy as np
 
-from .utils import canonify, unique_filename, create_parents, format_epoch, canonify_dir_and_make
+from .utils import canonify, unique_filename, create_parents, format_epoch, canonify_dir_and_make, safe_unlink
 from .index import Indexer
 from .scan import ModifiedScanner, DirectoryScanner
 
@@ -39,14 +39,14 @@ class Signature:
     def snclqr(self):
         return (self.net, self.sta, self.loc, self.cha, self.qua, self.sample_rate)
 
-    def _tuple(self):
+    def tuple(self):
         return (self.net, self.sta, self.loc, self.cha, self.qua, self.sample_rate, self.start_time, self.end_time)
 
     def __eq__(self, other):
-        return type(other) == type(self) and self._tuple() == other._tuple()
+        return type(other) == type(self) and self.tuple() == other.tuple()
 
     def __lt__(self, other):
-        return type(other) == type(self) and self._tuple() < other._tuple()
+        return type(other) == type(self) and self.tuple() < other.tuple()
 
     def _before(self, a, b):
         return b - a > -self._timespan_tol
@@ -213,7 +213,7 @@ will compact the give file, keeping the latest version of duplicate data.
         data.write(path, format='MSEED')
         if self._delete_files:
             self._log.debug('Deleting copy at %s' % copy)
-            unlink(copy)
+            safe_unlink(copy)
 
     def _data_size(self, secs, sample_rate):
         return int(1.5 + secs * sample_rate)

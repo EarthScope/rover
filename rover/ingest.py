@@ -9,7 +9,7 @@ from .compact import Compacter
 from .index import Indexer
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import canonify, run, check_cmd, check_leap, create_parents, touch, canonify_dir_and_make
+from .utils import canonify, run, check_cmd, check_leap, create_parents, touch, canonify_dir_and_make, safe_unlink
 
 """
 The 'rover ingest' command - copy downloaded data into the local store (and then call compact or index).
@@ -109,7 +109,7 @@ will add all the data in the given file to the local store and then remove any d
         self._log.info('Indexing %s for ingest' % file)
         if exists(self._db_path):
             self._log.warn('Temp file %s exists (deleting)' % self._db_path)
-            unlink(self._db_path)
+            safe_unlink(self._db_path)
         updated = set()
         try:
             run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
@@ -119,8 +119,7 @@ will add all the data in the given file to the local store and then remove any d
                                   from tsindex order by byteoffset''')
                 updated.update(self._copy_all_rows(file, rows))
         finally:
-            if exists(self._db_path):
-                unlink(self._db_path)
+            safe_unlink(self._db_path)
         if self._compact:
             Compacter(self._config).run(updated)
         elif self._index:

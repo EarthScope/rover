@@ -3,7 +3,7 @@ import datetime
 import time
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir
+from os import makedirs, stat, getpid, listdir, unlink
 from os.path import dirname, exists, isdir, expanduser, abspath, join
 from subprocess import Popen, check_output, STDOUT
 
@@ -32,6 +32,14 @@ def touch(path):
     """
     create_parents(path)
     open(path, 'a').close()
+
+
+def safe_unlink(path):
+    """
+    Delete a file if it exists.
+    """
+    if exists(path):
+        unlink(path)
 
 
 def check_cmd(cmd, name, param, log):

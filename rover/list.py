@@ -91,6 +91,8 @@ will list all entries in the index after the year 2000.
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
         HelpFormatter.__init__(self, False)
+        args = config.args
+        self._timespan_tol = args.timespan_tol
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
@@ -100,7 +102,6 @@ will list all entries in the index after the year 2000.
         self._single_constraints = {BEGIN: None,
                                     END: None}
         self._flags = {COUNT: False, JOIN: False, JOIN_QSR: False}
-        self._timespan_tol = config.args.timespan_tol
 
     def _display_help(self):
         self.print('''
@@ -229,9 +230,9 @@ printed to stdout.
         if self._flags[COUNT]:
             sql += 'count(*) '
         else:
-            sql += 'network, station, location, channel, timespans '
+            sql += 'network, station, location, channel, timespans, samplerate '
             if not self._flags[JOIN_QSR]:
-                sql += ', quality, samplerate '
+                sql += ', quality '
         sql += 'from tsindex '
         constrained = False
         for name in self._multiple_constraints:
@@ -268,15 +269,15 @@ printed to stdout.
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
-        builder = MultipleSNCLBuilder(self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_QSR])
+        builder = MultipleSNCLBuilder(self._log, self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_QSR])
 
         def callback(row):
             if self._flags[JOIN_QSR]:
-                n, s, l, c, ts = row
-                builder.add_timespans('%s.%s.%s.%s' % (n, s, l, c), ts)
+                n, s, l, c, ts, r = row
+                builder.add_timespans('%s.%s.%s.%s' % (n, s, l, c), ts, r)
             else:
-                n, s, l, c, ts, q, r = row
-                builder.add_timespans('%s.%s.%s.%s.%s (%g Hz)' % (n, s, l, c, q, r), ts)
+                n, s, l, c, ts, r, q = row
+                builder.add_timespans('%s.%s.%s.%s.%s (%g Hz)' % (n, s, l, c, q, r), ts, r)
 
         self.foreachrow(sql, params, callback)
         print()
