@@ -47,7 +47,7 @@ class Coverage:
         self._log.debug('Joining overlapping timespans')
         if self.timespans:  # avoid looking at samplerate if no data
             joined, tolerance = [], self.tolerance()
-            for end, begin in self.timespans:
+            for begin, end in self.timespans:
                 if abs(end - begin) > tolerance:
                     if not joined:
                         joined.append((begin, end))
@@ -59,10 +59,13 @@ class Coverage:
                         if abs(begin - e) < tolerance:
                             # if they do, and this extends previous, replace with maximal span
                             if end > e:
+                                self._log.debug('Joining %d-%d and %d-%d' % (begin, end, b, e))
                                 joined[-1] = (b, end)
                         # no they don't overlap
                         else:
                             joined.append((begin, end))
+                else:
+                    self._log.debug('Disarding %d-%d (too small)' % (begin, end))
             self.timespans = joined
 
     def __str__(self):
@@ -93,11 +96,16 @@ class Coverage:
         if not other.timespans:  # subtracting zero (avoid checking samplerate)
             return self
 
+        # minimal samplerate
         self.add_samplerate(other.samplerate)
+        other.add_samplerate(self.samplerate)
         tolerance = self.tolerance()
+        # simplify the work by compressing both
+        self.join()
+        other.join()
+
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
         difference = Coverage(self._log, self._frac_tolerance, self.sncl)
-
         while True:
 
             try:

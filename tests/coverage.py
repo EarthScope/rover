@@ -41,7 +41,8 @@ def coverage_to_str(coverage):
 
 
 def indices_to_coverage(log, indices):
-    coverage = Coverage(log, 1, 'N.S.L.C')
+    # 0.5 here so no overlap between integers
+    coverage = Coverage(log, 0.5, 'N.S.L.C')
     for (begin, end) in indices:
         if begin != end:
             coverage.add_epochs(begin, end, 1)
@@ -91,7 +92,7 @@ def run(log,
 
 def test_coverage():
     with TemporaryDirectory() as dir:
-        log = init_log(dir, 10, 1, 5, 5, 'coverage', False, 1)
+        log = init_log(dir, 10, 1, 5, 4, 'coverage', False, 1)
         run(log, 2, 1, -1, 3, 2, 0, ((2,3),))
         run(log, 2, 1, -1, 3, 2, 1, ((5,6),))
         run(log, 2, 1, -1, 3, 2, 2, ((5,6),))
