@@ -24,4 +24,13 @@ Cross Day
     Should Be Equal    ${run}  ${target}
     ${result} =    Run Process    python  -m  rover  -f  ../roverrc  retrieve  IU.ANMO.3?.*  2016-01-01T20:00:00  2016-01-02T04:00:00  cwd=${CURDIR}${/}run
     Should Match Regexp    ${result.stderr}  No data downloaded
+    ${nfiles} =    Count Files In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}1
+    Should Be Equal As Integers    ${nfiles}  1
+    File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}1${/}ANMO.IU.2016.01
+    ${nfiles} =    Count Files In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}2
+    Should Be Equal As Integers   ${nfiles}  1
+    File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}2${/}ANMO.IU.2016.02
+    ${ndirectories} =    Count Directories In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016
+    Should Be Equal As Integers   ${ndirectories}  2
+    
 
