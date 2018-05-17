@@ -49,10 +49,10 @@ class Signature:
         return type(other) == type(self) and self.tuple() < other.tuple()
 
     def _before(self, a, b):
-        return b <= a
+        return b >= a
 
     def _after(self, a, b):
-        return b >= a
+        return b <= a
 
     def mergeable(self, other):
         return (type(other) == type(self) and self.snclqr() == other.snclqr() and
