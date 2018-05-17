@@ -14,7 +14,7 @@ fi
 source env3/bin/activate
 echo
 echo "robot python 3 tests"
-robot -F robot -v BOOTSTRAP:$bootstrap robot
+robot -F robot robot
 
 if [[ $bootstrap ]]; then
     find . -name "target" -print0 | while read -d $'\0' target; do
