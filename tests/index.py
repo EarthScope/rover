@@ -19,7 +19,7 @@ def test_deleted_file():
     root = find_root()
     with TemporaryDirectory() as dir:
         config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
-        unlink(join(config.args.mseed_dir, 'IU', '2010', '58', 'ANMO.IU.2010.58'))
+        unlink(join(config.args.mseed_dir, 'IU', '2010', '058', 'ANMO.IU.2010.058'))
         indexer = Indexer(config)
         indexer.run([])
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]

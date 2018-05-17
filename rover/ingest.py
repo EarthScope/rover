@@ -154,7 +154,7 @@ will add all the data in the given file to the local store and then remove any d
         date_string = match(r'\d{4}-\d{2}-\d{2}', starttime).group(0)
         time_data = datetime.strptime(date_string, '%Y-%m-%d').timetuple()
         year, day = time_data.tm_year, time_data.tm_yday
-        return join(self._mseed_dir, network, str(year), str(day), '%s.%s.%04d.%02d' % (station, network, year, day))
+        return join(self._mseed_dir, network, str(year), '%03d' % day, '%s.%s.%04d.%03d' % (station, network, year, day))
 
     def _append_data(self, data, dest):
         if not exists(dest):

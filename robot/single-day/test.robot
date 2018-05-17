@@ -27,10 +27,10 @@ Single Day
     ${result} =    Run Process    python  -m  rover  -f  ../roverrc  retrieve  IU.ANMO.*.*  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run
     Should Match Regexp    ${result.stderr}  No data downloaded
 
-    ${nfiles} =    Count Files In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}1
+    ${nfiles} =    Count Files In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001
     Should Be Equal As Integers    ${nfiles}  1
-    File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}1${/}ANMO.IU.2016.01
+    File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001${/}ANMO.IU.2016.001
     ${ndirectories} =    Count Directories In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016
     Should Be Equal As Integers    ${ndirectories}  1
-    Directory Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}1
+    Directory Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001
     

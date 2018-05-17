@@ -16,7 +16,7 @@ Compact
 
     ${result} =  Run Process    python  -m  rover  -f  ../roverrc  ingest  ../../../tests/data/IU.ANMO.00.*-2010-02-27T04:30:00.000-2010-02-27T08:30:00.000.mseed  cwd=${CURDIR}${/}run
     Log    ${result.stderr}
-    File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2010${/}58${/}ANMO.IU.2010.58
+    File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2010${/}058${/}ANMO.IU.2010.058
 
     ${result} =  Run Process    python  -m  rover  -f  ../roverrc  compact  --all  --compact-list  cwd=${CURDIR}${/}run
     Log    ${result.stderr}

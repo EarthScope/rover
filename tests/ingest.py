@@ -15,5 +15,5 @@ def test_ingester():
         mseed_dir = config.args.mseed_dir
         assert_files(mseed_dir, 'IU')
         assert_files(join(mseed_dir, 'IU'), '2010')
-        assert_files(join(mseed_dir, 'IU', '2010'), '58')
-        assert_files(join(mseed_dir, 'IU', '2010', '58'), 'ANMO.IU.2010.58')
+        assert_files(join(mseed_dir, 'IU', '2010'), '058')
+        assert_files(join(mseed_dir, 'IU', '2010', '058'), 'ANMO.IU.2010.058')
