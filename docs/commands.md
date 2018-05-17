@@ -40,7 +40,7 @@ This command also indexes modified data in the store before processing and runs 
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | compact             | False                | Call compact after ingest?     |
@@ -83,7 +83,7 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
-| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | ~/rover/logs         | Directory for logs             |
@@ -137,7 +137,7 @@ The following parameters are simple flags that change the output format.  They a
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | ~/rover/logs         | Directory for logs             |
@@ -303,7 +303,6 @@ If `--compact-mixed-types` is given then it is not a fatal error for the duplica
 | compact-list        | False                | Detect and list files with duplicate data? |
 | compact-mutate      | False                | Allow compact to mutate (replace) data? |
 | compact-mixed-types | False                | Allow duplicate data in mixed data types? |
-| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
 | index               | True                 | Call index after compaction/ingest? |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | ~/rover/logs         | Directory for logs             |

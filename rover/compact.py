@@ -11,6 +11,7 @@ from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .utils import unique_filename, create_parents, format_epoch, canonify_dir_and_make, safe_unlink
 
+
 """
 The 'rover compact' command - remove or dodumcnt duplicate data (and then call index).
 """
@@ -22,7 +23,8 @@ class Signature:
     Encapsulate the metadata and associated logic for a trace / block.
     """
 
-    def __init__(self, data, timespan_tol):
+    # we don't use tolerance here because we can be exact - single sampling freq
+    def __init__(self, data):
         self.net = data.stats.network
         self.sta = data.stats.station
         self.loc = data.stats.location
@@ -33,7 +35,6 @@ class Signature:
         self.end_time = data.stats.endtime
         self.data_type = data.data.dtype
         self.n_samples = len(data.data)
-        self._timespan_tol = timespan_tol
 
     def snclqr(self):
         return (self.net, self.sta, self.loc, self.cha, self.qua, self.sample_rate)
@@ -48,10 +49,10 @@ class Signature:
         return type(other) == type(self) and self.tuple() < other.tuple()
 
     def _before(self, a, b):
-        return b - a > -self._timespan_tol
+        return b <= a
 
     def _after(self, a, b):
-        return a - b > -self._timespan_tol
+        return b >= a
 
     def mergeable(self, other):
         return (type(other) == type(self) and self.snclqr() == other.snclqr() and
@@ -95,7 +96,6 @@ still, such data will not be de-duplicated).
 @compact-list
 @compact-mutate
 @compact-mixed-types
-@timespan-tol
 @index
 @verbosity
 @log-dir
@@ -130,7 +130,6 @@ will compact the give file, keeping the latest version of duplicate data.
         args = config.args
         self._mseed_dir = canonify_dir_and_make(args.mseed_dir)
         self._temp_dir = canonify_dir_and_make(args.temp_dir)
-        self._timespan_tol = args.timespan_tol
         self._delete_files = args.delete_files
         self._compact_list = args.compact_list
         self._compact_mutate = args.compact_mutate
@@ -139,6 +138,7 @@ will compact the give file, keeping the latest version of duplicate data.
         self._config = config
         self._lock_factory = DatabaseBasedLockFactory(config, MSEED)
         self._found_duplicates = False
+        self._log_swapping = 3
 
     def run(self, args):
         """
@@ -173,12 +173,13 @@ will compact the give file, keeping the latest version of duplicate data.
         data = read(path)
         index_lower, mutated = 1, False
         while index_lower < len(data):
-            lower, upper = Signature(data[index_lower], self._timespan_tol), Signature(data[index_lower-1], self._timespan_tol)
+            lower, upper = Signature(data[index_lower]), Signature(data[index_lower-1])
             if lower.mergeable(upper):
                 if self._compact_list:
                     if not self._found_duplicates:
                         self._log.warn('Found duplicate data; logging file paths to stdout and will raise error on completion')
                         self._found_duplicates = True
+                    print(path)
                     return
                 self._merge(data, index_lower, lower, upper)
                 # follow merged block upwards unless at top
@@ -282,7 +283,11 @@ will compact the give file, keeping the latest version of duplicate data.
         """
         Swap the order.
         """
-        self._log.debug('Swapping blocks %d and %d' % (index-1, index))
+        if self._log_swapping:
+            self._log.debug('Swapping blocks %d and %d' % (index-1, index))
+            self._log_swapping -= 1
+            if not self._log_swapping:
+                self._log.debug('Not logging more swaps')
         upper = data[index-1]
         data.remove(upper)
         data.insert(index, upper)

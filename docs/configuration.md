@@ -58,7 +58,7 @@ Any other variable (of the form `${...}`) raises an error.
 | dev                 | False                | Development mode (show exceptions)? |
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
-| timespan-tol        | 0.1                  | Tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | download-workers    | 10                   | Number of download instances to run |
 | multiprocess        | False                | Allow multiple processes (internal use only)? |
 | rover-cmd           | rover                | Command to run rover           |
