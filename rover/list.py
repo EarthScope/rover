@@ -1,6 +1,7 @@
 
 import sys
 from re import match, sub
+from sqlite3 import OperationalError
 
 from .help import HelpFormatter
 from .coverage import MultipleSNCLBuilder
@@ -93,6 +94,7 @@ will list all entries in the index after the year 2000.
         HelpFormatter.__init__(self, False)
         args = config.args
         self._timespan_tol = args.timespan_tol
+        self._mseed_db = args.mseed_db
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
@@ -157,12 +159,19 @@ printed to stdout.
             self._display_help()
         else:
             self._assert_single_use()
+            self._check_database()
             self._parse_args(args)
             sql, params = self._build_query()
             if self._flags[COUNT]:
                 self._count(sql, params, stdout=stdout)
             else:
                 self._rows(sql, params, stdout=stdout)
+
+    def _check_database(self):
+        try:
+            self.execute('select count(*) from tsindex')
+        except OperationalError:
+            raise Exception('''Cannot access the index table in the database (%s).  Bad configuration or no data indexed?''' % self._mseed_db)
 
     def _parse_args(self, args):
         for arg in args:
