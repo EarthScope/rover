@@ -3,6 +3,7 @@ from tempfile import TemporaryDirectory
 from os.path import join
 
 from rover.args import Arguments
+from rover.utils import canonify
 
 
 def test_write_config():
@@ -10,7 +11,7 @@ def test_write_config():
         config = join(dir, '.rover')
         argparse = Arguments()
         args = argparse.parse_args(['-f', config])
-        assert args.file == config, args.file
+        assert canonify(args.file) == canonify(config), args.file
         with open(config, 'r') as input:
             contents = input.read()
             assert contents == \
@@ -129,12 +130,13 @@ def test_curdir_start():
         argparse = Arguments()
         args = argparse.parse_args(['-f', config])
         assert args.temp_dir
-        assert args.temp_dir == dir + '/foo', args.temp_dir
+        assert canonify(args.temp_dir) == canonify(dir + '/foo'), args.temp_dir
         assert args.mseed_dir
         assert args.mseed_dir == '${CURDIR}/foo', args.mseed_dir
 
 def test_curdir_middle():
       with TemporaryDirectory() as dir:
+        dir = canonify(dir)
         config = join(dir, '.rover')
         with open(config, 'w') as output:
             output.write('temp-dir=xx${CURDIR}/foo\n')
