@@ -4,7 +4,7 @@ import time
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink
-from os.path import dirname, exists, isdir, expanduser, abspath, join
+from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from subprocess import Popen, check_output, STDOUT
 
 from requests import get, post
@@ -58,7 +58,7 @@ def canonify(path):
     """
     Expand the path so it's repeatable.
     """
-    return abspath(expanduser(path))
+    return realpath(abspath(expanduser(path)))
 
 
 def canonify_dir_and_make(path):
