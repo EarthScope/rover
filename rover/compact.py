@@ -4,12 +4,18 @@ from os.path import basename, join
 from shutil import move
 
 import numpy as np
-from obspy import read
 
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .utils import unique_filename, create_parents, format_epoch, canonify_dir_and_make, safe_unlink
+
+try:
+    from obspy import read
+    HAVE_OBSPY = True
+except ImportError:
+    HAVE_OBSPY = False
+    read = None
 
 
 """
@@ -144,10 +150,18 @@ will compact the give file, keeping the latest version of duplicate data.
         """
         Invoke the command over the appropriate files (See super classes)
         """
-        if args:
-            self.scan_dirs_and_files(args)
+        if HAVE_OBSPY:
+            if args:
+                self.scan_dirs_and_files(args)
+            else:
+                self.scan_mseed_dir()
         else:
-            self.scan_mseed_dir()
+            self._log.warn('The obspy package was not found.')
+            self._log.warn('Without this, the compact command cannot run')
+            if self._compact_list:
+                print('Cannot detect duplicate data without obspy installation')
+            else:
+                raise Exception('Cannot correct duplicate data without obspy installation')
 
     def process(self, path):
         """
