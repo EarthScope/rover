@@ -231,13 +231,13 @@ class DownloadManager(SingleUse):
                 for sncl, begin, end in self._expand_timespans(coverage):
                     self._new_worker(sncl, begin, end)
                     n_downloads += 1
+        finally:
             self._workers.wait_for_all()
             # no need to kill thread as it is a daemon - ok to leave it blocked on empty queue
             if n_downloads:
                 self._log.info('Completed %d downloads' % n_downloads)
             else:
                 self._log.warn('No data downloaded / ingested')
-        finally:
             safe_unlink(self._config_path)
         return n_downloads
 
@@ -253,8 +253,7 @@ class DownloadManager(SingleUse):
 
     def _expand_timespans(self, coverage):
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
-        while True:
-            begin, end = next(timespans)
+        for begin, end in timespans:
             if begin == end:
                 yield sncl, begin, end
             else:

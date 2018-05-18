@@ -10,7 +10,7 @@ def test_write_config():
         config = join(dir, '.rover')
         argparse = Arguments()
         args = argparse.parse_args(['-f', config])
-        assert args.file == config
+        assert args.file == config, args.file
         with open(config, 'r') as input:
             contents = input.read()
             assert contents == \

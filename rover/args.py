@@ -312,7 +312,6 @@ class Arguments(ArgumentParser):
                             if action.help:
                                 out.write('# %s\n' % action.help)
                             out.write('%s=%s\n' % (sub('_', '-', action.dest), value))
-        return
 
     def __patch_config(self, args, config):
         '''
