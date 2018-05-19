@@ -25,8 +25,8 @@ The two use cases where this may be important are:
   The `rover compact` command, when removing duplicate data, keeps the
   latest version, so allows new data to be merged.
 
-Unless dealing with those two cases, you probably do not need `rover
-compact`.
+Unless dealing with those two cases, you probably do not need 
+`rover compact`.
 
 ## Reliability
 
