@@ -74,6 +74,8 @@ class Compacter(ModifiedScanner, DirectoryScanner):
     """
 ### Compact
 
+THIS COMMAND IS OPTIONAL AND ONLY AVAILABLE IF THE obspy PACKAGE IS INSTALLED.
+
     rover compact  [--all] [--compact-list]
 
     rover compact (file|dir)+ [--no-recurse] [--compact-list]

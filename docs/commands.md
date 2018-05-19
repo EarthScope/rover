@@ -277,6 +277,8 @@ will add all the data in the given file to the local store and then remove any d
 
 ### Compact
 
+THIS COMMAND IS OPTIONAL AND ONLY AVAILABLE IF THE obspy PACKAGE IS INSTALLED.
+
     rover compact  [--all] [--compact-list]
 
     rover compact (file|dir)+ [--no-recurse] [--compact-list]
