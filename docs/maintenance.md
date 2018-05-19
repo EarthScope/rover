@@ -14,8 +14,7 @@
 
 ## Compaction
 
-For background see [Reliability, Repeatability and
-Idempotence](./reliability.md).
+For background see [here](./compact.md).
 
 * `rover compact --all --compact-list` - will check for duplicate data
   (listing them to stdout and raising an error on completion).
@@ -37,7 +36,7 @@ Idempotence](./reliability.md).
   filesystem into the store.
 
   Note that repeated use of this command with the same file will give
-  [duplicated data](./reliability.md).
+  [duplicated data](./compact.md#reliability).
 
 ## Inspection
 

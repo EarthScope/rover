@@ -40,8 +40,8 @@ When the `rover retrieve` command is used, the following steps are taken:
 
   * **Compaction** - Optionally (by specifying `--compact`) the
     command `rover compact` can be run on the file that has received
-    new data.  This checks for and removes duplicate data.  See
-    [Reliability, Repeatability and Idempotence](./reliability.md).
+    new data.  This can [check for and remove duplicate
+    data](./compact.md).
 
   * **Indexing** - The command `rover index` updates the index for the
     local store.  This step can be omitted with `--no-index`.

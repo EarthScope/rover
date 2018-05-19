@@ -19,7 +19,7 @@ significant if they exceed the minimum sample time (multiplied by
 
 ## Incomplete Handling Of Duplicate Data
 
-See the discussion on [reliability](./reliability.md).  In short,
+See the discussion on [the compact command](./compact.md).  In short,
 there are some occasions when `rover compact` should be used, and some
 occasions when that is insufficient.
 
