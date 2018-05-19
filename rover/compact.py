@@ -156,8 +156,8 @@ will compact the give file, keeping the latest version of duplicate data.
             else:
                 self.scan_mseed_dir()
         else:
-            self._log.warn('The obspy package was not found.')
-            self._log.warn('Without this, the compact command cannot run')
+            self._log.info('The obspy package was not found.')
+            self._log.info('Without this, the compact command cannot run')
             if self._compact_list:
                 print('Cannot detect duplicate data without obspy installation')
             else:

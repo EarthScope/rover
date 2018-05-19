@@ -1,7 +1,34 @@
 
-# Reliability, Repeatability and Idempotence
+# Compact
 
 ## Introduction
+
+The `rover compact` command is optional and only used if obspy is
+installed (installing obspy on OSX can be tricky).
+
+In normal use (see [Reliability](#reliability) below) this command is
+not needed, so you may not need to read any further.
+
+What `rover compact` does is detect and / or remove duplicate data in
+an mssed file.  It cannot remove data in all cases (the types of the
+duplicate blocks must be identical), but when it can it can also check
+that the duplicate data are identical.
+
+The two use cases where this may be important are:
+
+* When dealing with data files that have duplicate data.  This should
+  not happen with `rover retrieve`, but may, for example, be a result
+  of calling `rover ingest` manually more than once on the same data.
+
+* Future extensions of Rover may have the ability to download data
+  that was already present in the local store, but which has changed.
+  The `rover compact` command, when removing duplicate data, keeps the
+  latest version, so allows new data to be merged.
+
+Unless dealing with those two cases, you probably do not need `rover
+compact`.
+
+## Reliability
 
 There are two common approaches to making reliable software systems:
 either make the system as robust as possible, capable of handing all
@@ -21,7 +48,7 @@ This property - being able to repeat a command while preserving the
 existing data - is called *idempotence*.  It is critical for reliable,
 long-lived systems.
 
-## Rover Is Generally Idempotent
+### Rover Is Generally Idempotent
 
 Rover requests and ingests only data that it does not contain, so by
 default it cannot have duplicate data.
@@ -31,10 +58,10 @@ the first call is successful then the second call will download and
 ingest no data.  If the first call fails so that some data are missing
 then the second call will download and ingest only the missing data.
 
-## Rover Cannot Guarantee Idempotency
+### But Rover Cannot Guarantee Idempotency
 
-But life is complicated.  Although Rover is generally idempotent we
-can imagine cases where this is not the case:
+Life is complicated.  Although Rover is generally idempotent we can
+imagine cases where this is not the case:
 
   * If data are ingested from a local file multiple times then they
     will appear multiple times in the store.  This is because `rover
@@ -49,28 +76,8 @@ can imagine cases where this is not the case:
 This list is unlikely to be exhaustive.  So Rover may not always
 behave in an idempotent manner.
 
-## Compact: A Limited Solution
+### Compact And Idempotency
 
-The most simple cases of duplicate data can be resolved by using the
-command `rover compact`.  For example, this can be enabled during
-retrieval with `rover retrieve --compact`.
-
-The `rover compact` command attempts to merge duplicate data.  If it
-succeeds then it removes the duplicated data and Rover again behaves
-in a reliable, idempotent manner.
-
-But the command has limitations.  These largely come from the
-complexity of the MSEED format.  For example, it cannot merge data
-with different types.
-
-The `rover compact` command can also be used to update data.  If newer
-data are ingested then `rover compact --compact-mutate` will replace
-the old data with the new (without the `--compact-mutate` it is an
-error if merged data are not identical where they overlap).
-
-Other uses for the command are described in the documentation on
-[maintaining the store](./maintenance.md).
-
-Note: *By default `rover compact` is not enabled.*
-
-
+Running `rover compact` removes duplicate data in common cases and so
+increases the chnace that rover is idempotent even on unexpected
+failure.
