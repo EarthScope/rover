@@ -475,9 +475,9 @@ class DownloadManager2:
 
     def step(self):
         """
-        A single iteration of the manager's main loop:
-        * check workers
-        * if space, add new workers
+        A single iteration of the manager's main loop.  Can be inter-mixed with add_channel and add_coverage.
+        Cleaning logic assumes coverages for a channel are all added at once, though.  If you don't, channel
+        may be deleted when you don't expect it.
         """
         self._workers.check()
         self._clean_channels()
@@ -495,7 +495,7 @@ class DownloadManager2:
 
     def download(self):
         """
-        Expand the timespans into daily downloads, get the data and ingest.
+        Run to completion.  For single-shot, called after add_channel and add_coverage.
         """
         try:
             while self._channels:
