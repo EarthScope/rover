@@ -94,21 +94,19 @@ store.
         self._timespan_tol = args.timespan_tol
         self._pre_index = args.pre_index
         self._post_compact = args.post_compact
-        self._rover_cmd = args.rover_cmd
-        self._mseed_cmd = args.mseed_cmd
+        # check these so we fail early
+        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', self._log)
+        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', self._log)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
         check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, self._log)
         clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
 
-    def run(self, args, fetch):
+    def do_run(self, args, fetch):
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
         self._assert_single_use()
-        # check these so we fail early
-        check_cmd('%s -h' % self._rover_cmd, 'rover', 'rover', self._log)
-        check_cmd('%s -h' % self._mseed_cmd, 'mseedindex', 'mseed-cmd', self._log)
         if not exists(self._temp_dir):
             makedirs(self._temp_dir)
         if len(args) == 0 or len(args) > 3:
@@ -268,7 +266,7 @@ class Retriever(BaseRetriever):
         super().__init__(config)
 
     def run(self, args):
-        return super().run(args, True)
+        return self.do_run(args, True)
 
 
 class Comparer(BaseRetriever):
@@ -312,4 +310,4 @@ will display the data missing from the local store to match what is available fo
         super().__init__(config)
 
     def run(self, args):
-        return super().run(args, False)
+        return self.do_run(args, False)

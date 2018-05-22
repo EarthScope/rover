@@ -17,6 +17,7 @@ Command line / file configuration parameters.
 # commands
 COMPACT = 'compact'
 COMPARE = 'compare'
+DAEMON = 'daemon'
 DOWNLOAD = 'download'
 HELP = 'help'
 INDEX = 'index'
@@ -24,6 +25,8 @@ INGEST = 'ingest'
 LIST_INDEX = 'list-index'
 RESET_CONFIG = 'reset-config'
 RETRIEVE = 'retrieve'
+START = 'start'
+STOP = 'stop'
 SUBSCRIBE = 'subscribe'
 
 

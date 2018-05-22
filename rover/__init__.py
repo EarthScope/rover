@@ -1,6 +1,7 @@
 
+from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT, START, STOP
 from .compact import Compacter
 from .config import Config, ConfigResetter
 from .download import Downloader
@@ -21,6 +22,8 @@ COMMANDS = {
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
     COMPARE: (Comparer, 'Show what data "rover retrieve" will download'),
     COMPACT: (Compacter, 'Detect and remove duplicate data'),
+    START: (Starter, 'Start the background daemon'),
+    STOP: (Stopper, 'Stop the background daemon'),
     SUBSCRIBE: (Subscriber, 'TODO')
 }
 
@@ -43,11 +46,11 @@ def main():
         config = Config()
         processes = Processes(config)
         if not (config.args.daemon or config.args.multiprocess):
-            processes.assert_singleton('rover')
+            processes.add_singleton_me('rover')
         try:
             execute(config.args.command, config)
         finally:
-            processes.remove_process()
+            processes.remove_me()
     except Exception as e:
         if config and config.log:
             config.log.error(str(e))

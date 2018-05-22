@@ -39,10 +39,13 @@ class Workers:
     def _wait_for_space(self):
         while True:
             self.check()
-            if len(self._workers) < self._n_workers:
+            if self.has_space():
                 self._log.debug('Space for new worker')
                 return
             sleep(0.1)
+
+    def has_space(self):
+        return len(self._workers) < self._n_workers
 
     def _default_callback(self, cmd, returncode):
         if returncode:

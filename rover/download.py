@@ -1,8 +1,9 @@
 
 import datetime
+from collections import deque
 from os import getpid
 from os.path import join, exists
-from time import time
+from time import time, sleep
 
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
 from .ingest import Ingester
@@ -175,7 +176,7 @@ class DownloadManager(SingleUse):
         args, log = config.args, config.log
         self._log = log
         self._dataselect_url = args.dataselect_url
-        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover', log)
+        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', log)
         self._rover_cmd = args.rover_cmd
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
         self._mseed_cmd = args.mseed_cmd
@@ -189,7 +190,7 @@ class DownloadManager(SingleUse):
 
     def add(self, coverage):
         """
-        Add a required coverage (SNCL and date range).  This will be expanded
+        Add a required coverage (SNCL and associated timespans).  This will be expanded
         into one or more downloads when
         """
         self._assert_not_used()
@@ -283,3 +284,228 @@ class DownloadManager(SingleUse):
         url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('.'))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
+
+class Channel:
+    """
+    Data for a single channel in the download manager.
+    """
+
+    def __init__(self, name, dataselect_url):
+        self._name = name
+        self._dataselect_url = dataselect_url
+        self._coverages = deque()  # fifo: appendright / popleft; exposed for display
+        self._days = deque()  # fifo: appendright / popleft
+        self._worker_count = 0
+        self.new = True  # avoid deletion when first created and empty
+
+    def __str__(self):
+        return '%s (%s)' % (self._name, self._dataselect_url)
+
+    def add_coverage(self, coverage):
+        self.new = False
+        self._coverages.append(coverage)
+
+    def get_coverages(self):
+        return list(self._coverages)
+
+    @staticmethod
+    def _end_of_day(epoch):
+        day = datetime.datetime.fromtimestamp(epoch, utc)
+        right = (datetime.datetime(day.year, day.month, day.day, tzinfo=utc)
+                 + datetime.timedelta(hours=24) - EPOCH_UTC).total_seconds()
+        left = right - 0.000001
+        return left, right
+
+    def has_days(self):
+        """
+        Ensure days has some data, if possible, and return whether it has any.
+        """
+        if self._days:
+            return True
+        while self._coverages:
+            coverage = self._coverages.popleft()
+            sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
+            for begin, end in timespans:
+                if begin == end:
+                    self._days.append((sncl, begin, end))
+                else:
+                    left, right = self._end_of_day(begin)
+                    self._days.append((sncl, begin, min(left, end)))
+                    if right < end:
+                        timespans.push((right, end))
+            if self._days:
+                return True
+        return False
+
+    def _build_url(self, sncl, begin, end):
+        url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('.'))
+        return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
+
+    def _callback(self, command, return_code):
+        self._worker_count -= 1
+
+    def new_worker(self, log, workers, config_path, rover_cmd, log_unique, dev):
+        url = self._build_url(*self._days.popleft())
+        # we only pass arguments on the command line that are different from the
+        # default (which is in the file)
+        command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
+            rover_cmd, config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
+            mm(LOGUNIQUE) if log_unique else '', mm(DEV) if dev else '', DOWNLOAD, url)
+        log.debug(command)
+        workers.execute(command, self._callback)
+        self._worker_count += 1
+
+    def is_complete(self):
+        return not self.new and self._worker_count == 0 and not self.has_days()
+
+
+class DownloadManager2:
+    """
+    An interface to downloader instances that restricts downloads to a fixed number of workers,
+    each downloading data that is for a maximum duration of a day.
+
+    It supports multiple *channels* and will try to divide load fairly between channels.  A
+    channel is typically a source / subscription, so we spread downloads across multiple
+    servers when possible.
+
+    The config_file is overwritten (in temp_dir) because only a singleton (for either
+    standalone or daemon) should ever exist.  Because of this, and the daemon exiting via
+    kill(), no attempt is made to delete the file on exit.
+
+    IMPORTANT: This is used from a SINGLE thread.  So for it to work reliably the step()
+    method must be called regularly (perhaps via download()).
+    """
+
+    def __init__(self, config, config_file):
+        super().__init__()
+        args, log = config.args, config.log
+        self._log = log
+        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', log)
+        self._rover_cmd = args.rover_cmd
+        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
+        self._mseed_cmd = args.mseed_cmd
+        self._dev = args.dev
+        self._log_unique = args.log_unique
+        self._channels = {}  # map of channel names to channels
+        self._index = 0  # used to round-robin channels
+        self._workers = Workers(config, args.download_workers)
+        self._n_downloads = 0
+        self._config_path = self._write_config(args.temp_dir, config_file, args)
+
+    def _write_config(self, temp_dir, config_file, args):
+        temp_dir = canonify_dir_and_make(temp_dir)
+        config_path = join(temp_dir, config_file)
+        safe_unlink(config_path)
+        Arguments().write_config(config_path, args)
+        return config_path
+
+    def add_channel(self, channel, dataselect_url):
+        if channel in self._channels and self._channels[channel].worker_count:
+            raise Exception('Cannot overwrite active channel %s' % self._channels[channel])
+        self._channels[channel] = Channel(channel, dataselect_url)
+
+    def _channel(self, name):
+        if name not in self._channels:
+            raise Exception('Unexpected channel: %s' % name)
+        return self._channels[name]
+
+    def add_coverage(self, channel, coverage):
+        """
+        Add a required Coverage (SNCL and associated timespans).  This will be expanded
+        into one or more downloads by the channel's Expander.
+        """
+        self._channel(channel).add_coverage(coverage)
+
+    def display(self):
+        """
+        Display a summary of the data that have not been expanded into downloads.
+        """
+        total_seconds, total_sncls = 0, 0
+        for channel in self._channels.values():
+            coverages = channel.get_coverages()
+            if len(self._channels) > 1:
+                print()
+                print('Channel %s (%s)' % channel)
+                print()
+            channel_seconds, channel_sncls = 0, 0
+            for coverage in coverages:
+                sncl_seconds = 0
+                for (begin, end) in coverage.timespans:
+                    seconds = end - begin
+                    sncl_seconds += seconds
+                    channel_seconds += seconds
+                    total_seconds += seconds
+                if sncl_seconds:
+                    channel_sncls += 1
+                    total_sncls += 1
+                    print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
+                    for (begin, end) in coverage.timespans:
+                        print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
+            if channel_sncls:
+                print()
+            print('  Total: %d SNCLSs; %4.2f sec' % (channel_sncls, channel_seconds))
+            print()
+        if total_sncls:
+            print()
+        print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
+        return total_sncls
+
+    def _has_data(self):
+        for channel in self._channels.values():
+            if channel.has_days():
+                return True
+        return False
+
+    def _next_channel(self, channels):
+        self._index = (self._index + 1) % len(channels)
+        return channels[self._index]
+
+    def _has_least_workers(self, c):
+        for channel in self._channels.values():
+            if not channel.new and channel.worker_count < c.worker_count:
+                return False
+        return True
+
+    def _clean_channels(self):
+        names = list(self._channels.keys())
+        for name in names:
+            if self._channel(name).is_complete():
+                self._log.debug('Channel %s complete' % self._channel(name))
+                del self._channels[name]
+
+    def step(self):
+        """
+        A single iteration of the manager's main loop:
+        * check workers
+        * if space, add new workers
+        """
+        self._workers.check()
+        self._clean_channels()
+        while self._workers.has_space() and self._has_data():
+            channels = list(
+                filter(lambda channel: not channel.new,
+                    map(lambda name: self._channel(name),
+                        sorted(self._channels.keys()))))
+            while True:
+                channel = self._next_channel(channels)
+                if self._has_least_workers(channel): break
+            if channel.has_days():
+                channel.new_worker(self._log, self._workers, self._config_path, self._rover_cmd, self._log_unique, self._dev)
+                self._n_downloads += 1
+
+    def download(self):
+        """
+        Expand the timespans into daily downloads, get the data and ingest.
+        """
+        try:
+            while self._channels:
+                self.step()
+                sleep(0.1)
+        finally:
+            # not needed in normal use, as no workers when no channels, but useful on error
+            self._workers.wait_for_all()
+            if self._n_downloads:
+                self._log.info('Completed %d downloads' % self._n_downloads)
+            else:
+                self._log.warn('No data downloaded / ingested')
+        return self._n_downloads
