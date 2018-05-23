@@ -13,6 +13,7 @@ from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename,
     create_parents, unique_path, canonify_dir_and_make, safe_unlink
 from .workers import Workers
 
+
 """
 The 'rover download' command - download data from a URL (and then call ingest).
 
@@ -67,7 +68,7 @@ will download, ingest and index data from the given URL and remove duplicate dat
 """
 
 # The only complex thing here is that these may run in parallel.  That means that
-# multiple ingest instances can be running in parallel, all using  mseedindex.
+# multiple ingest instances can be running in parallel, all using mseedindex.
 # To avoid conflict over sqlite access we use a different database file for each,
 # so we need to track and delete those.
 #
@@ -86,7 +87,6 @@ will download, ingest and index data from the given URL and remove duplicate dat
         self._blocksize = 1024 * 1024
         self._ingest = args.ingest
         self._config = config
-        self._create_ingesters_table()
         clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
     def run(self, args):
@@ -101,7 +101,7 @@ will download, ingest and index data from the given URL and remove duplicate dat
         else:
             path, delete = unique_path(self._temp_dir, TMPFILE, url), True
         self._assert_single_use()
-        retrievers_id, db_path = self._update_downloaders_table(url)
+        db_path = self._ingesters_db_path(url, getpid())
         try:
             self._do_download(url, path)
             if self._ingest:
@@ -111,25 +111,6 @@ will download, ingest and index data from the given URL and remove duplicate dat
                 if path and delete:
                     safe_unlink(path)
                 safe_unlink(db_path)
-                self.execute('delete from rover_ingesters where id = ?', (retrievers_id,))
-
-    def _update_downloaders_table(self, url):
-        self._clear_dead_retrievers()
-        pid = getpid()
-        db_path = self._ingesters_db_path(url, pid)
-        self.execute('insert into rover_ingesters (pid, db_path, url) values (?, ?, ?)', (pid, db_path, url))
-        id = self.fetchsingle('select id from rover_ingesters where pid = ? and db_path like ? and url like ?',
-                              (pid, db_path, url))  # todo - auto retrieve key?
-        return id, db_path
-
-    def _clear_dead_retrievers(self):
-        if self._delete_files:
-            for row in self.fetchall('select id, db_path from rover_ingesters where creation_epoch < ?', (time() - 60 * 60,)):
-                id, file = row
-                if exists(file):
-                    self._log.warn('Forcing deletion of temp database %s' % file)
-                    safe_unlink(file)
-                self.execute('delete from rover_ingesters where id = ?', (id,))
 
     def _do_download(self, url, path):
         # previously we extracted the file name from the header, but the code
@@ -138,19 +119,6 @@ will download, ingest and index data from the given URL and remove duplicate dat
             raise Exception('Path %s for download already exists' % path)
         create_parents(path)
         return get_to_file(url, path, self._log)
-
-    def _create_ingesters_table(self):
-        """
-        Create the table used by the retriever.  This is here because the
-        table may be created by either a retriever or a download manager.
-        """
-        self.execute('''create table if not exists rover_ingesters (
-                           id integer primary key autoincrement,
-                           pid integer,
-                           db_path text unique,
-                           creation_epoch int default (cast(strftime('%s', 'now') as int)),
-                           url text not null
-                         )''')
 
     def _ingesters_db_path(self, url, pid):
         name = uniqueish('rover_ingester', url)
