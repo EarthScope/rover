@@ -9,7 +9,7 @@ The 'rover help' command.
 """
 
 
-DAEMON = 'daemon'
+BACKGROUND = 'background'
 USAGE = 'usage'
 LOWLEVEL = 'low-level'
 
@@ -27,7 +27,7 @@ rover %s %s
     
 rover %s %s
 
-  Covers ROVER's advanced mode, where it runs in the background, 
+  Covers Rover's advanced mode, where it runs in the background, 
   continuously checking subscriptions and downloading data when 
   needed.
     
@@ -52,7 +52,7 @@ provided via a file or using command line flags:
 To display this screen again, type "rover" or "rover help".
 
 ''' % (HELP, USAGE,
-       HELP, DAEMON,
+       HELP, BACKGROUND,
        HELP, LOWLEVEL,
        HELP, HELP,
        args.file)
@@ -93,7 +93,7 @@ rover %s
        RESET_CONFIG)
 
 
-def daemon(args):
+def background(args):
     return '''
                    Advanced ROVER Commands
                    
@@ -160,7 +160,7 @@ useful from the command line:
 
 GENERAL = {
     USAGE: (usage, 'General interactive use'),
-    DAEMON: (daemon, 'Advanced use with rover in the backgrround'),
+    BACKGROUND: (background, 'Advanced use with rover in the background'),
     LOWLEVEL: (low_level, 'Rarely used, low-level commands')
 }
 
@@ -277,12 +277,12 @@ Gives help on the various commands.
 Help is available for the following commands:
         ''')
         for command in sorted(COMMANDS.keys()):
-            print('%15s: %s' % (command, COMMANDS[command][1]))
+            print('%19s: %s' % (command, COMMANDS[command][1]))
         print('''
 Help is also available for the following general topics: 
 ''')
         for command in GENERAL.keys():
-            print('%15s: %s' % (command, GENERAL[command][1]))
+            print('%19s: %s' % (command, GENERAL[command][1]))
         print('''
 For example:
 

@@ -23,6 +23,8 @@ dev=False
 delete-files=True
 # display help in markdown format?
 md-format=False
+# directory for subscriptions
+subscription-dir=~/rover/subscriptions
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run

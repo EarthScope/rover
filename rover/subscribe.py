@@ -21,6 +21,24 @@ class Subscriber(SqliteSupport):
     rover subscribe
 
     rover subscribe N.S.L.C begin [end]
+
+##### Significant Parameters
+
+@subscriptions-dir
+@availability-url
+@dataselect-url
+@mseed-db
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
+##### Examples
+
+    rover subscribe IU.ANMO.00.BH1 2017-01-01 2017-01-04
+
+will subscribe to updates from the surrent source (`availability-url` and `dataselect-url` defined in the config)
+for the give SNCL between the given dates.
     """
 
     def __init__(self, config):
@@ -59,6 +77,15 @@ class SubscriptionLister(SqliteSupport):
 ### List Subscriptions
 
     rover list-subscriptions
+
+##### Significant Parameters
+
+@mseed-db
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
     """
 
     def __init__(self, config):
@@ -91,13 +118,22 @@ class Unsubscriber(SqliteSupport):
 ### Unsubscribe
 
     rover unsubscribe (id|id1:id2)+
+
+##### Significant Parameters
+
+@mseed-db
+@verbosity
+@log-dir
+@log-name
+@log-verbosity
+
     """
 
     def __init__(self, config):
         super().__init__(config)
-        log, args = config.log, config.args
 
     def _parse_args(self, args):
+        # return a list rather than a generator so we fail fast
         ids = []
         for arg in args:
             if ':' in arg:
@@ -117,8 +153,7 @@ class Unsubscriber(SqliteSupport):
     def run(self, args):
         if not args:
             raise Exception('Usage: rover %s (id|id1:id2)+' % UNSUBSCRIBE)
-        ids = self._parse_args(args)
-        for id1, id2 in ids:
+        for id1, id2 in self._parse_args(args):
 
             def callback(row):
                 file = row[0]

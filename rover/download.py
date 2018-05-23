@@ -182,8 +182,7 @@ class DownloadManager(SingleUse):
                 print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
                 for (begin, end) in coverage.timespans:
                     print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
-        if total_sncls:
-            print()
+                print()
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
         return total_sncls
