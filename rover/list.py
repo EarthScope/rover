@@ -13,6 +13,7 @@ from .utils import format_epoch, SingleUse
 The 'rover list-index' command - display timespans from the local index.
 """
 
+# todo - move to index
 
 BEGIN = 'begin'
 END = 'end'

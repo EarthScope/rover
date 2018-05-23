@@ -5,6 +5,7 @@ from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
+from re import match
 from subprocess import Popen, check_output, STDOUT
 
 from requests import get, post
@@ -260,6 +261,16 @@ EPOCH = datetime.datetime.utcfromtimestamp(0)
 EPOCH_UTC = EPOCH.replace(tzinfo=utc)
 
 
+def assert_valid_time(time):
+    """
+    Check timestamp format.
+    """
+    if match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
+        return time
+    else:
+        raise Exception('Invalid time format "%s"' % time)
+
+
 def format_epoch(epoch):
     """
     Format an epoch in the standard format.
@@ -324,3 +335,19 @@ def in_memory(iterator):
     Pull an entire iterator into memory and then re-expose as an iterator.
     """
     return iter(list(iterator))
+
+
+def build_file(path, sncl, begin, end=None):
+    """
+    Given a SNCL and begin.end dates, construct an input file in
+    the correct (availability service) format.
+    """
+    parts = list(sncl.split('.'))
+    if len(parts) != 4:
+        raise Exception('SNCL "%s" does not have 4 components' % sncl)
+    parts.append(assert_valid_time(begin))
+    if end:
+        parts.append(assert_valid_time(end))
+    with open(path, 'w') as req:
+        print(*parts, file=req)
+

@@ -23,11 +23,13 @@ HELP = 'help'
 INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
+LIST_SUBSCRIPTIONS = 'list-subscriptions'
 RESET_CONFIG = 'reset-config'
 RETRIEVE = 'retrieve'
 START = 'start'
 STOP = 'stop'
 SUBSCRIBE = 'subscribe'
+UNSUBSCRIBE = 'unsubscribe'
 
 
 # flag negation
@@ -69,6 +71,7 @@ POSTCOMPACT = 'post-compact'
 PREINDEX = 'pre-index'
 RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
+SUBSCRIPTIONDIR = 'subscription-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
 TIMESPANTOL = 'timespan-tol'
@@ -94,6 +97,7 @@ DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_MSEEDWORKERS = 10
 DEFAULT_ROVERCMD = 'rover'
+DEFAULT_SUBSCRIPTIONDIR = join('~', 'rover', 'subscriptions')
 DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
 DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANTOL = 1.5
@@ -179,6 +183,9 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
         self.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
+
+        # subscription
+        self.add_argument(mm(SUBSCRIPTIONDIR), default=DEFAULT_SUBSCRIPTIONDIR, action='store', help='directory for subscriptions', metavar='DIR')
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)

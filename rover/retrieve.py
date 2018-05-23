@@ -1,8 +1,7 @@
 
 import datetime
-from os import unlink, makedirs
+from os import makedirs
 from os.path import exists
-from re import match
 from shutil import copyfile
 from sqlite3 import OperationalError
 
@@ -13,8 +12,8 @@ from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
-from .utils import canonify, post_to_file, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path, canonify_dir_and_make, safe_unlink
+from .utils import post_to_file, run, check_cmd, clean_old_files, \
+    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path, canonify_dir_and_make, safe_unlink, build_file
 
 """
 The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
@@ -231,31 +230,6 @@ store.
     def _request_download(self, missing):
         self._log.debug('Data to download: %s' % missing)
         self._download_manager.add(missing)
-
-
-def assert_valid_time(time):
-    """
-    Check timestamp format.
-    """
-    if match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
-        return time
-    else:
-        raise Exception('Invalid time format "%s"' % time)
-
-
-def build_file(path, sncl, begin, end=None):
-    """
-    Given a SNCL and begin.end dates, construct an input file in
-    the correct (availability service) format.
-    """
-    parts = list(sncl.split('.'))
-    if len(parts) != 4:
-        raise Exception('SNCL "%s" does not have 4 components' % sncl)
-    parts.append(assert_valid_time(begin))
-    if end:
-        parts.append(assert_valid_time(end))
-    with open(path, 'w') as req:
-       print(*parts, file=req)
 
 
 class Retriever(BaseRetriever):

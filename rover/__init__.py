@@ -1,7 +1,7 @@
 
 from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT, START, STOP
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE
 from .compact import Compacter
 from .config import Config, ConfigResetter
 from .download import Downloader
@@ -10,7 +10,7 @@ from .ingest import Ingester
 from .list import IndexLister
 from .process import Processes
 from .retrieve import Retriever, Comparer
-from .subscribe import Subscriber
+from .subscribe import Subscriber, SubscriptionLister, Unsubscriber
 
 
 COMMANDS = {
@@ -24,7 +24,9 @@ COMMANDS = {
     COMPACT: (Compacter, 'Detect and remove duplicate data'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
-    SUBSCRIBE: (Subscriber, 'TODO')
+    SUBSCRIBE: (Subscriber, 'Add a subscription'),
+    LIST_SUBSCRIPTIONS: (SubscriptionLister, 'List the subscriptions'),
+    UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription')
 }
 
 
