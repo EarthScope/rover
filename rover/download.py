@@ -285,9 +285,9 @@ class DownloadManager(SingleUse):
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
 
-class Channel:
+class Source:
     """
-    Data for a single channel in the download manager.
+    Data for a single source in the download manager.
     """
 
     def __init__(self, name, dataselect_url):
@@ -364,8 +364,8 @@ class DownloadManager2:
     An interface to downloader instances that restricts downloads to a fixed number of workers,
     each downloading data that is for a maximum duration of a day.
 
-    It supports multiple *channels* and will try to divide load fairly between channels.  A
-    channel is typically a source / subscription, so we spread downloads across multiple
+    It supports multiple *sources* and will try to divide load fairly between sources.  A
+    source is typically a source / subscription, so we spread downloads across multiple
     servers when possible.
 
     The config_file is overwritten (in temp_dir) because only a singleton (for either
@@ -386,8 +386,8 @@ class DownloadManager2:
         self._mseed_cmd = args.mseed_cmd
         self._dev = args.dev
         self._log_unique = args.log_unique
-        self._channels = {}  # map of channel names to channels
-        self._index = 0  # used to round-robin channels
+        self._sources = {}  # map of source names to sources
+        self._index = 0  # used to round-robin sources
         self._workers = Workers(config, args.download_workers)
         self._n_downloads = 0
         self._config_path = self._write_config(args.temp_dir, config_file, args)
@@ -399,51 +399,51 @@ class DownloadManager2:
         Arguments().write_config(config_path, args)
         return config_path
 
-    def add_channel(self, channel, dataselect_url):
-        if channel in self._channels and self._channels[channel].worker_count:
-            raise Exception('Cannot overwrite active channel %s' % self._channels[channel])
-        self._channels[channel] = Channel(channel, dataselect_url)
+    def add_source(self, source, dataselect_url):
+        if source in self._sources and self._sources[source].worker_count:
+            raise Exception('Cannot overwrite active source %s' % self._sources[source])
+        self._sources[source] = Source(source, dataselect_url)
 
-    def _channel(self, name):
-        if name not in self._channels:
-            raise Exception('Unexpected channel: %s' % name)
-        return self._channels[name]
+    def _source(self, name):
+        if name not in self._sources:
+            raise Exception('Unexpected source: %s' % name)
+        return self._sources[name]
 
-    def add_coverage(self, channel, coverage):
+    def add_coverage(self, source, coverage):
         """
         Add a required Coverage (SNCL and associated timespans).  This will be expanded
-        into one or more downloads by the channel's Expander.
+        into one or more downloads by the source's Expander.
         """
-        self._channel(channel).add_coverage(coverage)
+        self._source(source).add_coverage(coverage)
 
     def display(self):
         """
         Display a summary of the data that have not been expanded into downloads.
         """
         total_seconds, total_sncls = 0, 0
-        for channel in self._channels.values():
-            coverages = channel.get_coverages()
-            if len(self._channels) > 1:
+        for source in self._sources.values():
+            coverages = source.get_coverages()
+            if len(self._sources) > 1:
                 print()
-                print('Channel %s (%s)' % channel)
+                print('Source %s (%s)' % source)
                 print()
-            channel_seconds, channel_sncls = 0, 0
+            source_seconds, source_sncls = 0, 0
             for coverage in coverages:
                 sncl_seconds = 0
                 for (begin, end) in coverage.timespans:
                     seconds = end - begin
                     sncl_seconds += seconds
-                    channel_seconds += seconds
+                    source_seconds += seconds
                     total_seconds += seconds
                 if sncl_seconds:
-                    channel_sncls += 1
+                    source_sncls += 1
                     total_sncls += 1
                     print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
                     for (begin, end) in coverage.timespans:
                         print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
-            if channel_sncls:
+            if source_sncls:
                 print()
-            print('  Total: %d SNCLSs; %4.2f sec' % (channel_sncls, channel_seconds))
+            print('  Total: %d SNCLSs; %4.2f sec' % (source_sncls, source_seconds))
             print()
         if total_sncls:
             print()
@@ -451,58 +451,58 @@ class DownloadManager2:
         return total_sncls
 
     def _has_data(self):
-        for channel in self._channels.values():
-            if channel.has_days():
+        for source in self._sources.values():
+            if source.has_days():
                 return True
         return False
 
-    def _next_channel(self, channels):
-        self._index = (self._index + 1) % len(channels)
-        return channels[self._index]
+    def _next_source(self, sources):
+        self._index = (self._index + 1) % len(sources)
+        return sources[self._index]
 
     def _has_least_workers(self, c):
-        for channel in self._channels.values():
-            if not channel.new and channel.worker_count < c.worker_count:
+        for source in self._sources.values():
+            if not source.new and source.worker_count < c.worker_count:
                 return False
         return True
 
-    def _clean_channels(self):
-        names = list(self._channels.keys())
+    def _clean_sources(self):
+        names = list(self._sources.keys())
         for name in names:
-            if self._channel(name).is_complete():
-                self._log.debug('Channel %s complete' % self._channel(name))
-                del self._channels[name]
+            if self._source(name).is_complete():
+                self._log.debug('Source %s complete' % self._source(name))
+                del self._sources[name]
 
     def step(self):
         """
-        A single iteration of the manager's main loop.  Can be inter-mixed with add_channel and add_coverage.
-        Cleaning logic assumes coverages for a channel are all added at once, though.  If you don't, channel
+        A single iteration of the manager's main loop.  Can be inter-mixed with add_source and add_coverage.
+        Cleaning logic assumes coverages for a source are all added at once, though.  If you don't, source
         may be deleted when you don't expect it.
         """
         self._workers.check()
-        self._clean_channels()
+        self._clean_sources()
         while self._workers.has_space() and self._has_data():
-            channels = list(
-                filter(lambda channel: not channel.new,
-                    map(lambda name: self._channel(name),
-                        sorted(self._channels.keys()))))
+            sources = list(
+                filter(lambda source: not source.new,
+                    map(lambda name: self._source(name),
+                        sorted(self._sources.keys()))))
             while True:
-                channel = self._next_channel(channels)
-                if self._has_least_workers(channel): break
-            if channel.has_days():
-                channel.new_worker(self._log, self._workers, self._config_path, self._rover_cmd, self._log_unique, self._dev)
+                source = self._next_source(sources)
+                if self._has_least_workers(source): break
+            if source.has_days():
+                source.new_worker(self._log, self._workers, self._config_path, self._rover_cmd, self._log_unique, self._dev)
                 self._n_downloads += 1
 
     def download(self):
         """
-        Run to completion.  For single-shot, called after add_channel and add_coverage.
+        Run to completion.  For single-shot, called after add_source and add_coverage.
         """
         try:
-            while self._channels:
+            while self._sources:
                 self.step()
                 sleep(0.1)
         finally:
-            # not needed in normal use, as no workers when no channels, but useful on error
+            # not needed in normal use, as no workers when no sources, but useful on error
             self._workers.wait_for_all()
             if self._n_downloads:
                 self._log.info('Completed %d downloads' % self._n_downloads)
