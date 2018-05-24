@@ -7,13 +7,13 @@ Rover is developed using "pure" Python 3.  **This gives the most
 maintainable, future-proof source.**
 
 However, we must also support Python 2.7.  To do this we auto-generate
-code that can run on Python 2,7 *and* Python 3 using the
+code that can run on Python 2.7 *and* Python 3 using the
 [pasteurize](http://python-future.org/pasteurize.html) tool from the
 [future](http://python-future.org/index.html) package.
 
 One consequence of this is that the "installable" code (typically
 available from [PyPI](https://pypi.org/) or a tarball) is not
-identical to the development code (typically found at
+identical to the development code (typically available from
 [github](https://github.com/iris-edu/rover/)).
 
 ## Getting Started

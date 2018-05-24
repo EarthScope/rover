@@ -26,6 +26,15 @@ a local store of data with an associated index (database).
 
 ## Installation
 
+If you have a `rover.tgz` tarball:
+
+    tar xvfz rover.tgz
+    cd rover
+    python setup.py install
+
+If you are wroking with the development code see
+[here](./docs/development.md).
+
 ## Copyright and License
 
 This software Copyright (c) 2018 IRIS (Incorporated Research
