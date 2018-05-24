@@ -26,6 +26,9 @@ a local store of data with an associated index (database).
 
 ## Installation
 
+Rover requires [mseedindex](https://github.com/iris-edu/mseedindex) -
+see [Mseedindex Install Guideleines](docs/mseedindex.md).
+
 If you have a `rover.tgz` tarball:
 
     tar xvfz rover.tgz
