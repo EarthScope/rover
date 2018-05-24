@@ -66,3 +66,5 @@ in `roverdev`):
 It is not recommended to install code directly on the development
 machine (in the system python), but once you are using virtualenv you
 can run `python setup.py install` from inside `rover23` to install.
+To delete the install, remake the virtualenv.
+
