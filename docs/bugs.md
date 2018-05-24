@@ -17,11 +17,15 @@ significant if they exceed the minimum sample time (multiplied by
 `--timespan-tol`, which by default is 1.5).  So if a SNCL contains
 20Hz and 1Hz data a significant gap in the 20Hz data my go undetected.
 
-## Incomplete Handling Of Duplicate Data
+## Handling Of Duplicate Data
 
-See the discussion on [the compact command](./compact.md).  In short,
-there are some occasions when `rover compact` should be used, and some
-occasions when that is insufficient.
+If `rover ingest` is used manually it is possible for duplcaite data
+to be added to the store (eg by ingesting the same file twice).  This
+cannot (or should not) happen in normal use, because Rover does not
+download duplicate data, so cannot ingest it.
+
+Ideally either ingets should check and refuse to add duplicate data,
+or we should have an additional command that compacts files.
 
 ## Ingest Limited to Single Days
 
@@ -31,4 +35,5 @@ on the mseedindex output, and the targets for this data (the files in
 the local store) are per-day.
 
 This is not a problem for normal use (because files are downloaded in
-day-sized chunks), but is restrictive when ingesting local files.
+day-sized chunks), but is restrictive when ingesting local files (see
+duplicate data above).

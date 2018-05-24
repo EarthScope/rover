@@ -27,6 +27,3 @@ displays all the configuration parameters.
 * An explanation of the [processing pipeline](./pipeline.md) used
   during retrieval of data.
 
-* The optional [compact](./compact.md) command (available only if the
-  obspy package is installed).
-

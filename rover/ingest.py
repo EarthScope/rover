@@ -5,14 +5,13 @@ from os.path import exists, join
 from re import match
 
 from .lock import DatabaseBasedLockFactory, MSEED
-from .compact import Compacter
 from .index import Indexer
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
 from .utils import canonify, run, check_cmd, check_leap, create_parents, touch, canonify_dir_and_make, safe_unlink
 
 """
-The 'rover ingest' command - copy downloaded data into the local store (and then call compact or index).
+The 'rover ingest' command - copy downloaded data into the local store (and then call index).
 """
 
 
@@ -32,8 +31,6 @@ Add the contents of the file (MSEED format) to the local store and index the new
 The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte
 ranges are then appended to the appropriate files in the local store.
 
-Optionally, `rover compact` can be called to remove duplicate data (use `--compact`).
-
 The file should not contain data that spans multiple calendar days.
 
 ##### Significant Parameters
@@ -41,7 +38,6 @@ The file should not contain data that spans multiple calendar days.
 @mseed-cmd
 @mseed-db
 @mseed-dir
-@compact
 @index
 @leap
 @leap-expire
@@ -52,7 +48,7 @@ The file should not contain data that spans multiple calendar days.
 @log-name
 @log-verbosity
 
-In addition, parameters for sub-commands (index, and possibly compact) will be used - see help for those commands
+In addition, parameters for sub-commands (index) will be used - see help for those commands
 for more details.
 
 ##### Examples
@@ -61,17 +57,13 @@ for more details.
 
 will add all the data in the given file to the local store.
 
-    rover ingest /tmp/IU.ANMO.00.*.mseed --compact
-
-will add all the data in the given file to the local store and then remove any duplicate data.
-
 """
 
 # The simplest possible ingester:
 # * Uses mseedindx to parse the file.
 # * For each section, appends to any existing file using byte offsets
 # * Refuses to handle blocks that cross day boundaries
-# * Does not check for overlap, differences in sample rate, etc. (see compact)
+# * Does not check for overlap, differences in sample rate, etc.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
@@ -83,7 +75,6 @@ will add all the data in the given file to the local store and then remove any d
         self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
         self._db_path = None
         self._mseed_dir = canonify_dir_and_make(args.mseed_dir)
-        self._compact = args.compact
         self._index = args.index
         self._config = config
         self._log = log
@@ -120,9 +111,7 @@ will add all the data in the given file to the local store and then remove any d
                 updated.update(self._copy_all_rows(file, rows))
         finally:
             safe_unlink(self._db_path)
-        if self._compact:
-            Compacter(self._config).run(updated)
-        elif self._index:
+        if self._index:
             Indexer(self._config).run(updated)
 
     def _copy_all_rows(self, file, rows):

@@ -44,7 +44,7 @@ for the give SNCL between the given dates.
     def __init__(self, config):
         super().__init__(config)
         log, args = config.log, config.args
-        self._subscription_dir = canonify_dir_and_make(args.subscription_dir)
+        self._subscriptions_dir = canonify_dir_and_make(args.subscriptions_dir)
         self._availability_url = args.availability_url
         self._dataselect_url = args.dataselect_url
         self._create_table()
@@ -63,7 +63,7 @@ for the give SNCL between the given dates.
             raise Exception('Usage: rover %s (file|sncl begin [end])' % SUBSCRIBE)
         else:
             # input is a temp file as we prepend parameters
-            path = unique_path(self._subscription_dir, SUBSCRIBEFILE, args[0])
+            path = unique_path(self._subscriptions_dir, SUBSCRIBEFILE, args[0])
             if len(args) == 1:
                 copyfile(args[0], path)
             else:

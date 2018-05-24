@@ -24,7 +24,7 @@ delete-files=True
 # display help in markdown format?
 md-format=False
 # directory for subscriptions
-subscription-dir=~/rover/subscriptions
+subscriptions-dir=~/rover/subscriptions
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run
@@ -35,13 +35,9 @@ multiprocess=False
 rover-cmd=rover
 # index before retrieval?
 pre-index=True
-# call compact after retrieval?
-post-compact=True
 # call ingest after retrieval?
 ingest=True
-# call compact after ingest?
-compact=False
-# call index after compaction/ingest?
+# call index after ingest?
 index=True
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
@@ -51,12 +47,6 @@ dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 temp-dir=~/rover/tmp
 # number of days before deleting temp files
 temp-expire=1
-# detect and list files with duplicate data?
-compact-list=False
-# allow duplicate data in mixed data types?
-compact-mixed-types=False
-# allow compact to mutate (replace) data?
-compact-mutate=False
 # process all files (not just modified)?
 all=False
 # when given a directory, process children?

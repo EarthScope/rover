@@ -84,8 +84,8 @@ class NoConflictPerProcesgsWorkers(Workers):
     Extend the above to block attempts to have two processes for the same key
     (typically SNCL and day, or the path to the file in the store).  This avoid
     simultaneous modification of the file by mutliple processes without using file
-    locking (which is has problems with NFS, isn't great cross-platform, and wouldn't
-    play well with Compacter which rewrites files).
+    locking (which is has problems with NFS, isn't great cross-platform, and used
+    to cause issues with "compact" when we re-wrote files).
     """
 
     def __init__(self, config, n_workers):

@@ -1,8 +1,7 @@
 
 from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, COMPACT, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE
-from .compact import Compacter
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE
 from .config import Config, ConfigResetter
 from .download import Downloader
 from .index import Indexer
@@ -21,7 +20,6 @@ COMMANDS = {
     DOWNLOAD: (Downloader, 'Download data from a remote service'),
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
     COMPARE: (Comparer, 'Show what data "rover retrieve" will download'),
-    COMPACT: (Compacter, 'Detect and remove duplicate data'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),

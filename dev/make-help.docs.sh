@@ -36,11 +36,11 @@ Note that the syntax for boolean parameters on teh command line is
 different to the file.  They are simply given as flags, which can be
 negated by prefixing with \`no\`:
 
-    rover --compact ...
+    rover --daemon ...
  
 or
 
-    rover --no-compact ...
+    rover --no-daemon ...
 
 Available parameters can be displayed using \`rover -h\`.
 
@@ -73,7 +73,6 @@ cat <<EOF > docs/commands.md
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
-  * [Compact](#compact)
   * [Index](#index)
 
 ## Normal Usage
@@ -102,5 +101,4 @@ EOF
 
 dev/rover help download --md-format >> docs/commands.md
 dev/rover help ingest --md-format >> docs/commands.md
-dev/rover help compact --md-format >> docs/commands.md
 dev/rover help index --md-format >> docs/commands.md

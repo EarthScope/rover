@@ -15,7 +15,6 @@ Command line / file configuration parameters.
 
 
 # commands
-COMPACT = 'compact'
 COMPARE = 'compare'
 DAEMON = 'daemon'
 DOWNLOAD = 'download'
@@ -41,9 +40,6 @@ ALL = 'all'
 ARGS = 'args'
 AVAILABILITYURL = 'availability-url'
 COMMAND = 'command'
-COMPACTLIST = 'compact-list'
-COMPACTMUTATE = 'compact-mutate'
-COMPACTMIXEDTYPES = 'compact-mixed-types'
 DAEMON = 'daemon'
 DATASELECTURL = 'dataselect-url'
 DELETEFILES = 'delete-files'
@@ -67,11 +63,10 @@ MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
-POSTCOMPACT = 'post-compact'
 PREINDEX = 'pre-index'
 RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
-SUBSCRIPTIONDIR = 'subscription-dir'
+SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
 TIMESPANTOL = 'timespan-tol'
@@ -97,7 +92,7 @@ DEFAULT_MSEEDDB = join('~', 'rover', 'index.sql')
 DEFAULT_MSEEDDIR = join('~', 'rover', 'mseed')
 DEFAULT_MSEEDWORKERS = 10
 DEFAULT_ROVERCMD = 'rover'
-DEFAULT_SUBSCRIPTIONDIR = join('~', 'rover', 'subscriptions')
+DEFAULT_SUBSCRIPTIONSDIR = join('~', 'rover', 'subscriptions')
 DEFAULT_TEMPDIR = join('~', 'rover', 'tmp')
 DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANTOL = 1.5
@@ -185,7 +180,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
 
         # subscription
-        self.add_argument(mm(SUBSCRIPTIONDIR), default=DEFAULT_SUBSCRIPTIONDIR, action='store', help='directory for subscriptions', metavar='DIR')
+        self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar='DIR')
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
@@ -193,10 +188,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MULTIPROCESS), default=False, action='store_bool', help='allow multiple processes (internal use only)?', metavar='')
         self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
-        self.add_argument(mm(POSTCOMPACT), default=True, action='store_bool', help='call compact after retrieval?', metavar='')
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
-        self.add_argument(mm(COMPACT), default=False, action='store_bool', help='call compact after ingest?', metavar='')
-        self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after compaction/ingest?', metavar='')
+        self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
 
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar='DIR')
@@ -204,10 +197,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar='DIR')
         self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
 
-        # compact and index
-        self.add_argument(mm(COMPACTLIST), default=False, action='store_bool', help='detect and list files with duplicate data?', metavar='')
-        self.add_argument(mm(COMPACTMIXEDTYPES), default=False, action='store_bool', help='allow duplicate data in mixed data types?', metavar='')
-        self.add_argument(mm(COMPACTMUTATE), default=False, action='store_bool', help='allow compact to mutate (replace) data?', metavar='')
+        # index
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
         self.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
 

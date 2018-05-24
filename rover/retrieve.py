@@ -6,7 +6,6 @@ from shutil import copyfile
 from sqlite3 import OperationalError
 
 from .args import RETRIEVE
-from .compact import Compacter
 from .config import NewConfig
 from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
@@ -44,8 +43,7 @@ available locally are downloaded and ingested.
 In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
 and samplerate information is "merged").
 
-This command also indexes modified data in the store before processing and runs `rover compact --compact-list1
-afterwards to check for duplicate data.
+This command also indexes modified data in the store before processing.
 
 ##### Significant Parameters
 
@@ -55,9 +53,7 @@ afterwards to check for duplicate data.
 @timespan-tol
 @pre-index
 @ingest
-@compact
 @index
-@post-compact
 @rover-cmd
 @mseed-cmd
 @mseed-db
@@ -67,7 +63,7 @@ afterwards to check for duplicate data.
 @log-name
 @log-verbosity
 
-In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those
+In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
 commands for more details.
 
 ##### Examples
@@ -92,7 +88,6 @@ store.
         self._availability_url = args.availability_url
         self._timespan_tol = args.timespan_tol
         self._pre_index = args.pre_index
-        self._post_compact = args.post_compact
         # check these so we fail early
         check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', self._log)
         check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', self._log)
@@ -150,11 +145,7 @@ store.
         """
         Fetch data from the download manager.
         """
-        result = self._download_manager.download()
-        if self._post_compact:
-            self._log.info('Checking for duplicate data')
-            Compacter(NewConfig(self._config, all=True, compact_list=True, no_index=True)).run([])
-        return result
+        return self._download_manager.download()
 
     def _display(self):
         """

@@ -31,11 +31,11 @@ Note that the syntax for boolean parameters on teh command line is
 different to the file.  They are simply given as flags, which can be
 negated by prefixing with `no`:
 
-    rover --compact ...
+    rover --daemon ...
  
 or
 
-    rover --no-compact ...
+    rover --no-daemon ...
 
 Available parameters can be displayed using `rover -h`.
 
@@ -58,22 +58,18 @@ Any other variable (of the form `${...}`) raises an error.
 | dev                 | False                | Development mode (show exceptions)? |
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
+| subscriptions-dir   | ~/rover/subscriptions | Directory for subscriptions    |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | download-workers    | 10                   | Number of download instances to run |
 | multiprocess        | False                | Allow multiple processes (internal use only)? |
 | rover-cmd           | rover                | Command to run rover           |
 | pre-index           | True                 | Index before retrieval?        |
-| post-compact        | True                 | Call compact after retrieval?  |
 | ingest              | True                 | Call ingest after retrieval?   |
-| compact             | False                | Call compact after ingest?     |
-| index               | True                 | Call index after compaction/ingest? |
+| index               | True                 | Call index after ingest?       |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | temp-expire         | 1                    | Number of days before deleting temp files |
-| compact-list        | False                | Detect and list files with duplicate data? |
-| compact-mixed-types | False                | Allow duplicate data in mixed data types? |
-| compact-mutate      | False                | Allow compact to mutate (replace) data? |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
 | log-dir             | ~/rover/logs         | Directory for logs             |

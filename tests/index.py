@@ -10,9 +10,9 @@ from .test_utils import find_root, ingest_and_index
 def test_ingest_and_index():
     root = find_root()
     with TemporaryDirectory() as dir:
-        config = ingest_and_index(dir, (join(root, 'tests', 'data'),), compact=True, compact_merge=True)
+        config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]
-        assert n == 18, n
+        assert n == 36, n
 
 
 def test_deleted_file():

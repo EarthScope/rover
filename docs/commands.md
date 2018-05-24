@@ -11,7 +11,6 @@
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
-  * [Compact](#compact)
   * [Index](#index)
 
 ## Normal Usage
@@ -31,7 +30,7 @@ The list of available data is retrieved from the service and compared with the l
 
 In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality and samplerate information is "merged").
 
-This command also indexes modified data in the store before processing and runs `rover compact --compact-list1 afterwards to check for duplicate data.
+This command also indexes modified data in the store before processing.
 
 ##### Significant Parameters
 
@@ -43,9 +42,7 @@ This command also indexes modified data in the store before processing and runs 
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
-| compact             | False                | Call compact after ingest?     |
-| index               | True                 | Call index after compaction/ingest? |
-| post-compact        | True                 | Call compact after retrieval?  |
+| index               | True                 | Call index after ingest?       |
 | rover-cmd           | rover                | Command to run rover           |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
@@ -55,7 +52,7 @@ This command also indexes modified data in the store before processing and runs 
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
-In addition, parameters for sub-commands (download, ingest, index, compact) will be used - see help for those commands for more details.
+In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
 
 ##### Examples
 
@@ -189,6 +186,26 @@ will write the config to the given file.
 
     rover subscribe
 
+    rover subscribe N.S.L.C begin [end]
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| subscriptions-dir   | ~/rover/subscriptions | Directory for subscriptions    |
+| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
+| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
+| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover subscribe IU.ANMO.00.BH1 2017-01-01 2017-01-04
+
+will subscribe to updates from the surrent source (`availability-url` and `dataselect-url` defined in the config) for the give SNCL between the given dates.
     
 ## Low-Level Commands
 
@@ -211,14 +228,13 @@ The url should be for a Data Select service, and should not request data that sp
 | temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
 | delete-files        | True                 | Delete temporary files?        |
 | ingest              | True                 | Call ingest after retrieval?   |
-| compact             | False                | Call compact after ingest?     |
-| index               | True                 | Call index after compaction/ingest? |
+| index               | True                 | Call index after ingest?       |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | ~/rover/logs         | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
-In addition, parameters for sub-commands (ingest, index, and possibly compact) will be used - see help for those commands for more details.
+In addition, parameters for sub-commands (ingest, index) will be used - see help for those commands for more details.
 
 ##### Examples
 
@@ -226,10 +242,6 @@ In addition, parameters for sub-commands (ingest, index, and possibly compact) w
     http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
 
 will download, ingest and index data from the given URL..
-
-    rover download http://.... --compact
-
-will download, ingest and index data from the given URL and remove duplicate data from the store.
 
 
 ### Ingest
@@ -240,8 +252,6 @@ Add the contents of the file (MSEED format) to the local store and index the new
 
 The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the local store.
 
-Optionally, `rover compact` can be called to remove duplicate data (use `--compact`).
-
 The file should not contain data that spans multiple calendar days.
 
 ##### Significant Parameters
@@ -251,8 +261,7 @@ The file should not contain data that spans multiple calendar days.
 | mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
 | mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
-| compact             | False                | Call compact after ingest?     |
-| index               | True                 | Call index after compaction/ingest? |
+| index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data       |
@@ -262,66 +271,13 @@ The file should not contain data that spans multiple calendar days.
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
-In addition, parameters for sub-commands (index, and possibly compact) will be used - see help for those commands for more details.
+In addition, parameters for sub-commands (index) will be used - see help for those commands for more details.
 
 ##### Examples
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
 will add all the data in the given file to the local store.
-
-    rover ingest /tmp/IU.ANMO.00.*.mseed --compact
-
-will add all the data in the given file to the local store and then remove any duplicate data.
-
-
-### Compact
-
-THIS COMMAND IS OPTIONAL AND ONLY AVAILABLE IF THE obspy PACKAGE IS INSTALLED.
-
-    rover compact  [--all] [--compact-list]
-
-    rover compact (file|dir)+ [--no-recurse] [--compact-list]
-
-Remove (or simply log) duplicate data and then index the file.
-
-When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
-
-When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
-
-If `--compact-list` is given then details of duplicate data are printed to stdou, but no action is taken.  Typically, this option will be used with `--no-index` since there the file is not changed and so doe snot need to be re-indexed.
-
-if `--compact-mutate` is given then duplicate data do not have to agree; the more recent data (appearing later in the file) are preserved.
-
-If `--compact-mixed-types` is given then it is not a fatal error for the duplicate data to have different types (but still, such data will not be de-duplicated).
-
-##### Significant Parameters
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| all                 | False                | Process all files (not just modified)? |
-| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
-| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
-| compact-list        | False                | Detect and list files with duplicate data? |
-| compact-mutate      | False                | Allow compact to mutate (replace) data? |
-| compact-mixed-types | False                | Allow duplicate data in mixed data types? |
-| index               | True                 | Call index after compaction/ingest? |
-| verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
-| log-verbosity       | 5                    | Log verbosity (0-5)            |
-
-In addition, parameters for the sub-command index will be used - see help for that command for more details.
-
-##### Examples
-
-    rover compact --compact-list --no-index
-
-will check the entire store for duplicate data.
-
-    rover compact path/to/file --compact-mutate
-
-will compact the give file, keeping the latest version of duplicate data.
 
 
 ### Index

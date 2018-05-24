@@ -2,7 +2,7 @@
 from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, COMPACT, mm, ALL, NO, MSEEDCMD, Arguments
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, mm, ALL, MSEEDCMD, Arguments
 
 """
 The 'rover help' command.
@@ -121,30 +121,14 @@ useful from the command line:
 %s (file|dir) ...
 
   Add the specified files to the local store (config
-  parameter %s), compact the contents, and update the 
-  database index (config parameter %s).  Called by %s 
-  when needed.
+  parameter %s) and update thevdatabase index 
+  (config parameter %s).  Called by %svwhen needed.
   
-%s [(file|dir)...]
-
-  Rewrite mseed files, removing duplicates and joining contiguous 
-  data, then (for files in the local store) update the database 
-  index (config parameter %s).  Called by %s when needed.
-  
-  If no arguments are given then files in the local store
-  (config parameter %s) that have been modified since the 
-  store was last indexed are processed.  The config parameter 
-  %s can be used (eg %s on the command line) to force 
-  processing of all files in the store.
-  
-  The config parameter %s can be used (eg %s on the 
-  command line) to avoid calling this command when ingesting data.
-        
 %s [(file|dir) ...]
 
   Scan files and update the database index (config parameter 
   %s) using the mseedindex command (config parameter 
-  %s). Called by %s or %s when needed.
+  %s). Called by %s when needed.
   
   If no arguments are given then files in the local store
   (config parameter %s) that have been modified since the 
@@ -154,8 +138,7 @@ useful from the command line:
       
 ''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
        INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
-       COMPACT, MSEEDDB, INGEST, MSEEDDIR, ALL, mm(ALL), COMPACT, NO+COMPACT,
-       INDEX, MSEEDDB, MSEEDCMD, COMPACT, INGEST, MSEEDDIR, ALL, mm(ALL))
+       INDEX, MSEEDDB, MSEEDCMD, INGEST, MSEEDDIR, ALL, mm(ALL))
 
 
 GENERAL = {
