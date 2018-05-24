@@ -166,7 +166,7 @@ class Arguments(ArgumentParser):
 
 
     def __init__(self):
-        super().__init__(fromfile_prefix_chars='@',
+        super().__init__(fromfile_prefix_chars='@', prog='rover',
                          formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          epilog=dedent('''
