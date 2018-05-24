@@ -32,7 +32,7 @@ If you have a `rover.tgz` tarball:
     cd rover
     python setup.py install
 
-If you are wroking with the development code see
+If you are working with the development code see
 [here](./docs/development.md).
 
 ## Copyright and License
