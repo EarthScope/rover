@@ -1,5 +1,10 @@
 
-from tempfile import TemporaryDirectory
+from sys import version_info
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.retrieve import Comparer, Retriever
 from .test_utils import TestConfig

@@ -1,4 +1,10 @@
-from tempfile import TemporaryDirectory
+
+from sys import version_info
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.logs import init_log
 from rover.coverage import Coverage

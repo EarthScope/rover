@@ -1,11 +1,16 @@
 
 from io import StringIO
-from tempfile import TemporaryDirectory
 from os.path import join
 from re import sub
+from sys import version_info
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.logs import init_log
-from rover.args import Arguments, DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
+from rover.args import DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
 
 
 def log_all(log):

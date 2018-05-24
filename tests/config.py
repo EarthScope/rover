@@ -1,6 +1,11 @@
 
-from tempfile import TemporaryDirectory
+from sys import version_info
 from os.path import join
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.args import Arguments
 from rover.utils import canonify

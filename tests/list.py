@@ -1,7 +1,11 @@
 
-from sys import version_info
-from tempfile import TemporaryDirectory
 from os.path import join
+from sys import version_info
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 # mess for handling str type in buffer
 if version_info >= (3,0):

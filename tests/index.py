@@ -1,7 +1,12 @@
 
+from sys import version_info
+from os import unlink
 from os.path import join
-from tempfile import TemporaryDirectory
-from os import unlink, rmdir
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.index import Indexer
 from .test_utils import find_root, ingest_and_index

@@ -349,5 +349,5 @@ def build_file(path, sncl, begin, end=None):
     if end:
         parts.append(assert_valid_time(end))
     with open(path, 'w') as req:
-        print(*parts, file=req)
+        print(' '.join(parts), file=req)
 

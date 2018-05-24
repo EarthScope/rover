@@ -1,9 +1,14 @@
 
+from sys import version_info
 from os.path import join
-from tempfile import TemporaryDirectory
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.download import Downloader
-from .test_utils import find_root, assert_files, TestConfig
+from .test_utils import assert_files, TestConfig
 
 
 def test_download():

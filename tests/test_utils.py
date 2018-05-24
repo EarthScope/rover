@@ -3,7 +3,6 @@ from fnmatch import fnmatch
 from os import listdir
 from os.path import dirname, join
 from re import sub
-from tempfile import mktemp
 
 import rover
 from rover.args import Arguments, MSEEDDIR, MSEEDDB, TEMPDIR, LOGDIR, LEAP, MSEEDCMD

@@ -4,8 +4,6 @@
 Library    Process
 Library    OperatingSystem
 
-Test Setup    Set Environment Variable    PYTHONPATH  ../../../../rover
-
 
 *** Test Cases ***
 

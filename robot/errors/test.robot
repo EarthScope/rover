@@ -4,7 +4,6 @@
 Library    Process
 Library    OperatingSystem
 
-Test Setup    Set Environment Variable    PYTHONPATH  ../../../../rover
 Suite Setup   Setup Run Directory
 
 

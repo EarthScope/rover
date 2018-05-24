@@ -1,6 +1,11 @@
 
-from tempfile import TemporaryDirectory
 from os.path import join, exists
+from sys import version_info
+
+if version_info[0] >= 3:
+    from tempfile import TemporaryDirectory
+else:
+    from backports.tempfile import TemporaryDirectory
 
 from rover.args import DEFAULT_LEAPURL, DEFAULT_LEAPEXPIRE
 from rover.logs import init_log
