@@ -33,4 +33,4 @@ displays all the configuration parameters.
   during retrieval of data.
 
 * Notes on [Rover development](./development.md) and [mseedindex 
-  install guidelines].
+  install guidelines](./mseedindex.md).
