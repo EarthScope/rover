@@ -28,7 +28,7 @@ Then change into this directory and clone github:
     cd roverdev
     git clone git@github.com:iris-edu/rover.git
 
-Create a virtualenv for Python 3 developemnt (you may need to alter
+Create a virtualenv for Python 3 development (you may need to alter
 the script details slightly depending on your python version):
 
     cd rover

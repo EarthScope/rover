@@ -1,6 +1,4 @@
 
-from sys import intern
-
 from .utils import PushBackIterator, format_epoch
 
 
@@ -219,10 +217,6 @@ class MultipleSNCLBuilder(BaseBuilder):
         self._timespans = {}
 
     def add_timespans(self, sncl, timespans, samplerate=None):
-        try:
-            sncl = intern(sncl)
-        except:
-            sncl = intern(bytes(sncl))  # python 2 (must also make sure bytes isn't imported from builtins)
         if sncl not in self._timespans:
             self._timespans[sncl] = []
         ts = self._timespans[sncl]
