@@ -42,6 +42,12 @@ You can now edit the source.  To test your changes:
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
 
+You can also run tests on both the development and (auto-generated)
+installable code:
+
+    dev/run-all-nose-tests.sh
+    dev/run-all-robot-tests.sh
+
 ## Generating Installable Code
 
 To simply generate the tarball:
@@ -55,9 +61,9 @@ in `roverdev`):
 
     dev/translate-py3-to-py23.sh
 
-It is not recommended to install code on the development machine
-(instead, test on a VM), but you can run `python setup.py install`
-from inside `rover23` is needed.
+It is not recommended to install code directly on the development
+machine (in the system python), but once you are using virtualenv you
+can run `python setup.py install` from inside `rover23` to install.
 
 Running all tests automatically generates the `rover23` code:
 
