@@ -22,6 +22,8 @@ a local store of data with an associated index (database).
 
 * [Known Bugs and Limitations](docs/bugs.md)
 
+* [Rover Development](docs/development.md)
+
 ## Installation
 
 ## Copyright and License

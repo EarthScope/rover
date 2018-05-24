@@ -27,3 +27,4 @@ displays all the configuration parameters.
 * An explanation of the [processing pipeline](./pipeline.md) used
   during retrieval of data.
 
+* Notes on [Rover development](./development.md).
