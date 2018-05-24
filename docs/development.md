@@ -50,14 +50,14 @@ To simply generate the tarball:
 
 this creates `rover.tgz` in the `roverdev` directory.
 
-It is not recommended to install code on the development machine
-(instead, test on a VM), but you can run `python setup.py install`
-from inside `rover23` is needed.
-
 To generate the code manually (this will create a `rover23` directory
 in `roverdev`):
 
     dev/translate-py3-to-py23.sh
+
+It is not recommended to install code on the development machine
+(instead, test on a VM), but you can run `python setup.py install`
+from inside `rover23` is needed.
 
 Running all tests automatically generates the `rover23` code:
 
