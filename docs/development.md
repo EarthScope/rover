@@ -43,7 +43,8 @@ You can now edit the source.  To test your changes:
 high-level, command-based integration tests).
 
 You can also run tests on both the development and (auto-generated)
-installable code:
+installable code (these scripts automatically generate the `rover23`
+code as described below):
 
     dev/run-all-nose-tests.sh
     dev/run-all-robot-tests.sh
@@ -64,9 +65,3 @@ in `roverdev`):
 It is not recommended to install code directly on the development
 machine (in the system python), but once you are using virtualenv you
 can run `python setup.py install` from inside `rover23` to install.
-
-Running all tests automatically generates the `rover23` code:
-
-    dev/run-all-nose-tests.sh
-    dev/run-all-robot-tests.sh
-
