@@ -22,7 +22,7 @@ need to configure rover:
 * Install rover
 
 * Run `rover reset-config` to generate a configurration file
-  (by default at `~/rover/config).
+  (by default at `~/rover/config`).
 
 * Edit the `mseed-cmd` value in that file appropriately, so that
   rover can execute mseedindex.
