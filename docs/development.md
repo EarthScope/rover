@@ -43,9 +43,15 @@ You can now edit the source.  To test your changes:
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
 
+Tests assume that `mseedindex` is installed in `roverdev/mseedindex`.
+You may need to edit tests or change configuration if this is not the
+case.
+
 You can also run tests on both the development and (auto-generated)
-installable code (these scripts automatically generate the `rover23`
-code as described below):
+installable code.  These scripts automatically generate the `rover23`
+code as described below; the robot script also installs `rover` in the
+appropriate virtualenvs for testing, then create new virtualenvs
+(without install) after the test.  The commands are:
 
     dev/run-all-nose-tests.sh
     dev/run-all-robot-tests.sh

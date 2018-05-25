@@ -13,4 +13,6 @@ tmp
 *.xml
 #*
 leap-seconds.lst
-
+build
+dist
+rover.egg-info
