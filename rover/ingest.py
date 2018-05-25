@@ -8,7 +8,7 @@ from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import canonify, run, check_cmd, check_leap, create_parents, touch, canonify_dir_and_make, safe_unlink
+from .utils import run, check_cmd, check_leap, create_parents, touch, safe_unlink
 
 """
 The 'rover ingest' command - copy downloaded data into the local store (and then call index).

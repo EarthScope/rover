@@ -11,7 +11,7 @@ from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .sqlite import SqliteSupport
 from .utils import SingleUse, format_epoch
-from .utils import check_leap, check_cmd
+from .utils import check_leap, check_cmd, STATION, NETWORK, CHANNEL, LOCATION
 from .workers import NoConflictPerDatabaseWorkers
 
 """
@@ -107,10 +107,6 @@ END = 'end'
 COUNT = 'count'
 JOIN = 'join'
 JOIN_QSR = 'join-qsr'
-STATION = 'station'
-NETWORK = 'network'
-CHANNEL = 'channel'
-LOCATION = 'location'
 QUALITY = 'quality'
 SAMPLERATE = 'samplerate'
 
@@ -122,7 +118,7 @@ class IndexLister(SqliteSupport, SingleUse, HelpFormatter):
     rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* \\
     [count|join|join-samplerates]
 
-    rover list-index [S.N.C.L.Q]* [begin=...] [end=...] \\
+    rover list-index [S_N_C_L_Q]* [begin=...] [end=...] \\
     [count|join|join-samplerates]
 
 List index entries for the local store (config parameter mseed-dir) that match the given constraints.
@@ -203,7 +199,7 @@ only has to match unambiguously (so cha=HHZ is OK):
 
   station, network, channel, location, quality, samplerate
 
-The short form N.S.L.C.Q can also be used.
+The short form N_S_L_C_Q can also be used.
 
 The following parameters can be given only once, must be of
 the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the
@@ -286,9 +282,9 @@ printed to stdout.
                 raise Exception('Cannot specify multiple keys (%s, %s)' % (name1, name2))
 
     def _set_snclq(self, snclq):
-        components = snclq.split('.')
+        components = snclq.split('_')
         if len(components) < 2 or len(components) > 5:
-            raise Exception('Cannot parse %s (expect 2 to 5 values separated by "." for SNCLQ)' % snclq)
+            raise Exception('Cannot parse %s (expect 2 to 5 values separated by "_" for SNCLQ)' % snclq)
         self._set_name_value(NETWORK, components[0])
         self._set_name_value(STATION, components[1])
         if len(components) > 2: self._set_name_value(LOCATION, components[2])

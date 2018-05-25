@@ -6,7 +6,7 @@ from shutil import copyfile
 from sqlite3 import OperationalError
 
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, TIMESPANTOL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE
+    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES
 from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
@@ -29,13 +29,18 @@ class BaseRetriever(SqliteSupport, SingleUse):
 
     rover retrieve file
 
-    rover retrieve N.S.L.C begin [end]
+    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] begin [end]
+
+    rover retrieve N_S_L_C begin [end]
 
 Compare available data with the local store, then download, ingest and index data.
 
 The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a
-(single-line) file will be automatically constructed containing that data.
+service (eg http://service.iris.edu/irisws/availability/1/).
+
+In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
+taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed
+containing that data.
 
 The list of available data is retrieved from the service and compared with the local index.  Data not
 available locally are downloaded and ingested.
@@ -87,6 +92,7 @@ store.
         self._availability_url = config.arg(AVAILABILITYURL)
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._pre_index = config.arg(PREINDEX)
+        self._delete_files = config.arg(DELETEFILES)
         # check these so we fail early
         check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
         check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
@@ -95,29 +101,30 @@ store.
         check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
         clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), config.log)
 
-    def do_run(self, args, fetch):
+    def do_run(self, args, fetch, command):
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
         self._assert_single_use()
         if not exists(self._temp_dir):
             makedirs(self._temp_dir)
-        if len(args) == 0 or len(args) > 3:
-            raise Exception('Usage: rover %s (file|sncl begin [end])' % RETRIEVE)
-        else:
+        try:
             # input is a temp file as we prepend parameters
             path = unique_path(self._temp_dir, RETRIEVEFILE, args[0])
-            try:
-                if len(args) == 1:
-                    copyfile(args[0], path)
-                else:
-                    build_file(path, *args)
-                self._query(path)
-                if fetch:
-                    return self._fetch()
-                else:
-                    return self._display()
-            finally:
+            if len(args) == 1:
+                copyfile(args[0], path)
+            else:
+                try:
+                    build_file(path, args)
+                except:
+                    raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] begin [end] | sncl begin [end])' % command)
+            self._query(path)
+            if fetch:
+                return self._fetch()
+            else:
+                return self._display()
+        finally:
+            if self._delete_files:
                 safe_unlink(path)
 
     def _query(self, up):
@@ -230,7 +237,7 @@ class Retriever(BaseRetriever):
         super().__init__(config)
 
     def run(self, args):
-        return self.do_run(args, True)
+        return self.do_run(args, True, RETRIEVE)
 
 
 class ListRetriever(BaseRetriever):
@@ -239,7 +246,7 @@ class ListRetriever(BaseRetriever):
 
     rover list-retrieve file
 
-    rover list-retrieve N.S.L.C begin [end]
+    rover list-retrieve N_S_L_C begin [end]
 
 Display what data would be downloaded if the `retrieve` equivalent command was run.
 
@@ -273,4 +280,4 @@ will display the data missing from the local store to match what is available fo
         super().__init__(config)
 
     def run(self, args):
-        return self.do_run(args, False)
+        return self.do_run(args, False, LIST_RETRIEVE)

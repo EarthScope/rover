@@ -339,17 +339,36 @@ def in_memory(iterator):
     return iter(list(iterator))
 
 
-def build_file(path, sncl, begin, end=None):
+STATION = 'station'
+NETWORK = 'network'
+CHANNEL = 'channel'
+LOCATION = 'location'
+
+
+def build_file(path, args):
     """
-    Given a SNCL and begin.end dates, construct an input file in
+    Given a SNCL or net=... and begin.end dates, construct an input file in
     the correct (availability service) format.
     """
-    parts = list(sncl.split('.'))
-    if len(parts) != 4:
-        raise Exception('SNCL "%s" does not have 4 components' % sncl)
-    parts.append(assert_valid_time(begin))
-    if end:
-        parts.append(assert_valid_time(end))
+    # just go crazy because any error is caught by the caller and changed into a 'bad syntax' error
+    if '_' in args[0]:
+        (n, s, l, c) = args[0].split('_')
+        args = ['net=' + n, 'sta=' + s, 'loc=' + l, 'cha=' + c] + args[1:]
+    sncl = {NETWORK: '*', STATION: '*', LOCATION: '*', CHANNEL: '*'}
+    count = 0
+    while args and '=' in args[0]:
+        arg = args.pop(0)
+        name, value = arg.split('=')
+        for key in sncl.keys():
+            if key.startswith(name):
+                sncl[key] = value
+                count += 1
+    assert count
+    assert 0 < len(args) < 3
+    parts = [sncl[NETWORK], sncl[STATION], sncl[LOCATION], sncl[CHANNEL]]
+    while args:
+        arg = args.pop(0)
+        assert_valid_time(arg)
+        parts.append(arg)
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)
-
