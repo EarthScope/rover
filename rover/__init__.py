@@ -57,7 +57,7 @@ def main():
             config.log.error(str(e))
             if config.command in COMMANDS:
                 config.log.info('See "rover help %s"' % config.command)
-            elif config.args.command != HELP:
+            elif config.command != HELP:
                 config.log.info('See "rover help help" for a list of commands')
             if not config or not config._args or config.arg(DEV):
                 raise e

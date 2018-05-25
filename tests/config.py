@@ -9,17 +9,18 @@ if version_info[0] >= 3:
 else:
     from backports.tempfile import TemporaryDirectory
 
-from rover.args import Arguments, TEMPDIR, MSEEDDIR
+from rover.args import Arguments, TEMPDIR, MSEEDDIR, FILE
 from rover.utils import canonify
 
 
 def test_write_config():
     with TemporaryDirectory() as dir:
-        config = join(dir, '.rover')
+        path = join(dir, '.rover')
         argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', config])
-        assert canonify(args.file) == canonify(config), args.file
-        with open(config, 'r') as input:
+        args, configdir = argparse.parse_args(['-f', path])
+        config = BaseConfig(None, args, None, configdir)
+        assert canonify(config.arg(FILE)) == canonify(path), config.arg(FILE)
+        with open(path, 'r') as input:
             contents = input.read()
             assert contents == \
 '''# use background processes?

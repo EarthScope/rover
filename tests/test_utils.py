@@ -43,7 +43,7 @@ class TestConfig(BaseConfig):
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
         log = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
-        super().__init__(log, args, init_db(args.mseed_db, log), None)
+        super().__init__(log, args, init_db(args.mseed_db, log), dir)
 
 
 def find_root():

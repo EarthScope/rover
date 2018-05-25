@@ -1,3 +1,4 @@
+from argparse import Namespace
 from os import makedirs
 from re import compile, sub
 from genericpath import exists, isfile
@@ -5,7 +6,7 @@ from os.path import basename, isabs, join, realpath, abspath, expanduser, dirnam
 from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    MSEEDDB
+    MSEEDDB, FILE, HELP, DIR
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
@@ -16,6 +17,11 @@ Package common data used in all/most classes (db connection, lgs and parameters)
 
 
 class BaseConfig:
+    """
+    The configuration of the system (log, parameters, database).
+
+    The Config subclass provides a different constructor.
+    """
 
     def __init__(self, log, args, db, configdir):
         self.log = log
@@ -26,6 +32,9 @@ class BaseConfig:
         self.command = args.command
 
     def arg(self, name, depth=0):
+        """
+        Look-up an arg with variable substitution.
+        """
         name = sub('-', '_', name)
         if depth > 10:
             raise Exception('Circular definition involving %s' % name)
@@ -54,19 +63,45 @@ class BaseConfig:
                 break
         return value
 
+    def absolute(self):
+        """
+        Clone this configuration, making file and directories absolute.  Used before we write a
+        config for a sub-process, because it may be written in a different location to the original,
+        so relative paths will change value (yeah that was a fun bug to fix).
+        """
+        args = {}
+        for action in Arguments()._actions:
+            name = action.dest
+            if name not in (FILE, HELP):
+                if action.metavar in (DIR, FILE):
+                    value = self.path(name)
+                else:
+                    value = self.arg(name)
+                args[name] = value
+        return BaseConfig(self.log, Namespace(**args), self.db, self._configdir)
+
     def path(self, name):
+        """
+        Paths have an implicit configdir if they are relative.
+        """
         path = expanduser(self.arg(name))
         if not isabs(path):
             path = join(self._configdir, path)
         return realpath(abspath(path))
 
     def dir_path(self, name):
+        """
+        Ensure the directory exists.
+        """
         path = self.path(name)
         if not exists(path):
             makedirs(path)
         return path
 
     def file_path(self, name):
+        """
+        Ensure the enclosing directory exists.
+        """
         path = self.path(name)
         dir = dirname(path)
         if not exists(dir):
@@ -90,34 +125,6 @@ class Config(BaseConfig):
                             self.arg(VERBOSITY), self.arg(LOGNAME), self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
         self.log.debug('Args: %s' % self._args)
         self.db = init_db(self.file_path(MSEEDDB), self.log)
-
-class ArgsProxy:
-    """
-    A wrapper that allows new values to override existing arguments.
-    """
-
-    def __init__(self, args, kargs):
-        self._args = args
-        self._kargs = kargs
-
-    def __getattr__(self, item):
-        if item.startswith('_'):
-            return super().__getattribute__(item)
-        elif item in self._kargs:
-            return self._kargs[item]
-        else:
-            return getattr(self._args, item)
-
-
-class NewConfig:
-    """
-    Add new arguments (parameters) to an existing Config.
-    """
-
-    def __init__(self, config, **kargs):
-        self.args = ArgsProxy(config.args, kargs)
-        self.log = config.log
-        self.db = config.db
 
 
 class ConfigResetter:
@@ -150,7 +157,7 @@ will write the config to the given file.
 
     def __init__(self, config):
         self._log = config.log
-        self._file = config.args.file
+        self._file = config.arg(FILE)
 
     def run(self, args):
         """

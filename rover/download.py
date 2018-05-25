@@ -82,7 +82,7 @@ will download, ingest and index data from the given URL..
         self._blocksize = 1024 * 1024
         self._ingest = config.arg(INGEST)
         self._config = config
-        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPFILE, CONFIGFILE), self._log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPFILE), self._log)
 
     def run(self, args):
         """
@@ -143,10 +143,12 @@ class DownloadManager(SingleUse):
         self._temp_dir = config.dir_path(TEMPDIR)
         self._dev = config.arg(DEV)
         self._log_unique = config.arg(LOGUNIQUE)
-        self._args = config._args
+        self._args = config.absolute()._args
         self._coverages = []
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
+        self._delete_files = config.arg(DELETEFILES)
         self._config_path = None
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(CONFIGFILE), self._log)
 
     def add(self, coverage):
         """
@@ -198,7 +200,8 @@ class DownloadManager(SingleUse):
                 self._log.info('Completed %d downloads' % n_downloads)
             else:
                 self._log.warn('No data downloaded / ingested')
-            safe_unlink(self._config_path)
+            if self._delete_files:
+                safe_unlink(self._config_path)
         return n_downloads
 
     def _write_config(self):
@@ -208,7 +211,11 @@ class DownloadManager(SingleUse):
             junk = 'empty'
         path = unique_filename(join(canonify(self._temp_dir), uniqueish(CONFIGFILE, junk)))
         self._log.debug('Writing config to %s' % path)
+        self._log.debug(self._args)
         Arguments().write_config(path, self._args)
+        with open(path, 'r') as x:
+            for line in x.readlines():
+                print(line)
         return path
 
     def _expand_timespans(self, coverage):
@@ -346,7 +353,8 @@ class DownloadManager2:
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
-        self._config_path = self._write_config(config.arg(TEMPDIR), config_file, config._args)
+        self._config_path = self._write_config(config.arg(TEMPDIR), config_file, config.absolute()._args)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(CONFIGFILE), self._log)
 
     def _write_config(self, temp_dir, config_file, args):
         temp_dir = canonify_dir_and_make(temp_dir)
