@@ -3,7 +3,7 @@
 
 * [Normal Usage](#normal-usage)
   * [Retrieve](#retrieve)
-  * [Compare](#compare)
+  * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
   * [Reset Config](#reset-config)
 * [Advanced Usage](#advanced-usage)
@@ -36,7 +36,7 @@ This command also indexes modified data in the store before processing.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
+| temp-dir            | tmp                  | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
@@ -45,10 +45,10 @@ This command also indexes modified data in the store before processing.
 | index               | True                 | Call index after ingest?       |
 | rover-cmd           | rover                | Command to run rover           |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
 | download-workers    | 10                   | Number of download instances to run |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
@@ -65,13 +65,13 @@ will download, ingest, and index any data missing from the local store that are 
 will download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local store.
 
 
-### Compare
+### List Retrieve
 
-    rover compare file
+    rover list-retrieve file
 
-    rover compare N.S.L.C begin [end]
+    rover list-retrieve N.S.L.C begin [end]
 
-Compare available data with the local store, then display what data would be downloaded.  So this command whows what `rover retrieve` would actually retrieve.
+Display what data would be downloaded if the `retrieve` equivalent command was run.
 
 The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
 
@@ -81,19 +81,19 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
 
-    rover compare sncls.txt
+    rover list-retrieve sncls.txt
 
 will display the data missing form the local store to match what is available for the stations in the given file.
 
-    rover compare IU.ANMO.00.BH1 2017-01-01 2017-01-04
+    rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
 
 will display the data missing from the local store to match what is available for IU.ANMO.00.BH1.
 
@@ -135,9 +135,9 @@ The following parameters are simple flags that change the output format.  They a
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
@@ -164,7 +164,7 @@ Write default values to the config file.
 | ------------------- | -------------------- | ------------------------------ |
 | file / -f           | ~/rover/config       | Specify configuration file     |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
@@ -192,12 +192,12 @@ will write the config to the given file.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| subscriptions-dir   | ~/rover/subscriptions | Directory for subscriptions    |
+| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
@@ -225,12 +225,12 @@ The url should be for a Data Select service, and should not request data that sp
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| temp-dir            | ~/rover/tmp          | Temporary storage for downloads |
+| temp-dir            | tmp                  | Temporary storage for downloads |
 | delete-files        | True                 | Delete temporary files?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
@@ -259,15 +259,15 @@ The file should not contain data that spans multiple calendar days.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
-| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data dirs        |
 | index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
-| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data       |
+| leap-file           | leap-seconds.lst     | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
@@ -300,15 +300,15 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 | ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
-| mseed-dir           | ~/rover/mseed        | Root of mseed data dirs        |
-| mseed-db            | ~/rover/index.sql    | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data dirs        |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
 | mseed-workers       | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
-| leap-file           | ~/rover/leap-seconds.lst | File for leapsecond data       |
+| leap-file           | leap-seconds.lst     | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | ~/rover/logs         | Directory for logs             |
+| log-dir             | logs                 | Directory for logs             |
 | log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 

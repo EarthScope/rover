@@ -15,13 +15,13 @@ Command line / file configuration parameters.
 
 
 # commands
-COMPARE = 'compare'
 DAEMON = 'daemon'
 DOWNLOAD = 'download'
 HELP = 'help'
 INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
+LIST_RETRIEVE = 'list-retrieve'
 LIST_SUBSCRIPTIONS = 'list-subscriptions'
 RESET_CONFIG = 'reset-config'
 RETRIEVE = 'retrieve'
@@ -40,12 +40,11 @@ ALL = 'all'
 ARGS = 'args'
 AVAILABILITYURL = 'availability-url'
 COMMAND = 'command'
-DAEMON = 'daemon'
 DATASELECTURL = 'dataselect-url'
 DELETEFILES = 'delete-files'
 DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
-F, FILE = 'f', 'file'
+F, FILE_ = 'f', 'file'
 LEAP = 'leap'
 LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
@@ -174,7 +173,7 @@ class Arguments(ArgumentParser):
         self.register('action', 'store_bool', StoreBoolAction)
 
         # operation details
-        self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
+        self.add_argument(m(F), mm(FILE_), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes?', metavar='')
@@ -286,11 +285,11 @@ class Arguments(ArgumentParser):
         for index in reversed(indices):
             args = args[:index] + args[index+2:]
         if not config:
-            config = self.get_default(FILE)
+            config = self.get_default(FILE_)
         config = canonify(config)
         # include config flag so that it is set correctly, even if the extracted
         # value is the one that is used here
-        return config, [mm(FILE), config] + args
+        return config, [mm(FILE_), config] + args
 
     def write_config(self, path, values=None):
         '''
@@ -300,7 +299,7 @@ class Arguments(ArgumentParser):
             create_parents(path)
             with open(path, 'w') as out:
                 for action in self._actions:
-                    if action.dest not in (HELP, FILE):
+                    if action.dest not in (HELP, FILE_):
                         if action.default is not None:
                             if values is not None:  # py2.7 no __bool__ on values
                                 value = getattr(values, action.dest)
@@ -338,7 +337,7 @@ class Arguments(ArgumentParser):
         name = sub('_', '-', action.dest)
         default = action.default
         help = action.help
-        if name == FILE:
+        if name == FILE_:
             name += ' / -f'
         elif name == HELP:
             name += ' / -h'
@@ -353,7 +352,7 @@ class Arguments(ArgumentParser):
         for action in self._actions:
             if name == sub('_', '-', action.dest):
                 return self.__document_action(action)
-        raise Exception('Unonwn parameter %s' % name)
+        raise Exception('Unknown parameter %s' % name)
 
     def __documentation_names(self):
         for action in self._actions:

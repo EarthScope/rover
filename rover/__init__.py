@@ -1,15 +1,14 @@
 
 from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, MULTIPROCESS, \
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, MULTIPROCESS, \
     DEV
 from .config import Config, ConfigResetter
 from .download import Downloader
-from .index import Indexer
+from .index import Indexer, IndexLister
 from .ingest import Ingester
-from .list import IndexLister
 from .process import Processes
-from .retrieve import Retriever, Comparer
+from .retrieve import Retriever, ListRetriever
 from .subscribe import Subscriber, SubscriptionLister, Unsubscriber
 
 
@@ -20,7 +19,7 @@ COMMANDS = {
     LIST_INDEX: (IndexLister, 'List the contents of the local store'),
     DOWNLOAD: (Downloader, 'Download data from a remote service'),
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
-    COMPARE: (Comparer, 'Show what data "rover retrieve" will download'),
+    LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),

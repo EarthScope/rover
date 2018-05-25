@@ -13,7 +13,7 @@ if version_info >= (3,0):
 else:
     from io import BytesIO as buffer
 
-from rover.list import IndexLister
+from rover import IndexLister
 from .test_utils import find_root, ingest_and_index
 
 

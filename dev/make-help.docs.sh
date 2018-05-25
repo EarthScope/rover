@@ -65,7 +65,7 @@ cat <<EOF > docs/commands.md
 
 * [Normal Usage](#normal-usage)
   * [Retrieve](#retrieve)
-  * [Compare](#compare)
+  * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
   * [Reset Config](#reset-config)
 * [Advanced Usage](#advanced-usage)
@@ -80,7 +80,7 @@ cat <<EOF > docs/commands.md
 EOF
 
 dev/rover help retrieve --md-format >> docs/commands.md
-dev/rover help compare --md-format >> docs/commands.md
+dev/rover help list-retrieve --md-format >> docs/commands.md
 dev/rover help list-index --md-format >> docs/commands.md
 dev/rover help reset-config --md-format >> docs/commands.md
 

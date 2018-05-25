@@ -233,16 +233,15 @@ class Retriever(BaseRetriever):
         return self.do_run(args, True)
 
 
-class Comparer(BaseRetriever):
+class ListRetriever(BaseRetriever):
     """
-### Compare
+### List Retrieve
 
-    rover compare file
+    rover list-retrieve file
 
-    rover compare N.S.L.C begin [end]
+    rover list-retrieve N.S.L.C begin [end]
 
-Compare available data with the local store, then display what data would be downloaded.  So this command
-whows what `rover retrieve` would actually retrieve.
+Display what data would be downloaded if the `retrieve` equivalent command was run.
 
 The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
 service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a
@@ -260,11 +259,11 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 
 ##### Examples
 
-    rover compare sncls.txt
+    rover list-retrieve sncls.txt
 
 will display the data missing form the local store to match what is available for the stations in the given file.
 
-    rover compare IU.ANMO.00.BH1 2017-01-01 2017-01-04
+    rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
 
 will display the data missing from the local store to match what is available for IU.ANMO.00.BH1.
 
