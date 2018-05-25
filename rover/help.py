@@ -2,7 +2,7 @@
 from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, mm, ALL, MSEEDCMD, Arguments, MDFORMAT
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, mm, ALL, MSEEDCMD, Arguments, MDFORMAT, FILE
 
 """
 The 'rover help' command.
@@ -14,7 +14,7 @@ USAGE = 'usage'
 LOWLEVEL = 'low-level'
 
 
-def welcome(args):
+def welcome(config):
     return '''
                       Welcome to ROVER!
 
@@ -55,10 +55,10 @@ To display this screen again, type "rover" or "rover help".
        HELP, BACKGROUND,
        HELP, LOWLEVEL,
        HELP, HELP,
-       args.file)
+       config.arg(FILE))
 
 
-def usage(args):
+def usage(config):
     return '''
                     Common ROVER Commands
                     
@@ -93,7 +93,7 @@ rover %s
        RESET_CONFIG)
 
 
-def background(args):
+def background(config):
     return '''
                    Advanced ROVER Commands
                    
@@ -104,7 +104,7 @@ rover %s
 ''' % (SUBSCRIBE,)
 
 
-def low_level(args):
+def low_level(config):
     return '''
                    Low-Level ROVER Commands
                    
@@ -230,12 +230,12 @@ class Helper(HelpFormatter):
 
     def __init__(self, config):
         super().__init__(config.arg(MDFORMAT))
-        self._args = config._args
+        self._config = config
 
     def run(self, args):
         from rover import COMMANDS   # avoid import loop
         if not args:
-            self.print(welcome(self._args))
+            self.print(welcome(self._config))
             return
         elif len(args) == 1:
             command = args[0].lower()
@@ -246,7 +246,7 @@ class Helper(HelpFormatter):
                 self.print(COMMANDS[command][0].__doc__)
                 return
             elif command in GENERAL:
-                self.print(GENERAL[command][0](self._args))
+                self.print(GENERAL[command][0](self._config))
                 return
         raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
 
