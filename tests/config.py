@@ -2,12 +2,14 @@
 from sys import version_info
 from os.path import join
 
+from rover.config import BaseConfig
+
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
 else:
     from backports.tempfile import TemporaryDirectory
 
-from rover.args import Arguments
+from rover.args import Arguments, TEMPDIR, MSEEDDIR
 from rover.utils import canonify
 
 
@@ -15,7 +17,7 @@ def test_write_config():
     with TemporaryDirectory() as dir:
         config = join(dir, '.rover')
         argparse = Arguments()
-        args = argparse.parse_args(['-f', config])
+        args, configdir = argparse.parse_args(['-f', config])
         assert canonify(args.file) == canonify(config), args.file
         with open(config, 'r') as input:
             contents = input.read()
@@ -29,7 +31,7 @@ delete-files=True
 # display help in markdown format?
 md-format=False
 # directory for subscriptions
-subscriptions-dir=~/rover/subscriptions
+subscriptions-dir=subscriptions
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run
@@ -49,7 +51,7 @@ availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
 dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 # temporary storage for downloads
-temp-dir=~/rover/tmp
+temp-dir=tmp
 # number of days before deleting temp files
 temp-expire=1
 # process all files (not just modified)?
@@ -57,7 +59,7 @@ all=False
 # when given a directory, process children?
 recurse=True
 # directory for logs
-log-dir=~/rover/logs
+log-dir=logs
 # base file name for logs
 log-name=rover
 # unique log names (with PIDs)?
@@ -75,9 +77,9 @@ verbosity=4
 # mseedindex command
 mseed-cmd=mseedindex
 # mseedindex database (also used by rover)
-mseed-db=~/rover/index.sql
+mseed-db=index.sql
 # root of mseed data dirs
-mseed-dir=~/rover/mseed
+mseed-dir=mseed
 # number of mseedindex instances to run
 mseed-workers=10
 # use leapseconds file?
@@ -85,7 +87,7 @@ leap=True
 # number of days before refreshing file
 leap-expire=30
 # file for leapsecond data
-leap-file=~/rover/leap-seconds.lst
+leap-file=leap-seconds.lst
 # URL for leapsecond data
 leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 ''', contents
@@ -93,7 +95,7 @@ leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 
 def test_enable_daemon():
     argparse = Arguments()
-    args = argparse.parse_args(['--daemon'])
+    args, configdir = argparse.parse_args(['--daemon'])
     assert args.daemon
 
 
@@ -104,56 +106,62 @@ def test_disable_daemon():
             output.write('daemon=True\n')
         # first test that config file enables daemons
         argparse = Arguments()
-        args = argparse.parse_args(['-f', config])
+        args, configdir = argparse.parse_args(['-f', config])
         assert args.daemon
         # and then test that we can override that
         argparse = Arguments()
-        args = argparse.parse_args(['-f', config, '--no-daemon'])
+        args, configdir = argparse.parse_args(['-f', config, '--no-daemon'])
         assert not args.daemon
 
 
 def test_multiple_flags():
     argparse = Arguments()
-    args = argparse.parse_args(['--daemon', '--no-daemon'])
+    args, configdir = argparse.parse_args(['--daemon', '--no-daemon'])
     assert not args.daemon
 
 
-def test_curdir_start():
+# todo - need config instance, not just args
+
+def test_CONFIGDIR_start():
       with TemporaryDirectory() as dir:
         config = join(dir, '.rover')
         with open(config, 'w') as output:
-            output.write('temp-dir=${CURDIR}/foo\n')
-            output.write('mseed-dir=$${CURDIR}/foo\n')
+            output.write('temp-dir=${CONFIGDIR}/foo\n')
+            output.write('mseed-dir=$${CONFIGDIR}/foo\n')
         argparse = Arguments()
-        args = argparse.parse_args(['-f', config])
-        assert args.temp_dir
-        assert canonify(args.temp_dir) == canonify(dir + '/foo'), args.temp_dir
-        assert args.mseed_dir
-        assert args.mseed_dir == '${CURDIR}/foo', args.mseed_dir
+        args, configdir = argparse.parse_args(['-f', config])
+        config = BaseConfig(None, args, None, configdir)
+        assert config.dir_path(TEMPDIR)
+        assert config.dir_path(TEMPDIR) == canonify(dir + '/foo'), config.dir_path(TEMPDIR)
+        assert config.dir_path(MSEEDDIR)
+        assert config.dir_path(MSEEDDIR) == join(dir, '${CONFIGDIR}/foo'), config.dir_path(MSEEDDIR)
 
-def test_curdir_middle():
+def test_CONFIGDIR_middle():
       with TemporaryDirectory() as dir:
         dir = canonify(dir)
         config = join(dir, '.rover')
         with open(config, 'w') as output:
-            output.write('temp-dir=xx${CURDIR}/foo\n')
-            output.write('mseed-dir=xx$${CURDIR}/foo\n')
+            output.write('temp-dir=xx${CONFIGDIR}/foo\n')
+            output.write('mseed-dir=xx$${CONFIGDIR}/foo\n')
         argparse = Arguments()
-        args = argparse.parse_args(['-f', config])
-        assert args.temp_dir
-        assert args.temp_dir == 'xx' + dir + '/foo', args.temp_dir
-        assert args.mseed_dir
-        assert args.mseed_dir == 'xx${CURDIR}/foo', args.mseed_dir
+        args, configdir = argparse.parse_args(['-f', config])
+        config = BaseConfig(None, args, None, configdir)
+        assert config.dir_path(TEMPDIR)
+        assert config.dir_path(TEMPDIR) == join(dir, 'xx' + dir + '/foo'), config.dir_path(TEMPDIR)
+        assert config.dir_path(MSEEDDIR)
+        assert config.dir_path(MSEEDDIR) == join(dir, 'xx${CONFIGDIR}/foo'), config.dir_path(MSEEDDIR)
 
-def test_curdir_bad():
+def test_CONFIGDIR_bad():
       with TemporaryDirectory() as dir:
         config = join(dir, '.rover')
         with open(config, 'w') as output:
             output.write('temp-dir=${FOO}\n')
         argparse = Arguments()
+        args, configdir = argparse.parse_args(['-f', config])
+        config = BaseConfig(None, args, None, configdir)
         try:
-            argparse.parse_args(['-f', config])
+            config.arg(TEMPDIR)
         except Exception as e:
-            assert 'Unknown variable' in str(e), str(e)
+            assert 'does not exist' in str(e), str(e)
         else:
             assert False, 'Expected exception'

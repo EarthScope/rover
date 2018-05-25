@@ -77,7 +77,7 @@ V, VERBOSITY = 'v', 'verbosity'
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADWORKERS = 10
-DEFAULT_FILE = 'config'
+DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = 'leap-seconds.lst'
 DEFAULT_LEAPURL = 'http://www.ietf.org/timezones/data/leap-seconds.list'
@@ -317,20 +317,6 @@ class Arguments(ArgumentParser):
         else:
             return ['@'+config] + args
 
-    CURDIR = compile(r'([^$]|^)\$\{(\w+)\}')
-    ESC_VAR = compile(r'\$(\$\{\w+\})')
-
-    def __variable(self, match):
-        if match.group(2) == 'CURDIR':
-            return match.group(1) + self._curdir
-        else:
-            raise Exception('Unknown variable %s' % match.group(2))
-
-    def __expand_var(self, value):
-        value = sub(self.CURDIR, self.__variable, value)
-        value = sub(self.ESC_VAR, '\\1', value)
-        return value
-
     def convert_arg_line_to_args(self, arg_line):
         '''
         Parse a line from the config file, constructing '--name value" from name=value
@@ -341,7 +327,7 @@ class Arguments(ArgumentParser):
             return []
         elif '=' in arg_line:
             name, value = arg_line.split('=', 1)
-            return [mm(name), self.__expand_var(value)]
+            return [mm(name), value]
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
 

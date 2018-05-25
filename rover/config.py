@@ -22,6 +22,8 @@ class BaseConfig:
         self._args = args
         self.db = db
         self._configdir = configdir
+        self.args = args.args
+        self.command = args.command
 
     def arg(self, name, depth=0):
         name = sub('-', '_', name)
@@ -31,19 +33,25 @@ class BaseConfig:
             value = getattr(self._args, name)
         except:
             raise Exception('Parameter %s does not exist' % name)
-        try:
-            match = compile(r'(.*)\$\{(\w+)\}(.*)').match(value)
-            if match:
-                if match.group(2) == 'CONFIGDIR':
+        while True:
+            try:
+                matchvar = compile(r'(.*(?:^|[^\$]))\${(\w+)}(.*)').match(value)
+            except:
+                # not a string variable
+                break
+            if matchvar:
+                if matchvar.group(2) == 'CONFIGDIR':
                     inner = self._configdir
                 else:
-                    inner = self.arg(match.group(2), depth=depth+1)
+                    inner = self.arg(matchvar.group(2), depth=depth+1)
                 try:
-                    value = match.group(1) + inner + match.group(3)
+                    value = matchvar.group(1) + inner + matchvar.group(3)
                 except:
+                    print('oops')
                     raise Exception('String substitution only works with string parameters (%s)' % name)
-        except:
-            pass  # value wasn't a string so regexp failed
+            else:
+                value = sub(r'\$\$', '$', value)
+                break
         return value
 
     def path(self, name):
