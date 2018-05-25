@@ -1,6 +1,6 @@
 
-from sys import version_info
 from os.path import join
+from sys import version_info
 
 from rover.config import BaseConfig
 
@@ -9,7 +9,7 @@ if version_info[0] >= 3:
 else:
     from backports.tempfile import TemporaryDirectory
 
-from rover.args import Arguments, TEMPDIR, MSEEDDIR, FILE
+from rover.args import Arguments, TEMPDIR, MSEEDDIR, FILE_
 from rover.utils import canonify
 
 
@@ -19,7 +19,7 @@ def test_write_config():
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', path])
         config = BaseConfig(None, args, None, configdir)
-        assert canonify(config.arg(FILE)) == canonify(path), config.arg(FILE)
+        assert canonify(config.arg(FILE_)) == canonify(path), config.arg(FILE_)
         with open(path, 'r') as input:
             contents = input.read()
             assert contents == \

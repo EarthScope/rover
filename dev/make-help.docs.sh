@@ -74,6 +74,7 @@ cat <<EOF > docs/commands.md
   * [Download](#download)
   * [Ingest](#ingest)
   * [Index](#index)
+  * [Summary](#summary)
 
 ## Normal Usage
 
@@ -102,3 +103,4 @@ EOF
 dev/rover help download --md-format >> docs/commands.md
 dev/rover help ingest --md-format >> docs/commands.md
 dev/rover help index --md-format >> docs/commands.md
+dev/rover help summary --md-format >> docs/commands.md

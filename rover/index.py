@@ -18,7 +18,7 @@ from .workers import NoConflictPerDatabaseWorkers
 Commands related to the index:
 
 The 'rover index' command - call mseeedindex to update the tsindex table.
-The 'rover list-index' command - displays entries in the tsindex table.
+The 'rover list-index' command - displays entries from the tsindex table.
 """
 
 

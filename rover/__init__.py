@@ -1,8 +1,9 @@
 
+from .summary import Summarizer
 from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, MULTIPROCESS, \
-    DEV
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, \
+    MULTIPROCESS, DEV, SUMMARY
 from .config import Config, ConfigResetter
 from .download import Downloader
 from .index import Indexer, IndexLister
@@ -23,6 +24,7 @@ COMMANDS = {
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
+    SUMMARY: (Summarizer, 'Update summary table'),
     LIST_SUBSCRIPTIONS: (SubscriptionLister, 'List the subscriptions'),
     UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription')
 }

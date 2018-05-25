@@ -213,9 +213,6 @@ class DownloadManager(SingleUse):
         self._log.debug('Writing config to %s' % path)
         self._log.debug(self._args)
         Arguments().write_config(path, self._args)
-        with open(path, 'r') as x:
-            for line in x.readlines():
-                print(line)
         return path
 
     def _expand_timespans(self, coverage):

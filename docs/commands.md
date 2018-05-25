@@ -12,6 +12,7 @@
   * [Download](#download)
   * [Ingest](#ingest)
   * [Index](#index)
+  * [Summary](#summary)
 
 ## Normal Usage
 
@@ -20,11 +21,15 @@
 
     rover retrieve file
 
-    rover retrieve N.S.L.C begin [end]
+    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] begin [end]
+
+    rover retrieve N_S_L_C begin [end]
 
 Compare available data with the local store, then download, ingest and index data.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
+
+In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed containing that data.
 
 The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
 
@@ -69,7 +74,7 @@ will download, ingest and index and data for IU.ANMO.00.BH1 between the given da
 
     rover list-retrieve file
 
-    rover list-retrieve N.S.L.C begin [end]
+    rover list-retrieve N_S_L_C begin [end]
 
 Display what data would be downloaded if the `retrieve` equivalent command was run.
 
@@ -103,7 +108,7 @@ will display the data missing from the local store to match what is available fo
     rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* \
     [count|join|join-samplerates]
 
-    rover list-index [S.N.C.L.Q]* [begin=...] [end=...] \
+    rover list-index [S_N_C_L_Q]* [begin=...] [end=...] \
     [count|join|join-samplerates]
 
 List index entries for the local store (config parameter mseed-dir) that match the given constraints.
@@ -143,7 +148,7 @@ The following parameters are simple flags that change the output format.  They a
 
 #### Examples
 
-    rover list-index IU.ANMO.00.BH? count
+    rover list-index IU_ANMO_00_BH? count
 
 will display the number of entries for all time, and any quality or smaplerate.
 
@@ -318,3 +323,28 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 
 will index the entire store.
 
+
+### Summary
+
+    rover summary
+
+Create a summary of the index in the database.  This lists the overall span of data for each SNCL and can be queries using `rover list-summary`.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover summary
+
+will create the summary.
+
+
+    
