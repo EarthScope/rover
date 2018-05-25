@@ -13,7 +13,6 @@ def init_db(dbpath, log):
     """
     Open a connection to the database.
     """
-    dbpath = canonify(dbpath)
     log.debug('Connecting to sqlite3 %s' % dbpath)
     db = connect(dbpath)
     # https://www.sqlite.org/foreignkeys.html

@@ -227,8 +227,6 @@ class Arguments(ArgumentParser):
         self.add_argument(COMMAND, metavar='COMMAND', nargs='?', help='use "help" for further information')
         self.add_argument(ARGS, nargs='*', help='command arguments (depend on the command)')
 
-        self._curdir = None
-
     def parse_args(self, args=None, namespace=None):
         '''
         Intercept normal arg parsing to:
@@ -242,11 +240,7 @@ class Arguments(ArgumentParser):
         config, args = self.__extract_config(args)
         self.write_config(config)
         args = self.__patch_config(args, config)
-        try:
-            self._curdir = dirname(config)
-            return super().parse_args(args=args, namespace=namespace)
-        finally:
-            self._curdir = None
+        return super().parse_args(args=args, namespace=namespace), dirname(config)
 
     def __preprocess_booleans(self, args):
         '''

@@ -2,7 +2,7 @@
 from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, RESET_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, mm, ALL, MSEEDCMD, Arguments
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, COMPARE, mm, ALL, MSEEDCMD, Arguments, MDFORMAT
 
 """
 The 'rover help' command.
@@ -229,8 +229,8 @@ class HelpFormatter:
 class Helper(HelpFormatter):
 
     def __init__(self, config):
-        super().__init__(config.args.md_format)
-        self._args = config.args
+        super().__init__(config.arg(MDFORMAT))
+        self._args = config._args
 
     def run(self, args):
         from rover import COMMANDS   # avoid import loop

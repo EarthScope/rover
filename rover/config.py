@@ -1,9 +1,11 @@
-
+from os import makedirs
+from re import compile, sub
 from genericpath import exists, isfile
-from os.path import basename
+from os.path import basename, isabs, join, realpath, abspath, expanduser, dirname
 from shutil import move
 
-from .args import Arguments
+from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
+    MSEEDDB
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
@@ -13,7 +15,58 @@ Package common data used in all/most classes (db connection, lgs and parameters)
 """
 
 
-class Config:
+class BaseConfig:
+
+    def __init__(self, log, args, db, configdir):
+        self.log = log
+        self._args = args
+        self.db = db
+        self._configdir = configdir
+
+    def arg(self, name, depth=0):
+        name = sub('-', '_', name)
+        if depth > 10:
+            raise Exception('Circular definition involving %s' % name)
+        try:
+            value = getattr(self._args, name)
+        except:
+            raise Exception('Parameter %s does not exist' % name)
+        try:
+            match = compile(r'(.*)\$\{(\w+)\}(.*)').match(value)
+            if match:
+                if match.group(2) == 'CONFIGDIR':
+                    inner = self._configdir
+                else:
+                    inner = self.arg(match.group(2), depth=depth+1)
+                try:
+                    value = match.group(1) + inner + match.group(3)
+                except:
+                    raise Exception('String substitution only works with string parameters (%s)' % name)
+        except:
+            pass  # value wasn't a string so regexp failed
+        return value
+
+    def path(self, name):
+        path = expanduser(self.arg(name))
+        if not isabs(path):
+            path = join(self._configdir, path)
+        return realpath(abspath(path))
+
+    def dir_path(self, name):
+        path = self.path(name)
+        if not exists(path):
+            makedirs(path)
+        return path
+
+    def file_path(self, name):
+        path = self.path(name)
+        dir = dirname(path)
+        if not exists(dir):
+            makedirs(dir)
+        return path
+
+
+class Config(BaseConfig):
     """
     A container that encapsulates the core compoennts common to all commands.  Used to
     reduce the amount of argument passing and simplify chaining commands.
@@ -21,12 +74,14 @@ class Config:
 
     def __init__(self):
         argparse = Arguments()
-        self.args = argparse.parse_args()
-        self.log = init_log(self.args.log_dir, self.args.log_size, self.args.log_count, self.args.log_verbosity,
-                            self.args.verbosity, self. args.log_name, self.args.log_unique, self.args.log_unique_expire)
-        self.log.debug('Args: %s' % self.args)
-        self.db = init_db(self.args.mseed_db, self.log)
-
+        args, configdir = argparse.parse_args()
+        # this is a bit ugly, but we need to use the base methods to construct the log and db
+        # note that log is not used in base!
+        super().__init__(None, args, None, configdir)
+        self.log = init_log(self.dir_path(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
+                            self.arg(VERBOSITY), self.arg(LOGNAME), self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
+        self.log.debug('Args: %s' % self._args)
+        self.db = init_db(self.file_path(MSEEDDB), self.log)
 
 class ArgsProxy:
     """

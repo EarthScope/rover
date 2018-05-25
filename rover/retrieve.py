@@ -5,8 +5,8 @@ from os.path import exists
 from shutil import copyfile
 from sqlite3 import OperationalError
 
-from .args import RETRIEVE
-from .config import NewConfig
+from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, TIMESPANTOL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
+    LEAPFILE, LEAPURL, TEMPEXPIRE
 from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
@@ -82,19 +82,18 @@ store.
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
-        args = config.args
         self._download_manager = DownloadManager(config)
-        self._temp_dir = canonify_dir_and_make(args.temp_dir)
-        self._availability_url = args.availability_url
-        self._timespan_tol = args.timespan_tol
-        self._pre_index = args.pre_index
+        self._temp_dir = config.dir_path(TEMPDIR)
+        self._availability_url = config.arg(AVAILABILITYURL)
+        self._timespan_tol = config.arg(TIMESPANTOL)
+        self._pre_index = config.arg(PREINDEX)
         # check these so we fail early
-        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', self._log)
-        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', self._log)
+        check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
+        check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
-        check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, self._log)
-        clean_old_files(self._temp_dir, args.temp_expire * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), self._log)
+        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), config.log)
 
     def do_run(self, args, fetch):
         """

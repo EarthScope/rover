@@ -43,12 +43,14 @@ def safe_unlink(path):
         unlink(path)
 
 
-def check_cmd(cmd, name, param, log):
+def check_cmd(value, name, param, log):
     """
     Check the command exists and, if not, inform the user.
     """
+    cmd = '%s -h' % value
     try:
         check_output(cmd, stderr=STDOUT, shell=True)
+        return value
     except:
         log.error('Command "%s" failed' % cmd)
         log.error('Install %s or configure %s correctly' % (name, param))

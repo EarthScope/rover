@@ -2,7 +2,7 @@
 from .process import Processes
 from .sqlite import SqliteSupport
 from .utils import check_cmd, run
-from .args import START, DAEMON
+from .args import START, DAEMON, ROVERCMD
 
 
 class Starter:
@@ -17,10 +17,8 @@ class Starter:
     """
 
     def __init__(self, config):
-        log, args = config.log, config.args
-        self._log = log
-        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', log)
-        self._rover_cmd = args.rover_cmd
+        self._log = config.log
+        self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
 
     def run(self, args):
         if args:
@@ -36,8 +34,7 @@ class Stopper:
     """
 
     def __init__(self, config):
-        log, args = config.log, config.args
-        self._log = log
+        self._log = config.log
         self._processes = Processes(config)
 
     def run(self, args):
@@ -53,8 +50,7 @@ class Daemon(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        log, args = config.log, config.args
-        self._log = log
+        self._log = config.log
 
     def run(self, args):
         if args:

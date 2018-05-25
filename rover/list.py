@@ -3,6 +3,7 @@ import sys
 from re import match, sub
 from sqlite3 import OperationalError
 
+from .args import TIMESPANTOL, MSEEDDB
 from .help import HelpFormatter
 from .coverage import MultipleSNCLBuilder
 from .sqlite import SqliteSupport
@@ -93,9 +94,8 @@ will list all entries in the index after the year 2000.
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
         HelpFormatter.__init__(self, False)
-        args = config.args
-        self._timespan_tol = args.timespan_tol
-        self._mseed_db = args.mseed_db
+        self._timespan_tol = config.arg(TIMESPANTOL)
+        self._mseed_db = config.file_path(MSEEDDB)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],

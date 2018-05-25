@@ -1,11 +1,11 @@
 
 from datetime import datetime
-from os import unlink
 from os.path import exists, join
 from re import match
 
-from .lock import DatabaseBasedLockFactory, MSEED
+from .args import MSEEDDB, MSEEDCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX
 from .index import Indexer
+from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
 from .utils import canonify, run, check_cmd, check_leap, create_parents, touch, canonify_dir_and_make, safe_unlink
@@ -68,16 +68,14 @@ will add all the data in the given file to the local store.
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
         DirectoryScanner.__init__(self, config)
-        args, log = config.args, config.log
-        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
-        self._mseed_cmd = args. mseed_cmd
-        self._mseed_db = canonify(args.mseed_db)
-        self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
+        self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
+        self._mseed_db = config.file_path(MSEEDDB)
+        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
         self._db_path = None
-        self._mseed_dir = canonify_dir_and_make(args.mseed_dir)
-        self._index = args.index
+        self._mseed_dir = config.dir_path(MSEEDDIR)
+        self._index = config.arg(INDEX)
         self._config = config
-        self._log = log
+        self._log = config.log
         self._lock_factory = DatabaseBasedLockFactory(config, MSEED)
         touch(self._mseed_db)  # so that scanning against tsindex works, if the database didn't exist
 

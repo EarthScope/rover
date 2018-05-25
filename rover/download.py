@@ -5,7 +5,8 @@ from os import getpid
 from os.path import join, exists
 from time import time, sleep
 
-from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments
+from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TEMPDIR, DELETEFILES, INGEST, \
+    TEMPEXPIRE, DATASELECTURL, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
@@ -76,13 +77,12 @@ will download, ingest and index data from the given URL..
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
         SingleUse.__init__(self)
-        args = config.args
-        self._temp_dir = canonify_dir_and_make(args.temp_dir)
-        self._delete_files = args.delete_files
+        self._temp_dir = config.dir_path(TEMPDIR)
+        self._delete_files = config.arg(DELETEFILES)
         self._blocksize = 1024 * 1024
-        self._ingest = args.ingest
+        self._ingest = config.arg(INGEST)
         self._config = config
-        clean_old_files(self._temp_dir, args.temp_expire, match_prefixes(TMPFILE, CONFIGFILE), self._log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPFILE, CONFIGFILE), self._log)
 
     def run(self, args):
         """
@@ -136,19 +136,16 @@ class DownloadManager(SingleUse):
 
     def __init__(self, config):
         super().__init__()
-        args, log = config.args, config.log
-        self._log = log
-        self._dataselect_url = args.dataselect_url
-        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', log)
-        self._rover_cmd = args.rover_cmd
-        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
-        self._mseed_cmd = args.mseed_cmd
-        self._temp_dir = canonify_dir_and_make(args.temp_dir)
-        self._dev = args.dev
-        self._log_unique = args.log_unique
-        self._args = args
+        self._log = config.log
+        self._dataselect_url = config.arg(DATASELECTURL)
+        self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
+        self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
+        self._temp_dir = config.dir_path(TEMPDIR)
+        self._dev = config.arg(DEV)
+        self._log_unique = config.arg(LOGUNIQUE)
+        self._args = config._args
         self._coverages = []
-        self._workers = Workers(config, args.download_workers)
+        self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._config_path = None
 
     def add(self, coverage):
@@ -340,19 +337,16 @@ class DownloadManager2:
 
     def __init__(self, config, config_file):
         super().__init__()
-        args, log = config.args, config.log
-        self._log = log
-        check_cmd('%s -h' % args.rover_cmd, 'rover', 'rover-cmd', log)
-        self._rover_cmd = args.rover_cmd
-        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
-        self._mseed_cmd = args.mseed_cmd
-        self._dev = args.dev
-        self._log_unique = args.log_unique
+        self._log = config.log
+        self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
+        self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
+        self._dev = config.arg(DEV)
+        self._log_unique = config.arg(LOGUNIQUE)
         self._sources = {}  # map of source names to sources
         self._index = 0  # used to round-robin sources
-        self._workers = Workers(config, args.download_workers)
+        self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
-        self._config_path = self._write_config(args.temp_dir, config_file, args)
+        self._config_path = self._write_config(config.arg(TEMPDIR), config_file, config._args)
 
     def _write_config(self, temp_dir, config_file, args):
         temp_dir = canonify_dir_and_make(temp_dir)

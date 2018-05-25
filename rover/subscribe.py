@@ -2,7 +2,7 @@
 from shutil import copyfile
 from sqlite3 import OperationalError
 
-from .args import SUBSCRIBE, LIST_SUBSCRIPTIONS, UNSUBSCRIBE
+from .args import SUBSCRIBE, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV
 from .sqlite import SqliteSupport
 from .utils import unique_path, build_file, canonify_dir_and_make, format_day_epoch, safe_unlink
 
@@ -43,10 +43,9 @@ for the give SNCL between the given dates.
 
     def __init__(self, config):
         super().__init__(config)
-        log, args = config.log, config.args
-        self._subscriptions_dir = canonify_dir_and_make(args.subscriptions_dir)
-        self._availability_url = args.availability_url
-        self._dataselect_url = args.dataselect_url
+        self._subscriptions_dir = config.dir_path(SUBSCRIPTIONSDIR)
+        self._availability_url = config.arg(AVAILABILITYURL)
+        self._dataselect_url = config.arg(DATASELECTURL)
         self._create_table()
 
     def _create_table(self):
@@ -90,8 +89,7 @@ class SubscriptionLister(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        log, args = config.log, config.args
-        self._dev = args.dev
+        self._dev = config.arg(DEV)
 
     def run(self, args):
         if args:

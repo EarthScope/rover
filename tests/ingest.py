@@ -2,6 +2,8 @@
 from sys import version_info
 from os.path import join
 
+from rover.args import MSEEDDIR
+
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
 else:
@@ -17,7 +19,7 @@ def test_ingester():
         config = TestConfig(dir)
         ingester = Ingester(config)
         ingester.run((join(root, 'tests', 'data', 'IU.ANMO.00.*-2010-02-27T06:30:00.000-2010-02-27T10:30:00.000.mseed'),))
-        mseed_dir = config.args.mseed_dir
+        mseed_dir = config.arg(MSEEDDIR)
         assert_files(mseed_dir, 'IU')
         assert_files(join(mseed_dir, 'IU'), '2010')
         assert_files(join(mseed_dir, 'IU', '2010'), '058')

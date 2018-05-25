@@ -5,6 +5,7 @@ from os.path import dirname, join
 from re import sub
 
 import rover
+from rover.config import BaseConfig
 from rover.args import Arguments, MSEEDDIR, MSEEDDB, TEMPDIR, LOGDIR, LEAP, MSEEDCMD
 from rover.ingest import Ingester
 from rover.logs import init_log
@@ -29,7 +30,7 @@ def _(text):
     return sub(r'\-', '_', text)
 
 
-class TestConfig:
+class TestConfig(BaseConfig):
 
     def __init__(self, dir, **kargs):
         kargs = dict(kargs)
@@ -40,9 +41,9 @@ class TestConfig:
         root = find_root()
         kargs[_(MSEEDCMD)] = join(root, '..', 'mseedindex', 'mseedindex')
         kargs[_(LEAP)] = False
-        self.args = TestArgs(**kargs)
-        self.log = init_log(self.args.log_dir, 7, 1, 5, 0, 'test', self.args.leap, 0)
-        self.db = init_db(self.args.mseed_db, self.log)
+        args = TestArgs(**kargs)
+        log = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
+        super().__init__(log, args, init_db(args.mseed_db, log), None)
 
 
 def find_root():

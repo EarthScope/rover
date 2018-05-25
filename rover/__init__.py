@@ -1,7 +1,8 @@
 
 from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE
+    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, COMPARE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, MULTIPROCESS, \
+    DEV
 from .config import Config, ConfigResetter
 from .download import Downloader
 from .index import Indexer
@@ -35,7 +36,7 @@ def execute(command, config):
     commands = dict(COMMANDS)
     commands[HELP] = (Helper, '')
     if command in commands:
-        commands[command][0](config).run(config.args.args)
+        commands[command][0](config).run(config._args.args)
     else:
         raise Exception('Unknown command %s' % command)
 
@@ -45,20 +46,20 @@ def main():
     try:
         config = Config()
         processes = Processes(config)
-        if not (config.args.daemon or config.args.multiprocess):
+        if not (config.arg(DAEMON) or config.arg(MULTIPROCESS)):
             processes.add_singleton_me('rover')
         try:
-            execute(config.args.command, config)
+            execute(config._args.command, config)
         finally:
             processes.remove_me()
     except Exception as e:
         if config and config.log:
             config.log.error(str(e))
-            if config.args.command in COMMANDS:
-                config.log.info('See "rover help %s"' % config.args.command)
+            if config._args.command in COMMANDS:
+                config.log.info('See "rover help %s"' % config._args.command)
             elif config.args.command != HELP:
                 config.log.info('See "rover help help" for a list of commands')
-            if not config or not config.args or config.args.dev:
+            if not config or not config._args or config.arg(DEV):
                 raise e
         else:
             raise e

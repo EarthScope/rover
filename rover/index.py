@@ -1,4 +1,5 @@
 
+from .args import MSEEDCMD, MSEEDDB, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDWORKERS
 from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .utils import check_leap, check_cmd, canonify
@@ -59,13 +60,11 @@ will index the entire store.
     def __init__(self, config):
         ModifiedScanner.__init__(self, config)
         DirectoryScanner.__init__(self, config)
-        args, log = config.args, config.log
-        check_cmd('%s -h' % args.mseed_cmd, 'mseedindex', 'mseed-cmd', log)
-        self._mseed_cmd = args.mseed_cmd
-        self._mseed_db = canonify(args.mseed_db)
-        self._leap_file = check_leap(args.leap, args.leap_expire, args.leap_file, args.leap_url, log)
-        self._verbose = args.dev and args.verbosity == 5
-        self._workers = NoConflictPerDatabaseWorkers(config, args.mseed_workers, MSEED)
+        self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
+        self._mseed_db = config.file_path(MSEEDDB)
+        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
+        self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5
+        self._workers = NoConflictPerDatabaseWorkers(config, config.arg(MSEEDWORKERS), MSEED)
 
     def run(self, args):
         """
