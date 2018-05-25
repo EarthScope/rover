@@ -154,7 +154,7 @@ store.
         """
         n_downloads = self._download_manager.download()
         if self._summary:
-            Summarizer(self._config).run()
+            Summarizer(self._config).run([])
         return n_downloads
 
     def _display(self):
