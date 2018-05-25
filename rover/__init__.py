@@ -1,9 +1,9 @@
 
-from .summary import Summarizer
+from .summary import Summarizer, SummaryLister
 from .daemon import Starter, Stopper
 from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, \
-    MULTIPROCESS, DEV, SUMMARY
+    MULTIPROCESS, DEV, SUMMARY, LIST_SUMMARY
 from .config import Config, ConfigResetter
 from .download import Downloader
 from .index import Indexer, IndexLister
@@ -17,14 +17,15 @@ COMMANDS = {
     RESET_CONFIG: (ConfigResetter, 'Reset the configuration'),
     INDEX: (Indexer, 'Index the local store'),
     INGEST: (Ingester, 'Ingest data from a file into the local store'),
+    SUMMARY: (Summarizer, 'Update summary table'),
     LIST_INDEX: (IndexLister, 'List the contents of the local store'),
+    LIST_SUMMARY: (SummaryLister, 'List a summary of the local store'),
     DOWNLOAD: (Downloader, 'Download data from a remote service'),
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
     LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
-    SUMMARY: (Summarizer, 'Update summary table'),
     LIST_SUBSCRIPTIONS: (SubscriptionLister, 'List the subscriptions'),
     UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription')
 }

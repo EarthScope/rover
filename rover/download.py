@@ -3,17 +3,16 @@ import datetime
 from collections import deque
 from os import getpid
 from os.path import join, exists
-from time import time, sleep
+from time import sleep
 
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, DATASELECTURL, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
-    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, format_day_epoch, SingleUse, \
-    create_parents, unique_path, canonify_dir_and_make, safe_unlink
+    clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
+    canonify_dir_and_make, safe_unlink
 from .workers import Workers
-
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -29,7 +28,7 @@ TMPFILE = 'rover_tmp_download'
 CONFIGFILE = 'rover_config'
 
 
-class Downloader(SqliteSupport, SingleUse):
+class Downloader(SqliteSupport):
     """
 ### Download
 
@@ -76,7 +75,6 @@ will download, ingest and index data from the given URL..
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        SingleUse.__init__(self)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._delete_files = config.arg(DELETEFILES)
         self._blocksize = 1024 * 1024
@@ -95,7 +93,6 @@ will download, ingest and index data from the given URL..
             path, delete = args[2], False
         else:
             path, delete = unique_path(self._temp_dir, TMPFILE, url), True
-        self._assert_single_use()
         db_path = self._ingesters_db_path(url, getpid())
         try:
             self._do_download(url, path)
@@ -120,7 +117,7 @@ will download, ingest and index data from the given URL..
         return unique_filename(join(self._temp_dir, name))
 
 
-class DownloadManager(SingleUse):
+class DownloadManager:
     """
     An interface to downloader instances that restricts downloads to a fixed number of workers,
     each downloading data that is for a maximum duration of a day.
@@ -135,7 +132,6 @@ class DownloadManager(SingleUse):
     """
 
     def __init__(self, config):
-        super().__init__()
         self._log = config.log
         self._dataselect_url = config.arg(DATASELECTURL)
         self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
@@ -155,14 +151,12 @@ class DownloadManager(SingleUse):
         Add a required coverage (SNCL and associated timespans).  This will be expanded
         into one or more downloads when
         """
-        self._assert_not_used()
         self._coverages.append(coverage)
 
     def display(self):
         """
         Display a asummary of the data.
         """
-        self._assert_single_use()
         print()
         total_seconds, total_sncls = 0, 0
         for coverage in self._coverages:
@@ -185,7 +179,6 @@ class DownloadManager(SingleUse):
         """
         Expand the timespans into daily downloads, get the data and ingest.
         """
-        self._assert_single_use()
         self._config_path = self._write_config()
         n_downloads = 0
         try:

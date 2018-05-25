@@ -12,7 +12,7 @@ from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .utils import post_to_file, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, SingleUse, unique_path, canonify_dir_and_make, safe_unlink, build_file
+    match_prefixes, check_leap, parse_epoch, unique_path, canonify_dir_and_make, safe_unlink, build_file
 
 """
 The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
@@ -23,7 +23,7 @@ RETRIEVEFILE = 'rover_retrieve'
 EARLY = datetime.datetime(1900, 1, 1)
 
 
-class BaseRetriever(SqliteSupport, SingleUse):
+class BaseRetriever(SqliteSupport):
     """
 ### Retrieve
 
@@ -86,7 +86,6 @@ store.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        SingleUse.__init__(self)
         self._download_manager = DownloadManager(config)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
@@ -105,7 +104,6 @@ store.
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
-        self._assert_single_use()
         if not exists(self._temp_dir):
             makedirs(self._temp_dir)
         try:

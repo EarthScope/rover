@@ -10,7 +10,7 @@ from .help import HelpFormatter
 from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .sqlite import SqliteSupport
-from .utils import SingleUse, format_epoch
+from .utils import format_epoch
 from .utils import check_leap, check_cmd, STATION, NETWORK, CHANNEL, LOCATION
 from .workers import NoConflictPerDatabaseWorkers
 
@@ -111,11 +111,11 @@ QUALITY = 'quality'
 SAMPLERATE = 'samplerate'
 
 
-class IndexLister(SqliteSupport, SingleUse, HelpFormatter):
+class IndexLister(SqliteSupport, HelpFormatter):
     """
 ### List Index
 
-    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* \\
+    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \\
     [count|join|join-samplerates]
 
     rover list-index [S_N_C_L_Q]* [begin=...] [end=...] \\
@@ -127,7 +127,7 @@ Note that console logging is to stderr, while the command results are listed to 
 
 #### SNCLQ and Samplerate
 
-Query parameters can be named (network, station, location, channel, qualit, samplerate) and unambiguous abbreviations
+Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations
 are accepted.  Alternative SNCLQ can be supplied (which can be truncated on the right, but must contain at least one
 period).
 
@@ -173,7 +173,6 @@ will list all entries in the index after the year 2000.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        SingleUse.__init__(self)
         HelpFormatter.__init__(self, False)
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._mseed_db = config.file_path(MSEEDDB)
@@ -240,7 +239,6 @@ printed to stdout.
         if not args:
             self._display_help()
         else:
-            self._assert_single_use()
             self._check_database()
             self._parse_args(args)
             sql, params = self._build_query()

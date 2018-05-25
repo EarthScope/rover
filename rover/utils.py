@@ -310,28 +310,6 @@ def parse_short_epoch(date):
 
 
 
-class SingleUse:
-    """
-    Base class to enforce single use semantics.
-    """
-
-    def __init__(self):
-        self._used = False
-
-    def _assert_not_used(self):
-        """
-        Call from any initialisation method used before the "use once' method.
-        """
-        if self._used: raise Exception('Cannot reuse %s' % self.__class__.name)
-
-    def _assert_single_use(self):
-        """
-        Call from a method that should be used just once.
-        """
-        self._assert_not_used()
-        self._used = True
-
-
 def in_memory(iterator):
     """
     Pull an entire iterator into memory and then re-expose as an iterator.
