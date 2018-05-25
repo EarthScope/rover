@@ -10,8 +10,6 @@ cp -r rover/tests rover23
 
 pushd rover23
 pasteurize -w -n --no-diffs .
-# make intern work!
-sed -i '/from builtins import bytes/d' rover/coverage.py
 popd
 
 cp -r rover/docs rover23
