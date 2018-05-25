@@ -18,11 +18,11 @@ Single Day
     ${target} =    Get File    ${CURDIR}${/}target${/}list-index.txt
     Should Be Equal    ${run}  ${target}
 
-    Run Process    rover  -f  ../roverrc  list-retrieve  net\=IU  sta=ANMO  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run  stdout=list-retrieve.txt
+    Run Process    rover  -f  ../roverrc  list-retrieve  net\=IU  sta\=ANMO  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run  stdout=list-retrieve.txt
     ${run} =    Get File    ${CURDIR}${/}run${/}list-retrieve.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}list-retrieve.txt
     Should Be Equal    ${run}  ${target}
-    ${result} =    Run Process    rover  -f  ../roverrc  retrieve  net\=IU  sta=ANMO  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run
+    ${result} =    Run Process    rover  -f  ../roverrc  retrieve  net\=IU  sta\=ANMO  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run
     Should Match Regexp    ${result.stderr}  No data downloaded
 
     ${nfiles} =    Count Files In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001
