@@ -49,6 +49,7 @@ will create the summary.
     def run(self, args):
         if len(args):
             raise Exception('Usage: rover %s' % SUMMARY)
+        self._log.info('Generating summary table')
         self.execute('drop table if exists tsindex_summary')
         self.execute('''create table tsindex_summary as
                             select network, station, location, channel, 

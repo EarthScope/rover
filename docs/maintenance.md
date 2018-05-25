@@ -12,6 +12,10 @@
 
 * `rover index --all` - will re-index all files.
 
+* `rover summary` - will generate a summary of the index.
+
+(all these commands should be called automatically by `rover retrieve`)
+
 ## Ingest of Local Data
 
 * `rover ingest file.mseed` - will include a file from the local
@@ -27,3 +31,8 @@
 
 * `rover list-index net=XX join` - will show the timespan coverage for
   all data belonging to the given network.
+
+* `rover list-summary net=XX` - will show the overall (earliest to
+  latest) voerage for all data belonging to the given network (in
+  general, `rover list-summary` will rub much more quickly that `rover
+  list-index` because it uses a pre-computed summary table).

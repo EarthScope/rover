@@ -5,8 +5,9 @@ from os.path import exists
 from shutil import copyfile
 from sqlite3 import OperationalError
 
+from .summary import Summarizer
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, TIMESPANTOL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES
+    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, SUMMARY
 from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
@@ -59,6 +60,7 @@ This command also indexes modified data in the store before processing.
 @pre-index
 @ingest
 @index
+@summary
 @rover-cmd
 @mseed-cmd
 @mseed-db
@@ -92,6 +94,7 @@ store.
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._pre_index = config.arg(PREINDEX)
         self._delete_files = config.arg(DELETEFILES)
+        self._summary = config.arg(SUMMARY)
         # check these so we fail early
         check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
         check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
@@ -149,7 +152,10 @@ store.
         """
         Fetch data from the download manager.
         """
-        return self._download_manager.download()
+        n_downloads = self._download_manager.download()
+        if self._summary:
+            Summarizer(self._config).run()
+        return n_downloads
 
     def _display(self):
         """

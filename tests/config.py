@@ -47,6 +47,8 @@ pre-index=True
 ingest=True
 # call index after ingest?
 index=True
+# call summary after retrieve?
+summary=True
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
