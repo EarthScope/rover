@@ -161,7 +161,7 @@ value:
 
 #### Examples
 
-    rover list-index IU.ANMO.00.BH? count
+    rover list-index IU_ANMO_00_BH? count
 
 will display the number of entries for all time, and any quality or smaplerate.
 
@@ -221,7 +221,7 @@ value:
 
 Examples:
 
-    rover list-index IU.ANMO.00.BH? count
+    rover list-index IU_ANMO_00_BH? count
 
 will display the number of entries for all time, any
 quality or smaplerate.
