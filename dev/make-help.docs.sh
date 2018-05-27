@@ -66,6 +66,7 @@ structure:
 
     USERHOME/
     +- rover/
+       +- config
        +- index.sql
        +- leap-seconds.lst
        +- logs/
