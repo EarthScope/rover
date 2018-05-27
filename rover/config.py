@@ -6,7 +6,7 @@ from os.path import basename, isabs, join, realpath, abspath, expanduser, dirnam
 from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    MSEEDDB, FILE, HELP, DIR
+    MSEEDDB, FILE, HELP, DIR, FILE_
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
@@ -157,7 +157,8 @@ will write the config to the given file.
 
     def __init__(self, config):
         self._log = config.log
-        self._file = config.arg(FILE)
+        self._file = config.arg(FILE_)
+        self._args = config._args
 
     def run(self, args):
         """
@@ -177,4 +178,4 @@ will write the config to the given file.
                 self._log.warn('Deleting %s' % self._file)
                 safe_unlink(self._file)
         self._log.info('Writing new config file "%s"' % self._file)
-        argparse.write_config(self._file)
+        argparse.write_config(self._file, self._args)

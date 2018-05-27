@@ -6,7 +6,7 @@ from shutil import copyfile
 from sqlite3 import OperationalError
 
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, TIMESPANTOL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY
+    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL
 from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
@@ -15,14 +15,15 @@ from .summary import Summarizer
 from .utils import post_to_file, run, check_cmd, clean_old_files, \
     match_prefixes, check_leap, parse_epoch, unique_path, safe_unlink, build_file
 
-
 """
 The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
 """
 
 
-RETRIEVEFILE = 'rover_retrieve'
+RETRIEVEWEB = 'rover_retrieve_web'
+RETRIEVECONFIG = 'rover_retrieve_config'
 EARLY = datetime.datetime(1900, 1, 1)
+DEFAULT = 'default'
 
 
 class BaseRetriever(SqliteSupport):
@@ -89,9 +90,10 @@ store.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        self._download_manager = DownloadManager(config)
+        self._download_manager = DownloadManager(config, RETRIEVECONFIG)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
+        self._dataselect_url = config.arg(DATASELECTURL)
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._pre_index = config.arg(PREINDEX)
         self._delete_files = config.arg(DELETEFILES)
@@ -102,7 +104,7 @@ store.
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
         check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
-        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEFILE), config.log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
 
     def do_run(self, args, fetch, command):
         """
@@ -111,7 +113,7 @@ store.
         if not exists(self._temp_dir):
             makedirs(self._temp_dir)
         # input is a temp file as we prepend parameters
-        path = unique_path(self._temp_dir, RETRIEVEFILE, args[0])
+        path = unique_path(self._temp_dir, RETRIEVEWEB, args[0])
         try:
             if len(args) == 1:
                 copyfile(args[0], path)
@@ -138,6 +140,7 @@ store.
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
         self._prepend_options(up)
+        self._download_manager.add_source(DEFAULT, self._dataselect_url)
         down = self._post_availability(up)
         try:
             self._sort_availability(down)
@@ -165,7 +168,7 @@ store.
         return self._download_manager.display()
 
     def _prepend_options(self, up):
-        tmp = unique_path(self._temp_dir, RETRIEVEFILE, up)
+        tmp = unique_path(self._temp_dir, RETRIEVEWEB, up)
         self._log.debug('Prepending options to %s via %s' % (up, tmp))
         try:
             with open(tmp, 'w') as output:
@@ -179,11 +182,11 @@ store.
             safe_unlink(tmp)
 
     def _post_availability(self, up):
-        down = unique_path(self._temp_dir, RETRIEVEFILE, up)
+        down = unique_path(self._temp_dir, RETRIEVEWEB, up)
         return post_to_file(self._availability_url, up, down, self._log)
 
     def _sort_availability(self, down):
-        tmp = unique_path(self._temp_dir, RETRIEVEFILE, down)
+        tmp = unique_path(self._temp_dir, RETRIEVEWEB, down)
         try:
             self._log.debug('Sorting %s via %s' % (down, tmp))
             run('sort %s > %s' % (down, tmp), self._log)  # todo - windows
@@ -231,7 +234,7 @@ store.
 
     def _request_download(self, missing):
         self._log.debug('Data to download: %s' % missing)
-        self._download_manager.add(missing)
+        self._download_manager.add_coverage(DEFAULT, missing)
 
 
 class Retriever(BaseRetriever):
