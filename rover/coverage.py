@@ -133,7 +133,7 @@ class Coverage:
                 # the next challenger.
                 else:
                     us.push((them_end, us_end))
-            # we start before them
+            # we start before them (difference must be larger than tolerance - see above)
             elif us_begin < them_begin:
                 # we also end before them, so we're home free into the difference and
                 # they live to try kill our next timespan
@@ -143,14 +143,17 @@ class Coverage:
                 # we end after they start, so we overlap.  save the initial part in
                 # the difference and push the rest back for further consideration.
                 else:
+                    # this difference must exceed tolerance - see top of block
                     difference.add_epochs(us_begin, them_begin)
-                    us.push((them_begin, us_end))
+                    if us_end - them_begin > tolerance:
+                        us.push((them_begin, us_end))
                     them.push((them_begin, them_end))
             # we start after them
             else:
                 # if we also end before them, then we're deleted completely
-                # while they continue to face out next timespan.
-                if us_end <= them_end:
+                # while they continue to face our next timespan.
+                # (this is tricky - we can end slightly after, if it's within tolerance)
+                if us_end - them_end < tolerance:
                     them.push((them_begin, them_end))
                 # but we also end after them.  so some (perhaps all) of our timespan
                 # remains to face their next timespan.
