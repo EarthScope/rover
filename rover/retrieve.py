@@ -5,15 +5,16 @@ from os.path import exists
 from shutil import copyfile
 from sqlite3 import OperationalError
 
-from .summary import Summarizer
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, TIMESPANTOL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, SUMMARY
+    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY
 from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
+from .summary import Summarizer
 from .utils import post_to_file, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, unique_path, canonify_dir_and_make, safe_unlink, build_file
+    match_prefixes, check_leap, parse_epoch, unique_path, safe_unlink, build_file
+
 
 """
 The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
@@ -60,7 +61,7 @@ This command also indexes modified data in the store before processing.
 @pre-index
 @ingest
 @index
-@summary
+@post-summary
 @rover-cmd
 @mseed-cmd
 @mseed-db
@@ -94,7 +95,7 @@ store.
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._pre_index = config.arg(PREINDEX)
         self._delete_files = config.arg(DELETEFILES)
-        self._summary = config.arg(SUMMARY)
+        self._post_summary = config.arg(POSTSUMMARY)
         # check these so we fail early
         check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
         check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
@@ -109,9 +110,9 @@ store.
         """
         if not exists(self._temp_dir):
             makedirs(self._temp_dir)
+        # input is a temp file as we prepend parameters
+        path = unique_path(self._temp_dir, RETRIEVEFILE, args[0])
         try:
-            # input is a temp file as we prepend parameters
-            path = unique_path(self._temp_dir, RETRIEVEFILE, args[0])
             if len(args) == 1:
                 copyfile(args[0], path)
             else:
@@ -153,7 +154,7 @@ store.
         Fetch data from the download manager.
         """
         n_downloads = self._download_manager.download()
-        if self._summary:
+        if self._post_summary:
             Summarizer(self._config).run([])
         return n_downloads
 

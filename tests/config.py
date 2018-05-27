@@ -48,7 +48,7 @@ ingest=True
 # call index after ingest?
 index=True
 # call summary after retrieve?
-summary=True
+post-summary=True
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
@@ -122,8 +122,6 @@ def test_multiple_flags():
     args, configdir = argparse.parse_args(['--daemon', '--no-daemon'])
     assert not args.daemon
 
-
-# todo - need config instance, not just args
 
 def test_CONFIGDIR_start():
       with TemporaryDirectory() as dir:

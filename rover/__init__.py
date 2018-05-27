@@ -1,10 +1,10 @@
 
 from .summary import Summarizer, SummaryLister
 from .daemon import Starter, Stopper
-from .args import RESET_CONFIG, INDEX, INGEST, LIST_INDEX, \
+from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, DAEMON, \
     MULTIPROCESS, DEV, SUMMARY, LIST_SUMMARY
-from .config import Config, ConfigResetter
+from .config import Config, ConfigWriter
 from .download import Downloader
 from .index import Indexer, IndexLister
 from .ingest import Ingester
@@ -14,7 +14,7 @@ from .subscribe import Subscriber, SubscriptionLister, Unsubscriber
 
 
 COMMANDS = {
-    RESET_CONFIG: (ConfigResetter, 'Reset the configuration'),
+    WRITE_CONFIG: (ConfigWriter, 'Reset the configuration'),
     INDEX: (Indexer, 'Index the local store'),
     INGEST: (Ingester, 'Ingest data from a file into the local store'),
     SUMMARY: (Summarizer, 'Update summary table'),

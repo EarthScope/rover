@@ -32,24 +32,43 @@ different to the file.  They are simply given as flags, which can be
 negated by prefixing with `no`:
 
     rover --daemon ...
- 
+
 or
 
     rover --no-daemon ...
 
 Available parameters can be displayed using `rover -h`.
 
-## File Variables
+## Variables, Relative Paths, Default Configuration
 
-The value `${CURDIR}` in any file value is replaced by the directory
-in which the configuration file is located.  This is useful in tests.
+The value `${CONFIGDIR}` in any file value is replaced by the directory
+in which the configuration file is located.
 
 An escaped value `$${...}` is replaced by `${...}`.
 
-Any other variable (of the form `${...}`) raises an error.
+Relative paths for files and directories (bit not commands) are intepreted
+as relative to `${CONFIGDIR}`.  So, in the configuration file
 
-## Configuration Parameters
+    mseed_db=index.sql
 
+is equivalent to
+
+    mseed_db=${CONFIGDIR}/index.sql
+
+The default configuration uses relative paths only and assumes that the
+configuration file is in `~/rover`.  This implies the following directory
+structure:
+
+    USERHOME/
+    +- rover/
+       +- index.sql
+       +- leap-seconds.lst
+       +- logs/
+       |  +- ...
+       +- mseed/
+       |  +- ...
+       +- tmp/
+          +- ...
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | help / -h           | False                | Show the help message and exit |
@@ -66,6 +85,7 @@ Any other variable (of the form `${...}`) raises an error.
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
+| post-summary        | True                 | Call summary after retrieve?   |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | tmp                  | Temporary storage for downloads |

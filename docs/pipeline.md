@@ -40,11 +40,15 @@ When the `rover retrieve` command is used, the following steps are taken:
 
   * **Indexing** - The command `rover index` updates the index for the
     local store.  This step can be omitted with `--no-index`.
+    
+* **Summary** - A summary table is generated.  This step can be ommitted
+  with `--no-post-summary`.
 
 The options `--no-ingest` and `--no-index` can be used to stop the
-pipeline short.
+separate processes short.
 
-Initial indexing can be omitted with `--no-pre-index`.
+Initial indexing can be omitted with `--no-pre-index` and final 
+summarizing with `--no-post-summary`.
 
 These options also affect low-level commands thare are used
 individually.  So using `--no-index` with `rover ingest` would mean

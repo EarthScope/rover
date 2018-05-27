@@ -1,4 +1,4 @@
-
+from random import randint, seed
 from sys import version_info
 
 if version_info[0] >= 3:
@@ -92,14 +92,15 @@ def run_explicit(log, tolerance, index, avail, expected):
     """
     index = indices_to_coverage(log, tolerance, index)
     avail = indices_to_coverage(log, tolerance, avail)
-    print_labels()
-    print_coverage('index', index)
-    print_coverage('avail', avail)
     missing = avail.subtract(index)
-    print_coverage('missing', missing)
     expected = indices_to_coverage(log, tolerance, expected)
+    if expected != missing:
+        print()
+        print_labels()
+        print_coverage('index', index)
+        print_coverage('avail', avail)
+        print_coverage('missing', missing)
     assert expected == missing, coverage_to_str(missing)
-    print()
 
 
 def run(log, tolerance,
@@ -138,4 +139,14 @@ def test_coverage():
 #   avail |    |    |    |====|====|    |
 # missing |    |    |    |    |    |    |
         run_explicit(log, 1.5, [(1,4)], [(3,5)], [])
-
+# more of same
+        seed(42)
+        for i in range(100):
+            # available of length at least 2 (so > tolerance)
+            avail_start = randint(0, 4)
+            avail_end = randint(avail_start + 2, 6)
+            # index must start before one after start of avail (so before, within tolerance)
+            index_start = randint(0, min(4, avail_start+1))
+            # and must end with a width of at least 2, and at least one before end (so after, within tolerance)
+            index_end = randint(max(avail_end-1, index_start+2), 6)
+            run_explicit(log, 1.5, [(index_start, index_end)], [(avail_start, avail_end)], [])

@@ -127,11 +127,11 @@ class Config(BaseConfig):
         self.db = init_db(self.file_path(MSEEDDB), self.log)
 
 
-class ConfigResetter:
+class ConfigWriter:
     """
-### Reset Config
+### Write Config
 
-    rover reset-config
+    rover write-config
 
 Write default values to the config file.
 
@@ -145,11 +145,11 @@ Write default values to the config file.
 
 ##### Examples
 
-    rover reset-config
+    rover write-config
 
 will reset the configuraton in the default location.
 
-    rover reset-config -f ~/.roverrc
+    rover write-config -f ~/.roverrc
 
 will write the config to the given file.
 

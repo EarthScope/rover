@@ -5,7 +5,8 @@
   * [Retrieve](#retrieve)
   * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
-  * [Reset Config](#reset-config)
+  * [List Summary](#list-summary)
+  * [Write Config](#write-config)
 * [Advanced Usage](#advanced-usage)
   * [Subscribe](#subscribe)
 * [Low-Level Commands](#low-level-commands)
@@ -48,6 +49,7 @@ This command also indexes modified data in the store before processing.
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
+| post-summary        | True                 | Call summary after retrieve?   |
 | rover-cmd           | rover                | Command to run rover           |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-db            | index.sql            | Mseedindex database (also used by rover) |
@@ -105,7 +107,7 @@ will display the data missing from the local store to match what is available fo
 
 ### List Index
 
-    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* \
+    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \
     [count|join|join-samplerates]
 
     rover list-index [S_N_C_L_Q]* [begin=...] [end=...] \
@@ -117,7 +119,7 @@ Note that console logging is to stderr, while the command results are listed to 
 
 #### SNCLQ and Samplerate
 
-Query parameters can be named (network, station, location, channel, qualit, samplerate) and unambiguous abbreviations are accepted.  Alternative SNCLQ can be supplied (which can be truncated on the right, but must contain at least one period).
+Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternative SNCLQ can be supplied (which can be truncated on the right, but must contain at least one period).
 
 The wildcards '*' and '?' can be used.
 
@@ -157,9 +159,46 @@ will display the number of entries for all time, and any quality or smaplerate.
 will list all entries in the index after the year 2000.
 
 
-### Reset Config
+### List Summary
 
-    rover reset-config
+    rover list-summary [net=...|sta=...|loc=...|cha=..]* [begin=...] [end=...]
+
+    rover list-index [S_N_C_L_Q]* [begin=...] [end=...]
+
+List summary entries for the local store (config parameter mseed-dir) that match the given constraints.
+
+Note that console logging is to stderr, while the command results are listed to stdout.
+
+#### SNCL
+
+Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternative SNCL can be supplied (which can be truncated on the right, but must contain at least one period).
+
+The wildcards '*' and '?' can be used.
+
+#### Time Range
+
+The 'begin' and 'end' parameters can be given only once.  They must be of the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the right).  They define a range of times over which the data must appear (at least partially) to be included:
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-name            | rover                | Base file name for logs        |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+#### Examples
+
+    rover list-summary net=* begin=2001-01-01
+
+will list all entries in the index after the year 2000.
+
+
+### Write Config
+
+    rover write-config
 
 Write default values to the config file.
 
@@ -175,11 +214,11 @@ Write default values to the config file.
 
 ##### Examples
 
-    rover reset-config
+    rover write-config
 
 will reset the configuraton in the default location.
 
-    rover reset-config -f ~/.roverrc
+    rover write-config -f ~/.roverrc
 
 will write the config to the given file.
 

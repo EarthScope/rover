@@ -7,7 +7,7 @@ from .args import START, DAEMON, ROVERCMD
 
 class Starter:
     """
-    Start the background(daemon) process to support `rover subscribe`.
+    Start the background (daemon) process to support `rover subscribe`.
 
     See also `rover stop`.
 
@@ -28,7 +28,7 @@ class Starter:
 
 class Stopper:
     """
-    Stop the background(daemon) process to support `rover subscribe`.
+    Stop the background (daemon) process to support `rover subscribe`.
 
     See also `rover start`.
     """

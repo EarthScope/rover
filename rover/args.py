@@ -24,13 +24,13 @@ LIST_INDEX = 'list-index'
 LIST_RETRIEVE = 'list-retrieve'
 LIST_SUBSCRIPTIONS = 'list-subscriptions'
 LIST_SUMMARY = 'list-summary'
-RESET_CONFIG = 'reset-config'
 RETRIEVE = 'retrieve'
 START = 'start'
 STOP = 'stop'
 SUMMARY = 'summary'
 SUBSCRIBE = 'subscribe'
 UNSUBSCRIBE = 'unsubscribe'
+WRITE_CONFIG = 'write-config'
 
 
 # flag negation
@@ -64,6 +64,7 @@ MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
+POSTSUMMARY = 'post-summary'
 PREINDEX = 'pre-index'
 RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
@@ -194,7 +195,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
         self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
-        self.add_argument(mm(SUMMARY), default=True, action='store_bool', help='call summary after retrieve?', metavar='')
+        self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieve?', metavar='')
 
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=DIR)
@@ -317,7 +318,7 @@ class Arguments(ArgumentParser):
         Force the reading of the config file (ignored for reset-config
         because we may be rewriting it because it has errors).
         '''
-        if RESET_CONFIG in args:
+        if WRITE_CONFIG in args:
             return args
         else:
             return ['@'+config] + args
