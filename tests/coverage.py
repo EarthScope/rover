@@ -39,16 +39,15 @@ def build_coverage(log, width, gap, offset):
         right = left + width
         indices.append((max(left, 0), min(right, 6)))
         left += total
-    return indices_to_coverage(log, indices)
+    return indices
 
 
 def coverage_to_str(coverage):
     return '(' + ','.join(map(lambda be: '(%d,%d)' % be, coverage.timespans)) + ')'
 
 
-def indices_to_coverage(log, indices):
-    # 0.5 here so no overlap between integers
-    coverage = Coverage(log, 0.5, 'N.S.L.C')
+def indices_to_coverage(log, tolerance, indices):
+    coverage = Coverage(log, tolerance, 'N.S.L.C')
     for (begin, end) in indices:
         if begin != end:
             coverage.add_epochs(begin, end, 1)
@@ -80,37 +79,63 @@ def print_coverage(title, coverage):
     print('|')
 
 
-def run(log,
-        width_index, gap_index, offset_index,
-        width_avail, gap_avail, offset_avail,
-        expected):
-    index = build_coverage(log, width_index, gap_index, offset_index)
-    avail = build_coverage(log, width_avail, gap_avail, offset_avail)
+def run_explicit(log, tolerance, index, avail, expected):
+    """
+    A bad test looks like:
+
+          0    1    2    3    4    5    6
+    index |====|====|    |====|====|    |
+    avail |    |====|    |====|    |====|
+  missing |    |    |    |    |    |====|
+
+    where, for exmaple, index has data from 0-1 but it's not in missing
+    """
+    index = indices_to_coverage(log, tolerance, index)
+    avail = indices_to_coverage(log, tolerance, avail)
     print_labels()
     print_coverage('index', index)
     print_coverage('avail', avail)
     missing = avail.subtract(index)
     print_coverage('missing', missing)
-    target = indices_to_coverage(log, expected)
-    assert target == missing, coverage_to_str(missing)
+    expected = indices_to_coverage(log, tolerance, expected)
+    assert expected == missing, coverage_to_str(missing)
     print()
+
+
+def run(log, tolerance,
+        width_index, gap_index, offset_index,
+        width_avail, gap_avail, offset_avail,
+        expected):
+    run_explicit(log, tolerance,
+                 build_coverage(log, width_index, gap_index, offset_index),
+                 build_coverage(log, width_avail, gap_avail, offset_avail),
+                 expected)
 
 
 def test_coverage():
     with TemporaryDirectory() as dir:
         log = init_log(dir, 10, 1, 5, 4, 'coverage', False, 1)
-        run(log, 2, 1, -1, 3, 2, 0, ((2,3),))
-        run(log, 2, 1, -1, 3, 2, 1, ((5,6),))
-        run(log, 2, 1, -1, 3, 2, 2, ((5,6),))
-        run(log, 2, 1, -1, 1, 1, 0, ((5,6),))
-        run(log, 2, 1, 0, 1, 1, 0, ((3,4),))
-        run(log, 2, 1, 1, 1, 1, 0, ((1,2),))
-        run(log, 1, 2, 0, 1, 2, 0, tuple())
-        run(log, 1, 2, 1, 1, 2, 0, ((2,3),(5,6)))
-        run(log, 1, 2, 2, 1, 2, 0, ((2,3),(5,6)))
-        run(log, 1, 2, 3, 1, 2, 0, tuple())
-        run(log, 2, 2, 0, 2, 2, 0, tuple())
-        run(log, 2, 2, 0, 2, 2, 1, ((0,1),(4,5),))
-        run(log, 2, 2, 0, 2, 2, 2, ((0,2),(4,6)))
-        run(log, 1, 1, 0, 3, 2, 0, ((2,3),(4,5)))
-        run(log, 1, 1, 0, 3, 2, 1, ((0,1),(4,5)))
+        run(log, 0.5, 2, 1, -1, 3, 2, 0, ((2,3),))
+        run(log, 0.5, 2, 1, -1, 3, 2, 1, ((5,6),))
+        run(log, 0.5, 2, 1, -1, 3, 2, 2, ((5,6),))
+        run(log, 0.5, 2, 1, -1, 1, 1, 0, ((5,6),))
+        run(log, 0.5, 2, 1, 0, 1, 1, 0, ((3,4),))
+        run(log, 0.5, 2, 1, 1, 1, 1, 0, ((1,2),))
+        run(log, 0.5, 1, 2, 0, 1, 2, 0, tuple())
+        run(log, 0.5, 1, 2, 1, 1, 2, 0, ((2,3),(5,6)))
+        run(log, 0.5, 1, 2, 2, 1, 2, 0, ((2,3),(5,6)))
+        run(log, 0.5, 1, 2, 3, 1, 2, 0, tuple())
+        run(log, 0.5, 2, 2, 0, 2, 2, 0, tuple())
+        run(log, 0.5, 2, 2, 0, 2, 2, 1, ((0,1),(4,5),))
+        run(log, 0.5, 2, 2, 0, 2, 2, 2, ((0,2),(4,6)))
+        run(log, 0.5, 1, 1, 0, 3, 2, 0, ((2,3),(4,5)))
+        run(log, 0.5, 1, 1, 0, 3, 2, 1, ((0,1),(4,5)))
+
+# with tolerance 1.5 these overlap
+# (this was a bug with rover retrieve IU_ANMO_3?_* 2016-01-01T20:00:00 2016-01-02T04:00:00)
+#         0    1    2    3    4    5    6
+#   index |    |====|====|====|    |    |
+#   avail |    |    |    |====|====|    |
+# missing |    |    |    |    |    |    |
+        run_explicit(log, 1.5, [(1,4)], [(3,5)], [])
+

@@ -109,7 +109,7 @@ class Coverage:
             try:
                 us_begin, us_end = next(us)
             except StopIteration:
-                # we can return difference now, because there;s only more subtracting to do
+                # we can return difference now, because there's only more subtracting to do
                 return difference
             try:
                 them_begin, them_end = next(them)
