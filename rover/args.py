@@ -195,7 +195,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
         self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
-        self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieve?', metavar='')
+        self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
 
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=DIR)

@@ -49,7 +49,7 @@ This command also indexes modified data in the store before processing.
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
-| post-summary        | True                 | Call summary after retrieve?   |
+| post-summary        | True                 | Call summary after retrieval?  |
 | rover-cmd           | rover                | Command to run rover           |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-db            | index.sql            | Mseedindex database (also used by rover) |
