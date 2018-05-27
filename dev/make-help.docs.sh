@@ -83,6 +83,9 @@ necessary to sepecify a new path for the configuartion file:**
     rover -f newdir/config
 
 This will place all files in \`newdir\`.
+
+## Parameters
+
 EOF
 
 python -c 'from rover.args import Arguments; Arguments().print_docs_table_md()' >> docs/configuration.md
