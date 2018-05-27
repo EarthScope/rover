@@ -75,6 +75,14 @@ structure:
        |  +- ...
        +- tmp/
           +- ...
+
+The configuration file created automatically if not found, so **to use 
+Rover with a completely new database, configuration, etc, it is only
+necessary to sepecify a new path for the configuartion file:**
+
+    rover -f newdir/config
+
+This will place all files in \`newdir\`.
 EOF
 
 python -c 'from rover.args import Arguments; Arguments().print_docs_table_md()' >> docs/configuration.md
