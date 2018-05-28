@@ -52,11 +52,11 @@ will create the summary.
         self._log.info('Generating summary table')
         self.execute('drop table if exists tsindex_summary')
         self.execute('''create table tsindex_summary as
-                            select network, station, location, channel, 
-                            min(starttime) AS earliest, max(endtime) AS latest, 
-                            datetime('now') as updt
-                        from tsindex
-                        group by 1,2,3,4''')
+                          select network, station, location, channel, 
+                                 min(starttime) as earliest, max(endtime) as latest, 
+                                 datetime('now') as updt
+                          from tsindex
+                          group by 1,2,3,4''')
 
 
 class SummaryLister(SqliteSupport):

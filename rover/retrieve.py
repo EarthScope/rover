@@ -15,8 +15,12 @@ from .summary import Summarizer
 from .utils import post_to_file, run, check_cmd, clean_old_files, \
     match_prefixes, check_leap, parse_epoch, unique_path, safe_unlink, build_file
 
+
 """
-The 'rover retrieve' command - check for remote data that we don't already have, download it and ingest it.
+Commands related to data retrieval:
+ 
+The `rover retrieve` command - check for remote data that we don't already have, download it and ingest it.
+The `rover list-retrieve` command - shows what data would be downloaded by `rover retrieve`.
 """
 
 

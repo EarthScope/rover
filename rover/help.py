@@ -2,7 +2,7 @@
 from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, WRITE_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDCMD, Arguments, MDFORMAT, FILE
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDCMD, Arguments, MDFORMAT, FILEVAR
 
 """
 The 'rover help' command.
@@ -55,7 +55,7 @@ To display this screen again, type "rover" or "rover help".
        HELP, BACKGROUND,
        HELP, LOWLEVEL,
        HELP, HELP,
-       config.arg(FILE))
+       config.arg(FILEVAR))
 
 
 def usage(config):

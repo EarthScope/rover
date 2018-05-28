@@ -2,9 +2,9 @@
 from shutil import copyfile
 from sqlite3 import OperationalError
 
-from .args import SUBSCRIBE, LIST_SUBSCRIPTIONS, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV
+from .args import SUBSCRIBE, LIST_SUBSCRIBE, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV
 from .sqlite import SqliteSupport
-from .utils import unique_path, build_file, canonify_dir_and_make, format_day_epoch, safe_unlink
+from .utils import unique_path, build_file, canonify_dir_and_make, format_day_epoch, safe_unlink, format_time_epoch
 
 """
 The 'rover subscribe', 'rover list-subscriptions' and 'rover unsubscribe' commands.
@@ -54,7 +54,8 @@ for the give SNCL between the given dates.
                            file text unique,
                            availability_url text not null,
                            dataselect_url text not null,
-                           creation_epoch int default (cast(strftime('%s', 'now') as int))
+                           creation_epoch int default (cast(strftime('%s', 'now') as int)),
+                           last_check_epoch int default NULL
         )''')
 
     def run(self, args):
@@ -66,7 +67,7 @@ for the give SNCL between the given dates.
             if len(args) == 1:
                 copyfile(args[0], path)
             else:
-                build_file(path, *args)
+                build_file(path, args)
             self.execute('''insert into rover_subscriptions (file, availability_url, dataselect_url) values (?, ?, ?)''',
                          (path, self._availability_url, self._dataselect_url))
 
@@ -93,22 +94,35 @@ class SubscriptionLister(SqliteSupport):
 
     def run(self, args):
         if args:
-            raise Exception('Usage: rover %s' % LIST_SUBSCRIPTIONS)
+            raise Exception('Usage: rover %s' % LIST_SUBSCRIBE)
         print()
+        count = [0]
 
         def callback(row):
-            id, file, availability_url, dataselect_url, creation_epoch = row
+            id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch = row
             date = format_day_epoch(creation_epoch)
-            print('  %d %s' % (id, file))
+            try:
+                check = format_time_epoch(last_check_epoch)
+            except TypeError:
+                check = 'never'
+            print('  %d created %s  checked %s' % (id, date, check))
+            print('    %s' % file)
             print('    %s' % availability_url)
             print('    %s' % dataselect_url)
             print()
+            count[0] += 1
 
         try:
-            self.foreachrow('''select * from rover_subscriptions order by creation_epoch''', tuple(), callback, quiet=True)
+
+            self.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch
+                                 from rover_subscriptions order by creation_epoch
+                            ''', tuple(), callback, quiet=True)
         except OperationalError:
             # no table
             if self._dev: raise
+
+        print("  %d subscription%s" % (count[0], '' if count[0] == 1 else 's'))
+        print()
 
 
 class Unsubscriber(SqliteSupport):

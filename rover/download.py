@@ -235,6 +235,9 @@ class DownloadManager:
             raise Exception('Cannot overwrite active source %s' % self._sources[source])
         self._sources[source] = Source(source, dataselect_url)
 
+    def has_source(self, name):
+        return name in self._sources
+
     def _source(self, name):
         if name not in self._sources:
             raise Exception('Unexpected source: %s' % name)
@@ -304,6 +307,10 @@ class DownloadManager:
             if self._source(name).is_complete():
                 self._log.debug('Source %s complete' % self._source(name))
                 del self._sources[name]
+
+    def is_idle(self):
+        self._clean_sources()
+        return len(self._sources) == 0
 
     def step(self):
         """

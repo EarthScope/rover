@@ -22,7 +22,7 @@ INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
 LIST_RETRIEVE = 'list-retrieve'
-LIST_SUBSCRIPTIONS = 'list-subscriptions'
+LIST_SUBSCRIBE = 'list-subscribe'
 LIST_SUMMARY = 'list-summary'
 RETRIEVE = 'retrieve'
 START = 'start'
@@ -46,7 +46,7 @@ DATASELECTURL = 'dataselect-url'
 DELETEFILES = 'delete-files'
 DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
-F, FILE_ = 'f', 'file'
+F, FILE = 'f', 'file'
 LEAP = 'leap'
 LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
@@ -66,6 +66,7 @@ MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
 POSTSUMMARY = 'post-summary'
 PREINDEX = 'pre-index'
+RECHECKPERIOD = 'recheck-period'
 RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
 SUBSCRIPTIONSDIR = 'subscriptions-dir'
@@ -93,6 +94,7 @@ DEFAULT_MSEEDCMD = 'mseedindex'
 DEFAULT_MSEEDDB = 'index.sql'
 DEFAULT_MSEEDDIR = 'mseed'
 DEFAULT_MSEEDWORKERS = 10
+DEFAULT_RECHECKPERIOD = 12
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_SUBSCRIPTIONSDIR = 'subscriptions'
 DEFAULT_TEMPDIR = 'tmp'
@@ -100,8 +102,8 @@ DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANTOL = 1.5
 DEFAULT_VERBOSITY = 4
 
-DIR = 'DIR'
-FILE = 'FILE'
+DIRVAR = 'DIR'
+FILEVAR = 'FILE'
 
 
 def parse_bool(value):
@@ -176,7 +178,7 @@ class Arguments(ArgumentParser):
         self.register('action', 'store_bool', StoreBoolAction)
 
         # operation details
-        self.add_argument(m(F), mm(FILE_), default=DEFAULT_FILE, help='specify configuration file')
+        self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
         self.add_argument(mm(DAEMON), default=False, action='store_bool', help='use background processes?', metavar='')
@@ -185,7 +187,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
 
         # subscription
-        self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIR)
+        self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
+        self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar='HOURS')
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
@@ -198,9 +201,9 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
 
         # downloads
-        self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=DIR)
-        self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=DIR)
-        self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar=DIR)
+        self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=DIRVAR)
+        self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=DIRVAR)
+        self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar=DIRVAR)
         self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
 
         # index
@@ -208,7 +211,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
 
         # logging
-        self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIR)
+        self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
         self.add_argument(mm(LOGNAME), default=DEFAULT_LOGNAME, action='store', help='base file name for logs', metavar='NAME')
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
         self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar='DAYS', type=int)
@@ -219,14 +222,14 @@ class Arguments(ArgumentParser):
 
         # mseedindex
         self.add_argument(mm(MSEEDCMD), default=DEFAULT_MSEEDCMD, action='store', help='mseedindex command', metavar='CMD')
-        self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar=FILE)
-        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar=DIR)
+        self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar=FILEVAR)
+        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar=DIRVAR)
         self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
 
         # leap seconds
         self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
         self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar='N', type=int)
-        self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar=FILE)
+        self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar=FILEVAR)
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
 
         # commands / args
@@ -289,11 +292,11 @@ class Arguments(ArgumentParser):
         for index in reversed(indices):
             args = args[:index] + args[index+2:]
         if not config:
-            config = self.get_default(FILE_)
+            config = self.get_default(FILE)
         config = canonify(config)
         # include config flag so that it is set correctly, even if the extracted
         # value is the one that is used here
-        return config, [mm(FILE_), config] + args
+        return config, [mm(FILE), config] + args
 
     def write_config(self, path, values=None):
         '''
@@ -303,7 +306,7 @@ class Arguments(ArgumentParser):
             create_parents(path)
             with open(path, 'w') as out:
                 for action in self._actions:
-                    if action.dest not in (HELP, FILE_):
+                    if action.dest not in (HELP, FILE):
                         if action.default is not None:
                             if values is not None:  # py2.7 no __bool__ on values
                                 value = getattr(values, action.dest)
@@ -341,7 +344,7 @@ class Arguments(ArgumentParser):
         name = sub('_', '-', action.dest)
         default = action.default
         help = action.help
-        if name == FILE_:
+        if name == FILE:
             name += ' / -f'
         elif name == HELP:
             name += ' / -h'

@@ -6,7 +6,7 @@ from os.path import basename, isabs, join, realpath, abspath, expanduser, dirnam
 from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    MSEEDDB, FILE, HELP, DIR, FILE_
+    MSEEDDB, FILEVAR, HELP, DIRVAR, FILE
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
@@ -72,8 +72,8 @@ class BaseConfig:
         args = {}
         for action in Arguments()._actions:
             name = action.dest
-            if name not in (FILE, HELP):
-                if action.metavar in (DIR, FILE):
+            if name not in (FILEVAR, HELP):
+                if action.metavar in (DIRVAR, FILEVAR):
                     value = self.path(name)
                 else:
                     value = self.arg(name)
@@ -157,7 +157,7 @@ will write the config to the given file.
 
     def __init__(self, config):
         self._log = config.log
-        self._file = config.arg(FILE_)
+        self._file = config.arg(FILE)
         self._args = config._args
 
     def run(self, args):
