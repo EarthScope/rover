@@ -1,6 +1,6 @@
 
 from .summary import Summarizer, SummaryLister
-from .daemon import Starter, Stopper
+from .daemon import Starter, Stopper, Daemon
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     MULTIPROCESS, DEV, SUMMARY, LIST_SUMMARY
@@ -25,6 +25,7 @@ COMMANDS = {
     LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
+    DAEMON: (Daemon, 'The background daemon (prefer start/stop)'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
     LIST_SUBSCRIBE: (SubscriptionLister, 'List the subscriptions'),
     UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription')

@@ -6,12 +6,12 @@ from os.path import join, exists
 from sqlite3 import OperationalError
 from time import sleep
 
-from .coverage import Coverage, SingleSNCLBuilder
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TEMPDIR, DELETEFILES, INGEST, \
-    TEMPEXPIRE, DATASELECTURL, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL
+    TEMPEXPIRE, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL
+from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
 from .sqlite import SqliteSupport
-from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
+from .utils import uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
     canonify_dir_and_make, safe_unlink, post_to_file, run, parse_epoch
 from .workers import Workers
@@ -123,9 +123,10 @@ class Source:
     Data for a single source in the download manager.
     """
 
-    def __init__(self, name, dataselect_url):
+    def __init__(self, name, dataselect_url, completion_callback=None):
         self._name = name
         self._dataselect_url = dataselect_url
+        self._completion_callback = completion_callback
         self._coverages = deque()  # fifo: appendright / popleft; exposed for display
         self._days = deque()  # fifo: appendright / popleft
         self.worker_count = 0
@@ -189,7 +190,11 @@ class Source:
         self.worker_count += 1
 
     def is_complete(self):
-        return not self.new and self.worker_count == 0 and not self.has_days()
+        complete = not self.new and self.worker_count == 0 and not self.has_days()
+        if complete and self._completion_callback:
+            self._completion_callback()
+            self._completion_callback = None
+        return complete
 
 
 class DownloadManager(SqliteSupport):
@@ -234,13 +239,13 @@ class DownloadManager(SqliteSupport):
         Arguments().write_config(config_path, args)
         return config_path
 
-    def add_source(self, source, dataselect_url):
+    def add_source(self, source, dataselect_url, completion_callback=None):
         """
         Add a new source - a service thatwe will download data from.
         """
         if source in self._sources and self._sources[source].worker_count:
             raise Exception('Cannot overwrite active source %s' % self._sources[source])
-        self._sources[source] = Source(source, dataselect_url)
+        self._sources[source] = Source(source, dataselect_url, completion_callback=completion_callback)
 
     def has_source(self, name):
         """
@@ -317,7 +322,7 @@ class DownloadManager(SqliteSupport):
             self._log.debug('No index - first time using rover?')
         return availability.coverage()
 
-    def add(self, name, path, availability_url, dataselect_url):
+    def add(self, name, path, availability_url, dataselect_url, completion_callback=None):
         """
         Add a source and associated coverage, retrieving data from the
         availability service.
@@ -325,7 +330,7 @@ class DownloadManager(SqliteSupport):
         request = self._build_request(path)
         response = self._get_availability(request, availability_url)
         try:
-            self.add_source(name, dataselect_url)
+            self.add_source(name, dataselect_url, completion_callback=completion_callback)
             for remote in self._parse_availability(response):
                 self._log.debug('Available data: %s' % remote)
                 local = self._scan_index(remote.sncl)

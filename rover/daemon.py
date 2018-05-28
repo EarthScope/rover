@@ -1,10 +1,13 @@
+
 from time import sleep, time
 
+from .index import Indexer
+from .summary import Summarizer
 from .download import DownloadManager
 from .process import Processes
 from .sqlite import SqliteSupport
 from .utils import check_cmd, run
-from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD
+from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY
 
 
 class Starter:
@@ -65,14 +68,17 @@ class Daemon(SqliteSupport):
     def __init__(self, config):
         super().__init__(config)
         self._log = config.log
+        self._pre_index = config.arg(PREINDEX)
+        self._post_summary = config.arg(POSTSUMMARY)
         self._download_manager = DownloadManager(config, DAEMONCONFIG)
         self._recheck_period = config.arg(RECHECKPERIOD) * 60 * 60
-
-    # todo - housekeeping like global index, summary, etc
+        self._config = config
 
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % DAEMON)
+        if self._pre_index:
+            Indexer(self._config).run([])
         while True:
             try:
                 id = self._find_next_subscription()
@@ -83,19 +89,24 @@ class Daemon(SqliteSupport):
             self._download_manager.step()
             sleep(1)
 
+    def _source_complete(self):
+        if self._post_summary:
+            Summarizer(self._config).run([])
+
     def _find_next_subscription(self):
         now = time()
         found = [0]
 
         def callback(row):
+            id = row[0]
+            self._log.debug('Candidate: subscription %d' % id)
             if not found[0]:
-                id = row[0]
-                if self._download_manager.has_source(id):
+                if not self._download_manager.has_source(id):
                     found[0] = id
 
         self.foreachrow('''select id from rover_subscriptions
                               where (last_check_epoch is NULL or last_check_epoch < ?)
-                              order by creation_epoch''', (now - self._recheck_period),
+                              order by creation_epoch''', (now - self._recheck_period,),
                         callback)
 
         if found[0]:
@@ -104,5 +115,10 @@ class Daemon(SqliteSupport):
             raise NoSubscription()
 
     def _add_subscription(self, id):
-        # todo - set last_check_epoch
-        pass
+        try:
+            path, availability_url, dataselect_url = self.fetchone(
+                '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
+            self._log.info('Adding subscription %d (%s, %s)' % (id, availability_url, dataselect_url))
+            self._download_manager.add(id, path, availability_url, dataselect_url, self._source_complete)
+        finally:
+            self.execute('''update rover_subscriptions set last_check_epoch = ? where id = ?''', (time(), id))

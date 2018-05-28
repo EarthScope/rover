@@ -33,6 +33,8 @@ delete-files=True
 md-format=False
 # directory for subscriptions
 subscriptions-dir=subscriptions
+# time between availabilty checks
+recheck-period=12
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run
