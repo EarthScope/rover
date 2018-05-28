@@ -3,15 +3,17 @@ import datetime
 from collections import deque
 from os import getpid
 from os.path import join, exists
+from sqlite3 import OperationalError
 from time import sleep
 
+from .coverage import Coverage, SingleSNCLBuilder
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TEMPDIR, DELETEFILES, INGEST, \
-    TEMPEXPIRE, DATASELECTURL, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS
+    TEMPEXPIRE, DATASELECTURL, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import canonify, uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
-    canonify_dir_and_make, safe_unlink
+    canonify_dir_and_make, safe_unlink, post_to_file, run, parse_epoch
 from .workers import Workers
 
 """
@@ -21,11 +23,10 @@ The 'rover download' command - download data from a URL (and then call ingest).
 """
 
 
-# if a download process fails or hangs, we need to clear out
-# the file, so use a specific name and check for old files
-# in the download area
-TMPFILE = 'rover_download'
-CONFIGFILE = 'rover_config'
+TMPREQUEST = 'rover_availability_request'
+TMPRESPONSE = 'rover_availability_response'
+TMPCONFIG = 'rover_config'
+TMPDOWNLOAD = 'rover_download'
 
 
 class Downloader(SqliteSupport):
@@ -80,7 +81,7 @@ will download, ingest and index data from the given URL..
         self._blocksize = 1024 * 1024
         self._ingest = config.arg(INGEST)
         self._config = config
-        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPFILE), self._log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPDOWNLOAD), self._log)
 
     def run(self, args):
         """
@@ -92,7 +93,7 @@ will download, ingest and index data from the given URL..
         if len(args) == 2:
             path, delete = args[2], False
         else:
-            path, delete = unique_path(self._temp_dir, TMPFILE, url), True
+            path, delete = unique_path(self._temp_dir, TMPDOWNLOAD, url), True
         db_path = self._ingesters_db_path(url, getpid())
         try:
             self._do_download(url, path)
@@ -191,7 +192,7 @@ class Source:
         return not self.new and self.worker_count == 0 and not self.has_days()
 
 
-class DownloadManager:
+class DownloadManager(SqliteSupport):
     """
     An interface to downloader instances that restricts downloads to a fixed number of workers,
     each downloading data that is for a maximum duration of a day.
@@ -209,8 +210,11 @@ class DownloadManager:
     """
 
     def __init__(self, config, config_file):
-        super().__init__()
+        super().__init__(config)
         self._log = config.log
+        self._timespan_tol = config.arg(TIMESPANTOL)
+        self._temp_dir = config.arg(TEMPDIR)
+        self._delete_files = config.arg(DELETEFILES)
         self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
         self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
         self._dev = config.arg(DEV)
@@ -221,7 +225,7 @@ class DownloadManager:
         self._n_downloads = 0
         temp_dir = config.arg(TEMPDIR)
         self._config_path = self._write_config(temp_dir, config_file, config.absolute()._args)
-        clean_old_files(temp_dir, config.arg(TEMPEXPIRE), match_prefixes(CONFIGFILE), self._log)
+        clean_old_files(temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPCONFIG), self._log)
 
     def _write_config(self, temp_dir, config_file, args):
         temp_dir = canonify_dir_and_make(temp_dir)
@@ -231,11 +235,17 @@ class DownloadManager:
         return config_path
 
     def add_source(self, source, dataselect_url):
+        """
+        Add a new source - a service thatwe will download data from.
+        """
         if source in self._sources and self._sources[source].worker_count:
             raise Exception('Cannot overwrite active source %s' % self._sources[source])
         self._sources[source] = Source(source, dataselect_url)
 
     def has_source(self, name):
+        """
+        Is the given source known (they are deleted once all data are downloaded).
+        """
         return name in self._sources
 
     def _source(self, name):
@@ -250,6 +260,83 @@ class DownloadManager:
         """
         self._source(source).add_coverage(coverage)
 
+    def _build_request(self, path):
+        tmp = unique_path(self._temp_dir, TMPREQUEST, path)
+        self._log.debug('Prepending options to %s via %s' % (path, tmp))
+        with open(tmp, 'w') as output:
+            print('mergequality=true', file=output)
+            print('mergesamplerate=true', file=output)
+            with open(path, 'r') as input:
+                print(input.readline(), file=output, end='')
+        return tmp
+
+    def _get_availability(self, request, availability_url):
+        response = unique_path(self._temp_dir, TMPRESPONSE, request)
+        response = post_to_file(availability_url, request, response, self._log)
+        sorted = unique_path(self._temp_dir, TMPRESPONSE, request)
+        self._log.debug('Sorting %s into %s' % (response, sorted))
+        run('sort %s > %s' % (response, sorted), self._log)
+        safe_unlink(response)
+        return sorted
+
+    def _parse_line(self, line):
+        n, s, l, c, b, e = line.split()
+        return "%s.%s.%s.%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
+
+    def _parse_availability(self, response):
+        with open(response, 'r') as input:
+            availability = None
+            for line in input:
+                if not line.startswith('#'):
+                    sncl, b, e = self._parse_line(line)
+                    if availability and not availability.sncl == sncl:
+                        yield availability
+                        availability = None
+                    if not availability:
+                        availability = Coverage(self._log, self._timespan_tol, sncl)
+                    availability.add_epochs(b, e)
+            if availability:
+                yield availability
+
+
+    def _scan_index(self, sncl):
+        # todo - we could maybe use time range from initial query?  or from availability?
+        availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
+
+        def callback(row):
+            availability.add_timespans(row[0], row[1])
+
+        try:
+            self.foreachrow('''select timespans, samplerate
+                                    from tsindex 
+                                    where network=? and station=? and location=? and channel=?
+                                    order by starttime, endtime''',
+                            sncl.split('.'),
+                            callback, quiet=True)
+        except OperationalError:
+            self._log.debug('No index - first time using rover?')
+        return availability.coverage()
+
+    def add(self, name, path, availability_url, dataselect_url):
+        """
+        Add a source and associated coverage, retrieving data from the
+        availability service.
+        """
+        request = self._build_request(path)
+        response = self._get_availability(request, availability_url)
+        try:
+            self.add_source(name, dataselect_url)
+            for remote in self._parse_availability(response):
+                self._log.debug('Available data: %s' % remote)
+                local = self._scan_index(remote.sncl)
+                self._log.debug('Local data: %s' % local)
+                required = remote.subtract(local)
+                self.add_coverage(name, required)
+        finally:
+            if self._delete_files:
+                safe_unlink(request)
+                safe_unlink(response)
+
     def display(self):
         """
         Display a summary of the data that have not been expanded into downloads.
@@ -260,7 +347,7 @@ class DownloadManager:
             coverages = source.get_coverages()
             print()
             if len(self._sources) > 1:
-                print('Source %s (%s)' % source)
+                print('Source %s ' % source)
                 print()
             source_seconds, source_sncls = 0, 0
             for coverage in coverages:
@@ -309,6 +396,9 @@ class DownloadManager:
                 del self._sources[name]
 
     def is_idle(self):
+        """
+        Are we no longer downloading data?
+        """
         self._clean_sources()
         return len(self._sources) == 0
 
@@ -334,7 +424,7 @@ class DownloadManager:
 
     def download(self):
         """
-        Run to completion.  For single-shot, called after add_source and add_coverage.
+        Run to completion (for a single shot, after add()).
         """
         try:
             while self._sources:

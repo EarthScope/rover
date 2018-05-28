@@ -24,7 +24,7 @@ The `rover list-retrieve` command - shows what data would be downloaded by `rove
 """
 
 
-RETRIEVEWEB = 'rover_retrieve_web'
+RETRIEVEWEB = 'rover_retrieve_availability'
 RETRIEVECONFIG = 'rover_retrieve_config'
 EARLY = datetime.datetime(1900, 1, 1)
 DEFAULT = 'default'
@@ -98,7 +98,6 @@ store.
         self._temp_dir = config.dir_path(TEMPDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
         self._dataselect_url = config.arg(DATASELECTURL)
-        self._timespan_tol = config.arg(TIMESPANTOL)
         self._pre_index = config.arg(PREINDEX)
         self._delete_files = config.arg(DELETEFILES)
         self._post_summary = config.arg(POSTSUMMARY)
@@ -143,18 +142,7 @@ store.
         if self._pre_index:
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
-        self._prepend_options(up)
-        self._download_manager.add_source(DEFAULT, self._dataselect_url)
-        down = self._post_availability(up)
-        try:
-            self._sort_availability(down)
-            for remote in self._parse_availability(down):
-                self._log.debug('Available data: %s' % remote)
-                local = self._scan_index(remote.sncl)
-                self._log.debug('Local data: %s' % local)
-                self._request_download(remote.subtract(local))
-        finally:
-            safe_unlink(down)
+        self._download_manager.add(DEFAULT, up, self._availability_url, self._dataselect_url)
 
     def _fetch(self):
         """
@@ -170,75 +158,6 @@ store.
         Display data from the download manager.
         """
         return self._download_manager.display()
-
-    def _prepend_options(self, up):
-        tmp = unique_path(self._temp_dir, RETRIEVEWEB, up)
-        self._log.debug('Prepending options to %s via %s' % (up, tmp))
-        try:
-            with open(tmp, 'w') as output:
-                print('mergequality=true', file=output)
-                print('mergesamplerate=true', file=output)
-                with open(up, 'r') as input:
-                    print(input.readline(), file=output, end='')
-            safe_unlink(up)
-            copyfile(tmp, up)
-        finally:
-            safe_unlink(tmp)
-
-    def _post_availability(self, up):
-        down = unique_path(self._temp_dir, RETRIEVEWEB, up)
-        return post_to_file(self._availability_url, up, down, self._log)
-
-    def _sort_availability(self, down):
-        tmp = unique_path(self._temp_dir, RETRIEVEWEB, down)
-        try:
-            self._log.debug('Sorting %s via %s' % (down, tmp))
-            run('sort %s > %s' % (down, tmp), self._log)  # todo - windows
-            safe_unlink(down)
-            copyfile(tmp, down)
-        finally:
-            safe_unlink(tmp)
-
-    def _parse_line(self, line):
-        n, s, l, c, b, e = line.split()
-        return "%s.%s.%s.%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
-
-    def _parse_availability(self, down):
-        with open(down, 'r') as input:
-            availability = None
-            for line in input:
-                if not line.startswith('#'):
-                    sncl, b, e = self._parse_line(line)
-                    if availability and not availability.sncl == sncl:
-                        yield availability
-                        availability = None
-                    if not availability:
-                        availability = Coverage(self._log, self._timespan_tol, sncl)
-                    availability.add_epochs(b, e)
-            if availability:
-                yield availability
-
-    def _scan_index(self, sncl):
-        # todo - we could maybe use time range from initial query?  or from availability?
-        availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
-
-        def callback(row):
-            availability.add_timespans(row[0], row[1])
-
-        try:
-            self.foreachrow('''select timespans, samplerate
-                                    from tsindex 
-                                    where network=? and station=? and location=? and channel=?
-                                    order by starttime, endtime''',
-                            sncl.split('.'),
-                            callback, quiet=True)
-        except OperationalError:
-            self._log.debug('No index - first time using rover?')
-        return availability.coverage()
-
-    def _request_download(self, missing):
-        self._log.debug('Data to download: %s' % missing)
-        self._download_manager.add_coverage(DEFAULT, missing)
 
 
 class Retriever(BaseRetriever):
