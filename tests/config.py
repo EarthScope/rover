@@ -35,6 +35,8 @@ md-format=False
 subscriptions-dir=subscriptions
 # time between availabilty checks
 recheck-period=12
+# skip overlap checks (dangerous)?
+force-request=False
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run

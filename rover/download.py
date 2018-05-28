@@ -13,7 +13,7 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
-    canonify_dir_and_make, safe_unlink, post_to_file, run, parse_epoch
+    canonify_dir_and_make, safe_unlink, post_to_file, run, parse_epoch, sort_file_inplace
 from .workers import Workers
 
 """
@@ -275,17 +275,15 @@ class DownloadManager(SqliteSupport):
             print('mergequality=true', file=output)
             print('mergesamplerate=true', file=output)
             with open(path, 'r') as input:
-                print(input.readline(), file=output, end='')
+                for line in input:
+                    print(line, file=output, end='')
         return tmp
 
     def _get_availability(self, request, availability_url):
         response = unique_path(self._temp_dir, TMPRESPONSE, request)
         response = post_to_file(availability_url, request, response, self._log)
-        sorted = unique_path(self._temp_dir, TMPRESPONSE, request)
-        self._log.debug('Sorting %s into %s' % (response, sorted))
-        run('sort %s > %s' % (response, sorted), self._log)
-        safe_unlink(response)
-        return sorted
+        sort_file_inplace(self._log, response, self._temp_dir)
+        return response
 
     def _parse_line(self, line):
         n, s, l, c, b, e = line.split()

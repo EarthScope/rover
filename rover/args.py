@@ -47,6 +47,7 @@ DELETEFILES = 'delete-files'
 DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
 F, FILE = 'f', 'file'
+FORCEREQUEST = 'force-request'
 LEAP = 'leap'
 LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
@@ -189,6 +190,7 @@ class Arguments(ArgumentParser):
         # subscription
         self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
         self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar='HOURS', type=int)
+        self.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)

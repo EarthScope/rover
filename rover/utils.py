@@ -6,6 +6,7 @@ from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from re import match
+from shutil import move
 from subprocess import Popen, check_output, STDOUT
 
 from requests import get, post
@@ -359,3 +360,9 @@ def build_file(path, args):
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)
 
+def sort_file_inplace(log, path, temp_dir):
+    sorted = unique_path(temp_dir, 'rover_sort', path)
+    log.debug('Sorting %s into %s' % (path, sorted))
+    run('sort %s > %s' % (path, sorted), log)
+    safe_unlink(path)
+    move(sorted, path)
