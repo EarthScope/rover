@@ -94,13 +94,14 @@ store.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        self._download_manager = DownloadManager(config, RETRIEVECONFIG)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
         self._dataselect_url = config.arg(DATASELECTURL)
         self._pre_index = config.arg(PREINDEX)
         self._delete_files = config.arg(DELETEFILES)
         self._post_summary = config.arg(POSTSUMMARY)
+        self._download_manager = None   # created in do_run()
+        self._config = config
         # check these so we fail early
         check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
         check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
@@ -125,6 +126,7 @@ store.
                     build_file(path, args)
                 except:
                     raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] begin [end] | sncl begin [end])' % command)
+            self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             self._query(path)
             if fetch:
                 return self._fetch()

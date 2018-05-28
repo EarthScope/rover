@@ -214,7 +214,7 @@ class DownloadManager(SqliteSupport):
     method must be called regularly (perhaps via download()).
     """
 
-    def __init__(self, config, config_file):
+    def __init__(self, config, config_file=None):
         super().__init__(config)
         self._log = config.log
         self._timespan_tol = config.arg(TIMESPANTOL)
@@ -229,8 +229,11 @@ class DownloadManager(SqliteSupport):
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
         temp_dir = config.arg(TEMPDIR)
-        self._config_path = self._write_config(temp_dir, config_file, config.absolute()._args)
-        clean_old_files(temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPCONFIG), self._log)
+        if config_file:
+            self._config_path = self._write_config(temp_dir, config_file, config.absolute()._args)
+            clean_old_files(temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPCONFIG), self._log)
+        else:
+            self._config_path = None
 
     def _write_config(self, temp_dir, config_file, args):
         temp_dir = canonify_dir_and_make(temp_dir)
@@ -352,7 +355,7 @@ class DownloadManager(SqliteSupport):
             coverages = source.get_coverages()
             print()
             if len(self._sources) > 1:
-                print('Source %s ' % source)
+                print('  Subscription %s ' % source)
                 print()
             source_seconds, source_sncls = 0, 0
             for coverage in coverages:
@@ -369,10 +372,10 @@ class DownloadManager(SqliteSupport):
                     for (begin, end) in coverage.timespans:
                         print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
             if len(self._sources) > 1:
-                print()
+                if source_sncls:
+                    print()
                 print('  %s: %d SNCLSs; %4.2f sec' % (name, source_sncls, source_seconds))
-        if total_sncls:
-            print()
+        print()
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
         return total_sncls
@@ -413,6 +416,8 @@ class DownloadManager(SqliteSupport):
         Cleaning logic assumes coverages for a source are all added at once, though.  If you don't, source
         may be deleted when you don't expect it.
         """
+        if not self._config_path:
+            raise Exception('DownloadManager was created only to display data (no config_path)')
         self._workers.check()
         self._clean_sources()
         while self._workers.has_space() and self._has_data():

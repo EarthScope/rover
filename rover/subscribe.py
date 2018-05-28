@@ -2,6 +2,7 @@
 from shutil import copyfile
 from sqlite3 import OperationalError
 
+from .download import DownloadManager
 from .args import SUBSCRIBE, LIST_SUBSCRIBE, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV
 from .sqlite import SqliteSupport
 from .utils import unique_path, build_file, canonify_dir_and_make, format_day_epoch, safe_unlink, format_time_epoch
@@ -72,6 +73,25 @@ for the give SNCL between the given dates.
                          (path, self._availability_url, self._dataselect_url))
 
 
+def parse_integers(args):
+    # return a list rather than a generator so we fail fast
+    ids = []
+    for arg in args:
+        if ':' in arg:
+            try:
+                id1, id2 = map(int, arg.split(':'))
+            except:
+                raise Exception('Cannot parse %s as a pair of IDs' % arg)
+        else:
+            try:
+                id = int(arg)
+                id1, id2 = id, id
+            except:
+                raise Exception('Cannot parse %s as an IDs' % arg)
+        ids.append((id1, id2))
+    return ids
+
+
 class SubscriptionLister(SqliteSupport):
     """
 ### List Subscriptions
@@ -90,11 +110,29 @@ class SubscriptionLister(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
+        self._config = config
         self._dev = config.arg(DEV)
 
     def run(self, args):
-        if args:
-            raise Exception('Usage: rover %s' % LIST_SUBSCRIBE)
+        try:
+            ids = parse_integers(args)
+        except:
+            raise Exception('Usage: rover %s [id | id1:id2] ...' % LIST_SUBSCRIBE)
+        if not ids:
+            self._list_subscriptions()
+        else:
+            self._list_downloads(ids)
+
+    def _list_downloads(self, ids):
+        download_manager = DownloadManager(self._config)
+        for (id1, id2) in ids:
+            for id in range(id1, id2+1):
+                path, availability_url, dataselect_url = self.fetchone(
+                    '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
+                download_manager.add(id, path, availability_url, dataselect_url)
+        download_manager.display()
+
+    def _list_subscriptions(self):
         print()
         count = [0]
 
@@ -144,28 +182,10 @@ class Unsubscriber(SqliteSupport):
     def __init__(self, config):
         super().__init__(config)
 
-    def _parse_args(self, args):
-        # return a list rather than a generator so we fail fast
-        ids = []
-        for arg in args:
-            if ':' in arg:
-                try:
-                    id1, id2 = map(int, arg.split(''))
-                except:
-                    raise Exception('Cannot parse %s as a pair of IDs' % arg)
-            else:
-                try:
-                    id = int(arg)
-                    id1, id2 = id, id
-                except:
-                    raise Exception('Cannot parse %s as an IDs' % arg)
-            ids.append((id1, id2))
-        return ids
-
     def run(self, args):
         if not args:
             raise Exception('Usage: rover %s (id|id1:id2)+' % UNSUBSCRIBE)
-        for id1, id2 in self._parse_args(args):
+        for id1, id2 in parse_integers(args):
 
             def callback(row):
                 file = row[0]

@@ -28,6 +28,7 @@ class Starter:
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % START)
+        # todo - write config file (with no stdout)
         run('%s %s &' % (self._rover_cmd, DAEMON), self._log)
 
 

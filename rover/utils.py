@@ -358,3 +358,4 @@ def build_file(path, args):
         parts.append(arg)
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)
+
