@@ -20,7 +20,7 @@ from .workers import Workers
 """
 The 'rover download' command - download data from a URL (and then call ingest).
 
-(and the DownloadManager buffer that 'rover retrieve' calls, which spawns multiple Downloaders). 
+(and the DownloadManager buffer that 'rover retrieve' and 'rover daemon' call, which spawns multiple Downloaders). 
 """
 
 
@@ -239,6 +239,8 @@ class DownloadManager(SqliteSupport):
         else:
             self._config_path = None
 
+    # startup
+
     def _write_config(self, temp_dir, config_file, args):
         temp_dir = canonify_dir_and_make(temp_dir)
         config_path = join(temp_dir, config_file)
@@ -246,13 +248,7 @@ class DownloadManager(SqliteSupport):
         Arguments().write_config(config_path, args)
         return config_path
 
-    def add_source(self, source, dataselect_url, completion_callback=None):
-        """
-        Add a new source - a service thatwe will download data from.
-        """
-        if source in self._sources and self._sources[source].worker_count:
-            raise Exception('Cannot overwrite active source %s' % self._sources[source])
-        self._sources[source] = Source(source, dataselect_url, completion_callback=completion_callback)
+    # source management
 
     def has_source(self, name):
         """
@@ -265,12 +261,7 @@ class DownloadManager(SqliteSupport):
             raise Exception('Unexpected source: %s' % name)
         return self._sources[name]
 
-    def add_coverage(self, source, coverage):
-        """
-        Add a required Coverage (SNCL and associated timespans).  This will be expanded
-        into one or more downloads by the source's Expander.
-        """
-        self._source(source).add_coverage(coverage)
+    # querying availability service and adding coverage
 
     def _build_request(self, path):
         tmp = unique_path(self._temp_dir, TMPREQUEST, path)
@@ -308,7 +299,6 @@ class DownloadManager(SqliteSupport):
             if availability:
                 yield availability
 
-
     def _scan_index(self, sncl):
         # todo - we could maybe use time range from initial query?  or from availability?
         availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
@@ -326,6 +316,21 @@ class DownloadManager(SqliteSupport):
         except OperationalError:
             self._log.debug('No index - first time using rover?')
         return availability.coverage()
+
+    def add_coverage(self, source, coverage):
+        """
+        Add a required Coverage (SNCL and associated timespans).  This will be expanded
+        into one or more downloads by the source's Expander.
+        """
+        self._source(source).add_coverage(coverage)
+
+    def add_source(self, source, dataselect_url, completion_callback=None):
+        """
+        Add a new source - a service thatwe will download data from.
+        """
+        if source in self._sources and self._sources[source].worker_count:
+            raise Exception('Cannot overwrite active source %s' % self._sources[source])
+        self._sources[source] = Source(source, dataselect_url, completion_callback=completion_callback)
 
     def add(self, name, path, availability_url, dataselect_url, completion_callback=None):
         """
@@ -346,6 +351,8 @@ class DownloadManager(SqliteSupport):
             if self._delete_files:
                 safe_unlink(request)
                 safe_unlink(response)
+
+    # display expected downloads
 
     def display(self):
         """
@@ -377,10 +384,12 @@ class DownloadManager(SqliteSupport):
                 if source_sncls:
                     print()
                 print('  %s: %d SNCLSs; %4.2f sec' % (name, source_sncls, source_seconds))
-        print()
+                print()
         print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
         print()
         return total_sncls
+
+    # downloading data and processing in the pipeline
 
     def _has_data(self):
         for source in self._sources.values():
@@ -450,5 +459,3 @@ class DownloadManager(SqliteSupport):
             else:
                 self._log.warn('No data downloaded / ingested')
         return self._n_downloads
-
-
