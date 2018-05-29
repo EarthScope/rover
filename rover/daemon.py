@@ -1,14 +1,14 @@
 
 from time import sleep, time
 
+from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, FILE
 from .config import write_config
-from .index import Indexer
-from .summary import Summarizer
 from .download import DownloadManager
+from .index import Indexer
 from .process import Processes
 from .sqlite import SqliteSupport
-from .utils import check_cmd, run, clean_old_files
-from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early
+from .summary import Summarizer
+from .utils import check_cmd, run, canonify
 
 
 DAEMONCONFIG = 'rover_daemon_config'
@@ -31,12 +31,12 @@ class Starter:
         self._log = config.log
         self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
         # don't clean this because it may be long-lived (it will be over-written on re-use)
-        write_config(config, DAEMONCONFIG, verbosity=0)
+        self._config_path = write_config(config, DAEMONCONFIG, verbosity=0)
 
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % START)
-        run('%s %s &' % (self._rover_cmd, DAEMON), self._log)
+        run('%s %s -f %s &' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
 
 
 class Stopper:

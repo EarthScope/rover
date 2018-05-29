@@ -246,7 +246,8 @@ class Arguments(ArgumentParser):
             args = sys.argv[1:]
         args = self.__preprocess_booleans(args)
         config, args = self.__extract_config(args)
-        self.write_config(config, None)
+        if not exists(config):
+            self.write_config(config, None)
         args = self.__patch_config(args, config)
         return super().parse_args(args=args, namespace=namespace), dirname(config)
 
@@ -303,22 +304,21 @@ class Arguments(ArgumentParser):
         If args is None, defaults are used.
         If keywords are specified, they over-ride defaults and args.
         """
-        if not exists(path):
-            create_parents(path)
-            with open(path, 'w') as out:
-                for action in self._actions:
-                    name, default = action.dest, action.default
-                    if name not in (HELP, FILE):
-                        if default is not None:
-                            if name in kargs:
-                                value = kargs[name]
-                            elif args is not None:  # py2.7 no __bool__ on values
-                                value = getattr(args, name)
-                            else:
-                                value = default
-                            if action.help:
-                                out.write('# %s\n' % action.help)
-                            out.write('%s=%s\n' % (sub('_', '-', name), value))
+        create_parents(path)
+        with open(path, 'w') as out:
+            for action in self._actions:
+                name, default = action.dest, action.default
+                if name not in (HELP, FILE):
+                    if default is not None:
+                        if name in kargs:
+                            value = kargs[name]
+                        elif args is not None:  # py2.7 no __bool__ on values
+                            value = getattr(args, name)
+                        else:
+                            value = default
+                        if action.help:
+                            out.write('# %s\n' % action.help)
+                        out.write('%s=%s\n' % (sub('_', '-', name), value))
 
     def __patch_config(self, args, config):
         """

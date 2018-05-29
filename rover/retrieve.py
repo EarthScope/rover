@@ -103,8 +103,8 @@ store.
         self._config = config
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
-        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_Path(LEAPFILE), config.arg(LEAPURL), config.log)
-        clean_old_files(self._temp_dir, config.dir_path(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
+        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_path(LEAPFILE), config.arg(LEAPURL), config.log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
 
     def do_run(self, args, fetch, command):
         """

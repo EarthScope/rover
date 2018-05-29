@@ -23,4 +23,4 @@ def test_download():
         assert_files(join(mseed_dir, 'IU', '2010'), '058')
         assert_files(join(mseed_dir, 'IU', '2010', '058'), 'ANMO.IU.2010.058')
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]
-        assert n == 1, n  # todo is this right?  just one?
+        assert n == 1, n

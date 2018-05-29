@@ -93,7 +93,6 @@ will index the entire store.
         Run mseedindex asynchronously in a worker.
         """
         self._log.info('Indexing %s' % path)
-        # todo - windows var
         self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
                                         % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
                                            self._mseed_db, path),

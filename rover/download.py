@@ -26,6 +26,7 @@ The 'rover download' command - download data from a URL (and then call ingest).
 
 
 TMPREQUEST = 'rover_availability_request'
+TMPRESPONSE = 'rover_availability_response'
 TMPDOWNLOAD = 'rover_download'
 
 # name of source when not a subscription
@@ -84,7 +85,7 @@ will download, ingest and index data from the given URL..
         self._blocksize = 1024 * 1024
         self._ingest = config.arg(INGEST)
         self._config = config
-        clean_old_files(self._temp_dir, config.dir_path(TEMPEXPIRE), match_prefixes(TMPDOWNLOAD), self._log)
+        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPDOWNLOAD), self._log)
 
     def run(self, args):
         """

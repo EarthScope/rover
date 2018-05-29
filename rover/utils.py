@@ -78,12 +78,15 @@ def canonify_dir_and_make(path):
     return path
 
 
-def run(cmd, log):
+def run(cmd, log, uncouple=False):
     """
     We can't use subprocess.run() because it doesn't exist for 2.7.
     """
     log.debug('Running "%s"' % cmd)
-    process = Popen(cmd, shell=True)
+    if uncouple:
+        process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
+    else:
+        process = Popen(cmd, shell=True)
     process.wait()
     if process.returncode:
         raise Exception('Command "%s" failed' % cmd)
