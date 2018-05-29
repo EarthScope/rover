@@ -44,17 +44,18 @@ def safe_unlink(path):
         unlink(path)
 
 
-def check_cmd(value, name, param, log):
+def check_cmd(config, param, name):
     """
     Check the command exists and, if not, inform the user.
     """
+    value = config.arg(param)
     cmd = '%s -h' % value
     try:
         check_output(cmd, stderr=STDOUT, shell=True)
         return value
     except:
-        log.error('Command "%s" failed' % cmd)
-        log.error('Install %s or configure %s correctly' % (name, param))
+        config.log.error('Command "%s" failed' % cmd)
+        config.log.error('Install %s or configure %s correctly' % (name, param))
         raise Exception('Cannot find %s (using %s)' % (name, cmd))
 
 
@@ -360,9 +361,11 @@ def build_file(path, args):
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)
 
+
 def sort_file_inplace(log, path, temp_dir):
     sorted = unique_path(temp_dir, 'rover_sort', path)
     log.debug('Sorting %s into %s' % (path, sorted))
     run('sort %s > %s' % (path, sorted), log)
     safe_unlink(path)
     move(sorted, path)
+

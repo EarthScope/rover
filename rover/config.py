@@ -6,10 +6,10 @@ from os.path import basename, isabs, join, realpath, abspath, expanduser, dirnam
 from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    MSEEDDB, FILEVAR, HELP, DIRVAR, FILE
+    MSEEDDB, FILEVAR, HELP, DIRVAR, FILE, TEMPDIR
 from .logs import init_log
 from .sqlite import init_db
-from .utils import safe_unlink
+from .utils import safe_unlink, canonify_dir_and_make
 
 """
 Package common data used in all/most classes (db connection, lgs and parameters).
@@ -179,3 +179,15 @@ will write the config to the given file.
                 safe_unlink(self._file)
         self._log.info('Writing new config file "%s"' % self._file)
         argparse.write_config(self._file, self._args)
+
+
+def write_config(config, filename, **kargs):
+    """
+    Write a config file for sub-processes.
+    """
+    args = config.absolute()._args
+    temp_dir = config.dir_path(TEMPDIR)
+    config_path = join(temp_dir, filename)
+    safe_unlink(config_path)
+    Arguments().write_config(config_path, args, **kargs)
+    return config_path

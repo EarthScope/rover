@@ -72,7 +72,7 @@ will index the entire store.
     def __init__(self, config):
         ModifiedScanner.__init__(self, config)
         DirectoryScanner.__init__(self, config)
-        self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
+        self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
         self._mseed_db = config.file_path(MSEEDDB)
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
         self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5

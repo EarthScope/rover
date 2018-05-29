@@ -7,7 +7,7 @@ delete-files=True
 # display help in markdown format?
 md-format=False
 # directory for subscriptions
-subscriptions-dir=subscriptions
+subscriptions-dir=run/subscriptions
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run

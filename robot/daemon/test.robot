@@ -7,29 +7,31 @@ Library    OperatingSystem
 
 *** Test Cases ***
 
-Single Day
+Daemon
 
     Remove Directory    ${CURDIR}${/}run  resursive=True
     Create Directory    ${CURDIR}${/}run
 
-    Run Process    rover  -f  ../roverrc  subscribe  ../request.1  cwd=${CURDIR}${/}run
+    ${result} =  Run Process    rover  -f  ../roverrc  subscribe  ../request.1  cwd=${CURDIR}${/}run
+    Log  ${result.stderr}
     Run Process    rover  -f  ../roverrc  subscribe  ../request.2  cwd=${CURDIR}${/}run
-    Run Process    rover  -f  ../roverrc  list-subscribe  1:2  cwd=${CURDIR}${/}run  stdout=list-subscribe-12.txt
+    Run Process    rover  -f  ../roverrc  list-subscribe  1:2  --verbosity  5  stdout=list-subscribe-12.txt  cwd=${CURDIR}${/}run
     ${run} =    Get File    ${CURDIR}${/}run${/}list-subscribe-12.txt
-    ${target} =    Get File    ${CURDIR}${/}target${/}list-subscrive-12.txt
+    ${target} =    Get File    ${CURDIR}${/}target${/}list-subscribe-12.txt
     Should Be Equal    ${run}  ${target}
 
     Run Process    rover  -f  ../roverrc  subscribe  ../request.3  cwd=${CURDIR}${/}run
-    Run Process    rover  -f  ../roverrc  list-subscribe  1:2  cwd=${CURDIR}${/}run  stdout=list-subscribe-12.txt
+    Run Process    rover  -f  ../roverrc  list-subscribe  1:2  stdout=list-subscribe-12.txt  cwd=${CURDIR}${/}run
     ${run} =    Get File    ${CURDIR}${/}run${/}list-subscribe-12.txt
-    ${target} =    Get File    ${CURDIR}${/}target${/}list-subscrive-12.txt
+    ${target} =    Get File    ${CURDIR}${/}target${/}list-subscribe-12.txt
     Should Be Equal    ${run}  ${target}
 
-    Run Process    rover  -f  ../roverrc  start
-    Sleep  2 minutes  Wait for daemon to run
-    Run Process    rover  -f  ../roverrc  stop
+    ${result} =  Run Process    rover  -f  ../roverrc  start  cwd=${CURDIR}${/}run
+    Log  ${result.stderr}
+    Sleep  1 minute  Wait for daemon to run
+    Run Process    rover  -f  ../roverrc  stop  cwd=${CURDIR}${/}run
 
-    Run Process    rover  -f  ../roverrc  list-summary  cwd=${CURDIR}${/}run  stdout=list-summary.txt
+    Run Process    rover  -f  ../roverrc  list-summary  stdout=list-summary.txt  cwd=${CURDIR}${/}run
     ${run} =    Get File    ${CURDIR}${/}run${/}list-summary.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}list-summary.txt
     Should Be Equal    ${run}  ${target}

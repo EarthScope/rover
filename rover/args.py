@@ -6,8 +6,7 @@ from re import sub, compile
 
 from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
 
-from .utils import create_parents, canonify
-
+from .utils import create_parents, canonify, check_cmd
 
 """
 Command line / file configuration parameters.
@@ -108,9 +107,9 @@ FILEVAR = 'FILE'
 
 
 def parse_bool(value):
-    '''
+    """
     Treat caseless true, yes and on and true, anything else as false.
-    '''
+    """
     if not value:
         value = 'False'
     value = value.lower()
@@ -118,10 +117,10 @@ def parse_bool(value):
 
 
 class StoreBoolAction(Action):
-    '''
+    """
     We need a special action for booleans because we must covertly
     parse them as '--foo True' even though the user only types '--foo'.
-    '''
+    """
 
     def __init__(self,
                  option_strings,
@@ -152,8 +151,7 @@ def mm(string): return '--' + string
 
 
 class Arguments(ArgumentParser):
-
-    '''
+    """
     Extend the standard arg parsing to:
     * scan initial args to find if config file location specifed
     * if config file is missing, generate defaults
@@ -165,8 +163,7 @@ class Arguments(ArgumentParser):
     The aim is to:
     * have (almost) all config duplcaited, both in config and command line
     * have default config be self-documenting and discoverable
-    '''
-
+    """
 
     def __init__(self):
         super().__init__(fromfile_prefix_chars='@', prog='rover',
@@ -239,26 +236,26 @@ class Arguments(ArgumentParser):
         self.add_argument(ARGS, nargs='*', help='command arguments (depend on the command)')
 
     def parse_args(self, args=None, namespace=None):
-        '''
+        """
         Intercept normal arg parsing to:
         * scan initial args to find if config file location specified
         * if config file is missing, generate defaults
         * read config file before command line args
-        '''
+        """
         if args is None:
             args = sys.argv[1:]
         args = self.__preprocess_booleans(args)
         config, args = self.__extract_config(args)
-        self.write_config(config)
+        self.write_config(config, None)
         args = self.__patch_config(args, config)
         return super().parse_args(args=args, namespace=namespace), dirname(config)
 
     def __preprocess_booleans(self, args):
-        '''
+        """
         Replace --foo with '--foo True' and --no-foo with '--foo False'.
         This makes the interface consistent with the config file (which has
         the format 'foo=True') while letting the user type simple flags.
-        '''
+        """
         indices = []
         for (index, arg) in enumerate(args):
             if arg.startswith(NO):
@@ -275,12 +272,12 @@ class Arguments(ArgumentParser):
         return args
 
     def __extract_config(self, args):
-        '''
+        """
         Find the config file, if given, otherwise use the default.
         This must be done before argument parsing because we need
         to add the contents of the file to the arguments (that is
         how the file is read).
-        '''
+        """
         config, indices = None, []
         # find all occurences of file params, saving last
         for (index, arg) in enumerate(args):
@@ -300,29 +297,34 @@ class Arguments(ArgumentParser):
         # value is the one that is used here
         return config, [mm(FILE), config] + args
 
-    def write_config(self, path, values=None):
-        '''
-        If the config file is missing, fill it with default values.
-        '''
+    def write_config(self, path, args, **kargs):
+        """
+        If the config file is missing, fill it with values.
+        If args is None, defaults are used.
+        If keywords are specified, they over-ride defaults and args.
+        """
         if not exists(path):
             create_parents(path)
             with open(path, 'w') as out:
                 for action in self._actions:
-                    if action.dest not in (HELP, FILE):
-                        if action.default is not None:
-                            if values is not None:  # py2.7 no __bool__ on values
-                                value = getattr(values, action.dest)
+                    name, default = action.dest, action.default
+                    if name not in (HELP, FILE):
+                        if default is not None:
+                            if name in kargs:
+                                value = kargs[name]
+                            elif args is not None:  # py2.7 no __bool__ on values
+                                value = getattr(args, name)
                             else:
-                                value = action.default
+                                value = default
                             if action.help:
                                 out.write('# %s\n' % action.help)
-                            out.write('%s=%s\n' % (sub('_', '-', action.dest), value))
+                            out.write('%s=%s\n' % (sub('_', '-', name), value))
 
     def __patch_config(self, args, config):
-        '''
+        """
         Force the reading of the config file (ignored for reset-config
         because we may be rewriting it because it has errors).
-        '''
+        """
         if WRITE_CONFIG in args:
             return args
         else:
@@ -342,7 +344,8 @@ class Arguments(ArgumentParser):
         else:
             raise Exception('Cannot parse "%s"' % arg_line)
 
-    def __document_action(self, action):
+    @staticmethod
+    def __document_action(action):
         name = sub('_', '-', action.dest)
         default = action.default
         help = action.help
@@ -355,7 +358,6 @@ class Arguments(ArgumentParser):
         if help:
             help = help[0].upper() + help[1:]
         return name, default, help
-
 
     def __documentation(self, name):
         for action in self._actions:
@@ -412,3 +414,10 @@ class Arguments(ArgumentParser):
         self.print_docs_header()
         self.__print_docs_rows_md()
 
+
+def fail_early(config):
+    """
+    Check commands so that we fail early.
+    """
+    check_cmd(config, ROVERCMD, 'rover')
+    check_cmd(config, MSEEDCMD, 'mseedindex')

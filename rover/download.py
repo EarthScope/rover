@@ -6,6 +6,7 @@ from os.path import join, exists
 from sqlite3 import OperationalError
 from time import sleep
 
+from .config import write_config
 from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL
 from .coverage import Coverage, SingleSNCLBuilder
@@ -25,8 +26,6 @@ The 'rover download' command - download data from a URL (and then call ingest).
 
 
 TMPREQUEST = 'rover_availability_request'
-TMPRESPONSE = 'rover_availability_response'
-TMPCONFIG = 'rover_config'
 TMPDOWNLOAD = 'rover_download'
 
 # name of source when not a subscription
@@ -85,7 +84,7 @@ will download, ingest and index data from the given URL..
         self._blocksize = 1024 * 1024
         self._ingest = config.arg(INGEST)
         self._config = config
-        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPDOWNLOAD), self._log)
+        clean_old_files(self._temp_dir, config.dir_path(TEMPEXPIRE), match_prefixes(TMPDOWNLOAD), self._log)
 
     def run(self, args):
         """
@@ -222,31 +221,20 @@ class DownloadManager(SqliteSupport):
         super().__init__(config)
         self._log = config.log
         self._timespan_tol = config.arg(TIMESPANTOL)
-        self._temp_dir = config.arg(TEMPDIR)
+        self._temp_dir = config.dir_path(TEMPDIR)
         self._delete_files = config.arg(DELETEFILES)
-        self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
-        self._mseed_cmd = check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
+        self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
+        self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
         self._dev = config.arg(DEV)
         self._log_unique = config.arg(LOGUNIQUE)
         self._sources = {}  # map of source names to sources
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
-        temp_dir = config.arg(TEMPDIR)
         if config_file:
-            self._config_path = self._write_config(temp_dir, config_file, config.absolute()._args)
-            clean_old_files(temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPCONFIG), self._log)
+            self._config_path = write_config(config, config_file)
         else:
             self._config_path = None
-
-    # startup
-
-    def _write_config(self, temp_dir, config_file, args):
-        temp_dir = canonify_dir_and_make(temp_dir)
-        config_path = join(temp_dir, config_file)
-        safe_unlink(config_path)
-        Arguments().write_config(config_path, args)
-        return config_path
 
     # source management
 
@@ -300,7 +288,6 @@ class DownloadManager(SqliteSupport):
                 yield availability
 
     def _scan_index(self, sncl):
-        # todo - we could maybe use time range from initial query?  or from availability?
         availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
 
         def callback(row):
@@ -359,10 +346,10 @@ class DownloadManager(SqliteSupport):
         Display a summary of the data that have not been expanded into downloads.
         """
         total_seconds, total_sncls = 0, 0
+        print()
         for name in self._sources.keys():
             source = self._sources[name]
             coverages = source.get_coverages()
-            print()
             if name != DEFAULT:
                 print('  Subscription %s ' % source)
                 print()

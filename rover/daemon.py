@@ -1,13 +1,18 @@
 
 from time import sleep, time
 
+from .config import write_config
 from .index import Indexer
 from .summary import Summarizer
 from .download import DownloadManager
 from .process import Processes
 from .sqlite import SqliteSupport
-from .utils import check_cmd, run
-from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY
+from .utils import check_cmd, run, clean_old_files
+from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early
+
+
+DAEMONCONFIG = 'rover_daemon_config'
+DOWNLOADCONFIG = 'rover_download_config'
 
 
 class Starter:
@@ -22,13 +27,15 @@ class Starter:
     """
 
     def __init__(self, config):
+        fail_early(config)
         self._log = config.log
-        self._rover_cmd = check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
+        self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
+        # don't clean this because it may be long-lived (it will be over-written on re-use)
+        write_config(config, DAEMONCONFIG, verbosity=0)
 
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % START)
-        # todo - write config file (with no stdout)
         run('%s %s &' % (self._rover_cmd, DAEMON), self._log)
 
 
@@ -50,9 +57,6 @@ class Stopper:
 # todo - status command
 
 
-DAEMONCONFIG = 'rover_daemon_config'
-
-
 class NoSubscription(Exception):
     """
     No suitable subscription found while scanning the database.
@@ -71,7 +75,7 @@ class Daemon(SqliteSupport):
         self._log = config.log
         self._pre_index = config.arg(PREINDEX)
         self._post_summary = config.arg(POSTSUMMARY)
-        self._download_manager = DownloadManager(config, DAEMONCONFIG)
+        self._download_manager = DownloadManager(config, DOWNLOADCONFIG)
         self._recheck_period = config.arg(RECHECKPERIOD) * 60 * 60
         self._config = config
 

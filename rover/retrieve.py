@@ -6,7 +6,7 @@ from shutil import copyfile
 
 from .download import DEFAULT
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL
+    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early
 from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
@@ -92,6 +92,7 @@ store.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
+        fail_early(config)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
         self._dataselect_url = config.arg(DATASELECTURL)
@@ -100,13 +101,10 @@ store.
         self._post_summary = config.arg(POSTSUMMARY)
         self._download_manager = None   # created in do_run()
         self._config = config
-        # check these so we fail early
-        check_cmd(config.arg(ROVERCMD), 'rover', 'rover-cmd', config.log)
-        check_cmd(config.arg(MSEEDCMD), 'mseedindex', 'mseed-cmd', config.log)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
-        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
-        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
+        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_Path(LEAPFILE), config.arg(LEAPURL), config.log)
+        clean_old_files(self._temp_dir, config.dir_path(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
 
     def do_run(self, args, fetch, command):
         """
