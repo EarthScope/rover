@@ -16,6 +16,7 @@ from .utils import uniqueish, get_to_file, check_cmd, unique_filename, \
     canonify_dir_and_make, safe_unlink, post_to_file, run, parse_epoch, sort_file_inplace
 from .workers import Workers
 
+
 """
 The 'rover download' command - download data from a URL (and then call ingest).
 
@@ -27,6 +28,9 @@ TMPREQUEST = 'rover_availability_request'
 TMPRESPONSE = 'rover_availability_response'
 TMPCONFIG = 'rover_config'
 TMPDOWNLOAD = 'rover_download'
+
+# name of source when not a subscription
+DEFAULT = 'default'
 
 
 class Downloader(SqliteSupport):
@@ -352,7 +356,7 @@ class DownloadManager(SqliteSupport):
             source = self._sources[name]
             coverages = source.get_coverages()
             print()
-            if len(self._sources) > 1:
+            if name != DEFAULT:
                 print('  Subscription %s ' % source)
                 print()
             source_seconds, source_sncls = 0, 0
@@ -369,7 +373,7 @@ class DownloadManager(SqliteSupport):
                     print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
                     for (begin, end) in coverage.timespans:
                         print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
-            if len(self._sources) > 1:
+            if name != DEFAULT:
                 if source_sncls:
                     print()
                 print('  %s: %d SNCLSs; %4.2f sec' % (name, source_sncls, source_seconds))
@@ -446,3 +450,5 @@ class DownloadManager(SqliteSupport):
             else:
                 self._log.warn('No data downloaded / ingested')
         return self._n_downloads
+
+

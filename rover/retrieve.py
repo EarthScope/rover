@@ -3,17 +3,16 @@ import datetime
 from os import makedirs
 from os.path import exists
 from shutil import copyfile
-from sqlite3 import OperationalError
 
-from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, TIMESPANTOL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
+from .download import DEFAULT
+from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL
-from .coverage import SingleSNCLBuilder, Coverage
 from .download import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import post_to_file, run, check_cmd, clean_old_files, \
-    match_prefixes, check_leap, parse_epoch, unique_path, safe_unlink, build_file
+from .utils import check_cmd, clean_old_files, \
+    match_prefixes, check_leap, unique_path, safe_unlink, build_file
 
 
 """
@@ -27,7 +26,6 @@ The `rover list-retrieve` command - shows what data would be downloaded by `rove
 RETRIEVEWEB = 'rover_retrieve_availability'
 RETRIEVECONFIG = 'rover_retrieve_config'
 EARLY = datetime.datetime(1900, 1, 1)
-DEFAULT = 'default'
 
 
 class BaseRetriever(SqliteSupport):
