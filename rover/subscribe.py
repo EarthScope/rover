@@ -20,7 +20,6 @@ The 'rover list-subscriptions' command - display information about subscriptions
 
 SUBSCRIBEFILE = 'rover_subscribe'
 
-# todo optional begin
 
 class Subscriber(SqliteSupport):
     """
@@ -140,13 +139,22 @@ def parse_integers(args):
     return ids
 
 
-# todo - docs
-
 class SubscriptionLister(SqliteSupport):
     """
 ### List Subscribe
 
     rover list-subscribe
+
+    rover list-subscribe N[:M]+
+
+The first form, with no arguments, lists the current subscriptions (these can be removed with `rover unsubscribe`).
+
+The second form, similar to `rover list-retrieve`, shows the data that will be downloaded for that subscription.
+The arguments can be single numbers (identifying the subscriptions, as displayed by `rover list-subscrive`), or
+ranges (N:M).
+
+The data to be downloaded is not exact, because the daemon may already be downloading data, or because when
+the subscription is processed (in the future) the available data have changed.
 
 ##### Significant Parameters
 
@@ -154,6 +162,16 @@ class SubscriptionLister(SqliteSupport):
 @verbosity
 @log-dir
 @log-verbosity
+
+##### Examples
+
+    rover list-subscribe
+
+will list the subscriptions and the IDs.
+
+    rover list-subscribe ID
+
+will show what data would be downloaded by the daemon if the subscription were processed immediately.
 
     """
 
@@ -220,7 +238,10 @@ class Unsubscriber(SqliteSupport):
     """
 ### Unsubscribe
 
-    rover unsubscribe (id|id1:id2)+
+    rover unsubscribe N[:M]+
+
+Delete one or more subscriptions.  The arguments can be single numbers (identifying the subscriptions, as
+displayed by `rover list-subscrive`), or ranges (N:M).
 
 ##### Significant Parameters
 
@@ -228,6 +249,12 @@ class Unsubscriber(SqliteSupport):
 @verbosity
 @log-dir
 @log-verbosity
+
+##### Examples
+
+    rover unsubscribe 1:3
+
+will delete subscriptions 1, 2 and 3.
 
     """
 

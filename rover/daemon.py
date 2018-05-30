@@ -21,21 +21,36 @@ class Starter:
 
 Start the background (daemon) process to support `rover subscribe`.
 
-See also `rover stop`, `rover status`.
+See also `rover stop`, `rover status` and `rover daemon`.
 
 ##### Significant Parameters
 
 @rover-cmd
-@mseed-dir
+@mseed-cmd
+@temp-dir
+@subscriptions-dir
+@recheck-period
 @verbosity
 @log-dir
 @log-verbosity
+@dev
+
+In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands
+for download, ingest and index) will apply,
+
+Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`.
+For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted
+(see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
 
 ##### Examples
 
     rover start -f roverrc
 
 will start the daemon using the given configuration file.
+
+    rover start --recheck-period 24
+
+will start the daemon, processing subscriptions every 24 hours.
 
     """
 
@@ -63,7 +78,6 @@ See also `rover start`, `rover status`.
 
 ##### Significant Parameters
 
-@mseed-dir
 @verbosity
 @log-dir
 @log-verbosity
@@ -96,7 +110,6 @@ See also `rover start`, `rover stop`.
 
 ##### Significant Parameters
 
-@mseed-dir
 @verbosity
 @log-dir
 @log-verbosity
@@ -131,9 +144,43 @@ class NoSubscription(Exception):
 
 class Daemon(SqliteSupport):
     """
-    The background process that supports `rover subscribe`.
+### Daemon
 
-    Prefer `rover stop` and `rover start` to using this command directly.
+The background (daemon) process that supports `rover subscribe`.
+
+**Prefer using `rover start` to start this task in the background.**
+
+See also `rover stop`, `rover status`.
+
+##### Significant Parameters
+
+@rover-cmd
+@mseed-cmd
+@temp-dir
+@subscriptions-dir
+@recheck-period
+@verbosity
+@log-dir
+@log-verbosity
+@dev
+
+In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands
+for download, ingest and index) will apply,
+
+Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`.
+For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted
+(see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
+
+##### Examples
+
+    rover daemon -f roverrc
+
+will start the daemon (in the foreground - see `rover start`) using the given configuration file.
+
+    rover start --recheck-period 24
+
+will start the daemon (in the foreground - see `rover start`), processing subscriptions every 24 hours.
+
     """
 
     def __init__(self, config):

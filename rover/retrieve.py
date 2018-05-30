@@ -27,8 +27,6 @@ RETRIEVEWEB = 'rover_retrieve_availability'
 RETRIEVECONFIG = 'rover_retrieve_config'
 EARLY = datetime.datetime(1900, 1, 1)
 
-# todo optional begin
-
 
 class BaseRetriever(SqliteSupport):
     """

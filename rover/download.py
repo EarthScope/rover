@@ -43,6 +43,10 @@ a temporary file is created and deleted after use.
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
 
+This task is the main low-level task called in the processing pipeline (it calls ingest and index as needed).
+Because of this, to reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are
+automatically deleted on exit.
+
 ##### Significant Parameters
 
 @temp-dir

@@ -77,7 +77,7 @@ log-count=10
 verbosity=4
 # mseedindex command
 mseed-cmd=mseedindex
-# root of mseed data, locatino of index.sql
+# root of mseed data, location of index.sql
 mseed-dir=mseed
 # number of mseedindex instances to run
 mseed-workers=10

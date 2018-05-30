@@ -41,6 +41,8 @@ In the comparison of available data, maximal timespans across all quality and sa
 
 This command also indexes modified data in the store before processing.
 
+See `rover subscribe` for similar functionality, but with regular updates.
+
 ##### Significant Parameters
 
 |  Name               | Default              | Description                    |
@@ -57,9 +59,13 @@ This command also indexes modified data in the store before processing.
 | mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | download-workers    | 10                   | Number of download instances to run |
+| leap-expire         | 30                   | Number of days before refreshing file |
+| leap-file           | leap-seconds.lst     | File for leapsecond data       |
+| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
+| temp-expire         | 1                    | Number of days before deleting temp files |
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
 
@@ -226,52 +232,84 @@ will write the config to the given file.
 
 ### Subscribe
 
-    rover subscribe
+    rover subscribe file
 
     rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
 
     rover subscribe N_S_L_C [begin [end]]
 
+Arrange for the background service (daemon) to regularly compare available data with the local store then download, ingest and index any new data.
+
+This is similar to `rover retrieve`, but uses a background service to regularly update sthe store.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
+
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
+
+In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed containing that data.
+
+The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
+
+In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality and samplerate information is "merged").
+
+A user may have multiple subscriptions (see `rover list-subscribe`), but to avoid downloading duplicate data they must describe overlapping data.  To enforce this, requests are checked on submission.
+
 ##### Significant Parameters
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| force-request       | False                | Skip overlap checks (dangerous)? |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
+Most of the download process is controlled by the parameters provided when starting the service (see `rover start`).
+
 ##### Examples
+
+    rover subscribe sncls.txt
+
+will instruct the daemon to regularly download, ingest, and index any data missing from the local store that are present in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will subscribe to updates from the surrent source (`availability-url` and `dataselect-url` defined in the config) for the give SNCL between the given dates.
+will instruct the daemon to regularly download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local store.
+
     
 
 ### Start
 
 Start the background (daemon) process to support `rover subscribe`.
 
-See also `rover stop`, `rover status`.
+See also `rover stop`, `rover status` and `rover daemon`.
 
 ##### Significant Parameters
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | rover-cmd           | rover                | Command to run rover           |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-cmd           | mseedindex           | Mseedindex command             |
+| temp-dir            | tmp                  | Temporary storage for downloads |
+| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
+| recheck-period      | 12                   | Time between availabilty checks |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
+| dev                 | False                | Development mode (show exceptions)? |
+
+In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
+
+Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`. For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
 
 ##### Examples
 
     rover start -f roverrc
 
 will start the daemon using the given configuration file.
+
+    rover start --recheck-period 24
+
+will start the daemon, processing subscriptions every 24 hours.
 
     
 
@@ -285,7 +323,6 @@ See also `rover start`, `rover status`.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -308,7 +345,6 @@ See also `rover start`, `rover stop`.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -333,6 +369,8 @@ from the command line:
 Download a single request (typically for a day) to the given path, ingest and index it.  If no path is given then a temporary file is created and deleted after use.
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
+
+This task is the main low-level task called in the processing pipeline (it calls ingest and index as needed). Because of this, to reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are automatically deleted on exit.
 
 ##### Significant Parameters
 
