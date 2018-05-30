@@ -62,14 +62,14 @@ def usage(config):
     return '''
                     Common ROVER Commands
                     
-rover %s (file|sncl start [end])
+rover %s (file | sta=... [start [end]] | sncl [start [end]])
 
   Compare the local index with the data available remotely 
   (config parameter %s), then download (config parameter 
   %s) and ingest the missing files.  Use %s (below) to
   see what data would be downloaded (without doing the work).
   
-rover %s (file|sncl start [end])
+rover %s (file | sta=... [start [end]] | sncl [start [end]])
 
   Compare the local index (config parameter %s) with the data 
   availabe remotely (config parameter %s), then display 

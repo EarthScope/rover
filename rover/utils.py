@@ -338,7 +338,7 @@ LOCATION = 'location'
 
 def build_file(path, args):
     """
-    Given a SNCL or net=... and begin.end dates, construct an input file in
+    Given a SNCL or net=... and begin/end dates, construct an input file in
     the correct (availability service) format.
     """
     # just go crazy because any error is caught by the caller and changed into a 'bad syntax' error
@@ -355,7 +355,7 @@ def build_file(path, args):
                 sncl[key] = value
                 count += 1
     assert count
-    assert 0 < len(args) < 3
+    assert len(args) < 3
     parts = [sncl[NETWORK], sncl[STATION], sncl[LOCATION], sncl[CHANNEL]]
     while args:
         arg = args.pop(0)

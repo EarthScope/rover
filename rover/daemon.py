@@ -54,7 +54,7 @@ class Stopper:
         self._processes.kill(DAEMON)
 
 
-# todo - status command
+# todo - status command (cannot do until process management)
 
 
 class NoSubscription(Exception):

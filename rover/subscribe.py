@@ -28,9 +28,9 @@ class Subscriber(SqliteSupport):
 
     rover subscribe
 
-    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] begin [end]
+    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
 
-    rover subscribe N_S_L_C begin [end]
+    rover subscribe N_S_L_C [begin [end]]
 
 ##### Significant Parameters
 
@@ -83,7 +83,7 @@ for the give SNCL between the given dates.
             try:
                 build_file(path, args)
             except:
-                raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] begin [end] | sncl begin [end])' % SUBSCRIBE)
+                raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % SUBSCRIBE)
         if self._force_request:
             self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in store' % (mm(FORCEREQUEST)))
         else:

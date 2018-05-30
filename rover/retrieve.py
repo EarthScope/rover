@@ -36,9 +36,9 @@ class BaseRetriever(SqliteSupport):
 
     rover retrieve file
 
-    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] begin [end]
+    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
 
-    rover retrieve N_S_L_C begin [end]
+    rover retrieve N_S_L_C [begin [end]]
 
 Compare available data with the local store, then download, ingest and index data.
 
@@ -177,7 +177,7 @@ class ListRetriever(BaseRetriever):
 
     rover list-retrieve file
 
-    rover list-retrieve N_S_L_C begin [end]
+    rover list-retrieve N_S_L_C [begin [end]]
 
 Display what data would be downloaded if the `retrieve` equivalent command was run.
 
