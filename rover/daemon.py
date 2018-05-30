@@ -17,13 +17,26 @@ DOWNLOADCONFIG = 'rover_download_config'
 
 class Starter:
     """
-    Start the background (daemon) process to support `rover subscribe`.
+### Start
 
-    See also `rover stop`, `rover status`.
+Start the background (daemon) process to support `rover subscribe`.
+
+See also `rover stop`, `rover status`.
 
 ##### Significant Parameters
 
 @rover-cmd
+@mseed-dir
+@verbosity
+@log-dir
+@log-verbosity
+
+##### Examples
+
+    rover start -f roverrc
+
+will start the daemon using the given configuration file.
+
     """
 
     def __init__(self, config):
@@ -41,9 +54,25 @@ class Starter:
 
 class Stopper:
     """
-    Stop the background (daemon) process to support `rover subscribe`.
+### Stop
 
-    See also `rover start`, `rover status`.
+Stop the background (daemon) process to support `rover subscribe`.
+
+See also `rover start`, `rover status`.
+
+##### Significant Parameters
+
+@mseed-dir
+@verbosity
+@log-dir
+@log-verbosity
+
+##### Examples
+
+    rover stop -f roverrc
+
+will stop the daemon that was started using the given configuration file.
+
     """
 
     def __init__(self, config):
@@ -58,9 +87,25 @@ class Stopper:
 
 class StatusShower:
     """
-    Show whether the daemon is running or not..
+### Status
 
-    See also `rover start`, `rover stop`.
+Show whether the daemon is running or not..
+
+See also `rover start`, `rover stop`.
+
+##### Significant Parameters
+
+@mseed-dir
+@verbosity
+@log-dir
+@log-verbosity
+
+##### Examples
+
+    rover status -f roverrc
+
+will show whether the daemon using the given configuration file is running.
+
     """
 
     def __init__(self, config):

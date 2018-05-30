@@ -32,7 +32,6 @@ be queries using `rover list-summary`.
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 ##### Examples
@@ -91,7 +90,6 @@ to be included:
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 #### Examples

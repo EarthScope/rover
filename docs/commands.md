@@ -9,6 +9,9 @@
   * [Write Config](#write-config)
 * [Advanced Usage](#advanced-usage)
   * [Subscribe](#subscribe)
+  * [Start](#start)
+  * [Stop](#stop)
+  * [Status](#status)
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
@@ -22,9 +25,9 @@
 
     rover retrieve file
 
-    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] begin [end]
+    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
 
-    rover retrieve N_S_L_C begin [end]
+    rover retrieve N_S_L_C [begin [end]]
 
 Compare available data with the local store, then download, ingest and index data.
 
@@ -52,11 +55,10 @@ This command also indexes modified data in the store before processing.
 | post-summary        | True                 | Call summary after retrieval?  |
 | rover-cmd           | rover                | Command to run rover           |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | download-workers    | 10                   | Number of download instances to run |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
@@ -67,7 +69,7 @@ In addition, parameters for sub-commands (download, ingest, index) will be used 
 
 will download, ingest, and index any data missing from the local store that are present in the given file.
 
-    rover retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
+    rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
 will download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local store.
 
@@ -76,7 +78,7 @@ will download, ingest and index and data for IU.ANMO.00.BH1 between the given da
 
     rover list-retrieve file
 
-    rover list-retrieve N_S_L_C begin [end]
+    rover list-retrieve N_S_L_C [begin [end]]
 
 Display what data would be downloaded if the `retrieve` equivalent command was run.
 
@@ -88,10 +90,9 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
@@ -142,10 +143,9 @@ The following parameters are simple flags that change the output format.  They a
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 #### Examples
@@ -183,10 +183,9 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 #### Examples
@@ -209,7 +208,6 @@ Write default values to the config file.
 | file / -f           | ~/rover/config       | Specify configuration file     |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
@@ -230,7 +228,9 @@ will write the config to the given file.
 
     rover subscribe
 
-    rover subscribe N.S.L.C begin [end]
+    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
+
+    rover subscribe N_S_L_C [begin [end]]
 
 ##### Significant Parameters
 
@@ -239,17 +239,86 @@ will write the config to the given file.
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
 
-    rover subscribe IU.ANMO.00.BH1 2017-01-01 2017-01-04
+    rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
 will subscribe to updates from the surrent source (`availability-url` and `dataselect-url` defined in the config) for the give SNCL between the given dates.
+    
+
+### Start
+
+Start the background (daemon) process to support `rover subscribe`.
+
+See also `rover stop`, `rover status`.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| rover-cmd           | rover                | Command to run rover           |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover start -f roverrc
+
+will start the daemon using the given configuration file.
+
+    
+
+### Stop
+
+Stop the background (daemon) process to support `rover subscribe`.
+
+See also `rover start`, `rover status`.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover stop -f roverrc
+
+will stop the daemon that was started using the given configuration file.
+
+    
+
+### Status
+
+Show whether the daemon is running or not..
+
+See also `rover start`, `rover stop`.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover status -f roverrc
+
+will show whether the daemon using the given configuration file is running.
+
     
 ## Low-Level Commands
 
@@ -261,7 +330,7 @@ from the command line:
 
     rover download url [path]
 
-Download a single request (typically for a day) to teh given path, ingest and index it.  If no path is given then a temporary file is created and deleted after use.
+Download a single request (typically for a day) to the given path, ingest and index it.  If no path is given then a temporary file is created and deleted after use.
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
 
@@ -275,7 +344,6 @@ The url should be for a Data Select service, and should not request data that sp
 | index               | True                 | Call index after ingest?       |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for sub-commands (ingest, index) will be used - see help for those commands for more details.
@@ -303,8 +371,7 @@ The file should not contain data that spans multiple calendar days.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
-| mseed-dir           | mseed                | Root of mseed data dirs        |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -312,7 +379,6 @@ The file should not contain data that spans multiple calendar days.
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 In addition, parameters for sub-commands (index) will be used - see help for those commands for more details.
@@ -344,8 +410,7 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 | ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
 | mseed-cmd           | mseedindex           | Mseedindex command             |
-| mseed-dir           | mseed                | Root of mseed data dirs        |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | mseed-workers       | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -353,7 +418,6 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples
@@ -373,10 +437,9 @@ Create a summary of the index in the database.  This lists the overall span of d
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-db            | index.sql            | Mseedindex database (also used by rover) |
+| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-name            | rover                | Base file name for logs        |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 
 ##### Examples

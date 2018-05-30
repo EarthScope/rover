@@ -40,7 +40,6 @@ class Subscriber(SqliteSupport):
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 ##### Examples
@@ -122,7 +121,6 @@ class SubscriptionLister(SqliteSupport):
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
     """
@@ -196,7 +194,6 @@ class Unsubscriber(SqliteSupport):
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
     """

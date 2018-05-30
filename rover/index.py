@@ -55,7 +55,6 @@ than `--leap-expire` days.
 @leap-url
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 ##### Examples
@@ -156,7 +155,6 @@ value:
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 #### Examples

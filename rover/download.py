@@ -51,7 +51,6 @@ The url should be for a Data Select service, and should not request data that sp
 @index
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 In addition, parameters for sub-commands (ingest, index) will be used - see help for those

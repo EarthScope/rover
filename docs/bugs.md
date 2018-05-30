@@ -37,3 +37,18 @@ the local store) are per-day.
 This is not a problem for normal use (because files are downloaded in
 day-sized chunks), but is restrictive when ingesting local files (see
 duplicate data above).
+
+## Availability Request Format
+
+To avoid duplicate data (see above) `rover subscribe` checks the
+subscription against existing subscriptions.  This comparison only
+supports the basic request format:
+
+    net sta loc cha [begin [end]]
+
+The actual format supported by the availability command is more
+complex (eg begin and end dates using parameters), but this will
+trigger an exception during the check for duplicate data.
+
+If necessary, the user can use `--force-request` to avoid the check
+for duplicate data.

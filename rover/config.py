@@ -146,7 +146,6 @@ Write default values to the config file.
 @file
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 ##### Examples

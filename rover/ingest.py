@@ -44,7 +44,6 @@ The file should not contain data that spans multiple calendar days.
 @leap-url
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 In addition, parameters for sub-commands (index) will be used - see help for those commands

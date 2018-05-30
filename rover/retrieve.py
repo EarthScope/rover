@@ -73,7 +73,6 @@ This command also indexes modified data in the store before processing.
 @download-workers
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
@@ -195,7 +194,6 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 @mseed-dir
 @verbosity
 @log-dir
-@log-name
 @log-verbosity
 
 ##### Examples

@@ -36,11 +36,11 @@ Note that the syntax for boolean parameters on teh command line is
 different to the file.  They are simply given as flags, which can be
 negated by prefixing with \`no\`:
 
-    rover --daemon ...
+    rover --index ...
 
 or
 
-    rover --no-daemon ...
+    rover --no-index ...
 
 Available parameters can be displayed using \`rover -h\`.
 
@@ -54,11 +54,11 @@ An escaped value \`\$\${...}\` is replaced by \`\${...}\`.
 Relative paths for files and directories (bit not commands) are intepreted
 as relative to \`\${CONFIGDIR}\`.  So, in the configuration file
 
-    mseed_db=index.sql
+    mseed_dir=mseed
 
 is equivalent to
 
-    mseed_db=\${CONFIGDIR}/index.sql
+    mseed_dir=\${CONFIGDIR}/mseed
 
 The default configuration uses relative paths only and assumes that the
 configuration file is in \`~/rover\`.  This implies the following directory
@@ -67,11 +67,11 @@ structure:
     USERHOME/
     +- rover/
        +- config
-       +- index.sql
        +- leap-seconds.lst
        +- logs/
        |  +- ...
        +- mseed/
+       |  +- index.sql
        |  +- ...
        +- tmp/
           +- ...
@@ -102,6 +102,9 @@ cat <<EOF > docs/commands.md
   * [Write Config](#write-config)
 * [Advanced Usage](#advanced-usage)
   * [Subscribe](#subscribe)
+  * [Start](#start)
+  * [Stop](#stop)
+  * [Status](#status)
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
@@ -124,6 +127,9 @@ cat <<EOF >> docs/commands.md
 EOF
 
 dev/rover help subscribe --md-format >> docs/commands.md
+dev/rover help start --md-format >> docs/commands.md
+dev/rover help stop --md-format >> docs/commands.md
+dev/rover help status --md-format >> docs/commands.md
 
 cat <<EOF >> docs/commands.md
 ## Low-Level Commands
