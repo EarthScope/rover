@@ -6,17 +6,16 @@ from os.path import join, exists
 from sqlite3 import OperationalError
 from time import sleep
 
-from .config import write_config
-from .args import DOWNLOAD, MULTIPROCESS, LOGNAME, LOGUNIQUE, mm, DEV, Arguments, TEMPDIR, DELETEFILES, INGEST, \
+from .args import DOWNLOAD, LOGNAME, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL
+from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
-    canonify_dir_and_make, safe_unlink, post_to_file, run, parse_epoch, sort_file_inplace
+    safe_unlink, post_to_file, parse_epoch, sort_file_inplace
 from .workers import Workers
-
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -186,8 +185,8 @@ class Source:
         url = self._build_url(*self._days.popleft())
         # we only pass arguments on the command line that are different from the
         # default (which is in the file)
-        command = '%s -f \'%s\' %s %s %s %s %s %s \'%s\'' % (
-            rover_cmd, config_path, mm(MULTIPROCESS), mm(LOGNAME), DOWNLOAD,
+        command = '%s -f \'%s\' %s %s %s %s %s \'%s\'' % (
+            rover_cmd, config_path, mm(LOGNAME), DOWNLOAD,
             mm(LOGUNIQUE) if log_unique else '', mm(DEV) if dev else '', DOWNLOAD, url)
         log.debug(command)
         workers.execute(command, self._callback)

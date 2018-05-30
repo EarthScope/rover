@@ -62,7 +62,6 @@ MDFORMAT = 'md-format'
 MSEEDCMD = 'mseed-cmd'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
-MULTIPROCESS = 'multiprocess'
 POSTSUMMARY = 'post-summary'
 PREINDEX = 'pre-index'
 RECHECKPERIOD = 'recheck-period'
@@ -189,7 +188,6 @@ class Arguments(ArgumentParser):
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
         self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar='N', type=int)
-        self.add_argument(mm(MULTIPROCESS), default=False, action='store_bool', help='allow multiple processes (internal use only)?', metavar='')
         self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')

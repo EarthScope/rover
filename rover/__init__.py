@@ -3,7 +3,7 @@ from .summary import Summarizer, SummaryLister
 from .daemon import Starter, Stopper, Daemon
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    MULTIPROCESS, DEV, SUMMARY, LIST_SUMMARY
+    DEV, SUMMARY, LIST_SUMMARY
 from .config import Config, ConfigWriter
 from .download import Downloader
 from .index import Indexer, IndexLister
@@ -50,12 +50,7 @@ def main():
         config = Config()
         # todo
         processes = Processes(config)
-        if not config.arg(MULTIPROCESS):
-            processes.add_singleton_me('rover')
-        try:
-            execute(config.command, config)
-        finally:
-            processes.remove_me()
+        execute(config.command, config)
     except Exception as e:
         if config and config.log:
             config.log.error(str(e))

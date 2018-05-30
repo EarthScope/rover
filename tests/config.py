@@ -39,8 +39,6 @@ force-request=False
 timespan-tol=1.5
 # number of download instances to run
 download-workers=10
-# allow multiple processes (internal use only)?
-multiprocess=False
 # command to run rover
 rover-cmd=rover
 # index before retrieval?
