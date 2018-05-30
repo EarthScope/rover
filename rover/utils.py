@@ -131,6 +131,14 @@ def lastmod(path):
     return statinfo.st_mtime
 
 
+def file_size(path):
+    """
+    Size of the file
+    """
+    statinfo = stat(path)
+    return statinfo.st_size
+
+
 def uniqueish(prefix, salt, pid=None):
     """
     Generate a unique(ish) name, from a prefix, text (hashed) and pid.
@@ -320,7 +328,6 @@ def parse_short_epoch(date):
         date = date[:-1]
     dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
     return (dt - EPOCH).total_seconds()
-
 
 
 def in_memory(iterator):

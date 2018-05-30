@@ -18,7 +18,7 @@ def test_write_config():
         path = join(dir, '.rover')
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', path])
-        config = BaseConfig(None, args, None, configdir)
+        config = BaseConfig(None, None, args, None, configdir)
         assert canonify(config.arg(FILE)) == canonify(path), config.arg(FILE)
         with open(path, 'r') as input:
             contents = input.read()
@@ -63,8 +63,6 @@ all=False
 recurse=True
 # directory for logs
 log-dir=logs
-# base file name for logs
-log-name=rover
 # unique log names (with PIDs)?
 log-unique=False
 # number of days before deleting unique logs
@@ -108,7 +106,7 @@ def test_CONFIGDIR_start():
             output.write('mseed-dir=$${CONFIGDIR}/foo\n')
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, args, None, configdir)
+        config = BaseConfig(None, None, args, None, configdir)
         assert config.dir_path(TEMPDIR)
         assert config.dir_path(TEMPDIR) == canonify(dir + '/foo'), config.dir_path(TEMPDIR)
         assert config.dir_path(MSEEDDIR)
@@ -124,7 +122,7 @@ def test_CONFIGDIR_middle():
             output.write('mseed-dir=xx$${CONFIGDIR}/foo\n')
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, args, None, configdir)
+        config = BaseConfig(None, None, args, None, configdir)
         assert config.dir_path(TEMPDIR)
         assert config.dir_path(TEMPDIR) == join(dir, 'xx' + dir + '/foo'), config.dir_path(TEMPDIR)
         assert config.dir_path(MSEEDDIR)
@@ -138,7 +136,7 @@ def test_CONFIGDIR_bad():
             output.write('temp-dir=${FOO}\n')
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, args, None, configdir)
+        config = BaseConfig(None, None, args, None, configdir)
         try:
             config.arg(TEMPDIR)
         except Exception as e:

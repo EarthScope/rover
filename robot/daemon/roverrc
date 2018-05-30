@@ -10,8 +10,6 @@ subscriptions-dir=run/subscriptions
 timespan-tol=1.5
 # number of download instances to run
 download-workers=10
-# allow multiple processes (internal use only)?
-multiprocess=False
 # command to run rover
 rover-cmd=rover
 # index before retrieval?
@@ -34,8 +32,6 @@ all=False
 recurse=True
 # directory for logs
 log-dir=run/logs
-# base file name for logs
-log-name=rover
 # unique log names (with PIDs)?
 log-unique=False
 # number of days before deleting unique logs

@@ -42,10 +42,10 @@ class TestConfig(BaseConfig):
         kargs[_(MSEEDCMD)] = join(root, '..', 'mseedindex', 'mseedindex')
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
-        log = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
+        log, log_path = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
         dbpath = join(canonify(args.mseed_dir), 'index.sql')
         create_parents(dbpath)
-        super().__init__(log, args, init_db(dbpath, log), dir)
+        super().__init__(log, log_path, args, init_db(dbpath, log), dir)
 
 
 def find_root():

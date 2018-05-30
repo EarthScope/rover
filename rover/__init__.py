@@ -53,7 +53,7 @@ def main():
         execute(config.command, config)
     except Exception as e:
         if config and config.log:
-            config.log.error(str(e))
+            config.log.critical(str(e))
             if config.command in COMMANDS:
                 config.log.info('See "rover help %s"' % config.command)
             elif config.command != HELP:

@@ -115,7 +115,7 @@ def run(log, tolerance,
 
 def test_coverage():
     with TemporaryDirectory() as dir:
-        log = init_log(dir, 10, 1, 5, 4, 'coverage', False, 1)
+        log = init_log(dir, 10, 1, 5, 4, 'coverage', False, 1)[0]
         run(log, 0.5, 2, 1, -1, 3, 2, 0, ((2,3),))
         run(log, 0.5, 2, 1, -1, 3, 2, 1, ((5,6),))
         run(log, 0.5, 2, 1, -1, 3, 2, 2, ((5,6),))

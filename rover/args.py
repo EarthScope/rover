@@ -52,7 +52,6 @@ LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
 LEAPURL = 'leap-url'
 LOGDIR = 'log-dir'
-LOGNAME = 'log-name'
 LOGVERBOSITY = 'log-verbosity'
 LOGSIZE = 'log-size'
 LOGUNIQUE = 'log-unique'
@@ -86,7 +85,6 @@ DEFAULT_LOGDIR = 'logs'
 DEFAULT_LOGVERBOSITY = 5
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
-DEFAULT_LOGNAME = 'rover'
 DEFAULT_LOGUNIQUE_EXPIRE = 7
 DEFAULT_MSEEDCMD = 'mseedindex'
 DEFAULT_MSEEDDIR = 'mseed'
@@ -206,7 +204,6 @@ class Arguments(ArgumentParser):
 
         # logging
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
-        self.add_argument(mm(LOGNAME), default=DEFAULT_LOGNAME, action='store', help='base file name for logs', metavar='NAME')
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
         self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar='DAYS', type=int)
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)

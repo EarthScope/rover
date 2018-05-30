@@ -1,15 +1,15 @@
 from argparse import Namespace
-from os import makedirs
-from re import compile, sub
 from genericpath import exists, isfile
+from os import makedirs
 from os.path import basename, isabs, join, realpath, abspath, expanduser, dirname
+from re import compile, sub
 from shutil import move
 
-from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, HELP, DIRVAR, FILE, TEMPDIR, MSEEDDIR
+from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
+    FILEVAR, HELP, DIRVAR, FILE, TEMPDIR, MSEEDDIR, COMMAND
 from .logs import init_log
 from .sqlite import init_db
-from .utils import safe_unlink, canonify_dir_and_make
+from .utils import safe_unlink
 
 """
 Package common data used in all/most classes (db connection, lgs and parameters).
@@ -23,8 +23,9 @@ class BaseConfig:
     The Config subclass provides a different constructor.
     """
 
-    def __init__(self, log, args, db, configdir):
+    def __init__(self, log, log_path, args, db, configdir):
         self.log = log
+        self.log_path = log_path
         self._args = args
         self.db = db
         self._configdir = configdir
@@ -78,7 +79,7 @@ class BaseConfig:
                 else:
                     value = self.arg(name)
                 args[name] = value
-        return BaseConfig(self.log, Namespace(**args), self.db, self._configdir)
+        return BaseConfig(self.log, self.log_path, Namespace(**args), self.db, self._configdir)
 
     def path(self, name):
         """
@@ -124,9 +125,10 @@ class Config(BaseConfig):
         args, configdir = argparse.parse_args()
         # this is a bit ugly, but we need to use the base methods to construct the log and db
         # note that log is not used in base!
-        super().__init__(None, args, None, configdir)
-        self.log = init_log(self.dir_path(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
-                            self.arg(VERBOSITY), self.arg(LOGNAME), self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
+        super().__init__(None, None, args, None, configdir)
+        self.log, self.log_path = \
+            init_log(self.dir_path(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
+                     self.arg(VERBOSITY), self.arg(COMMAND) or 'rover', self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
         self.log.debug('Args: %s' % self._args)
         self.db = init_db(mseed_db(self), self.log)
 

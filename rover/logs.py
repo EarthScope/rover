@@ -26,8 +26,6 @@ def match_unique(name):
     return match(r'\w+_\d+\.log', name)
 
 
-# todo - name logs after commands
-
 def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_unique, log_unique_expire, stderr=None):
     """
     Create a log with two handlers.
@@ -65,4 +63,4 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
 
     clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
-    return log
+    return log, path

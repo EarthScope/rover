@@ -6,15 +6,15 @@ from os.path import join, exists
 from sqlite3 import OperationalError
 from time import sleep
 
-from .args import DOWNLOAD, LOGNAME, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
-    TEMPEXPIRE, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL
+from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
+    TEMPEXPIRE, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
-    safe_unlink, post_to_file, parse_epoch, sort_file_inplace
+    safe_unlink, post_to_file, parse_epoch, sort_file_inplace, file_size
 from .workers import Workers
 
 """
@@ -106,6 +106,10 @@ will download, ingest and index data from the given URL..
             if self._delete_files:
                 if path and delete:
                     safe_unlink(path)
+                log_path = self._config.log_path
+                # avoid lots of empty logs cluttering things up
+                if exists(log_path) and file_size(log_path) == 0:
+                    safe_unlink(log_path)
                 safe_unlink(db_path)
 
     def _do_download(self, url, path):
@@ -181,13 +185,11 @@ class Source:
     def _callback(self, command, return_code):
         self.worker_count -= 1
 
-    def new_worker(self, log, workers, config_path, rover_cmd, log_unique, dev):
+    def new_worker(self, log, workers, config_path, rover_cmd):
         url = self._build_url(*self._days.popleft())
         # we only pass arguments on the command line that are different from the
         # default (which is in the file)
-        command = '%s -f \'%s\' %s %s %s %s %s \'%s\'' % (
-            rover_cmd, config_path, mm(LOGNAME), DOWNLOAD,
-            mm(LOGUNIQUE) if log_unique else '', mm(DEV) if dev else '', DOWNLOAD, url)
+        command = '%s -f \'%s\' %s \'%s\'' % (rover_cmd, config_path, DOWNLOAD, url)
         log.debug(command)
         workers.execute(command, self._callback)
         self.worker_count += 1
@@ -225,14 +227,14 @@ class DownloadManager(SqliteSupport):
         self._delete_files = config.arg(DELETEFILES)
         self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
         self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
-        self._dev = config.arg(DEV)
-        self._log_unique = config.arg(LOGUNIQUE)
         self._sources = {}  # map of source names to sources
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
         if config_file:
-            self._config_path = write_config(config, config_file)
+            log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
+            log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
+            self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
         else:
             self._config_path = None
 
@@ -427,7 +429,7 @@ class DownloadManager(SqliteSupport):
                 source = self._next_source(sources)
                 if self._has_least_workers(source): break
             if source.has_days():
-                source.new_worker(self._log, self._workers, self._config_path, self._rover_cmd, self._log_unique, self._dev)
+                source.new_worker(self._log, self._workers, self._config_path, self._rover_cmd)
                 self._n_downloads += 1
 
     def download(self):
