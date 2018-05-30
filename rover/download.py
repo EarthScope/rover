@@ -224,13 +224,14 @@ class DownloadManager(SqliteSupport):
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._delete_files = config.arg(DELETEFILES)
-        self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
-        self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
         self._sources = {}  # map of source names to sources
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
         if config_file:
+            # these aren't used to list subscriptions (when config_file is None)
+            self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
+            self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
             log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
             log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
             self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)

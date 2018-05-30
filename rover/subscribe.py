@@ -112,9 +112,9 @@ def parse_integers(args):
 
 class SubscriptionLister(SqliteSupport):
     """
-### List Subscriptions
+### List Subscribe
 
-    rover list-subscriptions
+    rover list-subscribe
 
 ##### Significant Parameters
 
@@ -146,9 +146,10 @@ class SubscriptionLister(SqliteSupport):
             for id in range(id1, id2+1):
                 try:
                     path, availability_url, dataselect_url = self.fetchone(
-                        '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
+                        '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,),
+                    quiet=True)
                     download_manager.add(id, path, availability_url, dataselect_url)
-                except NoResult:
+                except (NoResult, OperationalError):
                     self._log.warn('No subscription %d' % id)
         download_manager.display()
 
