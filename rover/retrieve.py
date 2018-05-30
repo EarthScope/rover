@@ -27,6 +27,8 @@ RETRIEVEWEB = 'rover_retrieve_availability'
 RETRIEVECONFIG = 'rover_retrieve_config'
 EARLY = datetime.datetime(1900, 1, 1)
 
+# todo optional begin
+
 
 class BaseRetriever(SqliteSupport):
     """
@@ -67,7 +69,7 @@ This command also indexes modified data in the store before processing.
 @post-summary
 @rover-cmd
 @mseed-cmd
-@mseed-db
+@mseed-dir
 @download-workers
 @verbosity
 @log-dir
@@ -187,7 +189,7 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 
 @availability-url
 @timespan-tol
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name

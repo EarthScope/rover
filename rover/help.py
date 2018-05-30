@@ -1,7 +1,7 @@
 
 from re import sub
 
-from .args import HELP, LIST_INDEX, MSEEDDIR, WRITE_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, MSEEDDB, SUBSCRIBE, \
+from .args import HELP, LIST_INDEX, MSEEDDIR, WRITE_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDCMD, Arguments, MDFORMAT, FILEVAR
 
 """
@@ -64,11 +64,10 @@ def usage(config):
                     
 rover %s (file|sncl start [end])
 
-  Compare the local index (config parameter %s) with the data 
-  availabe remotely (config parameter %s), then download 
-  (config parameter %s) and ingest the missing files.  Use
-  %s (below) to see what data would be downloaded (without
-  doing the work).
+  Compare the local index with the data available remotely 
+  (config parameter %s), then download (config parameter 
+  %s) and ingest the missing files.  Use %s (below) to
+  see what data would be downloaded (without doing the work).
   
 rover %s (file|sncl start [end])
 
@@ -87,8 +86,8 @@ rover %s
 
   Delete and re-write the configuration file.
   
-''' % (RETRIEVE, MSEEDDB, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
-       LIST_RETRIEVE, MSEEDDB, AVAILABILITYURL,
+''' % (RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
+       LIST_RETRIEVE, AVAILABILITYURL,
        LIST_INDEX, MSEEDDIR, LIST_INDEX,
        WRITE_CONFIG)
 
@@ -137,8 +136,8 @@ useful from the command line:
   processing of all files in the store.
       
 ''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
-       INGEST, MSEEDDIR, MSEEDDB, RETRIEVE,
-       INDEX, MSEEDDB, MSEEDCMD, INGEST, MSEEDDIR, ALL, mm(ALL))
+       INGEST, MSEEDDIR, RETRIEVE,
+       INDEX, MSEEDCMD, INGEST, MSEEDDIR, ALL, mm(ALL))
 
 
 GENERAL = {

@@ -6,10 +6,11 @@ from re import sub
 
 import rover
 from rover.config import BaseConfig
-from rover.args import Arguments, MSEEDDIR, MSEEDDB, TEMPDIR, LOGDIR, LEAP, MSEEDCMD
+from rover.args import Arguments, MSEEDDIR, TEMPDIR, LOGDIR, LEAP, MSEEDCMD
 from rover.ingest import Ingester
 from rover.logs import init_log
 from rover.sqlite import init_db
+from rover.utils import create_parents, canonify
 
 
 class TestArgs:
@@ -35,7 +36,6 @@ class TestConfig(BaseConfig):
     def __init__(self, dir, **kargs):
         kargs = dict(kargs)
         kargs[_(MSEEDDIR)] = join(dir, 'mseed')
-        kargs[_(MSEEDDB)] = join(dir, 'index.sql')
         kargs[_(TEMPDIR)] = join(dir, 'tmp')
         kargs[_(LOGDIR)] = join(dir, 'logs')
         root = find_root()
@@ -43,7 +43,9 @@ class TestConfig(BaseConfig):
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
         log = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
-        super().__init__(log, args, init_db(args.mseed_db, log), dir)
+        dbpath = join(canonify(args.mseed_dir), 'index.sql')
+        create_parents(dbpath)
+        super().__init__(log, args, init_db(dbpath, log), dir)
 
 
 def find_root():
@@ -52,6 +54,8 @@ def find_root():
 
 def assert_files(dir, *files):
     found = listdir(dir)
+    if 'index.sql' in found:
+        found.remove('index.sql')
     assert len(files) == len(found), 'Found %d files in %s (not %d)' % (len(found), dir, len(files))
     for file in found:
         ok = False

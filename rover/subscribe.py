@@ -20,6 +20,7 @@ The 'rover list-subscriptions' command - display information about subscriptions
 
 SUBSCRIBEFILE = 'rover_subscribe'
 
+# todo optional begin
 
 class Subscriber(SqliteSupport):
     """
@@ -36,7 +37,7 @@ class Subscriber(SqliteSupport):
 @subscriptions-dir
 @availability-url
 @dataselect-url
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name
@@ -118,7 +119,7 @@ class SubscriptionLister(SqliteSupport):
 
 ##### Significant Parameters
 
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name
@@ -192,7 +193,7 @@ class Unsubscriber(SqliteSupport):
 
 ##### Significant Parameters
 
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name

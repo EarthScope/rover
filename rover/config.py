@@ -6,7 +6,7 @@ from os.path import basename, isabs, join, realpath, abspath, expanduser, dirnam
 from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGNAME, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    MSEEDDB, FILEVAR, HELP, DIRVAR, FILE, TEMPDIR
+    FILEVAR, HELP, DIRVAR, FILE, TEMPDIR, MSEEDDIR
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink, canonify_dir_and_make
@@ -109,6 +109,10 @@ class BaseConfig:
         return path
 
 
+def mseed_db(config):
+    return join(config.dir_path(MSEEDDIR), 'index.sql')
+
+
 class Config(BaseConfig):
     """
     A container that encapsulates the core compoennts common to all commands.  Used to
@@ -124,7 +128,7 @@ class Config(BaseConfig):
         self.log = init_log(self.dir_path(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
                             self.arg(VERBOSITY), self.arg(LOGNAME), self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
         self.log.debug('Args: %s' % self._args)
-        self.db = init_db(self.file_path(MSEEDDB), self.log)
+        self.db = init_db(mseed_db(self), self.log)
 
 
 class ConfigWriter:

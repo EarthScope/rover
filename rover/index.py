@@ -3,7 +3,8 @@ import sys
 from re import match, sub
 from sqlite3 import OperationalError
 
-from .args import MSEEDCMD, MSEEDDB, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDWORKERS
+from .config import mseed_db
+from .args import MSEEDCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDWORKERS
 from .args import TIMESPANTOL
 from .coverage import MultipleSNCLBuilder
 from .help import HelpFormatter
@@ -47,7 +48,6 @@ than `--leap-expire` days.
 @all
 @mseed-cmd
 @mseed-dir
-@mseed-db
 @mseed-workers
 @leap
 @leap-expire
@@ -73,7 +73,7 @@ will index the entire store.
         ModifiedScanner.__init__(self, config)
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
-        self._mseed_db = config.file_path(MSEEDDB)
+        self._mseed_db = mseed_db(config)
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
         self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5
         self._workers = NoConflictPerDatabaseWorkers(config, config.arg(MSEEDWORKERS), MSEED)
@@ -153,7 +153,7 @@ value:
 ##### Significant Parameters
 
 @timespan-tol
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name
@@ -175,7 +175,7 @@ will list all entries in the index after the year 2000.
         SqliteSupport.__init__(self, config)
         HelpFormatter.__init__(self, False)
         self._timespan_tol = config.arg(TIMESPANTOL)
-        self._mseed_db = config.file_path(MSEEDDB)
+        self._mseed_db = mseed_db(config)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],

@@ -3,7 +3,7 @@ from datetime import datetime
 from os.path import exists, join
 from re import match
 
-from .args import MSEEDDB, MSEEDCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX
+from .args import MSEEDCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
@@ -36,7 +36,6 @@ The file should not contain data that spans multiple calendar days.
 ##### Significant Parameters
 
 @mseed-cmd
-@mseed-db
 @mseed-dir
 @index
 @leap
@@ -69,7 +68,6 @@ will add all the data in the given file to the local store.
         SqliteSupport.__init__(self, config)
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
-        self._mseed_db = config.file_path(MSEEDDB)
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
         self._db_path = None
         self._mseed_dir = config.dir_path(MSEEDDIR)
@@ -77,7 +75,6 @@ will add all the data in the given file to the local store.
         self._config = config
         self._log = config.log
         self._lock_factory = DatabaseBasedLockFactory(config, MSEED)
-        touch(self._mseed_db)  # so that scanning against tsindex works, if the database didn't exist
 
     def run(self, args, db_path=TMPFILE):
         """

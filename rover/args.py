@@ -60,7 +60,6 @@ LOGUNIQUEEXPIRE = 'log-unique-expire'
 LOGCOUNT = 'log-count'
 MDFORMAT = 'md-format'
 MSEEDCMD = 'mseed-cmd'
-MSEEDDB = 'mseed-db'
 MSEEDDIR = 'mseed-dir'
 MSEEDWORKERS = 'mseed-workers'
 MULTIPROCESS = 'multiprocess'
@@ -91,7 +90,6 @@ DEFAULT_LOGCOUNT = 10
 DEFAULT_LOGNAME = 'rover'
 DEFAULT_LOGUNIQUE_EXPIRE = 7
 DEFAULT_MSEEDCMD = 'mseedindex'
-DEFAULT_MSEEDDB = 'index.sql'
 DEFAULT_MSEEDDIR = 'mseed'
 DEFAULT_MSEEDWORKERS = 10
 DEFAULT_RECHECKPERIOD = 12
@@ -221,8 +219,7 @@ class Arguments(ArgumentParser):
 
         # mseedindex
         self.add_argument(mm(MSEEDCMD), default=DEFAULT_MSEEDCMD, action='store', help='mseedindex command', metavar='CMD')
-        self.add_argument(mm(MSEEDDB), default=DEFAULT_MSEEDDB, action='store', help='mseedindex database (also used by rover)', metavar=FILEVAR)
-        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data dirs', metavar=DIRVAR)
+        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data, locatino of index.sql', metavar=DIRVAR)
         self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
 
         # leap seconds

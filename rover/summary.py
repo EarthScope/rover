@@ -3,9 +3,10 @@ import sys
 from re import match, sub
 from sqlite3 import OperationalError
 
+from .config import mseed_db
 from .index import BEGIN, END
 from .utils import STATION, NETWORK, CHANNEL, LOCATION, format_epoch
-from .args import SUMMARY, MSEEDDB
+from .args import SUMMARY
 from .sqlite import SqliteSupport
 
 
@@ -28,7 +29,7 @@ be queries using `rover list-summary`.
 
 ##### Significant Parameters
 
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name
@@ -87,7 +88,7 @@ to be included:
 
 ##### Significant Parameters
 
-@mseed-db
+@mseed-dir
 @verbosity
 @log-dir
 @log-name
@@ -106,7 +107,7 @@ will list all entries in the index after the year 2000.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        self._mseed_db = config.file_path(MSEEDDB)
+        self._mseed_db = mseed_db(config)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],

@@ -52,8 +52,6 @@ log-count=10
 verbosity=4
 # mseedindex command
 mseed-cmd=../../../../mseedindex/mseedindex
-# mseedindex database (also used by rover)
-mseed-db=run/index.sql
 # root of mseed data dirs
 mseed-dir=run/mseed
 # number of mseedindex instances to run
