@@ -1,5 +1,3 @@
-# use background processes?
-daemon=False
 # development mode (show exceptions)?
 dev=False
 # delete temporary files?

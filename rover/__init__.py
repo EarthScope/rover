@@ -48,8 +48,9 @@ def main():
     config = None
     try:
         config = Config()
+        # todo
         processes = Processes(config)
-        if not (config.arg(DAEMON) or config.arg(MULTIPROCESS)):
+        if not config.arg(MULTIPROCESS):
             processes.add_singleton_me('rover')
         try:
             execute(config.command, config)

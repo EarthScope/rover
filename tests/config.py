@@ -23,9 +23,7 @@ def test_write_config():
         with open(path, 'r') as input:
             contents = input.read()
             assert contents == \
-'''# use background processes?
-daemon=False
-# development mode (show exceptions)?
+'''# development mode (show exceptions)?
 dev=False
 # delete temporary files?
 delete-files=True
@@ -98,31 +96,10 @@ leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 ''', contents
 
 
-def test_enable_daemon():
-    argparse = Arguments()
-    args, configdir = argparse.parse_args(['--daemon'])
-    assert args.daemon
-
-
-def test_disable_daemon():
-    with TemporaryDirectory() as dir:
-        config = join(dir, '.rover')
-        with open(config, 'w') as output:
-            output.write('daemon=True\n')
-        # first test that config file enables daemons
-        argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', config])
-        assert args.daemon
-        # and then test that we can override that
-        argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', config, '--no-daemon'])
-        assert not args.daemon
-
-
 def test_multiple_flags():
     argparse = Arguments()
-    args, configdir = argparse.parse_args(['--daemon', '--no-daemon'])
-    assert not args.daemon
+    args, configdir = argparse.parse_args(['--index', '--no-index'])
+    assert not args.index
 
 
 def test_CONFIGDIR_start():
