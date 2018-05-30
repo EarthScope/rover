@@ -38,7 +38,7 @@ class Downloader(SqliteSupport):
 
     rover download url [path]
 
-Download a single request (typically for a day) to teh given path, ingest and index it.  If no path is given then
+Download a single request (typically for a day) to the given path, ingest and index it.  If no path is given then
 a temporary file is created and deleted after use.
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.

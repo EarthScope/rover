@@ -3,7 +3,7 @@ from os import getpid, kill
 from sqlite3 import OperationalError
 from time import sleep
 
-from .utils import format_epoch
+from .utils import format_epoch, process_exists
 from .sqlite import SqliteSupport
 
 
@@ -85,9 +85,7 @@ class LockContext(SqliteSupport):
 
         def callback(row):
             pid, key, epoch = row
-            try:
-                kill(pid, 0)
-            except OSError:
+            if not process_exists(pid):
                 self._log.warn('Cleaning out old entry for PID %d on lock %s with %s (created %s)' % (
                     pid, self._table, key, format_epoch(epoch)))
                 self.execute('delete from %s where key = ?' % self._table, (self._key,))

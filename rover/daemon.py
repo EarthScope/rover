@@ -1,11 +1,11 @@
 from sqlite3 import OperationalError
 from time import sleep, time
 
-from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, FILE
+from .process import ProcessManager
+from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, FILE, STOP
 from .config import write_config
 from .download import DownloadManager
 from .index import Indexer
-from .process import Processes
 from .sqlite import SqliteSupport
 from .summary import Summarizer
 from .utils import check_cmd, run, canonify
@@ -48,10 +48,12 @@ class Stopper:
 
     def __init__(self, config):
         self._log = config.log
-        self._processes = Processes(config)
+        self._processes = ProcessManager(config)
 
     def run(self, args):
-        self._processes.kill(DAEMON)
+        if args:
+            raise Exception('Usage: rover %s' % STOP)
+        self._processes.kill_daemon()
 
 
 # todo - status command (cannot do until process management)

@@ -1,17 +1,16 @@
 
-from .summary import Summarizer, SummaryLister
-from .daemon import Starter, Stopper, Daemon
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY
 from .config import Config, ConfigWriter
+from .daemon import Starter, Stopper, Daemon
 from .download import Downloader
 from .index import Indexer, IndexLister
 from .ingest import Ingester
-from .process import Processes
+from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
 from .subscribe import Subscriber, SubscriptionLister, Unsubscriber
-
+from .summary import Summarizer, SummaryLister
 
 COMMANDS = {
     WRITE_CONFIG: (ConfigWriter, 'Reset the configuration'),
@@ -48,9 +47,8 @@ def main():
     config = None
     try:
         config = Config()
-        # todo
-        processes = Processes(config)
-        execute(config.command, config)
+        with ProcessManager(config):
+            execute(config.command, config)
     except Exception as e:
         if config and config.log:
             config.log.critical(str(e))

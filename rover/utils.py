@@ -379,3 +379,10 @@ def sort_file_inplace(log, path, temp_dir):
     safe_unlink(path)
     move(sorted, path)
 
+
+def process_exists(pid):
+    try:
+        kill(pid, 0)
+        return True
+    except OSError:
+        return False
