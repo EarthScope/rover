@@ -19,7 +19,7 @@ class Starter:
     """
     Start the background (daemon) process to support `rover subscribe`.
 
-    See also `rover stop`.
+    See also `rover stop`, `rover status`.
 
 ##### Significant Parameters
 
@@ -43,7 +43,7 @@ class Stopper:
     """
     Stop the background (daemon) process to support `rover subscribe`.
 
-    See also `rover start`.
+    See also `rover start`, `rover status`.
     """
 
     def __init__(self, config):
@@ -56,7 +56,25 @@ class Stopper:
         self._processes.kill_daemon()
 
 
-# todo - status command (cannot do until process management)
+class StatusShower:
+    """
+    Show whether the daemon is running or not..
+
+    See also `rover start`, `rover stop`.
+    """
+
+    def __init__(self, config):
+        self._log = config.log
+        self._processes = ProcessManager(config)
+
+    def run(self, args):
+        if args:
+            raise Exception('Usage: rover %s' % STOP)
+        print()
+        print(self._processes.daemon_status())
+        print()
+
+
 
 
 class NoSubscription(Exception):

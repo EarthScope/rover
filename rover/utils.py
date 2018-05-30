@@ -3,7 +3,7 @@ import datetime
 import time
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink
+from os import makedirs, stat, getpid, listdir, unlink, kill
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from re import match
 from shutil import move

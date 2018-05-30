@@ -73,7 +73,7 @@ class ProcessManager(SqliteSupport):
         self.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
 
     def _pid(self, command):
-        return self.fetchone('select pid from rover_processes where command like ?', (command,), quiet=True)
+        return self.fetchsingle('select pid from rover_processes where command like ?', (command,), quiet=True)
 
     def _clean_entry(self, command):
         self.execute('delete from rover_processes where command like ?', (command,))
@@ -88,3 +88,12 @@ class ProcessManager(SqliteSupport):
             kill(pid, 9)
         except NoResult:
             raise Exception('The %s is not running' % DAEMON)
+
+    def daemon_status(self):
+        try:
+            pid = self._pid(DAEMON)
+            if process_exists(pid):
+                return 'The %s is running (process %d)' % (DAEMON, pid)
+        except NoResult:
+            pass
+        return 'The %s is not running' % DAEMON

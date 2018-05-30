@@ -1,9 +1,9 @@
 
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    DEV, SUMMARY, LIST_SUMMARY
+    DEV, SUMMARY, LIST_SUMMARY, STATUS
 from .config import Config, ConfigWriter
-from .daemon import Starter, Stopper, Daemon
+from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
 from .index import Indexer, IndexLister
 from .ingest import Ingester
@@ -11,6 +11,7 @@ from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
 from .subscribe import Subscriber, SubscriptionLister, Unsubscriber
 from .summary import Summarizer, SummaryLister
+
 
 COMMANDS = {
     WRITE_CONFIG: (ConfigWriter, 'Reset the configuration'),
@@ -24,6 +25,7 @@ COMMANDS = {
     LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
+    STATUS: (StatusShower, 'Show the background daemon status'),
     DAEMON: (Daemon, 'The background daemon (prefer start/stop)'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
     LIST_SUBSCRIBE: (SubscriptionLister, 'List the subscriptions'),

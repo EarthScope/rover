@@ -112,9 +112,12 @@ store.
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
+        usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % command
         if not exists(self._temp_dir):
             makedirs(self._temp_dir)
         # input is a temp file as we prepend parameters
+        if not args:
+            raise Exception(usage)
         path = unique_path(self._temp_dir, RETRIEVEWEB, args[0])
         try:
             if len(args) == 1:
@@ -123,7 +126,7 @@ store.
                 try:
                     build_file(path, args)
                 except:
-                    raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] begin [end] | sncl begin [end])' % command)
+                    raise Exception(usage)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             self._query(path)
             if fetch:
