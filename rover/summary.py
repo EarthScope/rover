@@ -214,7 +214,7 @@ will list all entries in the index after the year 2000.
 
         def callback(row):
             n, s, l, c, b, e = row
-            print('  %s %s %s %s %s %s' % (n, s, l, c, b, e))
+            print('  %s_%s_%s_%s %s %s' % (n, s, l, c, b, e))
 
         print()
         self.foreachrow(sql, params, callback)

@@ -363,10 +363,10 @@ printed to stdout.
         def callback(row):
             if self._flags[JOIN_QSR]:
                 n, s, l, c, ts, r = row
-                builder.add_timespans('%s.%s.%s.%s' % (n, s, l, c), ts, r)
+                builder.add_timespans('%s_%s_%s_%s' % (n, s, l, c), ts, r)
             else:
                 n, s, l, c, ts, r, q = row
-                builder.add_timespans('%s.%s.%s.%s.%s (%g Hz)' % (n, s, l, c, q, r), ts, r)
+                builder.add_timespans('%s_%s_%s_%s_%s (%g Hz)' % (n, s, l, c, q, r), ts, r)
 
         self.foreachrow(sql, params, callback)
         print()

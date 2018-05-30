@@ -1,4 +1,4 @@
-
+from sqlite3 import OperationalError
 from time import sleep, time
 
 from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, FILE
@@ -109,10 +109,13 @@ class Daemon(SqliteSupport):
                 if not self._download_manager.has_source(id):
                     found[0] = id
 
-        self.foreachrow('''select id from rover_subscriptions
-                              where (last_check_epoch is NULL or last_check_epoch < ?)
-                              order by creation_epoch''', (now - self._recheck_period,),
-                        callback)
+        try:
+            self.foreachrow('''select id from rover_subscriptions
+                                  where (last_check_epoch is NULL or last_check_epoch < ?)
+                                  order by creation_epoch''', (now - self._recheck_period,),
+                            callback, quiet=True)
+        except OperationalError:
+            pass  # no table exists, so no data
 
         if found[0]:
             return found[0]

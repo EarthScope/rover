@@ -176,7 +176,7 @@ class Source:
         return False
 
     def _build_url(self, sncl, begin, end):
-        url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('.'))
+        url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('_'))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
     def _callback(self, command, return_code):
@@ -271,7 +271,7 @@ class DownloadManager(SqliteSupport):
 
     def _parse_line(self, line):
         n, s, l, c, b, e = line.split()
-        return "%s.%s.%s.%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
+        return "%s_%s_%s_%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
 
     def _parse_availability(self, response):
         with open(response, 'r') as input:
@@ -299,7 +299,7 @@ class DownloadManager(SqliteSupport):
                                     from tsindex 
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',
-                            sncl.split('.'),
+                            sncl.split('_'),
                             callback, quiet=True)
         except OperationalError:
             self._log.debug('No index - first time using rover?')

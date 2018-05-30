@@ -116,6 +116,7 @@ def test_CONFIGDIR_start():
         assert config.dir_path(MSEEDDIR)
         assert config.dir_path(MSEEDDIR) == join(dir, '${CONFIGDIR}/foo'), config.dir_path(MSEEDDIR)
 
+
 def test_CONFIGDIR_middle():
       with TemporaryDirectory() as dir:
         dir = canonify(dir)
@@ -130,6 +131,7 @@ def test_CONFIGDIR_middle():
         assert config.dir_path(TEMPDIR) == join(dir, 'xx' + dir + '/foo'), config.dir_path(TEMPDIR)
         assert config.dir_path(MSEEDDIR)
         assert config.dir_path(MSEEDDIR) == join(dir, 'xx${CONFIGDIR}/foo'), config.dir_path(MSEEDDIR)
+
 
 def test_CONFIGDIR_bad():
       with TemporaryDirectory() as dir:
