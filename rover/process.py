@@ -36,7 +36,7 @@ class ProcessManager(SqliteSupport):
         self._log.debug('Process check %s' % self._command)
         if self._command == RETRIEVE:
             self._check_retrieve()
-        # we don't nede to check start, because the daemon it spawns will be checked, but
+        # we don't need to check start, because the daemon it spawns will be checked, but
         # it's better to have the error early and visible to the user
         elif self._command in (DAEMON, START):
             self._check_daemon(self._command == DAEMON)
@@ -47,36 +47,48 @@ class ProcessManager(SqliteSupport):
         return False  # let any exception propagate
 
     def _check_retrieve(self):
-        self._assert_not(DAEMON, RETRIEVE,
-                         'You cannot use rover %s while the %s is running.  Use rover %s to stop the daemon' %
-                         (RETRIEVE, DAEMON, STOP),
-                         True)
+        with self._db:  # single transaction
+            self._db.cursor().execute('begin')
+            self._assert_not(DAEMON,
+                             'You cannot use rover %s while the %s is running (PID %%d).  Use rover %s to stop the daemon.' %
+                             (RETRIEVE, DAEMON, STOP))
+            self._assert_not(RETRIEVE, 'rover %s is already running (PID %%d).' % RETRIEVE)
+            self._record_process(RETRIEVE)
 
     def _check_daemon(self, record):
-        self._assert_not(RETRIEVE, DAEMON,
-                         'You cannot start the %s while rover %s is running' % (DAEMON, RETRIEVE),
-                         record)
+        with self._db:  # single transaction
+            self._db.cursor().execute('begin')
+            self._assert_not(RETRIEVE,
+                             'You cannot start the %s while rover %s is running (PID %%d).' % (DAEMON, RETRIEVE))
+            self._assert_not(DAEMON, 'The %s is already running (PID %%d).' % DAEMON)
+            if record:
+                self._record_process(DAEMON)
 
-    def _assert_not(self, other, command, msg, record):
+    def _assert_not(self, command, msg):
         try:
-            pid = self._pid(other)
+            pid = self._pid(command)
             if process_exists(pid):
-                raise Exception(msg)
+                raise Exception(msg % pid)
             else:
-                self._clean_entry(other)
+                self._clean_entry(command)
         except NoResult:
             pass
-        if record:
-            self._record_process(command)
-
-    def _record_process(self, command):
-        self.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
 
     def _pid(self, command):
-        return self.fetchsingle('select pid from rover_processes where command like ?', (command,), quiet=True)
+        # inside a transaction so avoid helper methods
+        cmd, params = 'select pid from rover_processes where command like ?', (command,)
+        try:
+            return next(self._db.execute(cmd, params))[0]
+        except Exception as e:
+            raise NoResult(cmd, params)
 
     def _clean_entry(self, command):
-        self.execute('delete from rover_processes where command like ?', (command,))
+        # inside a transaction so avoid helper methods
+        self._db.execute('delete from rover_processes where command like ?', (command,))
+
+    def _record_process(self, command):
+        # inside a transaction so avoid helper methods
+        self._db.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
 
     def kill_daemon(self):
         """

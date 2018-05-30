@@ -26,28 +26,58 @@ class Subscriber(SqliteSupport):
     """
 ### Subscribe
 
-    rover subscribe
+    rover subscribe file
 
     rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
 
     rover subscribe N_S_L_C [begin [end]]
 
+Arrange for the background service (daemon) to regularly compare available data with the local store then
+download, ingest and index any new data.
+
+This is similar to `rover retrieve`, but uses a background service to regularly update sthe store.  To
+start the service use `rover start`.  See also `rover status` and `rover stop`.
+
+The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
+service (eg http://service.iris.edu/irisws/availability/1/).
+
+In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
+taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed
+containing that data.
+
+The list of available data is retrieved from the service and compared with the local index.  Data not
+available locally are downloaded and ingested.
+
+In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
+and samplerate information is "merged").
+
+A user may have multiple subscriptions (see `rover list-subscribe`), but to avoid downloading duplicate data
+they must describe overlapping data.  To enforce this, requests are checked on submission.
+
 ##### Significant Parameters
 
-@subscriptions-dir
 @availability-url
 @dataselect-url
-@mseed-dir
+@force-request
 @verbosity
 @log-dir
 @log-verbosity
 
+Most of the download process is controlled by the parameters provided when starting the service (see
+`rover start`).
+
 ##### Examples
+
+    rover subscribe sncls.txt
+
+will instruct the daemon to regularly download, ingest, and index any data missing from the local store that are
+present in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will subscribe to updates from the surrent source (`availability-url` and `dataselect-url` defined in the config)
-for the give SNCL between the given dates.
+will instruct the daemon to regularly download, ingest and index and data for IU.ANMO.00.BH1 between the given
+dates that are missing from the local store.
+
     """
 
     def __init__(self, config):
@@ -109,6 +139,8 @@ def parse_integers(args):
         ids.append((id1, id2))
     return ids
 
+
+# todo - docs
 
 class SubscriptionLister(SqliteSupport):
     """

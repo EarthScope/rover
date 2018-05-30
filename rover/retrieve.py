@@ -57,6 +57,8 @@ and samplerate information is "merged").
 
 This command also indexes modified data in the store before processing.
 
+See `rover subscribe` for similar functionality, but with regular updates.
+
 ##### Significant Parameters
 
 @temp-dir
@@ -71,9 +73,13 @@ This command also indexes modified data in the store before processing.
 @mseed-cmd
 @mseed-dir
 @download-workers
+@leap-expire
+@leap-file
+@leap-url
 @verbosity
 @log-dir
 @log-verbosity
+@temp-expire
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
 commands for more details.
