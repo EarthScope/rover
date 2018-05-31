@@ -34,7 +34,7 @@ class Subscriber(SqliteSupport):
 Arrange for the background service (daemon) to regularly compare available data with the local store then
 download, ingest and index any new data.
 
-This is similar to `rover retrieve`, but uses a background service to regularly update sthe store.  To
+This is similar to `rover retrieve`, but uses a background service to regularly update the store.  To
 start the service use `rover start`.  See also `rover status` and `rover stop`.
 
 The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
@@ -51,7 +51,7 @@ In the comparison of available data, maximal timespans across all quality and sa
 and samplerate information is "merged").
 
 A user may have multiple subscriptions (see `rover list-subscribe`), but to avoid downloading duplicate data
-they must describe overlapping data.  To enforce this, requests are checked on submission.
+they must not describe overlapping data.  To enforce this, requests are checked on submission.
 
 ##### Significant Parameters
 
@@ -69,8 +69,8 @@ Most of the download process is controlled by the parameters provided when start
 
     rover subscribe sncls.txt
 
-will instruct the daemon to regularly download, ingest, and index any data missing from the local store that are
-present in the given file.
+will instruct the daemon to regularly download, ingest, and index any data missing from the local store for
+SNCLS / timespans in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 

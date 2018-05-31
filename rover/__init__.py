@@ -1,7 +1,8 @@
 
+from .http import ServerStarter
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    DEV, SUMMARY, LIST_SUMMARY, STATUS
+    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB
 from .config import Config, ConfigWriter
 from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
@@ -29,7 +30,8 @@ COMMANDS = {
     DAEMON: (Daemon, 'The background daemon (prefer start/stop)'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
     LIST_SUBSCRIBE: (SubscriptionLister, 'List the subscriptions'),
-    UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription')
+    UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription'),
+    WEB: (ServerStarter, 'Start a web server showing status')
 }
 
 

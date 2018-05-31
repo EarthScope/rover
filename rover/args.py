@@ -30,6 +30,7 @@ STATUS = 'status'
 SUMMARY = 'summary'
 SUBSCRIBE = 'subscribe'
 UNSUBSCRIBE = 'unsubscribe'
+WEB = 'web'
 WRITE_CONFIG = 'write-config'
 
 
@@ -41,6 +42,7 @@ NO = '--no-'
 ALL = 'all'
 ARGS = 'args'
 AVAILABILITYURL = 'availability-url'
+BINDADDRESS = 'bind-address'
 COMMAND = 'command'
 DATASELECTURL = 'dataselect-url'
 DELETEFILES = 'delete-files'
@@ -48,6 +50,7 @@ DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
 F, FILE = 'f', 'file'
 FORCEREQUEST = 'force-request'
+HTTPPORT = 'http-port'
 LEAP = 'leap'
 LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
@@ -76,9 +79,11 @@ V, VERBOSITY = 'v', 'verbosity'
 
 # default values (for non-boolean parameters)
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
+DEFAULT_BINDADDRESS = '127.0.0.1'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADWORKERS = 10
 DEFAULT_FILE = join('~', 'rover', 'config')
+DEFAULT_HTTPPORT = 8000
 DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = 'leap-seconds.lst'
 DEFAULT_LEAPURL = 'http://www.ietf.org/timezones/data/leap-seconds.list'
@@ -222,6 +227,10 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar='N', type=int)
         self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar=FILEVAR)
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
+
+        # http server
+        self.add_argument(mm(BINDADDRESS), default=DEFAULT_BINDADDRESS, action='store', help='bind address for HTTP server', metavar='ADDRESS')
+        self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar='N', type=int)
 
         # commands / args
         self.add_argument(COMMAND, metavar='COMMAND', nargs='?', help='use "help" for further information')

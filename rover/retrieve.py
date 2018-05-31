@@ -86,7 +86,7 @@ commands for more details.
 
     rover retrieve sncls.txt
 
-will download, ingest, and index any data missing from the local store that are present in the given file.
+will download, ingest, and index any data missing from the local store for SNCLs / timespans present in the given file.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
