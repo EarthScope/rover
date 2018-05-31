@@ -1,5 +1,6 @@
 
 from os import getpid, kill
+from sqlite3 import OperationalError
 
 from .utils import process_exists
 from .args import RETRIEVE, DAEMON, START, STOP
@@ -30,7 +31,7 @@ class ProcessManager(SqliteSupport):
         """
         Check whether the command should run
         """
-        # we only care about whether retieve and the daemon run in parallel
+        # we only care about whether retrieve and the daemon run in parallel
         # any other command is either harmless (list...) or likely done by an expert user.
         # but retrieve in parallel with daemon can result in duplicate data.
         self._log.debug('Process check %s' % self._command)
@@ -46,66 +47,104 @@ class ProcessManager(SqliteSupport):
             self._clean_entry(self._command)
         return False  # let any exception propagate
 
+    def _current_command_inside_transaction(self):
+        pid, command = None, None
+        rows = self._db.execute('select pid, command from rover_processes', tuple())
+        try:
+            pid, candidate = next(rows)
+            if process_exists(pid):
+                command = candidate
+            else:
+                self._db.execute('delete from rover_processes where pid = ?', (pid,))
+        except StopIteration:
+            pass  # table is empty
+        try:
+            next(rows)
+            raise Exception('Multiple entries in rover_processes')
+        except StopIteration:
+            pass  # no more entries
+        return pid, command
+
+    def _record_process_inside_transaction(self, command):
+        self._db.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
+
     def _check_retrieve(self):
+        error = None
         with self._db:  # single transaction
             self._db.cursor().execute('begin')
-            self._assert_not(DAEMON,
-                             'You cannot use rover %s while the %s is running (PID %%d).  Use rover %s to stop the daemon.' %
-                             (RETRIEVE, DAEMON, STOP))
-            self._assert_not(RETRIEVE, 'rover %s is already running (PID %%d).' % RETRIEVE)
-            self._record_process(RETRIEVE)
+            pid, command = self._current_command_inside_transaction()
+            if command == DAEMON:
+                error = Exception(('You cannot use rover %s while the %s is running (PID %d). ' +
+                                   'Use rover %s to stop the daemon.') %  (RETRIEVE, DAEMON, pid, STOP))
+            elif command == RETRIEVE:
+                error = Exception('rover %s is already running (PID %d).' % (RETRIEVE, pid))
+            else:
+                self._record_process_inside_transaction(RETRIEVE)
+        # transaction closed
+        if error:
+            raise error
 
     def _check_daemon(self, record):
+        error = None
         with self._db:  # single transaction
             self._db.cursor().execute('begin')
-            self._assert_not(RETRIEVE,
-                             'You cannot start the %s while rover %s is running (PID %%d).' % (DAEMON, RETRIEVE))
-            self._assert_not(DAEMON, 'The %s is already running (PID %%d).' % DAEMON)
-            if record:
-                self._record_process(DAEMON)
-
-    def _assert_not(self, command, msg):
-        try:
-            pid = self._pid(command)
-            if process_exists(pid):
-                raise Exception(msg % pid)
+            pid, command = self._current_command_inside_transaction()
+            if command == RETRIEVE:
+                error = Exception('You cannot use the %s while rover %s is running (PID %d). ' %
+                                  (DAEMON, RETRIEVE, pid))
+            elif command == DAEMON:
+                error = Exception('The %s is already running (PID %d).' % (DAEMON, pid))
             else:
-                self._clean_entry(command)
-        except NoResult:
-            pass
+                self._record_process_inside_transaction(DAEMON)
+        # transaction closed
+        if error:
+            raise error
 
-    def _pid(self, command):
-        # inside a transaction so avoid helper methods
-        cmd, params = 'select pid from rover_processes where command like ?', (command,)
-        try:
-            return next(self._db.execute(cmd, params))[0]
-        except Exception as e:
-            raise NoResult(cmd, params)
-
-    def _clean_entry(self, command):
-        # inside a transaction so avoid helper methods
+    def _delete_command_inside_transaction(self, command):
         self._db.execute('delete from rover_processes where command like ?', (command,))
 
-    def _record_process(self, command):
-        # inside a transaction so avoid helper methods
-        self._db.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
+    def _clean_entry(self, command):
+        with self._db:
+            self._db.cursor().execute('begin')
+            self._delete_command_inside_transaction(command)
+
+    def current_command(self):
+        with self._db:
+            self._db.cursor().execute('begin')
+            pid, command = self._current_command_inside_transaction()
+            return pid, command
+
+    def _pid_inside_transaction(self, command):
+        cmd, params = 'select pid from rover_processes where command like ?', (command,)
+        try:
+            pid = next(self._db.execute(cmd, params))[0]
+            if process_exists(pid):
+                return pid
+            else:
+                self._delete_command_inside_transaction(command)
+        except Exception:
+            pass
+        raise NoResult(cmd, params)
 
     def kill_daemon(self):
         """
         Kill the daemon, if it exists.
         """
         try:
-            pid = self._pid(DAEMON)
-            self._log.info('Killing %s (pid %d)' % (DAEMON, pid))
-            kill(pid, 9)
+            with self._db:
+                self._db.cursor().execute('begin')
+                pid = self._pid_inside_transaction(DAEMON)
+                self._log.info('Killing %s (pid %d)' % (DAEMON, pid))
+                kill(pid, 9)
+                self._delete_command_inside_transaction(DAEMON)
         except NoResult:
             raise Exception('The %s is not running' % DAEMON)
 
     def daemon_status(self):
-        try:
-            pid = self._pid(DAEMON)
-            if process_exists(pid):
+        with self._db:
+            try:
+                self._db.cursor().execute('begin')
+                pid = self._pid_inside_transaction(DAEMON)
                 return 'The %s is running (process %d)' % (DAEMON, pid)
-        except NoResult:
-            pass
-        return 'The %s is not running' % DAEMON
+            except NoResult:
+                return 'The %s is not running' % DAEMON

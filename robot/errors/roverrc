@@ -45,11 +45,11 @@ log-count=10
 # console verbosity (0-5)
 verbosity=4
 # mseedindex command
-mseed-cmd=../../../../mseedindex/mseedindex
+mseedindex-cmd=../../../../mseedindex/mseedindex
 # root of mseed data dirs
 mseed-dir=run/mseed
 # number of mseedindex instances to run
-mseed-workers=10
+mseedindex-workers=10
 # use leapseconds file?
 leap=True
 # number of days before refreshing file

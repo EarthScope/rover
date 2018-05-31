@@ -31,7 +31,7 @@ Missing File
     Should Match Regexp    ${result.stderr}  See .* help ingest
 
 Bad Mseedindex
-    ${result} =    Run Process    rover  -f  ../roverrc  list-index  net\=*  --mseed-cmd  foo    cwd=${CURDIR}${/}run
+    ${result} =    Run Process    rover  -f  ../roverrc  list-index  net\=*  --mseedindex-cmd  foo    cwd=${CURDIR}${/}run
     Log    ${result.stdout}
     Log    ${result.stderr}
     Should Match Regexp    ${result.stderr}  Cannot access

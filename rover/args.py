@@ -62,9 +62,9 @@ LOGUNIQUE = 'log-unique'
 LOGUNIQUEEXPIRE = 'log-unique-expire'
 LOGCOUNT = 'log-count'
 MDFORMAT = 'md-format'
-MSEEDCMD = 'mseed-cmd'
 MSEEDDIR = 'mseed-dir'
-MSEEDWORKERS = 'mseed-workers'
+MSEEDINDEXCMD = 'mseedindex-cmd'
+MSEEDINDEXWORKERS = 'mseedindex-workers'
 POSTSUMMARY = 'post-summary'
 PREINDEX = 'pre-index'
 RECHECKPERIOD = 'recheck-period'
@@ -92,9 +92,9 @@ DEFAULT_LOGVERBOSITY = 5
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
 DEFAULT_LOGUNIQUE_EXPIRE = 7
-DEFAULT_MSEEDCMD = 'mseedindex'
 DEFAULT_MSEEDDIR = 'mseed'
-DEFAULT_MSEEDWORKERS = 10
+DEFAULT_MSEEDINDEXCMD = 'mseedindex'
+DEFAULT_MSEEDINDEXWORKERS = 10
 DEFAULT_RECHECKPERIOD = 12
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_SUBSCRIPTIONSDIR = 'subscriptions'
@@ -218,9 +218,9 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-5)', metavar='V', type=int)
 
         # mseedindex
-        self.add_argument(mm(MSEEDCMD), default=DEFAULT_MSEEDCMD, action='store', help='mseedindex command', metavar='CMD')
+        self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar='CMD')
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data, location of index.sql', metavar=DIRVAR)
-        self.add_argument(mm(MSEEDWORKERS), default=DEFAULT_MSEEDWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
+        self.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
 
         # leap seconds
         self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
@@ -421,4 +421,4 @@ def fail_early(config):
     Check commands so that we fail early.
     """
     check_cmd(config, ROVERCMD, 'rover')
-    check_cmd(config, MSEEDCMD, 'mseedindex')
+    check_cmd(config, MSEEDINDEXCMD, 'mseedindex')

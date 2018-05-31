@@ -26,7 +26,9 @@ See also `rover stop`, `rover status` and `rover daemon`.
 ##### Significant Parameters
 
 @rover-cmd
-@mseed-cmd
+@mseedindex-cmd
+@download-workers
+@mseedindex-workers
 @temp-dir
 @subscriptions-dir
 @recheck-period
@@ -155,7 +157,9 @@ See also `rover stop`, `rover status`.
 ##### Significant Parameters
 
 @rover-cmd
-@mseed-cmd
+@mseedindex-cmd
+@download-workers
+@mseedindex-workers
 @temp-dir
 @subscriptions-dir
 @recheck-period

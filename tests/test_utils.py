@@ -6,7 +6,7 @@ from re import sub
 
 import rover
 from rover.config import BaseConfig
-from rover.args import Arguments, MSEEDDIR, TEMPDIR, LOGDIR, LEAP, MSEEDCMD
+from rover.args import Arguments, MSEEDDIR, TEMPDIR, LOGDIR, LEAP, MSEEDINDEXCMD
 from rover.ingest import Ingester
 from rover.logs import init_log
 from rover.sqlite import init_db
@@ -39,7 +39,7 @@ class TestConfig(BaseConfig):
         kargs[_(TEMPDIR)] = join(dir, 'tmp')
         kargs[_(LOGDIR)] = join(dir, 'logs')
         root = find_root()
-        kargs[_(MSEEDCMD)] = join(root, '..', 'mseedindex', 'mseedindex')
+        kargs[_(MSEEDINDEXCMD)] = join(root, '..', 'mseedindex', 'mseedindex')
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
         log, log_path = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)

@@ -5,7 +5,7 @@ from os.path import exists
 from shutil import copyfile
 
 from .download import DEFAULT
-from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, ROVERCMD, MSEEDCMD, LEAP, LEAPEXPIRE, \
+from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, ROVERCMD, MSEEDINDEXCMD, LEAP, LEAPEXPIRE, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early
 from .download import DownloadManager
 from .index import Indexer
@@ -68,7 +68,7 @@ See `rover subscribe` for similar functionality, but with regular updates.
 @index
 @post-summary
 @rover-cmd
-@mseed-cmd
+@mseedindex-cmd
 @mseed-dir
 @download-workers
 @leap-expire

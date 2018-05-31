@@ -76,11 +76,11 @@ log-count=10
 # console verbosity (0-5)
 verbosity=4
 # mseedindex command
-mseed-cmd=mseedindex
+mseedindex-cmd=mseedindex
 # root of mseed data, location of index.sql
 mseed-dir=mseed
 # number of mseedindex instances to run
-mseed-workers=10
+mseedindex-workers=10
 # use leapseconds file?
 leap=True
 # number of days before refreshing file
@@ -89,6 +89,10 @@ leap-expire=30
 leap-file=leap-seconds.lst
 # URL for leapsecond data
 leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
+# bind address for HTTP server
+bind-address=127.0.0.1
+# port for HTTP server
+http-port=8000
 ''', contents
 
 

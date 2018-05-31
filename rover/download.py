@@ -7,7 +7,7 @@ from sqlite3 import OperationalError
 from time import sleep
 
 from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
-    TEMPEXPIRE, ROVERCMD, MSEEDCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY
+    TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
@@ -128,25 +128,27 @@ will download, ingest and index data from the given URL..
         return unique_filename(join(self._temp_dir, name))
 
 
+NOSTATS = (-1, -1)
+
+
 class Source:
     """
     Data for a single source in the download manager.
     """
 
     def __init__(self, name, dataselect_url, completion_callback=None):
-        self._name = name
+        self.name = name
         self._dataselect_url = dataselect_url
         self._completion_callback = completion_callback
         self._coverages = deque()  # fifo: appendright / popleft; exposed for display
         self._days = deque()  # fifo: appendright / popleft
+        self.initial_stats = NOSTATS
         self.worker_count = 0
-        self.new = True  # avoid deletion when first created and empty
 
     def __str__(self):
-        return '%s (%s)' % (self._name, self._dataselect_url)
+        return '%s (%s)' % (self.name, self._dataselect_url)
 
     def add_coverage(self, coverage):
-        self.new = False
         self._coverages.append(coverage)
 
     def get_coverages(self):
@@ -160,10 +162,21 @@ class Source:
         left = right - 0.000001
         return left, right
 
+    def stats(self):
+        coverage_count, total_seconds = 0, 0
+        for coverage in self._coverages:
+            coverage_count += 1
+            for timespan in coverage.timespans:
+                begin, end = timespan
+                total_seconds += (end - begin)
+        return coverage_count, total_seconds
+
     def has_days(self):
         """
         Ensure days has some data, if possible, and return whether it has any.
         """
+        if self.initial_stats == NOSTATS:
+            self.initial_stats = self.stats()
         if self._days:
             return True
         while self._coverages:
@@ -198,7 +211,7 @@ class Source:
         self.worker_count += 1
 
     def is_complete(self):
-        complete = not self.new and self.worker_count == 0 and not self.has_days()
+        complete = self.worker_count == 0 and not self.has_days()
         if complete and self._completion_callback:
             self._completion_callback()
             self._completion_callback = None
@@ -235,12 +248,13 @@ class DownloadManager(SqliteSupport):
         if config_file:
             # these aren't used to list subscriptions (when config_file is None)
             self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
-            self._mseed_cmd = check_cmd(config, MSEEDCMD, 'mseedindex')
+            self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
             log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
             log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
             self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
         else:
             self._config_path = None
+        self._create_stats_table()
 
     # source management
 
@@ -310,20 +324,11 @@ class DownloadManager(SqliteSupport):
             self._log.debug('No index - first time using rover?')
         return availability.coverage()
 
-    def add_coverage(self, source, coverage):
-        """
-        Add a required Coverage (SNCL and associated timespans).  This will be expanded
-        into one or more downloads by the source's Expander.
-        """
-        self._source(source).add_coverage(coverage)
-
-    def add_source(self, source, dataselect_url, completion_callback=None):
-        """
-        Add a new source - a service thatwe will download data from.
-        """
+    def _new_source(self, source, dataselect_url, completion_callback=None):
         if source in self._sources and self._sources[source].worker_count:
             raise Exception('Cannot overwrite active source %s' % self._sources[source])
         self._sources[source] = Source(source, dataselect_url, completion_callback=completion_callback)
+        return self._sources[source]
 
     def add(self, name, path, availability_url, dataselect_url, completion_callback=None):
         """
@@ -333,13 +338,13 @@ class DownloadManager(SqliteSupport):
         request = self._build_request(path)
         response = self._get_availability(request, availability_url)
         try:
-            self.add_source(name, dataselect_url, completion_callback=completion_callback)
+            source = self._new_source(name, dataselect_url, completion_callback=completion_callback)
             for remote in self._parse_availability(response):
                 self._log.debug('Available data: %s' % remote)
                 local = self._scan_index(remote.sncl)
                 self._log.debug('Local data: %s' % local)
                 required = remote.subtract(local)
-                self.add_coverage(name, required)
+                source.add_coverage(required)
         finally:
             if self._delete_files:
                 safe_unlink(request)
@@ -396,7 +401,7 @@ class DownloadManager(SqliteSupport):
 
     def _has_least_workers(self, c):
         for source in self._sources.values():
-            if not source.new and source.worker_count < c.worker_count:
+            if source.worker_count < c.worker_count:
                 return False
         return True
 
@@ -424,11 +429,9 @@ class DownloadManager(SqliteSupport):
             raise Exception('DownloadManager was created only to display data (no config_path)')
         self._workers.check()
         self._clean_sources()
+        self._update_stats()
         while self._workers.has_space() and self._has_data():
-            sources = list(
-                filter(lambda source: not source.new,
-                    map(lambda name: self._source(name),
-                        sorted(self._sources.keys()))))
+            sources = list(map(lambda name: self._source(name), sorted(self._sources.keys())))
             while True:
                 source = self._next_source(sources)
                 if self._has_least_workers(source): break
@@ -452,3 +455,25 @@ class DownloadManager(SqliteSupport):
             else:
                 self._log.warn('No data downloaded / ingested')
         return self._n_downloads
+
+    # stats for web display
+
+    def _create_stats_table(self):
+        self.execute('''create table if not exists rover_download_stats (
+                          submission text not null,
+                          initial_coverages int not null,
+                          remaining_coverages int not null,
+                          initial_time float not null,
+                          remaining_time float not null
+                        )''')
+
+    def _update_stats(self):
+        with self._db:  # single transaction
+            self._db.cursor().execute('begin')
+            self._db.execute('delete from rover_download_stats', tuple())
+            for source in self._sources.values():
+                stats = source.stats()
+                self._db.execute('''insert into rover_download_stats
+                                      (submission, initial_coverages, remaining_coverages, initial_time, remaining_time)
+                                      values (?, ?, ?, ?, ?)''',
+                                 (source.name, source.initial_stats[0], stats[0], source.initial_stats[1], stats[1]))
