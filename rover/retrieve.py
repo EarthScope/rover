@@ -4,7 +4,7 @@ from os import makedirs
 from os.path import exists
 from shutil import copyfile
 
-from .download import DEFAULT
+from .download import DEFAULT_NAME
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, ROVERCMD, MSEEDINDEXCMD, LEAP, LEAPEXPIRE, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early
 from .download import DownloadManager
@@ -148,7 +148,7 @@ store.
         if self._pre_index:
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
-        self._download_manager.add(DEFAULT, up, self._availability_url, self._dataselect_url)
+        self._download_manager.add(DEFAULT_NAME, up, self._availability_url, self._dataselect_url)
 
     def _fetch(self):
         """

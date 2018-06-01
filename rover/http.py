@@ -5,10 +5,11 @@ from sqlite3 import OperationalError
 from threading import Thread
 from time import sleep
 
+from .download import DEFAULT_NAME
 from .process import ProcessManager
 from .args import BINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
-from .utils import process_exists
-from .sqlite import SqliteSupport
+from .utils import process_exists, format_epoch, format_time_epoch
+from .sqlite import SqliteSupport, NoResult
 
 
 class DeadMan(Thread):
@@ -72,22 +73,50 @@ class RequestHandler(BaseHTTPRequestHandler):
     def _do_quiet(self):
         self._write('<p>No daemon or retrieve process is running.</p>')
 
+    def _do_daemon(self):
+        self._write('<h2>Subscription Status</h2>')
+        count = [0]
+
+        def callback(row):
+            count[0] += 1
+            id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch = row
+            self._write('<h3>Subscription %d</h3>' % id)
+            self._write('''<p><pre>File: <a href="file://%s">%s</a>
+Availability URL: <a href="%s">%s</a>
+Dataselect URL: <a href="%s">%s</a>
+Created: %s   Last active: %s</pre></p>''' %
+                        (file, file, availability_url, availability_url, dataselect_url, dataselect_url,
+                         format_time_epoch(creation_epoch),
+                         format_time_epoch(last_check_epoch) if last_check_epoch else 'never'))
+            self._write_progress(id)
+
+        try:
+            self.server.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch
+                                        from rover_subscriptions order by id''', tuple(), callback)
+        except OperationalError:
+            pass
+        if not count[0]:
+            self._write('<p>No subscriptions</p>')
+        self._write_explanation()
+
     def _do_retrieve(self):
         self._write('<h2>Retrieval Progress</h2>')
+        self._write_progress(DEFAULT_NAME)
+        self._write_explanation()
+
+    def _write_progress(self, name):
         try:
             initial_coverages, remaining_coverages, initial_time, remaining_time = \
                 self.server.fetchone('''select initial_coverages, remaining_coverages, initial_time, remaining_time
-                                          from rover_download_stats''')
-            self._write_progress(initial_coverages, remaining_coverages, initial_time, remaining_time)
+                                          from rover_download_stats where submission = ?''', (name,))
+            self._write('<p><pre>\n')
+            self._write_bar('SNCLs', initial_coverages, remaining_coverages)
+            self._write_bar('timespan', initial_time, remaining_time)
+            self._write('</pre></p>')
+        except NoResult:
+            self._write('<p>Currently inactive</p>')
         except OperationalError:
             self._write('<p>Error: no statistics in database</p>')
-        self._write_explanation()
-
-    def _write_progress(self, initial_coverages, remaining_coverages, initial_time, remaining_time):
-        self._write('<p><pre>\n')
-        self._write_bar('SNCLs', initial_coverages, remaining_coverages)
-        self._write_bar('timespan', initial_time, remaining_time)
-        self._write('</pre></p>')
 
     def _write_bar(self, label, initial, current):
         percent = int(100 * (initial - current) / initial)
@@ -100,8 +129,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 <h2>Notes</h2>
 <ul>
 <li>Progress values are based on data still to be downloaded; they do not include data within the pipeline.</li>
-<li>The SNCL statistics is the number of distinct SNCLs that will be requested.</li>
-<li>The timespan statistics is the total time (s) covered by the data in the downloads.</li>
+<li>The SNCL statistic is the number of distinct SNCLs that will be requested.</li>
+<li>The timespan statistic is the total time (s) covered by the data in the downloads.</li>
+<li>Firefox will not open file:// URLs, but you can copy them to the address bar, where they will work.</li>
 </ul>
 ''')
 

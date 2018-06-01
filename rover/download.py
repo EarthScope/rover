@@ -29,7 +29,7 @@ TMPRESPONSE = 'rover_availability_response'
 TMPDOWNLOAD = 'rover_download'
 
 # name of source when not a subscription
-DEFAULT = 'default'
+DEFAULT_NAME = -1
 
 
 class Downloader(SqliteSupport):
@@ -361,7 +361,7 @@ class DownloadManager(SqliteSupport):
         for name in self._sources.keys():
             source = self._sources[name]
             coverages = source.get_coverages()
-            if name != DEFAULT:
+            if name != DEFAULT_NAME:
                 print('  Subscription %s ' % source)
                 print()
             source_seconds, source_sncls = 0, 0
@@ -378,7 +378,7 @@ class DownloadManager(SqliteSupport):
                     print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
                     for (begin, end) in coverage.timespans:
                         print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
-            if name != DEFAULT:
+            if name != DEFAULT_NAME:
                 if source_sncls:
                     print()
                 print('  %s: %d SNCLSs; %4.2f sec' % (name, source_sncls, source_seconds))
@@ -417,7 +417,11 @@ class DownloadManager(SqliteSupport):
         Are we no longer downloading data?
         """
         self._clean_sources()
-        return len(self._sources) == 0
+        if not self._sources:
+            self._update_stats()  # wipe
+            return True
+        else:
+            return False
 
     def step(self):
         """
@@ -438,6 +442,7 @@ class DownloadManager(SqliteSupport):
             if source.has_days():
                 source.new_worker(self._log, self._workers, self._config_path, self._rover_cmd)
                 self._n_downloads += 1
+            self._clean_sources()
 
     def download(self):
         """
