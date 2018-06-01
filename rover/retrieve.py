@@ -74,6 +74,9 @@ See `rover subscribe` for similar functionality, but with regular updates.
 @leap-expire
 @leap-file
 @leap-url
+@http
+@http-bind-address
+@http-port
 @verbosity
 @log-dir
 @log-verbosity

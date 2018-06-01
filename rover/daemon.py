@@ -43,6 +43,9 @@ See also `rover stop`, `rover status` and `rover daemon`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
+@http
+@http-bind-address
+@http-port
 @verbosity
 @log-dir
 @log-verbosity
@@ -174,6 +177,9 @@ See also `rover stop`, `rover status`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
+@http
+@http-bind-address
+@http-port
 @verbosity
 @log-dir
 @log-verbosity
