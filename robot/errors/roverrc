@@ -58,3 +58,9 @@ leap-expire=30
 leap-file=leap-seconds.lst
 # URL for leapsecond data
 leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
+# start the download progress web server?
+http=True
+# bind address for HTTP server
+http-bind-address=127.0.0.1
+# port for HTTP server
+http-port=8000

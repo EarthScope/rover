@@ -7,14 +7,22 @@ from time import sleep
 
 from .download import DEFAULT_NAME
 from .process import ProcessManager
-from .args import BINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
+from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .utils import process_exists, format_epoch, format_time_epoch
 from .sqlite import SqliteSupport, NoResult
 
-# todo - docs
+
+"""
+The 'rover web' command - run a web service that displays information on the download manager.
+"""
 
 
 class DeadMan(Thread):
+    """
+    Repeatedly check the parent process and exit when that dies.
+
+    (Maybe processes should do this anyway with HUP, but this seems to be called...)
+    """
 
     def __init__(self, log, ppid, server):
         super().__init__()
@@ -33,8 +41,19 @@ class DeadMan(Thread):
 
 
 class RequestHandler(BaseHTTPRequestHandler):
+    """
+    Generate the web page.
+
+    BaseHTTPRequestHandler is part of the standard Python library HHTP server code - we extend it for this
+    particular application.
+    """
 
     def do_GET(self):
+        """
+        This method is called when the server receives a GET request.
+
+        We detect what is running and generate the appropriate response.
+        """
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
@@ -142,6 +161,9 @@ Created: %s   Last active: %s</pre></p>''' %
 
 
 class Server(HTTPServer, SqliteSupport):
+    """
+    Extend the standard HTTP server to include a database connection and access to process data.
+    """
 
     def __init__(self, config, address, handler):
         HTTPServer.__init__(self, address, handler)
@@ -150,9 +172,36 @@ class Server(HTTPServer, SqliteSupport):
 
 
 class ServerStarter:
+    """
+### Web
+
+    rover web
+
+    rover web --http-bind-address 0.0.0.0 --http-port 8080
+
+    rover start --http ...   # the default
+
+    rover retrieve --http ...   # the default
+
+Start a web server that provides information on the progress of the download manager (the core of the
+`rover daemon` and `rover retrieve` commands).
+
+With the default configuration this is started automatically, provided `--no-http` is not used with
+`rover retrieve` or `rover start`.
+
+##### Significant Parameters
+
+@http
+@http-bind-address
+@http-port
+@verbosity
+@log-dir
+@log-verbosity
+
+    """
 
     def __init__(self, config):
-        self._bind_address = config.arg(BINDADDRESS)
+        self._bind_address = config.arg(HTTPBINDADDRESS)
         self._http_port = config.arg(HTTPPORT)
         self._ppid = getppid()
         self._log = config.log

@@ -1,3 +1,4 @@
+
 from sqlite3 import OperationalError
 from time import sleep, time
 
@@ -10,7 +11,15 @@ from .sqlite import SqliteSupport
 from .summary import Summarizer
 from .utils import check_cmd, run, canonify
 
-# todo - docs
+
+"""
+Commands related to the daemn:
+
+The 'rover daemon' command - equivalent to related retrieval, but in the background.
+The 'rover start' command - start the daemon,
+The 'rover status' command - show whether the dameon is running.
+The 'rover stop' command - stop teh daemon.
+"""
 
 
 DAEMONCONFIG = 'rover_daemon_config'

@@ -17,6 +17,8 @@
   * [Ingest](#ingest)
   * [Index](#index)
   * [Summary](#summary)
+  * [Daemon](#daemon)
+  * [Web](#web)
 
 ## Normal Usage
 
@@ -56,7 +58,7 @@ See `rover subscribe` for similar functionality, but with regular updates.
 | index               | True                 | Call index after ingest?       |
 | post-summary        | True                 | Call summary after retrieval?  |
 | rover-cmd           | rover                | Command to run rover           |
-| mseed-cmd           | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | download-workers    | 10                   | Number of download instances to run |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -73,7 +75,7 @@ In addition, parameters for sub-commands (download, ingest, index) will be used 
 
     rover retrieve sncls.txt
 
-will download, ingest, and index any data missing from the local store that are present in the given file.
+will download, ingest, and index any data missing from the local store for SNCLs / timespans present in the given file.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
@@ -240,7 +242,7 @@ will write the config to the given file.
 
 Arrange for the background service (daemon) to regularly compare available data with the local store then download, ingest and index any new data.
 
-This is similar to `rover retrieve`, but uses a background service to regularly update sthe store.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
+This is similar to `rover retrieve`, but uses a background service to regularly update the store.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
 
 The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
 
@@ -250,7 +252,7 @@ The list of available data is retrieved from the service and compared with the l
 
 In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality and samplerate information is "merged").
 
-A user may have multiple subscriptions (see `rover list-subscribe`), but to avoid downloading duplicate data they must describe overlapping data.  To enforce this, requests are checked on submission.
+A user may have multiple subscriptions (see `rover list-subscribe`), but to avoid downloading duplicate data they must not describe overlapping data.  To enforce this, requests are checked on submission.
 
 ##### Significant Parameters
 
@@ -269,7 +271,7 @@ Most of the download process is controlled by the parameters provided when start
 
     rover subscribe sncls.txt
 
-will instruct the daemon to regularly download, ingest, and index any data missing from the local store that are present in the given file.
+will instruct the daemon to regularly download, ingest, and index any data missing from the local store for SNCLS / timespans in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
@@ -288,7 +290,9 @@ See also `rover stop`, `rover status` and `rover daemon`.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | rover-cmd           | rover                | Command to run rover           |
-| mseed-cmd           | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| download-workers    | 10                   | Number of download instances to run |
+| mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
@@ -408,7 +412,7 @@ The file should not contain data that spans multiple calendar days.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-cmd           | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
@@ -447,9 +451,9 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
-| mseed-cmd           | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | Root of mseed data, location of index.sql |
-| mseed-workers       | 10                   | Number of mseedindex instances to run |
+| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
@@ -486,5 +490,72 @@ Create a summary of the index in the database.  This lists the overall span of d
 
 will create the summary.
 
+
+    
+
+### Daemon
+
+The background (daemon) process that supports `rover subscribe`.
+
+**Prefer using `rover start` to start this task in the background.**
+
+See also `rover stop`, `rover status`.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| rover-cmd           | rover                | Command to run rover           |
+| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| download-workers    | 10                   | Number of download instances to run |
+| mseedindex-workers  | 10                   | Number of mseedindex instances to run |
+| temp-dir            | tmp                  | Temporary storage for downloads |
+| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
+| recheck-period      | 12                   | Time between availabilty checks |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+| dev                 | False                | Development mode (show exceptions)? |
+
+In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
+
+Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`. For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
+
+##### Examples
+
+    rover daemon -f roverrc
+
+will start the daemon (in the foreground - see `rover start`) using the given configuration file.
+
+    rover start --recheck-period 24
+
+will start the daemon (in the foreground - see `rover start`), processing subscriptions every 24 hours.
+
+    
+
+### Web
+
+    rover web
+
+    rover web --http-bind-address 0.0.0.0 --http-port 8080
+
+    rover start --http ...   # the default
+
+    rover retrieve --http ...   # the default
+
+Start a web server that provides information on the progress of the download manager (the core of the `rover daemon` and `rover retrieve` commands).
+
+With the default configuration this is started automatically, provided `--no-http` is not used with `rover retrieve` or `rover start`.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| http                | True                 | Auto-start the download progress web server? |
+| http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
+| http-port           | 8000                 | Port for HTTP server           |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
 
     

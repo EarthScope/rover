@@ -111,10 +111,13 @@ This will place all files in `newdir`.
 | log-size            | 6                    | Maximum log size (1-10)        |
 | log-count           | 10                   | Maximum number of logs         |
 | verbosity           | 4                    | Console verbosity (0-5)        |
-| mseed-cmd           | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | Root of mseed data, location of index.sql |
-| mseed-workers       | 10                   | Number of mseedindex instances to run |
+| mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| http                | True                 | Auto-start the download progress web server? |
+| http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
+| http-port           | 8000                 | Port for HTTP server           |

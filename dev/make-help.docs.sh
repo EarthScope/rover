@@ -110,6 +110,8 @@ cat <<EOF > docs/commands.md
   * [Ingest](#ingest)
   * [Index](#index)
   * [Summary](#summary)
+  * [Daemon](#daemon)
+  * [Web](#web)
 
 ## Normal Usage
 
@@ -143,3 +145,5 @@ dev/rover help download --md-format >> docs/commands.md
 dev/rover help ingest --md-format >> docs/commands.md
 dev/rover help index --md-format >> docs/commands.md
 dev/rover help summary --md-format >> docs/commands.md
+dev/rover help daemon --md-format >> docs/commands.md
+dev/rover help web --md-format >> docs/commands.md
