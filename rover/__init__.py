@@ -1,5 +1,7 @@
 
-from .http import ServerStarter
+from traceback import print_exc
+
+from .web import ServerStarter
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB
@@ -61,6 +63,8 @@ def main():
             elif config.command != HELP:
                 config.log.info('See "rover help help" for a list of commands')
             if not config or not config._args or config.arg(DEV):
-                raise e
+                print_exc()
         else:
-            raise e
+            print_exc()
+        # use an exit code so that workers are detected aas failing
+        exit(1)

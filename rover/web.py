@@ -1,16 +1,15 @@
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from os import getppid
 from sqlite3 import OperationalError
 from threading import Thread
 from time import sleep
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
+from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
-from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
-from .utils import process_exists, format_epoch, format_time_epoch
 from .sqlite import SqliteSupport, NoResult
-
+from .utils import process_exists, format_time_epoch
 
 """
 The 'rover web' command - run a web service that displays information on the download manager.

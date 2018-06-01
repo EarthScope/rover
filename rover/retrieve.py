@@ -4,16 +4,14 @@ from os import makedirs
 from os.path import exists
 from shutil import copyfile
 
-from .download import DEFAULT_NAME
-from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, ROVERCMD, MSEEDINDEXCMD, LEAP, LEAPEXPIRE, \
+from .email import Emailer
+from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early
-from .download import DownloadManager
+from .download import DEFAULT_NAME, DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import check_cmd, clean_old_files, \
-    match_prefixes, check_leap, unique_path, safe_unlink, build_file
-
+from .utils import clean_old_files, match_prefixes, check_leap, unique_path, safe_unlink, build_file
 
 """
 Commands related to data retrieval:
@@ -108,7 +106,7 @@ store.
         self._delete_files = config.arg(DELETEFILES)
         self._post_summary = config.arg(POSTSUMMARY)
         self._download_manager = None   # created in do_run()
-        self._config = config
+        self._emailer = Emailer(config)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
         check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_path(LEAPFILE), config.arg(LEAPURL), config.log)
@@ -151,7 +149,8 @@ store.
         if self._pre_index:
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
-        self._download_manager.add(DEFAULT_NAME, up, self._availability_url, self._dataselect_url)
+        self._download_manager.add(DEFAULT_NAME, up,
+                                   self._availability_url, self._dataselect_url, self._source_callback)
 
     def _fetch(self):
         """
@@ -167,6 +166,11 @@ store.
         Display data from the download manager.
         """
         return self._download_manager.display()
+
+    def _source_callback(self, source):
+        if self._emailer:
+            subject, msg = self._emailer.describe_retrieve(source)
+            self._emailer.send(subject, msg)
 
 
 class Retriever(BaseRetriever):

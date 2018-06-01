@@ -5,7 +5,7 @@ from os import getpid
 from os.path import join, exists
 from sqlite3 import OperationalError
 from subprocess import Popen
-from time import sleep
+from time import sleep, time
 
 from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY, VERBOSITY, WEB
@@ -137,7 +137,7 @@ class Source:
     Data for a single source in the download manager.
     """
 
-    def __init__(self, name, dataselect_url, completion_callback=None):
+    def __init__(self, name, dataselect_url, completion_callback):
         self.name = name
         self._dataselect_url = dataselect_url
         self._completion_callback = completion_callback
@@ -145,6 +145,9 @@ class Source:
         self._days = deque()  # fifo: appendright / popleft
         self.initial_stats = NOSTATS
         self.worker_count = 0
+        self.n_downloads = 0
+        self.n_errors = 0
+        self.start_epoch = time()
 
     def __str__(self):
         return '%s (%s)' % (self.name, self._dataselect_url)
@@ -199,8 +202,11 @@ class Source:
         url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('_'))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
-    def _callback(self, command, return_code):
+    def _worker_callback(self, command, return_code):
         self.worker_count -= 1
+        self.n_downloads += 1
+        if return_code:
+            self.n_errors += 1
 
     def new_worker(self, log, workers, config_path, rover_cmd):
         url = self._build_url(*self._days.popleft())
@@ -208,13 +214,13 @@ class Source:
         # default (which is in the file)
         command = '%s -f \'%s\' %s \'%s\'' % (rover_cmd, config_path, DOWNLOAD, url)
         log.debug(command)
-        workers.execute(command, self._callback)
+        workers.execute(command, self._worker_callback)
         self.worker_count += 1
 
     def is_complete(self):
         complete = self.worker_count == 0 and not self.has_days()
         if complete and self._completion_callback:
-            self._completion_callback()
+            self._completion_callback(self)
             self._completion_callback = None
         return complete
 
@@ -326,13 +332,13 @@ class DownloadManager(SqliteSupport):
             self._log.debug('No index - first time using rover?')
         return availability.coverage()
 
-    def _new_source(self, source, dataselect_url, completion_callback=None):
+    def _new_source(self, source, dataselect_url, completion_callback):
         if source in self._sources and self._sources[source].worker_count:
             raise Exception('Cannot overwrite active source %s' % self._sources[source])
-        self._sources[source] = Source(source, dataselect_url, completion_callback=completion_callback)
+        self._sources[source] = Source(source, dataselect_url, completion_callback)
         return self._sources[source]
 
-    def add(self, name, path, availability_url, dataselect_url, completion_callback=None):
+    def add(self, name, path, availability_url, dataselect_url, completion_callback):
         """
         Add a source and associated coverage, retrieving data from the
         availability service.
@@ -340,7 +346,7 @@ class DownloadManager(SqliteSupport):
         request = self._build_request(path)
         response = self._get_availability(request, availability_url)
         try:
-            source = self._new_source(name, dataselect_url, completion_callback=completion_callback)
+            source = self._new_source(name, dataselect_url, completion_callback)
             for remote in self._parse_availability(response):
                 self._log.debug('Available data: %s' % remote)
                 local = self._scan_index(remote.sncl)
