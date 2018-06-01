@@ -118,6 +118,10 @@ This will place all files in `newdir`.
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
-| http                | True                 | Auto-start the download progress web server? |
+| web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
+| email               |                      | Address for completion status  |
+| email-from          | noreply@rover        | From address for email         |
+| smtp-address        | localhost            | Address of SMTP server         |
+| smtp-port           | 25                   | Port for SMTP server           |

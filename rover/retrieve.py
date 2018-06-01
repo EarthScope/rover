@@ -53,6 +53,9 @@ and samplerate information is "merged").
 
 This command also indexes modified data in the store before processing.
 
+When the process is running status should be visible at http://localhost:8000 (by default).  When the process
+ends an email can be sent to the user (if `--email` is used).
+
 See `rover subscribe` for similar functionality, but with regular updates.
 
 ##### Significant Parameters
@@ -72,9 +75,13 @@ See `rover subscribe` for similar functionality, but with regular updates.
 @leap-expire
 @leap-file
 @leap-url
-@http
+@web
 @http-bind-address
 @http-port
+@email
+@email-from
+@smtp-address
+@smtp-port
 @verbosity
 @log-dir
 @log-verbosity

@@ -43,6 +43,8 @@ In the comparison of available data, maximal timespans across all quality and sa
 
 This command also indexes modified data in the store before processing.
 
+When the process is running status should be visible at http://localhost:8000 (by default).  When the process ends an email can be sent to the user (if `--email` is used).
+
 See `rover subscribe` for similar functionality, but with regular updates.
 
 ##### Significant Parameters
@@ -64,9 +66,13 @@ See `rover subscribe` for similar functionality, but with regular updates.
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
-| http                | True                 | Auto-start the download progress web server? |
+| web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
+| email               |                      | Address for completion status  |
+| email-from          | noreply@rover        | From address for email         |
+| smtp-address        | localhost            | Address of SMTP server         |
+| smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -299,9 +305,13 @@ See also `rover stop`, `rover status` and `rover daemon`.
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
-| http                | True                 | Auto-start the download progress web server? |
+| web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
+| email               |                      | Address for completion status  |
+| email-from          | noreply@rover        | From address for email         |
+| smtp-address        | localhost            | Address of SMTP server         |
+| smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -310,6 +320,8 @@ See also `rover stop`, `rover status` and `rover daemon`.
 In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
 
 Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`. For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
+
+When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription is processed an email can be sent to the user (if `--email` is used).
 
 ##### Examples
 
@@ -518,9 +530,12 @@ See also `rover stop`, `rover status`.
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
-| http                | True                 | Auto-start the download progress web server? |
+| web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
+| email               |                      | Address for completion status  |
+| smtp-address        | localhost            | Address of SMTP server         |
+| smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -529,6 +544,8 @@ See also `rover stop`, `rover status`.
 In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
 
 Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`. For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
+
+When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription is processed an email can be sent to the user (if `--email` is used).
 
 ##### Examples
 
@@ -548,9 +565,9 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
 
     rover web --http-bind-address 0.0.0.0 --http-port 8080
 
-    rover start --http ...   # the default
+    rover start --web ...   # the default
 
-    rover retrieve --http ...   # the default
+    rover retrieve --web ...   # the default
 
 Start a web server that provides information on the progress of the download manager (the core of the `rover daemon` and `rover retrieve` commands).
 
@@ -560,7 +577,7 @@ With the default configuration this is started automatically, provided `--no-htt
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| http                | True                 | Auto-start the download progress web server? |
+| web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
 | verbosity           | 4                    | Console verbosity (0-5)        |

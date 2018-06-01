@@ -178,9 +178,9 @@ class ServerStarter:
 
     rover web --http-bind-address 0.0.0.0 --http-port 8080
 
-    rover start --http ...   # the default
+    rover start --web ...   # the default
 
-    rover retrieve --http ...   # the default
+    rover retrieve --web ...   # the default
 
 Start a web server that provides information on the progress of the download manager (the core of the
 `rover daemon` and `rover retrieve` commands).
@@ -190,7 +190,7 @@ With the default configuration this is started automatically, provided `--no-htt
 
 ##### Significant Parameters
 
-@http
+@web
 @http-bind-address
 @http-port
 @verbosity

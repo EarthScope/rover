@@ -52,7 +52,6 @@ EMAIL = 'email'
 EMAILFROM = 'email-from'
 F, FILE = 'f', 'file'
 FORCEREQUEST = 'force-request'
-HTTP = 'http'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
 LEAP = 'leap'
@@ -238,7 +237,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
 
         # user feedback
-        self.add_argument(mm(HTTP), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
+        self.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
         self.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar='ADDRESS')
         self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar='N', type=int)
         self.add_argument(mm(EMAIL), default='', action='store', help='address for completion status', metavar='ADDRESS')

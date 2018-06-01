@@ -44,9 +44,13 @@ See also `rover stop`, `rover status` and `rover daemon`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
-@http
+@web
 @http-bind-address
 @http-port
+@email
+@email-from
+@smtp-address
+@smtp-port
 @verbosity
 @log-dir
 @log-verbosity
@@ -58,6 +62,9 @@ for download, ingest and index) will apply,
 Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`.
 For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted
 (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
+
+When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription
+is processed an email can be sent to the user (if `--email` is used).
 
 ##### Examples
 
@@ -178,9 +185,12 @@ See also `rover stop`, `rover status`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
-@http
+@web
 @http-bind-address
 @http-port
+@email
+@smtp-address
+@smtp-port
 @verbosity
 @log-dir
 @log-verbosity
@@ -192,6 +202,9 @@ for download, ingest and index) will apply,
 Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`.
 For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted
 (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
+
+When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription
+is processed an email can be sent to the user (if `--email` is used).
 
 ##### Examples
 
