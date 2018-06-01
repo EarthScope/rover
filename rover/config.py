@@ -11,6 +11,7 @@ from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
 
+
 """
 Package common data used in all/most classes (db connection, lgs and parameters).
 """

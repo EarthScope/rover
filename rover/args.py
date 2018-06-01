@@ -192,10 +192,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
 
-        # subscription
-        self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
-        self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar='HOURS', type=int)
-        self.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
+        # the local store
+        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='the local store - mseed data, index.sql', metavar=DIRVAR)
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
@@ -216,6 +214,11 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
         self.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
 
+        # subscription
+        self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
+        self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar='HOURS', type=int)
+        self.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
+
         # logging
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
@@ -227,7 +230,6 @@ class Arguments(ArgumentParser):
 
         # mseedindex
         self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar='CMD')
-        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='root of mseed data, location of index.sql', metavar=DIRVAR)
         self.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
 
         # leap seconds

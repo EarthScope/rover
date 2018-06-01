@@ -1,14 +1,13 @@
 
 from os import getpid, kill
-from sqlite3 import OperationalError
 
-from .utils import process_exists
 from .args import RETRIEVE, DAEMON, START, STOP
 from .sqlite import SqliteSupport, NoResult
+from .utils import process_exists
 
 
 """
-Process management (daemons, the command line process etc).
+Process management (mainly stopping duplicate data by refusing to run retrieve and the daemon in parallel).
 """
 
 

@@ -11,6 +11,7 @@ from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
 from .utils import process_exists, format_time_epoch
 
+
 """
 The 'rover web' command - run a web service that displays information on the download manager.
 """

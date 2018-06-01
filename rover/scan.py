@@ -8,6 +8,7 @@ from .args import MSEEDDIR, ALL, RECURSE
 from .sqlite import SqliteSupport
 from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator, in_memory, canonify_dir_and_make
 
+
 """
 Iterators over files on the file system, or in the database, and - building
 on that - an iterator over modified files.

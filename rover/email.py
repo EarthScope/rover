@@ -9,10 +9,15 @@ from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERI
 
 """
 Support for emailing the user after a download finishes.
+
+(This is not exposed as a direct rover command).
 """
 
 
 class Emailer:
+    """
+    Encapsulate the email functionality needed by the system.
+    """
 
     def __init__(self, config):
         self._email_to = config.arg(EMAIL)
@@ -47,6 +52,9 @@ class Emailer:
 
     @staticmethod
     def describe_retrieve(source):
+        """
+        Generate the message sent by `rover retrieve`.
+        """
         msg = '''
 A rover %s task started at %s has completed on %s.
 
@@ -65,6 +73,9 @@ WARNING: Since the download had some errors, it may be incomplete.
         return 'Rover %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
+        """
+        Generate the message sent by the daemon.
+        """
         msg = '''
 Subscription %s has been processed by the rover %s on %s.
 

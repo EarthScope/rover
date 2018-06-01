@@ -123,7 +123,11 @@ class NoConflictPerProcessWorkers(Workers):
 
 
 class NoConflictPerDatabaseWorkers(Workers):
-    # todo - docs
+    """
+    Extend the above to block attempts for two processes (workers) to access
+    the same resource.  Because this uses a database table it works across
+    processes.
+    """
 
     def __init__(self, config, n_workers, name):
         super().__init__(config, n_workers)
@@ -144,7 +148,7 @@ class NoConflictPerDatabaseWorkers(Workers):
 
     def _unlocking_callback(self, cmd, rtn, callback, key):
         self._log.debug('Unlocking %s' % key)
-        # again, this is single threaed - the locking is across processes
+        # again, this is single thread - the locking is across processes
         self._locks[key].release()
         self._locks[key] = None
         if not callback:
