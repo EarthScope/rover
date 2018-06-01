@@ -2,6 +2,7 @@
 from sqlite3 import OperationalError
 from time import sleep, time
 
+from .email import Emailer
 from .process import ProcessManager
 from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, FILE, STOP
 from .config import write_config
@@ -211,6 +212,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
         self._post_summary = config.arg(POSTSUMMARY)
         self._download_manager = DownloadManager(config, DOWNLOADCONFIG)
         self._recheck_period = config.arg(RECHECKPERIOD) * 60 * 60
+        self._emailer = Emailer(config)
         self._config = config
 
     def run(self, args):
@@ -228,9 +230,13 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
             self._download_manager.step()
             sleep(1)
 
-    def _source_complete(self):
+    def _source_callback(self, source):
         if self._post_summary:
             Summarizer(self._config).run([])
+        if self._emailer:
+            subject, msg = self._emailer.describe_daemon(source)
+            self._emailer.send(subject, msg)
+
 
     def _find_next_subscription(self):
         now = time()
@@ -261,6 +267,6 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
             path, availability_url, dataselect_url = self.fetchone(
                 '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
             self._log.info('Adding subscription %d (%s, %s)' % (id, availability_url, dataselect_url))
-            self._download_manager.add(id, path, availability_url, dataselect_url, self._source_complete)
+            self._download_manager.add(id, path, availability_url, dataselect_url, self._source_callback)
         finally:
             self.execute('''update rover_subscriptions set last_check_epoch = ? where id = ?''', (time(), id))
