@@ -4,10 +4,11 @@ from collections import deque
 from os import getpid
 from os.path import join, exists
 from sqlite3 import OperationalError
+from subprocess import Popen
 from time import sleep
 
 from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
-    TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY
+    TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY, VERBOSITY, WEB
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
@@ -245,6 +246,7 @@ class DownloadManager(SqliteSupport):
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
         self._n_downloads = 0
+        self._create_stats_table()
         if config_file:
             # these aren't used to list subscriptions (when config_file is None)
             self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
@@ -252,9 +254,9 @@ class DownloadManager(SqliteSupport):
             log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
             log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
             self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
+            self._start_web()
         else:
             self._config_path = None
-        self._create_stats_table()
 
     # source management
 
@@ -482,3 +484,12 @@ class DownloadManager(SqliteSupport):
                                       (submission, initial_coverages, remaining_coverages, initial_time, remaining_time)
                                       values (?, ?, ?, ?, ?)''',
                                  (source.name, source.initial_stats[0], stats[0], source.initial_stats[1], stats[1]))
+
+    def _start_web(self):
+        # don't use shell so PPID is us
+        cmd = self._rover_cmd.split(' ')
+        cmd.append(WEB)
+        cmd.extend(['-f', self._config_path])
+        cmd.extend([mm(VERBOSITY), '0'])
+        self._log.debug('Starting web: %s' % cmd)
+        Popen(cmd, shell=False, stdin=None, stdout=None, stderr=None, close_fds=True)

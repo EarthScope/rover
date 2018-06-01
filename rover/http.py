@@ -11,6 +11,8 @@ from .args import BINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .utils import process_exists, format_epoch, format_time_epoch
 from .sqlite import SqliteSupport, NoResult
 
+# todo - docs
+
 
 class DeadMan(Thread):
 
@@ -114,9 +116,9 @@ Created: %s   Last active: %s</pre></p>''' %
             self._write_bar('timespan', initial_time, remaining_time)
             self._write('</pre></p>')
         except NoResult:
-            self._write('<p>Currently inactive</p>')
+            self._write('<p>Currently inactive.</p>')
         except OperationalError:
-            self._write('<p>Error: no statistics in database</p>')
+            self._write('<p>Error: no statistics in database.</p>')
 
     def _write_bar(self, label, initial, current):
         percent = int(100 * (initial - current) / initial)
@@ -134,6 +136,9 @@ Created: %s   Last active: %s</pre></p>''' %
 <li>Firefox will not open file:// URLs, but you can copy them to the address bar, where they will work.</li>
 </ul>
 ''')
+
+    def log_message(self, format, *args):
+        pass
 
 
 class Server(HTTPServer, SqliteSupport):

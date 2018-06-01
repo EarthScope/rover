@@ -79,11 +79,11 @@ class Workers:
         return Popen(command, shell=True)
 
 
-class NoConflictPerProcesgsWorkers(Workers):
+class NoConflictPerProcessWorkers(Workers):
     """
     Extend the above to block attempts to have two processes for the same key
     (typically SNCL and day, or the path to the file in the store).  This avoid
-    simultaneous modification of the file by mutliple processes without using file
+    simultaneous modification of the file by multiple processes without using file
     locking (which is has problems with NFS, isn't great cross-platform, and used
     to cause issues with "compact" when we re-wrote files).
     """
@@ -123,12 +123,12 @@ class NoConflictPerProcesgsWorkers(Workers):
 
 
 class NoConflictPerDatabaseWorkers(Workers):
+    # todo - docs
 
     def __init__(self, config, n_workers, name):
         super().__init__(config, n_workers)
         self._lock_factory = DatabaseBasedLockFactory(config, name)
         self._locks = {}
-
 
     def execute_with_lock(self, command, key, callback=None):
         self._wait_for_space()
