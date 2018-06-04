@@ -79,6 +79,7 @@ will start the daemon, processing subscriptions every 24 hours.
     """
 
     def __init__(self, config):
+        UserFeedback.__init__(self, config)
         fail_early(config)
         self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
         # don't clean this because it may be long-lived (it will be over-written on re-use)

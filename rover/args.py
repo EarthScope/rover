@@ -427,7 +427,7 @@ class Arguments(ArgumentParser):
 
     def print_docs_table_md(self):
         """
-        Print all arguents ina table (called externally from python to generate docs).
+        Print all arguments in a table (called externally from python to generate docs).
         """
         self.print_docs_header()
         self.__print_docs_rows_md()
