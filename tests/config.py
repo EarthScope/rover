@@ -29,12 +29,8 @@ dev=False
 delete-files=True
 # display help in markdown format?
 md-format=False
-# directory for subscriptions
-subscriptions-dir=subscriptions
-# time between availabilty checks
-recheck-period=12
-# skip overlap checks (dangerous)?
-force-request=False
+# the local store - mseed data, index.sql
+mseed-dir=mseed
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run
@@ -61,6 +57,12 @@ temp-expire=1
 all=False
 # when given a directory, process children?
 recurse=True
+# directory for subscriptions
+subscriptions-dir=subscriptions
+# time between availabilty checks
+recheck-period=12
+# skip overlap checks (dangerous)?
+force-request=False
 # directory for logs
 log-dir=logs
 # unique log names (with PIDs)?
@@ -77,8 +79,6 @@ log-count=10
 verbosity=4
 # mseedindex command
 mseedindex-cmd=mseedindex
-# root of mseed data, location of index.sql
-mseed-dir=mseed
 # number of mseedindex instances to run
 mseedindex-workers=10
 # use leapseconds file?
@@ -90,7 +90,7 @@ leap-file=leap-seconds.lst
 # URL for leapsecond data
 leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 # auto-start the download progress web server?
-http=True
+web=True
 # bind address for HTTP server
 http-bind-address=127.0.0.1
 # port for HTTP server

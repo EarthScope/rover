@@ -4,7 +4,7 @@ from traceback import print_exc
 from .web import ServerStarter
 from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB
+    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, RESUBSCRIBE
 from .config import Config, ConfigWriter
 from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
@@ -12,7 +12,7 @@ from .index import Indexer, IndexLister
 from .ingest import Ingester
 from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
-from .subscribe import Subscriber, SubscriptionLister, Unsubscriber
+from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Resubscriber
 from .summary import Summarizer, SummaryLister
 
 
@@ -32,7 +32,8 @@ COMMANDS = {
     DAEMON: (Daemon, 'The background daemon (prefer start/stop)'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
     LIST_SUBSCRIBE: (SubscriptionLister, 'List the subscriptions'),
-    UNSUBSCRIBE: (Unsubscriber, 'Remove a subscription'),
+    RESUBSCRIBE: (Resubscriber, 'Ask the daemon to reprocess subscriptions'),
+    UNSUBSCRIBE: (Unsubscriber, 'Remove subscriptions'),
     WEB: (ServerStarter, 'Start a web server showing status')
 }
 
