@@ -1,6 +1,9 @@
 
-from io import StringIO as buffer
 from sys import version_info
+if version_info[0] >= 3:
+    from io import StringIO as buffer
+else:
+    from io import BytesIO as buffer
 from os import unlink
 from os.path import join
 
@@ -58,12 +61,12 @@ def test_bad_begin():
 
 def test_ambiguous():
     with TemporaryDirectory() as dir:
-      assert_bad_args(dir, ['s=foo'], 'Ambiguous parameter: s')
+        assert_bad_args(dir, ['s=foo'], 'Ambiguous parameter: s')
 
 
 def test_two_flags():
     with TemporaryDirectory() as dir:
-      assert_bad_args(dir, ['count', 'join'], 'Cannot specify multiple keys')
+        assert_bad_args(dir, ['count', 'join'], 'Cannot specify multiple keys')
 
 
 def test_count():

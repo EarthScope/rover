@@ -71,7 +71,7 @@ http-bind-address=127.0.0.1
 # port for HTTP server
 http-port=8000
 # address for completion status
-email=
+email=acooke@isti.com
 # from address for email
 email-from=noreply@rover
 # address of SMTP server

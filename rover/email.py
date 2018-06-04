@@ -1,11 +1,15 @@
 
+from sys import version_info
 from socket import gethostname
-from email.message import EmailMessage
+if version_info[0] >= 3:
+    from email.message import EmailMessage
+else:
+    from email.mime.text import MIMEText
 from smtplib import SMTP
 
 from .utils import format_time_epoch
 from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
-    DAEMON
+    DAEMON, RESUBSCRIBE
 
 """
 Support for emailing the user after a download finishes.
@@ -38,8 +42,11 @@ class Emailer:
         Send the email using the pre-configured parameters.
         """
         try:
-            email = EmailMessage()
-            email.set_content(msg)
+            if version_info[0] >= 3:
+                email = EmailMessage()
+                email.set_content(msg)
+            else:
+                email = MIMEText(msg, _subtype='plain', _charset='utf-8')
             email['Subject'] = subject
             email['From'] = self._email_from
             email['To'] = self._email_to
@@ -92,5 +99,6 @@ The subscription will be checked again in %d hours.
             msg += '''
 WARNING: Since the download had some errors, it may be incomplete.
          To check for completeness use `rover %s %s`
-''' % (LIST_SUBSCRIBE, source.name)
+         Run `rover %s %s` to reprocess immediately.
+''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
         return 'Rover subscription %s processed' % source.name, msg

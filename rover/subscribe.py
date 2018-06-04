@@ -274,6 +274,7 @@ will delete subscriptions 1, 2 and 3.
 
             self.foreachrow('''select file from rover_subscriptions where id >= ? and id <= ?''', (id1, id2), callback)
             self.execute('''delete from rover_subscriptions where id >= ? and id <= ?''', (id1, id2))
+            self._log.info('Cleared subscriptions between %d and %d' % (id1, id2))
 
 
 class Resubscriber(SqliteSupport):

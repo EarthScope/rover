@@ -352,7 +352,8 @@ printed to stdout.
         return sub(r'\?', '_', sub(r'\*', '%', value))
 
     def _count(self, sql, params, stdout):
-        print(self.fetchsingle(sql, params), file=stdout)
+        # force to int here to avoid issues with strings on python 2
+        print(int(self.fetchsingle(sql, params)), file=stdout)
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
