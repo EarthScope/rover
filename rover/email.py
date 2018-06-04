@@ -91,6 +91,6 @@ The subscription will be checked again in %d hours.
         if source.n_errors:
             msg += '''
 WARNING: Since the download had some errors, it may be incomplete.
-         To check for completeness use `rover %s`
-''' % LIST_SUBSCRIBE
+         To check for completeness use `rover %s %s`
+''' % (LIST_SUBSCRIBE, source.name)
         return 'Rover subscription %s processed' % source.name, msg

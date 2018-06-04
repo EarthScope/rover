@@ -13,7 +13,6 @@ pasteurize -w -n --no-diffs .
 popd
 
 cp -r rover/docs rover23
-cp -r rover/robot rover23
 cp rover/setup.py rover23
 cp rover/README.md rover23
 cp rover/LICENSE rover23

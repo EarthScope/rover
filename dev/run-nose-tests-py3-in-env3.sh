@@ -2,5 +2,5 @@
 
 source env3/bin/activate
 echo
-echo "nose python 3 tests on 3"
+echo "unit tests of py3 code in env3"
 nosetests tests/*.py

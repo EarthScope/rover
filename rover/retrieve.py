@@ -99,7 +99,7 @@ will download, ingest, and index any data missing from the local store for SNCLs
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local
+will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the local
 store.
 
 """

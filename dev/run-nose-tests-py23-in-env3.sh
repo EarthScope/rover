@@ -3,6 +3,6 @@
 source env3/bin/activate
 pushd ../rover23
 echo
-echo "nose python 3 tests on 23"
+echo "unit tests of py23 code in env3
 nosetests tests/*.py
 popd
