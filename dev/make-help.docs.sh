@@ -105,6 +105,8 @@ cat <<EOF > docs/commands.md
   * [Start](#start)
   * [Stop](#stop)
   * [Status](#status)
+  * [Unsubscribe](#unsubscribe)
+  * [Resubscribe](#resubscribe)
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
@@ -132,6 +134,8 @@ dev/rover help subscribe --md-format >> docs/commands.md
 dev/rover help start --md-format >> docs/commands.md
 dev/rover help stop --md-format >> docs/commands.md
 dev/rover help status --md-format >> docs/commands.md
+dev/rover help unsubscribe --md-format >> docs/commands.md
+dev/rover help resubscribe --md-format >> docs/commands.md
 
 cat <<EOF >> docs/commands.md
 ## Low-Level Commands

@@ -88,9 +88,7 @@ This will place all files in `newdir`.
 | dev                 | False                | Development mode (show exceptions)? |
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
-| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12                   | Time between availabilty checks |
-| force-request       | False                | Skip overlap checks (dangerous)? |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
 | download-workers    | 10                   | Number of download instances to run |
 | rover-cmd           | rover                | Command to run rover           |
@@ -104,6 +102,9 @@ This will place all files in `newdir`.
 | temp-expire         | 1                    | Number of days before deleting temp files |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
+| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
+| recheck-period      | 12                   | Time between availabilty checks |
+| force-request       | False                | Skip overlap checks (dangerous)? |
 | log-dir             | logs                 | Directory for logs             |
 | log-unique          | False                | Unique log names (with PIDs)?  |
 | log-unique-expire   | 7                    | Number of days before deleting unique logs |
@@ -112,7 +113,6 @@ This will place all files in `newdir`.
 | log-count           | 10                   | Maximum number of logs         |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |

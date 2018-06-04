@@ -12,6 +12,8 @@
   * [Start](#start)
   * [Stop](#stop)
   * [Status](#status)
+  * [Unsubscribe](#unsubscribe)
+  * [Resubscribe](#resubscribe)
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
@@ -61,7 +63,7 @@ See `rover subscribe` for similar functionality, but with regular updates.
 | post-summary        | True                 | Call summary after retrieval?  |
 | rover-cmd           | rover                | Command to run rover           |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | download-workers    | 10                   | Number of download instances to run |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
@@ -88,7 +90,7 @@ will download, ingest, and index any data missing from the local store for SNCLs
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local store.
+will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the local store.
 
 
 ### List Retrieve
@@ -107,7 +109,7 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -160,7 +162,7 @@ The following parameters are simple flags that change the output format.  They a
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -200,7 +202,7 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -378,6 +380,54 @@ See also `rover start`, `rover stop`.
 will show whether the daemon using the given configuration file is running.
 
     
+
+### Unsubscribe
+
+    rover unsubscribe N[:M]+
+
+Delete one or more subscriptions.  The arguments can be single numbers (identifying the subscriptions, as displayed by `rover list-subscrive`), or ranges (N:M).
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover unsubscribe 1:3
+
+will delete subscriptions 1, 2 and 3.
+
+    
+
+### Resubscribe
+
+    rover resubscribe N[:M]+
+
+Ask the daemon to re-process the given subscriptions.  The arguments can be single numbers (identifying the subscriptions, as displayed by `rover list-subscrive`), or ranges (N:M).
+
+More exactly, this command resets the "last checked" date in the database, so when the daemon re-checks the database (typically once per minute) it will process the subscription.
+
+#### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover resubscribe 2
+
+will ask the daemon to re-process subscription 2.
+
+    
 ## Low-Level Commands
 
 The following commands are used internally, but are usually not useful
@@ -431,7 +481,7 @@ The file should not contain data that spans multiple calendar days.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -469,7 +519,7 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
@@ -497,7 +547,7 @@ Create a summary of the index in the database.  This lists the overall span of d
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseed-dir           | mseed                | Root of mseed data, location of index.sql |
+| mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |

@@ -8,3 +8,6 @@ robot -F robot robot
 echo
 echo "remaking env3 to remove install"
 dev/make-env-py3.sh > /dev/null 2>&1
+echo
+echo "file://`pwd`/log.html"
+echo
