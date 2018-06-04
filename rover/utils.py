@@ -373,6 +373,9 @@ def build_file(path, args):
 
 
 def sort_file_inplace(log, path, temp_dir):
+    """
+    Sort file using UNIX command line utility.
+    """
     sorted = unique_path(temp_dir, 'rover_sort', path)
     log.debug('Sorting %s into %s' % (path, sorted))
     run('sort %s > %s' % (path, sorted), log)
@@ -381,8 +384,13 @@ def sort_file_inplace(log, path, temp_dir):
 
 
 def process_exists(pid):
+    """
+    Check whether the given PID exists.
+    """
     try:
         kill(pid, 0)
         return True
     except OSError:
         return False
+
+

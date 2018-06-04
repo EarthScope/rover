@@ -16,3 +16,4 @@ echo "WARNING"
 echo "1 - you are using the devlopment (py3) code, not the installable (py23)"
 echo "2 - this install will not update to reflect changes made to the source"
 echo
+echo "source env3/bin/activate"

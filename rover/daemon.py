@@ -2,15 +2,15 @@
 from sqlite3 import OperationalError
 from time import sleep, time
 
-from .email import Emailer
-from .process import ProcessManager
-from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, FILE, STOP
+from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, STOP, UserFeedback
 from .config import write_config
 from .download import DownloadManager
+from .email import Emailer
 from .index import Indexer
+from .process import ProcessManager
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import check_cmd, run, canonify
+from .utils import check_cmd, run
 
 
 """
@@ -27,7 +27,7 @@ DAEMONCONFIG = 'rover_daemon_config'
 DOWNLOADCONFIG = 'rover_download_config'
 
 
-class Starter:
+class Starter(UserFeedback):
     """
 ### Start
 
@@ -80,7 +80,6 @@ will start the daemon, processing subscriptions every 24 hours.
 
     def __init__(self, config):
         fail_early(config)
-        self._log = config.log
         self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
         # don't clean this because it may be long-lived (it will be over-written on re-use)
         self._config_path = write_config(config, DAEMONCONFIG, verbosity=0)
@@ -90,6 +89,7 @@ will start the daemon, processing subscriptions every 24 hours.
             raise Exception('Usage: rover %s' % START)
         run('%s %s -f %s &' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
         self._log.info('The %s was started' % DAEMON)
+        self.display_feedback()
 
 
 class Stopper:

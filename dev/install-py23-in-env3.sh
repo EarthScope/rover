@@ -15,3 +15,5 @@ rm -fr build
 rm -fr dist
 rm -fr rover.egg-info
 popd
+echo
+echo "source env3/bin/activate"

@@ -9,6 +9,7 @@ from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
 
 from .utils import create_parents, canonify, check_cmd
 
+
 """
 Command line / file configuration parameters.
 """
@@ -438,3 +439,26 @@ def fail_early(config):
     """
     check_cmd(config, ROVERCMD, 'rover')
     check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
+
+
+class UserFeedback:
+    """
+    Display info on web and email status.
+    """
+    # can't put this in utils because we get a dependency loop.
+
+    def __init__(self, config):
+        self._log = config.log
+        self._web = config.arg(WEB)
+        self._url = 'http://%s:%s' % (config.arg(HTTPBINDADDRESS), config.arg(HTTPPORT))
+        self._email = config.arg(EMAIL)
+
+    def display_feedback(self):
+        if self._web:
+            self._log.info('Status available at %s' % self._url)
+        else:
+            self._log.info('No web status (see %s configuration parameter)' % mm(WEB))
+        if self._email:
+            self._log.info('Email status will be sent to %s' % self._email)
+        else:
+            self._log.info('No email status (see %s configuration parameter)' % mm(EMAIL))

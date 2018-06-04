@@ -5,7 +5,7 @@ from os.path import exists
 from shutil import copyfile
 
 from .email import Emailer
-from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, \
+from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early
 from .download import DEFAULT_NAME, DownloadManager
 from .index import Indexer
@@ -27,7 +27,7 @@ RETRIEVECONFIG = 'rover_retrieve_config'
 EARLY = datetime.datetime(1900, 1, 1)
 
 
-class BaseRetriever(SqliteSupport):
+class BaseRetriever(SqliteSupport, UserFeedback):
     """
 ### Retrieve
 
@@ -105,6 +105,7 @@ store.
 """
 
     def __init__(self, config):
+        UserFeedback.__init__(self, config)
         SqliteSupport.__init__(self, config)
         fail_early(config)
         self._temp_dir = config.dir_path(TEMPDIR)
@@ -125,11 +126,11 @@ store.
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
         usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % command
-        if not exists(self._temp_dir):
-            makedirs(self._temp_dir)
-        # input is a temp file as we prepend parameters
         if not args:
             raise Exception(usage)
+        # input is a temp file as we prepend parameters
+        if not exists(self._temp_dir):
+            makedirs(self._temp_dir)
         path = unique_path(self._temp_dir, RETRIEVEWEB, args[0])
         try:
             if len(args) == 1:
@@ -164,6 +165,7 @@ store.
         """
         Fetch data from the download manager.
         """
+        self.display_feedback()
         n_downloads = self._download_manager.download()
         if self._post_summary:
             Summarizer(self._config).run([])

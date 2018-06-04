@@ -119,6 +119,7 @@ dates that are missing from the local store.
             self._check_all_for_overlap(path)
         self.execute('''insert into rover_subscriptions (file, availability_url, dataselect_url) values (?, ?, ?)''',
                      (path, self._availability_url, self._dataselect_url))
+        self._log.info('Subscribed')
 
 
 def parse_integers(args):
