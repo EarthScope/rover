@@ -188,10 +188,13 @@ See also `rover stop`, `rover status`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
+@http-timeout
+@http-retries
 @web
 @http-bind-address
 @http-port
 @email
+@email-from
 @smtp-address
 @smtp-port
 @verbosity

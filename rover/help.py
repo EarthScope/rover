@@ -2,7 +2,8 @@
 from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, WRITE_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
+    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON
 
 """
 The 'rover help' command.
@@ -71,10 +72,10 @@ rover %s (file | sta=... [start [end]] | sncl [start [end]])
   
 rover %s (file | sta=... [start [end]] | sncl [start [end]])
 
-  Compare the local index (config parameter %s) with the data 
-  availabe remotely (config parameter %s), then display 
-  the difference.  Note that the summary is printed to stdout, while
-  logging is to stderr.
+  Compare the local index with the data available remotely 
+  (config parameter %s), then display the difference.  
+  Note that the summary is printed to stdout, while logging is 
+  to stderr.
 
 rover %s ...
 
@@ -95,12 +96,45 @@ rover %s
 def background(config):
     return '''
                    Advanced ROVER Commands
-                   
+    
 rover %s
 
-  Subscribe to retrieve updates whenever they become available.
+  Start the background process that regularly downloads subscriptions.
   
-''' % (SUBSCRIBE,)
+rover %s
+
+rover %s
+
+  Display the status of, and stop, the background process.
+                   
+rover %s (file | sta=... [start [end]] | sncl [start [end]])
+
+  Subscribe to retrieve updates whenever they become available.
+  This has the same syntax as `rover %s`, but runs regularly in
+  the background.
+  
+rover %s
+
+rover %s N
+
+  The first form lists the subscriptions.  The second shows
+  which data will be downloaded for that subscription (similar to
+  `rover %s`).
+  
+rover %s N
+
+  Ask the background daemon to process the given subscription
+  immediately, rather than waiting for the next update.
+  
+rover %s N
+
+  Delete the subscription (the data remain in the local store, 
+  but no more downloads will be made) 
+  
+''' % (START, STATUS, STOP,
+       SUBSCRIBE, RETRIEVE,
+       LIST_SUBSCRIBE, LIST_SUBSCRIBE, LIST_RETRIEVE,
+       RESUBSCRIBE, UNSUBSCRIBE)
 
 
 def low_level(config):
@@ -115,19 +149,18 @@ useful from the command line:
   Download data from the given URL to the temporary store
   (config parameter %s).  When downloaded, ingest into the
   local store (config parameter %s) and delete.  Called
-  by %s when needed.
+  by %s and the %s when needed.
 
 %s (file|dir) ...
 
   Add the specified files to the local store (config
-  parameter %s) and update thevdatabase index 
-  (config parameter %s).  Called by %svwhen needed.
+  parameter %s) and update the database index 
+  Called by %s when needed.
   
 %s [(file|dir) ...]
 
-  Scan files and update the database index (config parameter 
-  %s) using the mseedindex command (config parameter 
-  %s). Called by %s when needed.
+  Scan files and update the database index using the mseedindex 
+  command (config parameter %s). Called by %s when needed.
   
   If no arguments are given then files in the local store
   (config parameter %s) that have been modified since the 
@@ -135,7 +168,7 @@ useful from the command line:
   %s can be used (eg %s on the command line) to force 
   processing of all files in the store.
       
-''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE,
+''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE, DAEMON,
        INGEST, MSEEDDIR, RETRIEVE,
        INDEX, MSEEDINDEXCMD, INGEST, MSEEDDIR, ALL, mm(ALL))
 

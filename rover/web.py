@@ -207,6 +207,12 @@ directory.
 @log-dir
 @log-verbosity
 
+##### Examples
+
+    rover start --no-web
+
+will start the daemon without the web server.
+
     """
 
     def __init__(self, config):
