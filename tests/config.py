@@ -53,6 +53,10 @@ dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 temp-dir=tmp
 # number of days before deleting temp files
 temp-expire=1
+# timeout for HTTP requests
+http-timeout=60
+# max retries for HTTP requests
+http-retries=3
 # process all files (not just modified)?
 all=False
 # when given a directory, process children?

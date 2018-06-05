@@ -56,6 +56,8 @@ F, FILE = 'f', 'file'
 FORCEREQUEST = 'force-request'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
+HTTPRETRIES = 'http-retries'
+HTTPTIMEOUT = 'http-timeout'
 LEAP = 'leap'
 LEAPEXPIRE = 'leap-expire'
 LEAPFILE = 'leap-file'
@@ -92,6 +94,8 @@ DEFAULT_EMAILFROM = 'noreply@rover'
 DEFAULT_FILE = join('~', 'rover', 'config')
 DEFAULT_HTTPBINDADDRESS = '127.0.0.1'
 DEFAULT_HTTPPORT = 8000
+DEFAULT_HTTPRETRIES = 3
+DEFAULT_HTTPTIMEOUT = 60
 DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = 'leap-seconds.lst'
 DEFAULT_LEAPURL = 'http://www.ietf.org/timezones/data/leap-seconds.list'
@@ -211,6 +215,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=DIRVAR)
         self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar=DIRVAR)
         self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
+        self.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar='SECS', type=int)
+        self.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar='N', type=int)
 
         # index
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')

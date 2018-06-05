@@ -9,8 +9,8 @@ from re import match
 from shutil import move
 from subprocess import Popen, check_output, STDOUT
 
-from requests import get, post
-
+from requests import get, post, Session
+from requests.adapters import HTTPAdapter
 
 """
 Assorted utilities.
@@ -92,7 +92,7 @@ def run(cmd, log, uncouple=False):
         raise Exception('Command "%s" failed' % cmd)
 
 
-def check_leap(enabled, expire, file, url, log):
+def check_leap(enabled, expire, file, url, timeout, retries, log):
     """
     Download a file if none exists or it is more than 3 months old.
 
@@ -108,7 +108,7 @@ def check_leap(enabled, expire, file, url, log):
         else:
             download= True
         if download:
-            get_to_file(url, file, log, unique=False)
+            get_to_file(url, file, timeout, retries, log, unique=False)
         return file
     else:
         return 'NONE'
@@ -183,23 +183,32 @@ def _stream_output(request, down, unique=True):
     return down
 
 
-def get_to_file(url, down, log, unique=True):
+def _session(retries):
+    session = Session()
+    http_adapter = HTTPAdapter(max_retries=retries)
+    https_adapter = HTTPAdapter(max_retries=retries)
+    session.mount('http://', http_adapter)
+    session.mount('http2://', https_adapter)
+    return session;
+
+
+def get_to_file(url, down, timeout, retries, log, unique=True):
     """
     Execute an HTTP GET request, with output to a file.
     """
     log.info('Downloading %s from %s' % (down, url))
-    request = get(url, stream=True)
+    request = _session(retries).get(url, stream=True, timeout=timeout)
     return _stream_output(request, down, unique=unique)
 
 
-def post_to_file(url, up, down, log, unique=True):
+def post_to_file(url, up, down, timeout, retries, log, unique=True):
     """
     Execute an HTTP POST request, with output to a file.
     """
     up = canonify(up)
     log.info('Downloading %s from %s with %s' % (down, url, up))
     with open(up, 'rb') as input:
-        request = post(url, stream=True, data=input)
+        request = _session(retries).post(url, stream=True, data=input, timeout=timeout)
     return _stream_output(request, down, unique=unique)
 
 

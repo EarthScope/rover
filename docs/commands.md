@@ -65,6 +65,8 @@ See `rover subscribe` for similar functionality, but with regular updates.
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | download-workers    | 10                   | Number of download instances to run |
+| http-timeout        | 60                   | Timeout for HTTP requests      |
+| http-retries        | 3                    | Max retries for HTTP requests  |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
@@ -307,6 +309,8 @@ See also `rover stop`, `rover status` and `rover daemon`.
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
+| http-timeout        | 60                   | Timeout for HTTP requests      |
+| http-retries        | 3                    | Max retries for HTTP requests  |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
@@ -449,6 +453,8 @@ This task is the main low-level task called in the processing pipeline (it calls
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | temp-dir            | tmp                  | Temporary storage for downloads |
+| http-timeout        | 60                   | Timeout for HTTP requests      |
+| http-retries        | 3                    | Max retries for HTTP requests  |
 | delete-files        | True                 | Delete temporary files?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |

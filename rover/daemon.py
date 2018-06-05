@@ -44,6 +44,8 @@ See also `rover stop`, `rover status` and `rover daemon`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
+@http-timeout
+@http-retries
 @web
 @http-bind-address
 @http-port

@@ -3,7 +3,7 @@ from datetime import datetime
 from os.path import exists, join
 from re import match
 
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX
+from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX, HTTPTIMEOUT, HTTPRETRIES
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
@@ -67,7 +67,8 @@ will add all the data in the given file to the local store.
         SqliteSupport.__init__(self, config)
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
-        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
+        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
+                                     config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._db_path = None
         self._mseed_dir = config.dir_path(MSEEDDIR)
         self._index = config.arg(INDEX)

@@ -100,6 +100,8 @@ This will place all files in `newdir`.
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | temp-expire         | 1                    | Number of days before deleting temp files |
+| http-timeout        | 60                   | Timeout for HTTP requests      |
+| http-retries        | 3                    | Max retries for HTTP requests  |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |

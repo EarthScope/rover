@@ -6,7 +6,8 @@ from shutil import copyfile
 
 from .email import Emailer
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early
+    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
+    HTTPRETRIES
 from .download import DEFAULT_NAME, DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
@@ -73,6 +74,8 @@ See `rover subscribe` for similar functionality, but with regular updates.
 @mseedindex-cmd
 @mseed-dir
 @download-workers
+@http-timeout
+@http-retries
 @leap-expire
 @leap-file
 @leap-url
@@ -118,7 +121,8 @@ store.
         self._emailer = Emailer(config)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
-        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_path(LEAPFILE), config.arg(LEAPURL), config.log)
+        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_path(LEAPFILE), config.arg(LEAPURL),
+                   config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
 
     def do_run(self, args, fetch, command):

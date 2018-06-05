@@ -4,7 +4,8 @@ from re import match, sub
 from sqlite3 import OperationalError
 
 from .config import mseed_db
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDINDEXWORKERS
+from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDINDEXWORKERS, HTTPTIMEOUT, \
+    HTTPRETRIES
 from .args import TIMESPANTOL
 from .coverage import MultipleSNCLBuilder
 from .help import HelpFormatter
@@ -73,7 +74,8 @@ will index the entire store.
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
         self._mseed_db = mseed_db(config)
-        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE), config.arg(LEAPURL), config.log)
+        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
+                                     config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5
         self._workers = NoConflictPerDatabaseWorkers(config, config.arg(MSEEDINDEXWORKERS), MSEED)
 

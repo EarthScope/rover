@@ -8,7 +8,8 @@ from subprocess import Popen
 from time import sleep, time
 
 from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
-    TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY, VERBOSITY, WEB
+    TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY, VERBOSITY, WEB, HTTPTIMEOUT, \
+    HTTPRETRIES
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
@@ -51,6 +52,8 @@ automatically deleted on exit.
 ##### Significant Parameters
 
 @temp-dir
+@http-timeout
+@http-retries
 @delete-files
 @ingest
 @index
@@ -87,6 +90,8 @@ will download, ingest and index data from the given URL..
         self._delete_files = config.arg(DELETEFILES)
         self._blocksize = 1024 * 1024
         self._ingest = config.arg(INGEST)
+        self._http_timeout = config.arg(HTTPTIMEOUT)
+        self._http_retries = config.arg(HTTPRETRIES)
         self._config = config
         clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE), match_prefixes(TMPDOWNLOAD), self._log)
 
@@ -122,7 +127,7 @@ will download, ingest and index data from the given URL..
         if exists(path):
             raise Exception('Path %s for download already exists' % path)
         create_parents(path)
-        return get_to_file(url, path, self._log)
+        return get_to_file(url, path, self._http_timeout, self._http_retries, self._log)
 
     def _ingesters_db_path(self, url, pid):
         name = uniqueish('rover_ingester', url)
@@ -248,6 +253,8 @@ class DownloadManager(SqliteSupport):
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._temp_dir = config.dir_path(TEMPDIR)
         self._delete_files = config.arg(DELETEFILES)
+        self._http_timeout = config.arg(HTTPTIMEOUT)
+        self._http_retries = config.arg(HTTPRETRIES)
         self._sources = {}  # map of source names to sources
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
@@ -292,7 +299,7 @@ class DownloadManager(SqliteSupport):
 
     def _get_availability(self, request, availability_url):
         response = unique_path(self._temp_dir, TMPRESPONSE, request)
-        response = post_to_file(availability_url, request, response, self._log)
+        response = post_to_file(availability_url, request, response, self._http_timeout, self._http_retries, self._log)
         sort_file_inplace(self._log, response, self._temp_dir)
         return response
 

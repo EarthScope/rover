@@ -78,7 +78,7 @@ A total of %d downloads were made, with %d errors.
 WARNING: Since the download had some errors, it may be incomplete.
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
-''' % LIST_RETRIEVE
+''' % (LIST_RETRIEVE, RETRIEVE)
         return 'Rover %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
