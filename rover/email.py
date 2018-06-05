@@ -51,11 +51,12 @@ class Emailer:
             email['From'] = self._email_from
             email['To'] = self._email_to
             self._log.info('Sending completion email to %s (subject %s)' % (self._email_to, subject))
-            smtp = SMTP(self._smtp_address)
+            smtp = SMTP(self._smtp_address, port=self._smtp_port)
             smtp.send_message(email)
             smtp.quit()
         except Exception as e:
-            self._log.error('Error sending email to %s: %s' % (self._email_to, e))
+            self._log.error('Error sending email to %s via %s:%d: %s' %
+                            (self._email_to, self._smtp_address, self._smtp_port, e))
 
     @staticmethod
     def describe_retrieve(source):
