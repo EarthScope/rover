@@ -130,7 +130,7 @@ will display the data missing from the local store to match what is available fo
     rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \
     [count|join|join-samplerates]
 
-    rover list-index [S_N_C_L_Q]* [begin=...] [end=...] \
+    rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
     [count|join|join-samplerates]
 
 List index entries for the local store (config parameter mseed-dir) that match the given constraints.
@@ -139,7 +139,7 @@ Note that console logging is to stderr, while the command results are listed to 
 
 #### SNCLQ and Samplerate
 
-Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternative SNCLQ can be supplied (which can be truncated on the right, but must contain at least one period).
+Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternatively, a SNCLQ can be supplied (which can be truncated on the right, but must contain at least one underscore).
 
 The wildcards '*' and '?' can be used.
 
@@ -182,15 +182,15 @@ will list all entries in the index after the year 2000.
 
     rover list-summary [net=...|sta=...|loc=...|cha=..]* [begin=...] [end=...]
 
-    rover list-index [S_N_C_L_Q]* [begin=...] [end=...]
+    rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List summary entries for the local store (config parameter mseed-dir) that match the given constraints.
+List summary entries for the local store (config parameter mseed-dir) that match the given constraints. The summary entries are pre-calculated and record the whole time span, from earliest to latest data. Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
 #### SNCL
 
-Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternative SNCL can be supplied (which can be truncated on the right, but must contain at least one period).
+Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternatively, a SNCL can be supplied (which can be truncated on the right, but must contain at least one underscore).
 
 The wildcards '*' and '?' can be used.
 
@@ -211,7 +211,7 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
     rover list-summary net=* begin=2001-01-01
 
-will list all entries in the index after the year 2000.
+will list all entries in the summary after the year 2000.
 
 
 ### Write Config
@@ -622,6 +622,8 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
 Start a web server that provides information on the progress of the download manager (the core of the `rover daemon` and `rover retrieve` commands).
 
 With the default configuration this is started automatically, provided `--no-http` is not used with `rover retrieve` or `rover start`.
+
+As with the `rover download` command, empty logs are removed on exit to avoid cluttering the log directory.
 
 ##### Significant Parameters
 

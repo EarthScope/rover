@@ -1,5 +1,6 @@
 
 from os import getppid
+from os.path import exists
 from sqlite3 import OperationalError
 from threading import Thread
 from time import sleep
@@ -9,7 +10,7 @@ from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
-from .utils import process_exists, format_time_epoch, format_time_epoch_local
+from .utils import process_exists, format_time_epoch, format_time_epoch_local, file_size, safe_unlink
 
 """
 The 'rover web' command - run a web service that displays information on the download manager.
@@ -23,17 +24,20 @@ class DeadMan(Thread):
     (Maybe processes should do this anyway with HUP, but this seems to be called...)
     """
 
-    def __init__(self, log, ppid, server):
+    def __init__(self, log, ppid, server, log_path):
         super().__init__()
         self._log = log
         self._ppid = ppid
         self._server = server
+        self._log_path = log_path
         self._log.debug('DeadMan watching PID %d' % self._ppid)
 
     def run(self):
         while self._ppid != 1 and process_exists(self._ppid):
             sleep(1)
         self._log.info('Exiting because parent exited')
+        if self._log_path and exists(self._log_path) and file_size(self._log_path) == 0:
+                    safe_unlink(self._log_path)
         self._server.shutdown()
         sleep(1)
         exit()
@@ -191,6 +195,9 @@ Start a web server that provides information on the progress of the download man
 With the default configuration this is started automatically, provided `--no-http` is not used with
 `rover retrieve` or `rover start`.
 
+As with the `rover download` command, empty logs are removed on exit to avoid cluttering the log
+directory.
+
 ##### Significant Parameters
 
 @web
@@ -207,12 +214,13 @@ With the default configuration this is started automatically, provided `--no-htt
         self._http_port = config.arg(HTTPPORT)
         self._ppid = getppid()
         self._log = config.log
+        self._log_path = config.log_path
         self._config = config
 
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % WEB)
         server = Server(self._config, (self._bind_address, self._http_port), RequestHandler)
-        DeadMan(self._log, self._ppid, server).start()
+        DeadMan(self._log, self._ppid, server, self._log_path).start()
         self._log.info('Starting HTTP server on http://%s:%d' % (self._bind_address, self._http_port))
         server.serve_forever()
