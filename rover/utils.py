@@ -184,6 +184,11 @@ def _stream_output(request, down, unique=True):
 
 
 def _session(retries):
+    """
+    Ugliness required by requests lib to set max retries.
+    (We don't really care about efficieny to the point where we need to re=use the session)
+    """
+    # https://stackoverflow.com/questions/21371809/cleanly-setting-max-retries-on-python-requests-get-or-post-method
     session = Session()
     http_adapter = HTTPAdapter(max_retries=retries)
     https_adapter = HTTPAdapter(max_retries=retries)
