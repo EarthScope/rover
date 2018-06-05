@@ -586,10 +586,13 @@ See also `rover stop`, `rover status`.
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
+| http-timeout        | 60                   | Timeout for HTTP requests      |
+| http-retries        | 3                    | Max retries for HTTP requests  |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
 | email               |                      | Address for completion status  |
+| email-from          | noreply@rover        | From address for email         |
 | smtp-address        | localhost            | Address of SMTP server         |
 | smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-5)        |
@@ -641,5 +644,11 @@ As with the `rover download` command, empty logs are removed on exit to avoid cl
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover start --no-web
+
+will start the daemon without the web server.
 
     
