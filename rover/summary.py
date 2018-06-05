@@ -65,17 +65,19 @@ class SummaryLister(SqliteSupport):
 
     rover list-summary [net=...|sta=...|loc=...|cha=..]* [begin=...] [end=...]
 
-    rover list-index [S_N_C_L_Q]* [begin=...] [end=...]
+    rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
 List summary entries for the local store (config parameter mseed-dir) that match the given constraints.
+The summary entries are pre-calculated and record the whole time span, from earliest to latest data.
+Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
 #### SNCL
 
 Query parameters can be named (network, station, location, channel) and unambiguous abbreviations
-are accepted.  Alternative SNCL can be supplied (which can be truncated on the right, but must contain at least one
-period).
+are accepted.  Alternatively, a SNCL can be supplied (which can be truncated on the right, but must contain at least
+one underscore).
 
 The wildcards '*' and '?' can be used.
 
@@ -96,7 +98,7 @@ to be included:
 
     rover list-summary net=* begin=2001-01-01
 
-will list all entries in the index after the year 2000.
+will list all entries in the summary after the year 2000.
 
 """
 

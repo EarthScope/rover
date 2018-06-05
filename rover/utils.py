@@ -310,6 +310,14 @@ def format_time_epoch(epoch):
     return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S')
 
 
+def format_time_epoch_local(epoch):
+    """
+    Format an epoch, with time to seconds
+    """
+    dt = datetime.datetime.fromtimestamp(epoch)
+    return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S')
+
+
 def parse_epoch(date):
     """
     Parse a date in the standard format.

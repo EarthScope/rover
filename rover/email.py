@@ -7,7 +7,7 @@ else:
     from email.mime.text import MIMEText
 from smtplib import SMTP
 
-from .utils import format_time_epoch
+from .utils import format_time_epoch, format_time_epoch_local
 from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
     DAEMON, RESUBSCRIBE
 
@@ -63,12 +63,14 @@ class Emailer:
         Generate the message sent by `rover retrieve`.
         """
         msg = '''
-A rover %s task started at %s has completed on %s.
+A rover %s task on %s started at %s 
+(%s local) has completed.
 
 The task comprised of %d SNCLs with data covering %ds.
 
 A total of %d downloads were made, with %d errors.
-''' % (RETRIEVE, format_time_epoch(source.start_epoch), gethostname(),
+''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
+       format_time_epoch_local(source.start_epoch),
        source.initial_stats[0], source.initial_stats[1],
        source.n_downloads, source.n_errors)
         if source.n_errors:

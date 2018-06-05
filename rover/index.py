@@ -117,7 +117,7 @@ class IndexLister(SqliteSupport, HelpFormatter):
     rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \\
     [count|join|join-samplerates]
 
-    rover list-index [S_N_C_L_Q]* [begin=...] [end=...] \\
+    rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \\
     [count|join|join-samplerates]
 
 List index entries for the local store (config parameter mseed-dir) that match the given constraints.
@@ -127,8 +127,8 @@ Note that console logging is to stderr, while the command results are listed to 
 #### SNCLQ and Samplerate
 
 Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations
-are accepted.  Alternative SNCLQ can be supplied (which can be truncated on the right, but must contain at least one
-period).
+are accepted.  Alternatively, a SNCLQ can be supplied (which can be truncated on the right, but must contain at least
+one underscore).
 
 The wildcards '*' and '?' can be used.
 

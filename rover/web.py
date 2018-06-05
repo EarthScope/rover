@@ -9,8 +9,7 @@ from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
-from .utils import process_exists, format_time_epoch
-
+from .utils import process_exists, format_time_epoch, format_time_epoch_local
 
 """
 The 'rover web' command - run a web service that displays information on the download manager.
@@ -105,10 +104,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._write('''<p><pre>File: <a href="file://%s">%s</a>
 Availability URL: <a href="%s">%s</a>
 Dataselect URL: <a href="%s">%s</a>
-Created: %s   Last active: %s</pre></p>''' %
+Created: %s (%s local)   
+Last active: %s (%s local)</pre></p>''' %
                         (file, file, availability_url, availability_url, dataselect_url, dataselect_url,
-                         format_time_epoch(creation_epoch),
-                         format_time_epoch(last_check_epoch) if last_check_epoch else 'never'))
+                         format_time_epoch(creation_epoch), format_time_epoch_local(creation_epoch),
+                         format_time_epoch(last_check_epoch) if last_check_epoch else 'never',
+                         format_time_epoch_local(last_check_epoch) if last_check_epoch else 'never'
+                        ))
             self._write_progress(id)
 
         try:
