@@ -238,7 +238,7 @@ class Source(SqliteSupport):
         self._http_timeout = config.arg(HTTPTIMEOUT)
         self._http_retries = config.arg(HTTPRETRIES)
         self._timespan_tol = config.arg(TIMESPANTOL)
-        self._download_retries = config.arg(DOWNLOADRETRIES)
+        self.download_retries = config.arg(DOWNLOADRETRIES)
         self.name = name
         self._request_path = request_path
         self._availability_url = availability_url
@@ -278,7 +278,7 @@ class Source(SqliteSupport):
             self.n_errors += self._retrieval.n_errors
             self.n_final_errors = self._retrieval.n_errors
             if self._retrieval.n_errors:
-                if self.n_retries < self._download_retries:
+                if self.n_retries < self.download_retries:
                     self._log.info('Latest download %shad %d errors; retrying at %d attempts' %
                                    (opt_name, self._retrieval.n_errors, self.n_retries))
                     self._new_retrieval()
@@ -286,9 +286,9 @@ class Source(SqliteSupport):
                 else:
                     self._completion_callback(self)
                     raise Exception('Latest download %shad %d errors on final attempt (%d)' %
-                                    (opt_name, self._retrieval.n_errors, self._download_retries))
+                                    (opt_name, self._retrieval.n_errors, self.download_retries))
             elif self._retrieval.n_downloads:
-                if self.n_retries < self._download_retries:
+                if self.n_retries < self.download_retries:
                     self._log.info('Latest dwnload %shad no errors, but downloaded data so trying again' % opt_name)
                     self._new_retrieval()
                     return False
@@ -490,7 +490,9 @@ class DownloadManager(SqliteSupport):
             try:
                 complete = self._source(name).is_complete()
             except Exception as e:
-                if not quiet:
+                if quiet:
+                    complete = True
+                else:
                     raise e
             if complete:
                 self._log.debug('Source %s complete' % self._source(name))
@@ -551,7 +553,9 @@ class DownloadManager(SqliteSupport):
                           initial_coverages int not null,
                           remaining_coverages int not null,
                           initial_time float not null,
-                          remaining_time float not null
+                          remaining_time float not null,
+                          n_retries int not null,
+                          download_retries int not null
                         )''')
 
     def _update_stats(self):
@@ -561,9 +565,11 @@ class DownloadManager(SqliteSupport):
             for source in self._sources.values():
                 stats = source.stats()
                 self._db.execute('''insert into rover_download_stats
-                                      (submission, initial_coverages, remaining_coverages, initial_time, remaining_time)
-                                      values (?, ?, ?, ?, ?)''',
-                                 (source.name, source.initial_stats[0], stats[0], source.initial_stats[1], stats[1]))
+                                      (submission, initial_coverages, remaining_coverages, initial_time, remaining_time, 
+                                       n_retries, download_retries)
+                                      values (?, ?, ?, ?, ?, ?, ?)''',
+                                 (source.name, source.initial_stats[0], stats[0], source.initial_stats[1], stats[1],
+                                  source.n_retries, source.download_retries))
 
     def _start_web(self):
         # don't use shell so PPID is us

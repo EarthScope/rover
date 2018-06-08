@@ -103,7 +103,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         def callback(row):
             count[0] += 1
-            id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch = row
+            id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch, last_error_count = row
             self._write('<h3>Subscription %d</h3>' % id)
             self._write('''<p><pre>File: <a href="file://%s">%s</a>
 Availability URL: <a href="%s">%s</a>
@@ -115,10 +115,11 @@ Last active: %s (%s local)</pre></p>''' %
                          format_time_epoch(last_check_epoch) if last_check_epoch else 'never',
                          format_time_epoch_local(last_check_epoch) if last_check_epoch else 'never'
                         ))
-            self._write_progress(id)
+            self._write_progress(id, last_check_epoch, last_error_count)
 
         try:
-            self.server.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch
+            self.server.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, 
+                                             last_check_epoch, last_error_count
                                         from rover_subscriptions order by id''', tuple(), callback)
         except OperationalError:
             pass
@@ -131,17 +132,23 @@ Last active: %s (%s local)</pre></p>''' %
         self._write_progress(DEFAULT_NAME)
         self._write_explanation()
 
-    def _write_progress(self, name):
+    def _write_progress(self, name, last_check_epoch, last_error_count):
         try:
-            initial_coverages, remaining_coverages, initial_time, remaining_time = \
-                self.server.fetchone('''select initial_coverages, remaining_coverages, initial_time, remaining_time
+            initial_coverages, remaining_coverages, initial_time, remaining_time, n_retries, download_retries = \
+                self.server.fetchone('''select initial_coverages, remaining_coverages, initial_time, remaining_time,
+                                               n_retries, download_retries
                                           from rover_download_stats where submission = ?''', (name,))
-            self._write('<p><pre>\n')
+            self._write('<p>Progress for download attempt %d of %d:<pre>\n' % (n_retries, download_retries))
             self._write_bar('SNCLs', initial_coverages, remaining_coverages)
             self._write_bar('timespan', initial_time, remaining_time)
             self._write('</pre></p>')
         except NoResult:
-            self._write('<p>Currently inactive.</p>')
+            if last_error_count:
+                self._write('<p>Inactive.  WARNING: Last update had errors, so data may be incomplete.</p>')
+            elif last_check_epoch:
+                self._write('<p>Inactive.  Latest download had no errors.</p>')
+            else:
+                self._write('<p>Inactive.  Waiting for initial download.</p>')
         except OperationalError:
             self._write('<p>Error: no statistics in database.</p>')
 
