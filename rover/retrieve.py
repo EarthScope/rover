@@ -74,6 +74,7 @@ See `rover subscribe` for similar functionality, but with regular updates.
 @mseedindex-cmd
 @mseed-dir
 @download-workers
+@download-retries
 @http-timeout
 @http-retries
 @leap-expire

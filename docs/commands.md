@@ -65,6 +65,7 @@ See `rover subscribe` for similar functionality, but with regular updates.
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | download-workers    | 10                   | Number of download instances to run |
+| download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests      |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -309,6 +310,7 @@ See also `rover stop`, `rover status` and `rover daemon`.
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
+| download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests      |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | web                 | True                 | Auto-start the download progress web server? |

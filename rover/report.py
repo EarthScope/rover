@@ -54,6 +54,8 @@ class Reporter:
             except Exception as e:
                 self._log.error('Error sending email to %s via %s:%d: %s' %
                                 (self._email_to, self._smtp_address, self._smtp_port, e))
+                self._log.error('Consider using %s and %s (see your local network admin)'
+                                % (mm(SMTPADDRESS), mm(EMAILFROM)))
 
     def _log_message(self, msg, logger):
         for line in msg.split('\n'):

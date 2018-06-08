@@ -90,6 +90,7 @@ This will place all files in `newdir`.
 | md-format           | False                | Display help in markdown format? |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans |
+| download-retries    | 3                    | Maximum number of attempts to download data |
 | download-workers    | 10                   | Number of download instances to run |
 | rover-cmd           | rover                | Command to run rover           |
 | pre-index           | True                 | Index before retrieval?        |
@@ -102,6 +103,7 @@ This will place all files in `newdir`.
 | temp-expire         | 1                    | Number of days before deleting temp files |
 | http-timeout        | 60                   | Timeout for HTTP requests      |
 | http-retries        | 3                    | Max retries for HTTP requests  |
+| force-failures      | 0                    | Force failures for testing (dangerous) |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
