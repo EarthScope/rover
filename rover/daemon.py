@@ -264,6 +264,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
             id = row[0]
             self._log.debug('Candidate: subscription %d' % id)
             if not found[0]:
+                # todo - check this logic in test (try repeat while still downloading)
                 if not self._download_manager.has_source(id):
                     found[0] = id
 

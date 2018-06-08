@@ -91,7 +91,7 @@ class BaseConfig:
             path = join(self._configdir, path)
         return realpath(abspath(path))
 
-    def dir_path(self, name):
+    def dir(self, name):
         """
         Ensure the directory exists.
         """
@@ -100,7 +100,7 @@ class BaseConfig:
             makedirs(path)
         return path
 
-    def file_path(self, name):
+    def file(self, name):
         """
         Ensure the enclosing directory exists.
         """
@@ -112,7 +112,7 @@ class BaseConfig:
 
 
 def mseed_db(config):
-    return join(config.dir_path(MSEEDDIR), 'index.sql')
+    return join(config.dir(MSEEDDIR), 'index.sql')
 
 
 class Config(BaseConfig):
@@ -128,7 +128,7 @@ class Config(BaseConfig):
         # note that log is not used in base!
         super().__init__(None, None, args, None, configdir)
         self.log, self.log_path = \
-            init_log(self.dir_path(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
+            init_log(self.dir(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
                      self.arg(VERBOSITY), self.arg(COMMAND) or 'rover', self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
         self.log.debug('Args: %s' % self._args)
         self.db = init_db(mseed_db(self), self.log)
@@ -192,7 +192,7 @@ def write_config(config, filename, **kargs):
     Write a config file for sub-processes.
     """
     args = config.absolute()._args
-    temp_dir = config.dir_path(TEMPDIR)
+    temp_dir = config.dir(TEMPDIR)
     config_path = join(temp_dir, filename)
     safe_unlink(config_path)
     Arguments().write_config(config_path, args, **kargs)

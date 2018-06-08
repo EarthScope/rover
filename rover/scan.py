@@ -46,7 +46,7 @@ class DatabasePathIterator(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        self._mseed_dir = config.dir_path(MSEEDDIR)
+        self._mseed_dir = config.dir(MSEEDDIR)
         self._stem = 0
         self._prev_path = None
         self._cursor = self._db.cursor()
@@ -108,7 +108,7 @@ class ModifiedScanner(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        self._mseed_dir = config.dir_path(MSEEDDIR)
+        self._mseed_dir = config.dir(MSEEDDIR)
         self._all = config.arg(ALL)
         self._log = config.log
         self._config = config

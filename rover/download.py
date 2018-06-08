@@ -10,7 +10,7 @@ from time import sleep, time
 
 from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY, VERBOSITY, WEB, HTTPTIMEOUT, \
-    HTTPRETRIES, FORCEFAILURES
+    HTTPRETRIES, FORCEFAILURES, DOWNLOADRETRIES
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
@@ -88,7 +88,7 @@ will download, ingest and index data from the given URL..
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        self._temp_dir = config.dir_path(TEMPDIR)
+        self._temp_dir = config.dir(TEMPDIR)
         self._delete_files = config.arg(DELETEFILES)
         self._blocksize = 1024 * 1024
         self._ingest = config.arg(INGEST)
@@ -136,30 +136,18 @@ will download, ingest and index data from the given URL..
         return unique_filename(join(self._temp_dir, name))
 
 
-NOSTATS = (-1, -1)
+class Retrieval:
 
-
-class Source:
-    """
-    Data for a single source in the download manager.
-    """
-
-    def __init__(self, log, name, dataselect_url, completion_callback, force_failures):
+    def __init__(self, log, name, dataselect_url, force_failures):
         self._log = log
-        self.name = name
+        self._name = name
         self._dataselect_url = dataselect_url
-        self._completion_callback = completion_callback
         self._force_failures = force_failures
         self._coverages = deque()  # fifo: appendright / popleft; exposed for display
         self._days = deque()  # fifo: appendright / popleft
-        self.initial_stats = NOSTATS
         self.worker_count = 0
         self.n_downloads = 0
         self.n_errors = 0
-        self.start_epoch = time()
-
-    def __str__(self):
-        return '%s (%s)' % (self.name, self._dataselect_url)
 
     def add_coverage(self, coverage):
         self._coverages.append(coverage)
@@ -188,8 +176,6 @@ class Source:
         """
         Ensure days has some data, if possible, and return whether it has any.
         """
-        if self.initial_stats == NOSTATS:
-            self.initial_stats = self.stats()
         if self._days:
             return True
         while self._coverages:
@@ -216,12 +202,12 @@ class Source:
         self.n_downloads += 1
         if return_code:
             self.n_errors += 1
-            if self.name:
-                self._log.error('Download failed for subscription %d (return code %d)' % (self.name, return_code))
+            if self._name:
+                self._log.error('Download failed for subscription %d (return code %d)' % (self._name, return_code))
             else:
                 self._log.error('Download failed (return code %d)' % return_code)
 
-    def new_worker(self, log, workers, config_path, rover_cmd):
+    def new_worker(self, workers, config_path, rover_cmd):
         url = self._build_url(*self._days.popleft())
         # we only pass arguments on the command line that are different from the
         # default (which is in the file)
@@ -230,74 +216,109 @@ class Source:
             command = 'exit 1  # failure for tests'
         else:
             command = '%s -f \'%s\' %s \'%s\'' % (rover_cmd, config_path, DOWNLOAD, url)
-        log.debug(command)
+        self._log.debug(command)
         workers.execute(command, self._worker_callback)
         self.worker_count += 1
 
     def is_complete(self):
-        complete = self.worker_count == 0 and not self.has_days()
-        if complete and self._completion_callback:
-            self._completion_callback(self)
-            self._completion_callback = None
-        return complete
+        return self.worker_count == 0 and not self.has_days()
 
 
-class DownloadManager(SqliteSupport):
+class Source(SqliteSupport):
     """
-    An interface to downloader instances that restricts downloads to a fixed number of workers,
-    each downloading data that is for a maximum duration of a day.
-
-    It supports multiple *sources* and will try to divide load fairly between sources.  A
-    source is typically a source / subscription, so we spread downloads across multiple
-    servers when possible.
-
-    The config_file is overwritten (in temp_dir) because only a singleton (for either
-    standalone or daemon) should ever exist.  Because of this, and the daemon exiting via
-    kill(), no attempt is made to delete the file on exit.
-
-    IMPORTANT: This is used from a SINGLE thread.  So for it to work reliably the step()
-    method must be called regularly (perhaps via download()).
+    Data for a single source in the download manager.
     """
 
-    def __init__(self, config, config_file=None):
+    def __init__(self, config, name, request_path, availability_url, dataselect_url, completion_callback):
         super().__init__(config)
         self._log = config.log
-        self._timespan_tol = config.arg(TIMESPANTOL)
-        self._temp_dir = config.dir_path(TEMPDIR)
+        self._force_failures = config.arg(FORCEFAILURES)
         self._delete_files = config.arg(DELETEFILES)
+        self._temp_dir = config.dir(TEMPDIR)
         self._http_timeout = config.arg(HTTPTIMEOUT)
         self._http_retries = config.arg(HTTPRETRIES)
-        self._force_failures = config.arg(FORCEFAILURES)
-        self._sources = {}  # map of source names to sources
-        self._index = 0  # used to round-robin sources
-        self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
-        self._n_downloads = 0
-        self._create_stats_table()
-        if config_file:
-            # these aren't used to list subscriptions (when config_file is None)
-            self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
-            self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
-            log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
-            log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
-            self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
-            self._start_web()
+        self._timespan_tol = config.arg(TIMESPANTOL)
+        self._download_retries = config.arg(DOWNLOADRETRIES)
+        self.name = name
+        self._request_path = request_path
+        self._availability_url = availability_url
+        self._dataselect_url = dataselect_url
+        self._completion_callback = completion_callback
+        self.n_retries = 0
+        self._retrieval = None
+        self.start_epoch = time()
+        self.n_downloads = 0
+        self.n_errors = 0
+        self.n_final_errors = None
+        # load first retrieval immediately so we don't print messages in the middle of list-retrieve
+        self._new_retrieval()
+        self.initial_stats = self._retrieval.stats()
+
+    def get_coverages(self):
+        return self._retrieval.get_coverages()
+
+    def stats(self):
+        return self._retrieval.stats()
+
+    def has_days(self):
+        return self._retrieval.has_days()
+
+    @property
+    def worker_count(self):
+        return self._retrieval.worker_count
+
+    def new_worker(self, workers, config_path, rover_cmd):
+        self._retrieval.new_worker(workers, config_path, rover_cmd)
+
+    def is_complete(self):
+        # chad's main loop logic
+        opt_name = '' if self.name == DEFAULT_NAME else 'subscription %s ' % self.name
+        if self._retrieval.is_complete():
+            self.n_downloads += self._retrieval.n_downloads
+            self.n_errors += self._retrieval.n_errors
+            self.n_final_errors = self._retrieval.n_errors
+            if self._retrieval.n_errors:
+                if self.n_retries < self._download_retries:
+                    self._log.info('Latest download %shad %d errors; retrying at %d attempts' %
+                                   (opt_name, self._retrieval.n_errors, self.n_retries))
+                    self._new_retrieval()
+                    return False
+                else:
+                    self._completion_callback(self)
+                    raise Exception('Latest download %shad %d errors on final attempt (%d)' %
+                                    (opt_name, self._retrieval.n_errors, self._download_retries))
+            elif self._retrieval.n_downloads:
+                if self.n_retries < self._download_retries:
+                    self._log.info('Latest dwnload %shad no errors, but downloaded data so trying again' % opt_name)
+                    self._new_retrieval()
+                    return False
+                else:
+                    self._log.info('Latest download %shad no errors, but downloaded data; no retry as already made %d attempts'
+                                   % (opt_name, self.n_retries))
+            else:
+                self._log.info('Latest download %shad no downloads and no errors, so complete' % opt_name)
         else:
-            self._config_path = None
+            return False
+        # if we're here, we're complete
+        self._completion_callback(self)
+        return True
 
-    # source management
-
-    def has_source(self, name):
-        """
-        Is the given source known (they are deleted once all data are downloaded).
-        """
-        return name in self._sources
-
-    def _source(self, name):
-        if name not in self._sources:
-            raise Exception('Unexpected source: %s' % name)
-        return self._sources[name]
-
-    # querying availability service and adding coverage
+    def _new_retrieval(self):
+        self.n_retries += 1
+        self._retrieval = Retrieval(self._log, self.name, self._dataselect_url, self._force_failures)
+        request = self._build_request(self._request_path)
+        response = self._get_availability(request, self._availability_url)
+        try:
+            for remote in self._parse_availability(response):
+                self._log.debug('Available data: %s' % remote)
+                local = self._scan_index(remote.sncl)
+                self._log.debug('Local data: %s' % local)
+                required = remote.subtract(local)
+                self._retrieval.add_coverage(required)
+        finally:
+            if self._delete_files:
+                safe_unlink(request)
+                safe_unlink(response)
 
     def _build_request(self, path):
         tmp = unique_path(self._temp_dir, TMPREQUEST, path)
@@ -352,31 +373,61 @@ class DownloadManager(SqliteSupport):
             self._log.debug('No index - first time using rover?')
         return availability.coverage()
 
-    def _new_source(self, source, dataselect_url, completion_callback):
-        if source in self._sources and self._sources[source].worker_count:
-            raise Exception('Cannot overwrite active source %s' % self._sources[source])
-        self._sources[source] = Source(self._log, source, dataselect_url, completion_callback, self._force_failures)
-        return self._sources[source]
 
-    def add(self, name, path, availability_url, dataselect_url, completion_callback):
+class DownloadManager(SqliteSupport):
+    """
+    An interface to downloader instances that restricts downloads to a fixed number of workers,
+    each downloading data that is for a maximum duration of a day.
+
+    It supports multiple *sources* and will try to divide load fairly between sources.  A
+    source is typically a source / subscription, so we spread downloads across multiple
+    servers when possible.
+
+    The config_file is overwritten (in temp_dir) because only a singleton (for either
+    standalone or daemon) should ever exist.  Because of this, and the daemon exiting via
+    kill(), no attempt is made to delete the file on exit.
+
+    IMPORTANT: This is used from a SINGLE thread.  So for it to work reliably the step()
+    method must be called regularly (perhaps via download()).
+    """
+
+    def __init__(self, config, config_file=None):
+        super().__init__(config)
+        self._log = config.log
+        self._config = config
+        self._sources = {}  # map of source names to sources
+        self._index = 0  # used to round-robin sources
+        self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
+        self._n_downloads = 0
+        self._create_stats_table()
+        if config_file:
+            # these aren't used to list subscriptions (when config_file is None)
+            self._rover_cmd = check_cmd(config, ROVERCMD, 'rover')
+            self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
+            log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
+            log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
+            self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
+            self._start_web()
+        else:
+            self._config_path = None
+
+    # source management
+
+    def has_source(self, name):
         """
-        Add a source and associated coverage, retrieving data from the
-        availability service.
+        Is the given source known (they are deleted once all data are downloaded).
         """
-        request = self._build_request(path)
-        response = self._get_availability(request, availability_url)
-        try:
-            source = self._new_source(name, dataselect_url, completion_callback)
-            for remote in self._parse_availability(response):
-                self._log.debug('Available data: %s' % remote)
-                local = self._scan_index(remote.sncl)
-                self._log.debug('Local data: %s' % local)
-                required = remote.subtract(local)
-                source.add_coverage(required)
-        finally:
-            if self._delete_files:
-                safe_unlink(request)
-                safe_unlink(response)
+        return name in self._sources
+
+    def _source(self, name):
+        if name not in self._sources:
+            raise Exception('Unexpected source: %s' % name)
+        return self._sources[name]
+
+    def add(self, name, request_path, availability_url, dataselect_url, completion_callback):
+        if name in self._sources and self._sources[name].worker_count:
+            raise Exception('Cannot overwrite active source %s' % self._sources[name])
+        self._sources[name] = Source(self._config, name, request_path, availability_url, dataselect_url, completion_callback)
 
     # display expected downloads
 
@@ -433,10 +484,15 @@ class DownloadManager(SqliteSupport):
                 return False
         return True
 
-    def _clean_sources(self):
+    def _clean_sources(self, quiet=False):
         names = list(self._sources.keys())
         for name in names:
-            if self._source(name).is_complete():
+            try:
+                complete = self._source(name).is_complete()
+            except Exception as e:
+                if not quiet:
+                    raise e
+            if complete:
                 self._log.debug('Source %s complete' % self._source(name))
                 del self._sources[name]
 
@@ -451,24 +507,23 @@ class DownloadManager(SqliteSupport):
         else:
             return False
 
-    def step(self):
+    def step(self, quiet=True):
         """
-        A single iteration of the manager's main loop.  Can be inter-mixed with add_source and add_coverage.
-        Cleaning logic assumes coverages for a source are all added at once, though.  If you don't, source
-        may be deleted when you don't expect it.
+        A single iteration of the manager's main loop.  Can be inter-mixed with add().
         """
         if not self._config_path:
             raise Exception('DownloadManager was created only to display data (no config_path)')
         self._workers.check()
-        self._clean_sources()
+        self._clean_sources(quiet=quiet)
         self._update_stats()
         while self._workers.has_space() and self._has_data():
             sources = list(map(lambda name: self._source(name), sorted(self._sources.keys())))
             while True:
                 source = self._next_source(sources)
-                if self._has_least_workers(source): break
+                if self._has_least_workers(source):
+                    break
             if source.has_days():
-                source.new_worker(self._log, self._workers, self._config_path, self._rover_cmd)
+                source.new_worker(self._workers, self._config_path, self._rover_cmd)
                 self._n_downloads += 1
             self._clean_sources()
 
@@ -480,18 +535,12 @@ class DownloadManager(SqliteSupport):
             raise Exception('download() logic intended for single source (retrieve)')
         source = next(iter(self._sources.values()))
         try:
-            while self._sources:
-                self.step()
+            while not source.is_complete():
+                self.step(quiet=False)
                 sleep(0.1)
         finally:
             # not needed in normal use, as no workers when no sources, but useful on error
             self._workers.wait_for_all()
-            if self._n_downloads:
-                self._log.info('Completed %d downloads' % self._n_downloads)
-            else:
-                self._log.warn('No data downloaded / ingested')
-            if source.n_errors > 0:
-                raise Exception('Download had %d errors' % source.n_errors)
         return self._n_downloads
 
     # stats for web display

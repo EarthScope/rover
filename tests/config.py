@@ -125,10 +125,10 @@ def test_CONFIGDIR_start():
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', config])
         config = BaseConfig(None, None, args, None, configdir)
-        assert config.dir_path(TEMPDIR)
-        assert config.dir_path(TEMPDIR) == canonify(dir + '/foo'), config.dir_path(TEMPDIR)
-        assert config.dir_path(MSEEDDIR)
-        assert config.dir_path(MSEEDDIR) == canonify(join(dir, '${CONFIGDIR}/foo')), config.dir_path(MSEEDDIR)
+        assert config.dir(TEMPDIR)
+        assert config.dir(TEMPDIR) == canonify(dir + '/foo'), config.dir(TEMPDIR)
+        assert config.dir(MSEEDDIR)
+        assert config.dir(MSEEDDIR) == canonify(join(dir, '${CONFIGDIR}/foo')), config.dir(MSEEDDIR)
 
 
 def test_CONFIGDIR_middle():
@@ -141,10 +141,10 @@ def test_CONFIGDIR_middle():
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', config])
         config = BaseConfig(None, None, args, None, configdir)
-        assert config.dir_path(TEMPDIR)
-        assert config.dir_path(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir_path(TEMPDIR)
-        assert config.dir_path(MSEEDDIR)
-        assert config.dir_path(MSEEDDIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir_path(MSEEDDIR)
+        assert config.dir(TEMPDIR)
+        assert config.dir(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir(TEMPDIR)
+        assert config.dir(MSEEDDIR)
+        assert config.dir(MSEEDDIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir(MSEEDDIR)
 
 
 def test_CONFIGDIR_bad():

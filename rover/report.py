@@ -65,19 +65,21 @@ class Reporter:
         Generate the message sent by `rover retrieve`.
         """
         msg = '''
-A rover %s task on %s started at %s 
+A rover %s task on %s started %s 
 (%s local) has completed.
 
 The task comprised of %d SNCLs with data covering %ds.
 
-A total of %d downloads were made, with %d errors.
+A total of %d downloads were made, with %d errors (%d on
+final download of %d).
 ''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
        format_time_epoch_local(source.start_epoch),
        source.initial_stats[0], source.initial_stats[1],
-       source.n_downloads, source.n_errors)
-        if source.n_errors:
+       source.n_downloads, source.n_errors, source.n_final_errors, source.n_retries)
+        if source.n_final_errors:
             msg += '''
-WARNING: Since the download had some errors, it may be incomplete.
+WARNING: Since the final download had some errors, it may be
+         incomplete.
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
 ''' % (LIST_RETRIEVE, RETRIEVE)
@@ -93,16 +95,18 @@ Subscription %s has been processed by the rover %s on %s.
 
 The task comprised of %d SNCLs with data covering %ds.
 
-A total of %d downloads were made, with %d errors.
+A total of %d downloads were made, with %d errors (%d on
+final download of %d).
 
 The subscription will be checked again in %d hours.
 ''' % (source.name, DAEMON, gethostname(),
        source.initial_stats[0], source.initial_stats[1],
-       source.n_downloads, source.n_errors,
+       source.n_downloads, source.n_errors, source.n_final_errors, source.n_retries,
        self._recheck_period)
-        if source.n_errors:
+        if source.n_final_errors:
             msg += '''
-WARNING: Since the download had some errors, it may be incomplete.
+WARNING: Since the final download had some errors, it may be 
+         incomplete.
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)

@@ -48,6 +48,7 @@ AVAILABILITYURL = 'availability-url'
 COMMAND = 'command'
 DATASELECTURL = 'dataselect-url'
 DELETEFILES = 'delete-files'
+DOWNLOADRETRIES = 'download-retries'
 DOWNLOADWORKERS = 'download-workers'
 DEV = 'dev'
 EMAIL = 'email'
@@ -90,6 +91,7 @@ V, VERBOSITY = 'v', 'verbosity'
 # default values (for non-boolean parameters)
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
+DEFAULT_DOWNLOADRETRIES = 3
 DEFAULT_DOWNLOADWORKERS = 10
 DEFAULT_EMAILFROM = 'noreply@rover'
 DEFAULT_FILE = join('~', 'rover', 'config')
@@ -205,6 +207,7 @@ class Arguments(ArgumentParser):
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
+        self.add_argument(mm(DOWNLOADRETRIES), default=DEFAULT_DOWNLOADRETRIES, action='store', help='maximum number of attempts to download data', metavar='N', type=int)
         self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar='N', type=int)
         self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')

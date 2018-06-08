@@ -111,7 +111,7 @@ store.
         UserFeedback.__init__(self, config)
         SqliteSupport.__init__(self, config)
         fail_early(config)
-        self._temp_dir = config.dir_path(TEMPDIR)
+        self._temp_dir = config.dir(TEMPDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
         self._dataselect_url = config.arg(DATASELECTURL)
         self._pre_index = config.arg(PREINDEX)
@@ -121,7 +121,7 @@ store.
         self._reporter = Reporter(config)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
-        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_path(LEAPFILE), config.arg(LEAPURL),
+        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file(LEAPFILE), config.arg(LEAPURL),
                    config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
 

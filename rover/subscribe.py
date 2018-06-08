@@ -83,7 +83,7 @@ dates that are missing from the local store.
     def __init__(self, config):
         super().__init__(config)
         self._force_request = config.arg(FORCEREQUEST)
-        self._subscriptions_dir = config.dir_path(SUBSCRIPTIONSDIR)
+        self._subscriptions_dir = config.dir(SUBSCRIPTIONSDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
         self._dataselect_url = config.arg(DATASELECTURL)
         self._create_table()
