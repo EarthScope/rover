@@ -254,6 +254,9 @@ class Source(SqliteSupport):
         self._new_retrieval()
         self.initial_stats = self._retrieval.stats()
 
+    def __str__(self):
+        return '%s (%s)' % (self.name, self._dataselect_url)
+    
     def get_coverages(self):
         return self._retrieval.get_coverages()
 

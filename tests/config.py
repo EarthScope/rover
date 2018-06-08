@@ -33,6 +33,8 @@ md-format=False
 mseed-dir=mseed
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
+# maximum number of attempts to download data
+download-retries=3
 # number of download instances to run
 download-workers=10
 # command to run rover
@@ -57,6 +59,8 @@ temp-expire=1
 http-timeout=60
 # max retries for HTTP requests
 http-retries=3
+# force failures for testing (dangerous)
+force-failures=0
 # process all files (not just modified)?
 all=False
 # when given a directory, process children?

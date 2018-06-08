@@ -23,7 +23,7 @@ Single Day
     ${target} =    Get File    ${CURDIR}${/}target${/}list-retrieve.txt
     Should Be Equal    ${run}  ${target}
     ${result} =    Run Process    rover  -f  ../roverrc  retrieve  net\=IU  sta\=ANMO  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run
-    Should Match Regexp    ${result.stderr}  No data downloaded
+    Should Match Regexp    ${result.stderr}  A total of 0 downloads were made
 
     ${nfiles} =    Count Files In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001
     Should Be Equal As Integers    ${nfiles}  1
