@@ -9,7 +9,7 @@ from smtplib import SMTP
 
 from .utils import format_time_epoch, format_time_epoch_local
 from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
-    DAEMON, RESUBSCRIBE
+    DAEMON, RESUBSCRIBE, mm
 
 """
 Support for emailing the user after a download finishes.
@@ -18,7 +18,7 @@ Support for emailing the user after a download finishes.
 """
 
 
-class Emailer:
+class Reporter:
     """
     Encapsulate the email functionality needed by the system.
     """
@@ -31,35 +31,36 @@ class Emailer:
         self._log = config.log
         self._recheck_period = config.arg(RECHECKPERIOD)
 
-    def __bool__(self):
-        """
-        We are enabled if an email is defined.
-        """
-        return bool(self._email_to)
-
-    def send(self, subject, msg):
+    def send_email(self, subject, msg):
         """
         Send the email using the pre-configured parameters.
         """
-        try:
-            if version_info[0] >= 3:
-                email = EmailMessage()
-                email.set_content(msg)
-            else:
-                email = MIMEText(msg, _subtype='plain', _charset='utf-8')
-            email['Subject'] = subject
-            email['From'] = self._email_from
-            email['To'] = self._email_to
-            self._log.info('Sending completion email to %s (subject %s)' % (self._email_to, subject))
-            smtp = SMTP(self._smtp_address, port=self._smtp_port)
-            smtp.send_message(email)
-            smtp.quit()
-        except Exception as e:
-            self._log.error('Error sending email to %s via %s:%d: %s' %
-                            (self._email_to, self._smtp_address, self._smtp_port, e))
+        if not self._email_to:
+            self._log.warn('Not sending email (see %s)' % mm(EMAIL))
+        else:
+            try:
+                if version_info[0] >= 3:
+                    email = EmailMessage()
+                    email.set_content(msg)
+                else:
+                    email = MIMEText(msg, _subtype='plain', _charset='utf-8')
+                email['Subject'] = subject
+                email['From'] = self._email_from
+                email['To'] = self._email_to
+                self._log.info('Sending completion email to %s (subject %s)' % (self._email_to, subject))
+                smtp = SMTP(self._smtp_address, port=self._smtp_port)
+                smtp.send_message(email)
+                smtp.quit()
+            except Exception as e:
+                self._log.error('Error sending email to %s via %s:%d: %s' %
+                                (self._email_to, self._smtp_address, self._smtp_port, e))
 
-    @staticmethod
-    def describe_retrieve(source):
+    def _log_message(self, msg, logger):
+        for line in msg.split('\n'):
+            line = line.rstrip()
+            logger(line)
+
+    def describe_retrieve(self, source):
         """
         Generate the message sent by `rover retrieve`.
         """
@@ -80,6 +81,7 @@ WARNING: Since the download had some errors, it may be incomplete.
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
 ''' % (LIST_RETRIEVE, RETRIEVE)
+        self._log_message(msg, self._log.warn if source.n_errors else self._log.info)
         return 'Rover %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
@@ -104,4 +106,5 @@ WARNING: Since the download had some errors, it may be incomplete.
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
+        self._log_message(msg, self._log.warn if source.n_errors else self._log.info)
         return 'Rover subscription %s processed' % source.name, msg

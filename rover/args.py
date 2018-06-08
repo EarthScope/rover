@@ -53,6 +53,7 @@ DEV = 'dev'
 EMAIL = 'email'
 EMAILFROM = 'email-from'
 F, FILE = 'f', 'file'
+FORCEFAILURES = 'force-failures'
 FORCEREQUEST = 'force-request'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
@@ -92,6 +93,7 @@ DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADWORKERS = 10
 DEFAULT_EMAILFROM = 'noreply@rover'
 DEFAULT_FILE = join('~', 'rover', 'config')
+DEFAULT_FORCEFAILURES = 0
 DEFAULT_HTTPBINDADDRESS = '127.0.0.1'
 DEFAULT_HTTPPORT = 8000
 DEFAULT_HTTPRETRIES = 3
@@ -217,6 +219,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
         self.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar='SECS', type=int)
         self.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar='N', type=int)
+        self.add_argument(mm(FORCEFAILURES), default=DEFAULT_FORCEFAILURES, action='store', help='force failures for testing (dangerous)', metavar='PERCENT', type=int)
 
         # index
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')

@@ -4,7 +4,7 @@ from os import makedirs
 from os.path import exists
 from shutil import copyfile
 
-from .email import Emailer
+from .report import Reporter
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
     HTTPRETRIES
@@ -118,7 +118,7 @@ store.
         self._delete_files = config.arg(DELETEFILES)
         self._post_summary = config.arg(POSTSUMMARY)
         self._download_manager = None   # created in do_run()
-        self._emailer = Emailer(config)
+        self._reporter = Reporter(config)
         self._config = config
         # leap seconds not used here, but avoids multiple threads all downloading later
         check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file_path(LEAPFILE), config.arg(LEAPURL),
@@ -169,10 +169,12 @@ store.
         """
         Fetch data from the download manager.
         """
-        self.display_feedback()
-        n_downloads = self._download_manager.download()
-        if self._post_summary:
-            Summarizer(self._config).run([])
+        try:
+            self.display_feedback()
+            n_downloads = self._download_manager.download()
+        finally:
+            if self._post_summary:
+                Summarizer(self._config).run([])
         return n_downloads
 
     def _display(self):
@@ -182,9 +184,8 @@ store.
         return self._download_manager.display()
 
     def _source_callback(self, source):
-        if self._emailer:
-            subject, msg = self._emailer.describe_retrieve(source)
-            self._emailer.send(subject, msg)
+        subject, msg = self._reporter.describe_retrieve(source)
+        self._reporter.send_email(subject, msg)
 
 
 class Retriever(BaseRetriever):

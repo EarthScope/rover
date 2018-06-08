@@ -3,13 +3,14 @@ import datetime
 from collections import deque
 from os import getpid
 from os.path import join, exists
+from random import randint
 from sqlite3 import OperationalError
 from subprocess import Popen
 from time import sleep, time
 
 from .args import DOWNLOAD, LOGUNIQUE, mm, DEV, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, ROVERCMD, MSEEDINDEXCMD, DOWNLOADWORKERS, TIMESPANTOL, LOGVERBOSITY, VERBOSITY, WEB, HTTPTIMEOUT, \
-    HTTPRETRIES
+    HTTPRETRIES, FORCEFAILURES
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .ingest import Ingester
@@ -18,6 +19,7 @@ from .utils import uniqueish, get_to_file, check_cmd, unique_filename, \
     clean_old_files, match_prefixes, PushBackIterator, utc, EPOCH_UTC, format_epoch, create_parents, unique_path, \
     safe_unlink, post_to_file, parse_epoch, sort_file_inplace, file_size
 from .workers import Workers
+
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -142,10 +144,12 @@ class Source:
     Data for a single source in the download manager.
     """
 
-    def __init__(self, name, dataselect_url, completion_callback):
+    def __init__(self, log, name, dataselect_url, completion_callback, force_failures):
+        self._log = log
         self.name = name
         self._dataselect_url = dataselect_url
         self._completion_callback = completion_callback
+        self._force_failures = force_failures
         self._coverages = deque()  # fifo: appendright / popleft; exposed for display
         self._days = deque()  # fifo: appendright / popleft
         self.initial_stats = NOSTATS
@@ -212,12 +216,20 @@ class Source:
         self.n_downloads += 1
         if return_code:
             self.n_errors += 1
+            if self.name:
+                self._log.error('Download failed for subscription %d (return code %d)' % (self.name, return_code))
+            else:
+                self._log.error('Download failed (return code %d)' % return_code)
 
     def new_worker(self, log, workers, config_path, rover_cmd):
         url = self._build_url(*self._days.popleft())
         # we only pass arguments on the command line that are different from the
         # default (which is in the file)
-        command = '%s -f \'%s\' %s \'%s\'' % (rover_cmd, config_path, DOWNLOAD, url)
+        if randint(1, 100) <= self._force_failures:
+            self._log.warn('Random failure expected (%s %d)' % (mm(FORCEFAILURES), self._force_failures))
+            command = 'exit 1  # failure for tests'
+        else:
+            command = '%s -f \'%s\' %s \'%s\'' % (rover_cmd, config_path, DOWNLOAD, url)
         log.debug(command)
         workers.execute(command, self._worker_callback)
         self.worker_count += 1
@@ -255,6 +267,7 @@ class DownloadManager(SqliteSupport):
         self._delete_files = config.arg(DELETEFILES)
         self._http_timeout = config.arg(HTTPTIMEOUT)
         self._http_retries = config.arg(HTTPRETRIES)
+        self._force_failures = config.arg(FORCEFAILURES)
         self._sources = {}  # map of source names to sources
         self._index = 0  # used to round-robin sources
         self._workers = Workers(config, config.arg(DOWNLOADWORKERS))
@@ -342,7 +355,7 @@ class DownloadManager(SqliteSupport):
     def _new_source(self, source, dataselect_url, completion_callback):
         if source in self._sources and self._sources[source].worker_count:
             raise Exception('Cannot overwrite active source %s' % self._sources[source])
-        self._sources[source] = Source(source, dataselect_url, completion_callback)
+        self._sources[source] = Source(self._log, source, dataselect_url, completion_callback, self._force_failures)
         return self._sources[source]
 
     def add(self, name, path, availability_url, dataselect_url, completion_callback):
@@ -463,6 +476,9 @@ class DownloadManager(SqliteSupport):
         """
         Run to completion (for a single shot, after add()).
         """
+        if len(self._sources) != 1:
+            raise Exception('download() logic intended for single source (retrieve)')
+        source = next(iter(self._sources.values()))
         try:
             while self._sources:
                 self.step()
@@ -474,6 +490,8 @@ class DownloadManager(SqliteSupport):
                 self._log.info('Completed %d downloads' % self._n_downloads)
             else:
                 self._log.warn('No data downloaded / ingested')
+            if source.n_errors > 0:
+                raise Exception('Download had %d errors' % source.n_errors)
         return self._n_downloads
 
     # stats for web display

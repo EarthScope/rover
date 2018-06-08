@@ -5,7 +5,7 @@ from time import sleep, time
 from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, STOP, UserFeedback
 from .config import write_config
 from .download import DownloadManager
-from .email import Emailer
+from .report import Reporter
 from .index import Indexer
 from .process import ProcessManager
 from .sqlite import SqliteSupport
@@ -231,7 +231,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
         self._post_summary = config.arg(POSTSUMMARY)
         self._download_manager = DownloadManager(config, DOWNLOADCONFIG)
         self._recheck_period = config.arg(RECHECKPERIOD) * 60 * 60
-        self._emailer = Emailer(config)
+        self._reporter = Reporter(config)
         self._config = config
 
     def run(self, args):
@@ -252,9 +252,8 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
     def _source_callback(self, source):
         if self._post_summary:
             Summarizer(self._config).run([])
-        if self._emailer:
-            subject, msg = self._emailer.describe_daemon(source)
-            self._emailer.send(subject, msg)
+        subject, msg = self._reporter.describe_daemon(source)
+        self._reporter.send_email(subject, msg)
 
 
     def _find_next_subscription(self):
