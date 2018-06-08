@@ -192,8 +192,16 @@ class Source(SqliteSupport):
             self.n_errors += self._retrieval.n_errors
             self.n_final_errors = self._retrieval.n_errors
 
-            # the default value for complete is UNCERTAIN so it is left unchanged in many
-            # places below
+            # this is complicated by the fact that we also check for consistency.
+            # inconsistency is when we expect to download no data, but still get some, or expect to get
+            # some, but get nothing.  we can't detect all cases, but we do our best by waiting until
+            # we get a clean download (no errors and so presumably complete) and then running an
+            # extra download.  that should generate no downloads.  if it doesn't, we have problems.
+
+            # that sounds fairly simple, but when you consider all possible cases you get the code below...
+
+            # the default value for consistent is UNCERTAIN so it is left unchanged in many places below
+            # we throw an exception if we finish with incomplete data (errors) or proof of inconsistency.
 
             # the last retrieval had errors.
             if self._retrieval.n_errors:
@@ -268,8 +276,8 @@ class Source(SqliteSupport):
                     else:
                         self.consistent = INCONSISTENT
                         self._completion_callback(self)
-                        raise Exception(('Latest download %sretrieved no data on final attempt (%d) following error' +
-                                         ' (inconsistent web services?)') %
+                        raise Exception(('Latest download %sretrieved no data on final attempt (of %d) ' +
+                                         'following error (inconsistent web services?)') %
                                         (opt_name, self.download_retries))
 
         else:
