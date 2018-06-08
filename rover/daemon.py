@@ -14,7 +14,7 @@ from .utils import check_cmd, run
 
 
 """
-Commands related to the daemn:
+Commands related to the daemon:
 
 The 'rover daemon' command - equivalent to related retrieval, but in the background.
 The 'rover start' command - start the daemon,
@@ -251,13 +251,12 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
             sleep(1)
 
     def _source_callback(self, source):
-        self.execute('''update rover_subscriptions set last_error_count = ? where id = ?''',
-                     (source.n_final_errors, source.name))
+        self.execute('''update rover_subscriptions set last_error_count = ?, consistent = ? where id = ?''',
+                     (source.n_final_errors, source.consistent, source.name))
         if self._post_summary:
             Summarizer(self._config).run([])
         subject, msg = self._reporter.describe_daemon(source)
         self._reporter.send_email(subject, msg)
-
 
     def _find_next_subscription(self):
         now = time()

@@ -6,11 +6,13 @@ from threading import Thread
 from time import sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+from .manager import INCONSISTENT, UNCERTAIN
 from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
 from .utils import process_exists, format_time_epoch, format_time_epoch_local, file_size, safe_unlink
+
 
 """
 The 'rover web' command - run a web service that displays information on the download manager.
@@ -103,7 +105,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         def callback(row):
             count[0] += 1
-            id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch, last_error_count = row
+            (id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch,
+             last_error_count, consistent) = row
             self._write('<h3>Subscription %d</h3>' % id)
             self._write('''<p><pre>File: <a href="file://%s">%s</a>
 Availability URL: <a href="%s">%s</a>
@@ -115,11 +118,11 @@ Last active: %s (%s local)</pre></p>''' %
                          format_time_epoch(last_check_epoch) if last_check_epoch else 'never',
                          format_time_epoch_local(last_check_epoch) if last_check_epoch else 'never'
                         ))
-            self._write_progress(id, last_check_epoch, last_error_count)
+            self._write_progress(id, last_check_epoch, last_error_count, consistent)
 
         try:
             self.server.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, 
-                                             last_check_epoch, last_error_count
+                                             last_check_epoch, last_error_count, consistent
                                         from rover_subscriptions order by id''', tuple(), callback)
         except OperationalError:
             pass
@@ -129,10 +132,10 @@ Last active: %s (%s local)</pre></p>''' %
 
     def _do_retrieve(self):
         self._write('<h2>Retrieval Progress</h2>')
-        self._write_progress(DEFAULT_NAME)
+        self._write_progress(DEFAULT_NAME, None, None, None)
         self._write_explanation()
 
-    def _write_progress(self, name, last_check_epoch, last_error_count):
+    def _write_progress(self, name, last_check_epoch, last_error_count, consistent):
         try:
             initial_coverages, remaining_coverages, initial_time, remaining_time, n_retries, download_retries = \
                 self.server.fetchone('''select initial_coverages, remaining_coverages, initial_time, remaining_time,
@@ -144,9 +147,16 @@ Last active: %s (%s local)</pre></p>''' %
             self._write('</pre></p>')
         except NoResult:
             if last_error_count:
-                self._write('<p>Inactive.  WARNING: Last update had errors, so data may be incomplete.</p>')
+                self._write('<p>Inactive.  WARNING: Last download had errors, so data may be incomplete.</p>')
             elif last_check_epoch:
-                self._write('<p>Inactive.  Latest download had no errors.</p>')
+                if consistent == INCONSISTENT:
+                    self._write('''<p>Inactive.  WARNING: last download detected inconsistent web services
+                                   (eg dataselect not providing data promised by availability)''')
+                elif consistent == UNCERTAIN:
+                    self._write('''<p>Inactive.  Last download had no errors but could not check web service consistency
+                                   (unlikely to be a problem).''')
+                else:
+                    self._write('<p>Inactive.  Latest download had no errors.</p>')
             else:
                 self._write('<p>Inactive.  Waiting for initial download.</p>')
         except OperationalError:

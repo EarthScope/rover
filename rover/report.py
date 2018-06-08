@@ -1,15 +1,18 @@
 
 from sys import version_info
 from socket import gethostname
+
 if version_info[0] >= 3:
     from email.message import EmailMessage
 else:
     from email.mime.text import MIMEText
 from smtplib import SMTP
 
+from .manager import INCONSISTENT, UNCERTAIN
 from .utils import format_time_epoch, format_time_epoch_local
 from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
-    DAEMON, RESUBSCRIBE, mm
+    DAEMON, RESUBSCRIBE, mm, DOWNLOADRETRIES
+
 
 """
 Support for emailing the user after a download finishes.
@@ -85,6 +88,17 @@ WARNING: Since the final download had some errors, it may be
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
 ''' % (LIST_RETRIEVE, RETRIEVE)
+        elif source.consistent == INCONSISTENT:
+            msg += '''
+WARNING: Inconsistent behaviour was detected in the web services
+         (eg dataselect not providing data promised by availability)
+'''
+        elif source.consistent == UNCERTAIN:
+            msg += '''
+The consistency of the web services could not be confirmed.
+There is a small chance of error.
+Re-run the %s command with %s > 1 to check
+''' % (RETRIEVE, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
         return 'Rover %s complete' % RETRIEVE, msg
 
@@ -112,5 +126,17 @@ WARNING: Since the final download had some errors, it may be
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
+        elif source.consistent == INCONSISTENT:
+            msg += '''
+WARNING: Inconsistent behaviour was detected in the web services
+         (eg dataselect not providing data promised by availability)
+'''
+        elif source.consistent == UNCERTAIN:
+            msg += '''
+The consistency of the web services could not be confirmed.
+There is a small chance of error.
+Re-run with `rover %s %s` to check
+(daemon must have %s > 1).
+''' % (RESUBSCRIBE, source.name, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
         return 'Rover subscription %s processed' % source.name, msg

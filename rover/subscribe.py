@@ -96,7 +96,8 @@ dates that are missing from the local store.
                            dataselect_url text not null,
                            creation_epoch int default (cast(strftime('%s', 'now') as int)),
                            last_check_epoch int default NULL,
-                           last_error_count int default 0
+                           last_error_count int default 0,
+                           consistent int default 0
         )''')
 
     def _check_all_for_overlap(self, path1):
