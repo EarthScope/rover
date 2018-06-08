@@ -3,7 +3,7 @@ from shutil import copyfile
 from sqlite3 import OperationalError
 
 from .request import RequestComparison
-from .download import DownloadManager
+from .manager import DownloadManager
 from .args import SUBSCRIBE, LIST_SUBSCRIBE, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV, \
     FORCEREQUEST, mm, RESUBSCRIBE
 from .sqlite import SqliteSupport, NoResult

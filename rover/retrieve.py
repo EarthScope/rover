@@ -8,7 +8,8 @@ from .report import Reporter
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
     HTTPRETRIES
-from .download import DEFAULT_NAME, DownloadManager
+from .download import DEFAULT_NAME
+from .manager import DownloadManager
 from .index import Indexer
 from .sqlite import SqliteSupport
 from .summary import Summarizer

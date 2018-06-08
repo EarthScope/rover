@@ -4,7 +4,7 @@ from time import sleep, time
 
 from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, STOP, UserFeedback
 from .config import write_config
-from .download import DownloadManager
+from .manager import DownloadManager
 from .report import Reporter
 from .index import Indexer
 from .process import ProcessManager

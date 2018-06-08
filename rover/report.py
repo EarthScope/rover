@@ -85,7 +85,7 @@ WARNING: Since the final download had some errors, it may be
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
 ''' % (LIST_RETRIEVE, RETRIEVE)
-        self._log_message(msg, self._log.warn if source.n_errors else self._log.info)
+        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
         return 'Rover %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
@@ -112,5 +112,5 @@ WARNING: Since the final download had some errors, it may be
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
-        self._log_message(msg, self._log.warn if source.n_errors else self._log.info)
+        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
         return 'Rover subscription %s processed' % source.name, msg
