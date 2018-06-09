@@ -62,7 +62,7 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| timespan-tol        | 1.5 samples          | Fractional tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
@@ -72,7 +72,7 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | download-workers    | 10                   | Number of download instances to run |
 | download-retries    | 3                    | Maximum number of attempts to download data |
-| http-timeout        | 60 secs              | Timeout for HTTP requests      |
+| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | leap-expire         | 30                   | Number of days before refreshing file |
 | leap-file           | leap-seconds.lst     | File for leapsecond data       |
@@ -87,7 +87,7 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
-| temp-expire         | 1 days               | Number of days before deleting temp files |
+| temp-expire         | 1                    | Number of days before deleting temp files (days) |
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
 
@@ -117,7 +117,7 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
-| timespan-tol        | 1.5 samples          | Fractional tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
@@ -170,7 +170,7 @@ The following parameters are simple flags that change the output format.  They a
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| timespan-tol        | 1.5 samples          | Fractional tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
@@ -315,9 +315,9 @@ See also `rover stop`, `rover status` and `rover daemon`.
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12 hours             | Time between availabilty checks |
+| recheck-period      | 12                   | Time between availabilty checks (hours) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
-| http-timeout        | 60 secs              | Timeout for HTTP requests      |
+| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
@@ -467,7 +467,7 @@ This task is the main low-level task called in the processing pipeline (it calls
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | temp-dir            | tmp                  | Temporary storage for downloads |
-| http-timeout        | 60 secs              | Timeout for HTTP requests      |
+| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | delete-files        | True                 | Delete temporary files?        |
 | ingest              | True                 | Call ingest after retrieval?   |
@@ -599,9 +599,9 @@ See also `rover stop`, `rover status`.
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12 hours             | Time between availabilty checks |
+| recheck-period      | 12                   | Time between availabilty checks (hours) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
-| http-timeout        | 60 secs              | Timeout for HTTP requests      |
+| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |

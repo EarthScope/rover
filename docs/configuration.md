@@ -89,7 +89,7 @@ This will place all files in `newdir`.
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
-| timespan-tol        | 1.5 samples          | Fractional tolerance for overlapping timespans |
+| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | download-workers    | 10                   | Number of download instances to run |
 | rover-cmd           | rover                | Command to run rover           |
@@ -100,18 +100,18 @@ This will place all files in `newdir`.
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | tmp                  | Temporary storage for downloads |
-| temp-expire         | 1 days               | Number of days before deleting temp files |
-| http-timeout        | 60 secs              | Timeout for HTTP requests      |
+| temp-expire         | 1                    | Number of days before deleting temp files (days) |
+| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
-| force-failures      | 0 percent            | Force failures for testing (dangerous) |
+| force-failures      | 0                    | Force failures for testing (dangerous) (percent) |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12 hours             | Time between availabilty checks |
+| recheck-period      | 12                   | Time between availabilty checks (hours) |
 | force-request       | False                | Skip overlap checks (dangerous)? |
 | log-dir             | logs                 | Directory for logs             |
 | log-unique          | False                | Unique log names (with PIDs)?  |
-| log-unique-expire   | 7 days               | Number of days before deleting unique logs |
+| log-unique-expire   | 7                    | Number of days before deleting unique logs (days) |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
 | log-size            | 6                    | Maximum log size (1-10)        |
 | log-count           | 10                   | Maximum number of logs         |

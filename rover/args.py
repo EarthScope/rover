@@ -388,9 +388,9 @@ class Arguments(ArgumentParser):
         name = sub('_', '-', action.dest)
         unit = action.metavar
         default = action.default
-        if unit in (SECSVAR, HOURSVAR, DAYSVAR, PERCENTVAR, SAMPLESVAR):
-            default = '%s %s' % (default, unit.lower())
         help = action.help
+        if unit in (SECSVAR, HOURSVAR, DAYSVAR, PERCENTVAR, SAMPLESVAR):
+            help = '%s (%s)' % (help, unit.lower())
         if name == FILE:
             name += ' / -f'
         elif name == HELP:
