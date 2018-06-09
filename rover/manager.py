@@ -470,7 +470,7 @@ class DownloadManager(SqliteSupport):
                 return False
         return True
 
-    def _clean_sources(self, quiet=False):
+    def _clean_sources(self, quiet=True):
         names = list(self._sources.keys())
         for name in names:
             try:
@@ -532,17 +532,18 @@ class DownloadManager(SqliteSupport):
                 source.new_worker(self._workers, self._config_path, self._rover_cmd)
                 self._n_downloads += 1
             # todo - does this do anything useful without a workers.check()?
-            self._clean_sources()
+            self._clean_sources(quiet=quiet)
 
     def download(self):
         """
         Run to completion (for a single shot, after add()).
         """
+        print('download')
         if len(self._sources) != 1:
             raise Exception('download() logic intended for single source (retrieve)')
         source = next(iter(self._sources.values()))
         try:
-            while not source.is_complete():
+            while self._sources and not source.is_complete():
                 self.step(quiet=False)
                 sleep(0.1)
         finally:
