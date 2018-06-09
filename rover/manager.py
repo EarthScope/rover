@@ -41,9 +41,15 @@ class Retrieval:
         self.n_errors = 0
 
     def add_coverage(self, coverage):
+        """
+        Add a coverage to retrieve.
+        """
         self._coverages.append(coverage)
 
     def get_coverages(self):
+        """
+        Provide access to coverages (for listing)
+        """
         return list(self._coverages)
 
     @staticmethod
@@ -55,6 +61,9 @@ class Retrieval:
         return left, right
 
     def stats(self):
+        """
+        Calculate current stats (for progress reporting).
+        """
         coverage_count, total_seconds = 0, 0
         for coverage in self._coverages:
             coverage_count += 1
@@ -96,7 +105,9 @@ class Retrieval:
             self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
 
     def new_worker(self, workers, config_path, rover_cmd):
-        # this is where the real work is done, and it's called from the manager.
+        """
+        Launch a new worker (called by manager main loop).
+        """
         url = self._build_url(*self._days.popleft())
         # for testing error handling we can inject random errors here
         if randint(1, 100) <= self._force_failures:
@@ -111,6 +122,9 @@ class Retrieval:
         self.worker_count += 1
 
     def is_complete(self):
+        """
+        Is this retrieval complete?
+        """
         return self.worker_count == 0 and not self.has_days()
 
 
@@ -161,19 +175,34 @@ class Source(SqliteSupport):
         return '%s (%s)' % (self.name, self._dataselect_url)
 
     def get_coverages(self):
+        """
+        Provide access to coverages (for listing)
+        """
         return self._retrieval.get_coverages()
 
     def stats(self):
+        """
+        Provide access to latest stats (for reporting).
+        """
         return self._retrieval.stats()
 
     def has_days(self):
+        """
+        Does retrieval have data?
+        """
         return self._retrieval.has_days()
 
     @property
     def worker_count(self):
+        """
+        Number of workers being used.
+        """
         return self._retrieval.worker_count
 
     def new_worker(self, workers, config_path, rover_cmd):
+        """
+        Launch a new worker (called by manager main loop).
+        """
         self._retrieval.new_worker(workers, config_path, rover_cmd)
 
     @property
@@ -185,6 +214,9 @@ class Source(SqliteSupport):
         return '' if self.name == DEFAULT_NAME else 'subscription %s ' % self.name
 
     def is_complete(self):
+        """
+        Is this source complete (all retrievals)?
+        """
 
         retry_possible = self.n_retries < self.download_retries
 
