@@ -49,6 +49,12 @@ When the process is running status should be visible at http://localhost:8000 (b
 
 See `rover subscribe` for similar functionality, but with regular updates.
 
+#### Errors, Retries and Consistency
+
+If `download-retries` allows, retrievals are repeated until no errors occur and, once data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
+
+Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user. They also cause the command to exit with an error status.
+
 ##### Significant Parameters
 
 |  Name               | Default              | Description                    |
@@ -331,6 +337,12 @@ Logging for individual processes in the pipeline will automatically configured w
 
 When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription is processed an email can be sent to the user (if `--email` is used).
 
+#### Errors, Retries and Consistency
+
+If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
+
+Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
+
 ##### Examples
 
     rover start -f roverrc
@@ -588,6 +600,7 @@ See also `rover stop`, `rover status`.
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |
 | recheck-period      | 12                   | Time between availabilty checks |
+| download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests      |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | web                 | True                 | Auto-start the download progress web server? |
@@ -607,6 +620,12 @@ In addition, parameters relevant to the processing pipeline (see `rover retrieve
 Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`. For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
 
 When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription is processed an email can be sent to the user (if `--email` is used).
+
+#### Errors, Retries and Consistency
+
+If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
+
+Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
 
 ##### Examples
 

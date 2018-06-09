@@ -69,6 +69,14 @@ For most worker tasks, that will give empty logs (no warnings or errors), which 
 When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription
 is processed an email can be sent to the user (if `--email` is used).
 
+#### Errors, Retries and Consistency
+
+If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete,
+an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if
+additional data are found - then the web services are inconsistent.
+
+Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
+
 ##### Examples
 
     rover start -f roverrc
@@ -189,6 +197,7 @@ See also `rover stop`, `rover status`.
 @temp-dir
 @subscriptions-dir
 @recheck-period
+@download-retries
 @http-timeout
 @http-retries
 @web
@@ -212,6 +221,14 @@ For most worker tasks, that will give empty logs (no warnings or errors), which 
 
 When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription
 is processed an email can be sent to the user (if `--email` is used).
+
+#### Errors, Retries and Consistency
+
+If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete,
+an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if
+additional data are found - then the web services are inconsistent.
+
+Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
 
 ##### Examples
 
