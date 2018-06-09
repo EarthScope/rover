@@ -211,7 +211,7 @@ class Source(SqliteSupport):
                 if self._expect_empty:
                     complete = self._is_complete_final_read(retry_possible)
                 else:
-                    complete = self._is_complete_inital_reads(retry_possible)
+                    complete = self._is_complete_initial_reads(retry_possible)
                 return complete
             finally:
                 if complete:
@@ -220,7 +220,7 @@ class Source(SqliteSupport):
             # the current retrieval isn't complete, so we're certainly not done
             return False
 
-    def _is_complete_inital_reads(self, retry_possible):
+    def _is_complete_initial_reads(self, retry_possible):
 
         # the last retrieval had errors.
         if self._retrieval.n_errors:
