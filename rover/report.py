@@ -63,7 +63,8 @@ class Reporter:
                 self._log.error('Consider using %s and %s (see your local network admin)'
                                 % (mm(SMTPADDRESS), mm(EMAILFROM)))
 
-    def _log_message(self, msg, logger):
+    @staticmethod
+    def _log_message(msg, logger):
         for line in msg.split('\n'):
             line = line.rstrip()
             logger(line)
@@ -99,7 +100,6 @@ WARNING: Inconsistent behaviour was detected in the web services
         elif source.consistent == UNCERTAIN:
             msg += '''
 The consistency of the web services could not be confirmed.
-There is a small chance of error.
 Re-run the %s command with %s > 1 to check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
@@ -136,10 +136,8 @@ WARNING: Inconsistent behaviour was detected in the web services
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''
-The consistency of the web services could not be confirmed.
-There is a small chance of error.
-Re-run with `rover %s %s` to check
+The consistency of the web services could not be confirmed
 (daemon must have %s > 1).
-''' % (RESUBSCRIBE, source.name, mm(DOWNLOADRETRIES))
+''' % mm(DOWNLOADRETRIES)
         self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
         return 'Rover subscription %s processed' % source.name, msg
