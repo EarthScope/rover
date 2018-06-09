@@ -123,6 +123,15 @@ DEFAULT_VERBOSITY = 4
 
 DIRVAR = 'DIR'
 FILEVAR = 'FILE'
+SAMPLESVAR = 'SAMPLES'
+NVAR = 'N'
+CMDVAR = 'CMD'
+DAYSVAR = 'DAYS'
+SECSVAR = 'SECS'
+HOURSVAR = 'HOURS'
+PERCENTVAR = 'PERCENT'
+ADDRESSVAR = 'ADDRESS'
+URLVAR  ='URL'
 
 
 def parse_bool(value):
@@ -206,23 +215,23 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='the local store - mseed data, index.sql', metavar=DIRVAR)
 
         # retrieval
-        self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar='SAMPLE', type=float)
-        self.add_argument(mm(DOWNLOADRETRIES), default=DEFAULT_DOWNLOADRETRIES, action='store', help='maximum number of attempts to download data', metavar='N', type=int)
-        self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar='N', type=int)
-        self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar='CMD')
+        self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
+        self.add_argument(mm(DOWNLOADRETRIES), default=DEFAULT_DOWNLOADRETRIES, action='store', help='maximum number of attempts to download data', metavar=NVAR, type=int)
+        self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar=NVAR, type=int)
+        self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar=CMDVAR)
         self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
         self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
         self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
 
         # downloads
-        self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=DIRVAR)
-        self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=DIRVAR)
+        self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=URLVAR)
+        self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=URLVAR)
         self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar=DIRVAR)
-        self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar='DAYS', type=int)
-        self.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar='SECS', type=int)
-        self.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar='N', type=int)
-        self.add_argument(mm(FORCEFAILURES), default=DEFAULT_FORCEFAILURES, action='store', help='force failures for testing (dangerous)', metavar='PERCENT', type=int)
+        self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar=DAYSVAR, type=int)
+        self.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar=SECSVAR, type=int)
+        self.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar=NVAR, type=int)
+        self.add_argument(mm(FORCEFAILURES), default=DEFAULT_FORCEFAILURES, action='store', help='force failures for testing (dangerous)', metavar=PERCENTVAR, type=int)
 
         # index
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
@@ -230,36 +239,36 @@ class Arguments(ArgumentParser):
 
         # subscription
         self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
-        self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar='HOURS', type=int)
+        self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar=HOURSVAR, type=int)
         self.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
 
         # logging
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
-        self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar='DAYS', type=int)
-        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar='V', type=int)
-        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar='N', type=int)
-        self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar='N', type=int)
-        self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-5)', metavar='V', type=int)
+        self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar=DAYSVAR, type=int)
+        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar=NVAR, type=int)
+        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar=NVAR, type=int)
+        self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar=NVAR, type=int)
+        self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-5)', metavar=NVAR, type=int)
 
         # mseedindex
-        self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar='CMD')
-        self.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar='N', type=int)
+        self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar=CMDVAR)
+        self.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar=NVAR, type=int)
 
         # leap seconds
         self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
-        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar='N', type=int)
+        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar=NVAR, type=int)
         self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar=FILEVAR)
-        self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar='URL')
+        self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar=URLVAR)
 
         # user feedback
         self.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
-        self.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar='ADDRESS')
-        self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar='N', type=int)
-        self.add_argument(mm(EMAIL), default='', action='store', help='address for completion status', metavar='ADDRESS')
-        self.add_argument(mm(EMAILFROM), default=DEFAULT_EMAILFROM, action='store', help='from address for email', metavar='ADDRESS')
-        self.add_argument(mm(SMTPADDRESS), default=DEFAULT_SMTPADDRESS, action='store', help='address of SMTP server', metavar='ADDRESS')
-        self.add_argument(mm(SMTPPORT), default=DEFAULT_SMTPPORT, action='store', help='port for SMTP server', metavar='N', type=int)
+        self.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar=ADDRESSVAR)
+        self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar=NVAR, type=int)
+        self.add_argument(mm(EMAIL), default='', action='store', help='address for completion status', metavar=ADDRESSVAR)
+        self.add_argument(mm(EMAILFROM), default=DEFAULT_EMAILFROM, action='store', help='from address for email', metavar=ADDRESSVAR)
+        self.add_argument(mm(SMTPADDRESS), default=DEFAULT_SMTPADDRESS, action='store', help='address of SMTP server', metavar=ADDRESSVAR)
+        self.add_argument(mm(SMTPPORT), default=DEFAULT_SMTPPORT, action='store', help='port for SMTP server', metavar=NVAR, type=int)
 
         # commands / args
         self.add_argument(COMMAND, metavar='COMMAND', nargs='?', help='use "help" for further information')
@@ -377,7 +386,10 @@ class Arguments(ArgumentParser):
     @staticmethod
     def __document_action(action):
         name = sub('_', '-', action.dest)
+        unit = action.metavar
         default = action.default
+        if unit in (SECSVAR, HOURSVAR, DAYSVAR, PERCENTVAR, SAMPLESVAR):
+            default = '%s %s' % (default, unit.lower())
         help = action.help
         if name == FILE:
             name += ' / -f'
