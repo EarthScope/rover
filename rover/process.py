@@ -53,7 +53,9 @@ class ProcessManager(SqliteSupport):
             pid, candidate = next(rows)
             if process_exists(pid):
                 command = candidate
+                self._log.debug('Current process is %s/%d' % (command, pid))
             else:
+                self._log.debug('Removing dead process %s/%d' % (candidate, pid))
                 self._db.execute('delete from rover_processes where pid = ?', (pid,))
         except StopIteration:
             pass  # table is empty
@@ -65,6 +67,7 @@ class ProcessManager(SqliteSupport):
         return pid, command
 
     def _record_process_inside_transaction(self, command):
+        self._log.debug('Record new process %s/%d' % (command, getpid()))
         self._db.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
 
     def _check_retrieve(self):
@@ -93,7 +96,7 @@ class ProcessManager(SqliteSupport):
                                   (DAEMON, RETRIEVE, pid))
             elif command == DAEMON:
                 error = Exception('The %s is already running (PID %d).' % (DAEMON, pid))
-            else:
+            elif record:
                 self._record_process_inside_transaction(DAEMON)
         # transaction closed
         if error:
