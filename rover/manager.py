@@ -566,7 +566,7 @@ class DownloadManager(SqliteSupport):
         # source has least threads running so that the total number of workers (and so total
         # download bandwidth) is evenly spread across all servers.
         # a consequence of that is that there's no "step()" for lower levels.  this is also
-        # partly because all teh work is done in a separate worker process.  instead, most of
+        # partly because all the work is done in a separate worker process.  instead, most of
         # the lower level logic is done in clean_sources() which checks and updates the sources
         # appropriately (and, for single shot downloads, where quiet=False, raises an exception
         # on error).

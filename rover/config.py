@@ -1,3 +1,4 @@
+
 from argparse import Namespace
 from genericpath import exists, isfile
 from os import makedirs
@@ -58,7 +59,6 @@ class BaseConfig:
                 try:
                     value = matchvar.group(1) + inner + matchvar.group(3)
                 except:
-                    print('oops')
                     raise Exception('String substitution only works with string parameters (%s)' % name)
             else:
                 value = sub(r'\$\$', '$', value)

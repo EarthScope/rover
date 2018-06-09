@@ -3,7 +3,7 @@ from re import sub
 
 from .args import HELP, LIST_INDEX, MSEEDDIR, WRITE_CONFIG, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
-    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON
+    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON, LIST_SUMMARY, SUMMARY
 
 """
 The 'rover help' command.
@@ -61,7 +61,7 @@ To display this screen again, type "rover" or "rover help".
 
 def usage(config):
     return '''
-                    Common ROVER Commands
+                    Common Rover Commands
                     
 rover %s (file | sta=... [start [end]] | sncl [start [end]])
 
@@ -83,6 +83,13 @@ rover %s ...
   %s) that match the given constraints.  For more information, 
   run "rover %s" (with no arguments).
 
+rover %s ...
+
+  List summary entries for the local store (config parameter 
+  %s) that match the given constraints.  This is faster than
+  `rover %s` but gives less detail.  For more information, 
+  run "rover %s" (with no arguments).
+
 rover %s
 
   Delete and re-write the configuration file.
@@ -90,12 +97,13 @@ rover %s
 ''' % (RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
        LIST_RETRIEVE, AVAILABILITYURL,
        LIST_INDEX, MSEEDDIR, LIST_INDEX,
+       LIST_SUMMARY, MSEEDDIR, LIST_INDEX, LIST_SUMMARY,
        WRITE_CONFIG)
 
 
 def background(config):
     return '''
-                   Advanced ROVER Commands
+                   Advanced Rover Commands
     
 rover %s
 
@@ -139,25 +147,25 @@ rover %s N
 
 def low_level(config):
     return '''
-                   Low-Level ROVER Commands
+                   Low-Level Rover Commands
                    
 The following commands are used internally, but are usually not
 useful from the command line:
 
-%s url
+rover %s url
 
   Download data from the given URL to the temporary store
   (config parameter %s).  When downloaded, ingest into the
   local store (config parameter %s) and delete.  Called
   by %s and the %s when needed.
 
-%s (file|dir) ...
+rover %s (file|dir) ...
 
   Add the specified files to the local store (config
   parameter %s) and update the database index 
   Called by %s when needed.
   
-%s [(file|dir) ...]
+rover %s [(file|dir) ...]
 
   Scan files and update the database index using the mseedindex 
   command (config parameter %s). Called by %s when needed.
@@ -167,10 +175,15 @@ useful from the command line:
   store was last indexed are processed.  The config parameter 
   %s can be used (eg %s on the command line) to force 
   processing of all files in the store.
+  
+rover %s
+
+  Re-generate the summary table used by `rover %s`.
       
 ''' % (DOWNLOAD, TEMPDIR, MSEEDDIR, SUBSCRIBE, DAEMON,
        INGEST, MSEEDDIR, RETRIEVE,
-       INDEX, MSEEDINDEXCMD, INGEST, MSEEDDIR, ALL, mm(ALL))
+       INDEX, MSEEDINDEXCMD, INGEST, MSEEDDIR, ALL, mm(ALL),
+       SUMMARY, LIST_SUMMARY)
 
 
 GENERAL = {
@@ -280,7 +293,7 @@ class Helper(HelpFormatter):
             elif command in GENERAL:
                 self.print(GENERAL[command][0](self._config))
                 return
-        raise Exception('Help is available for: %s, %s, %s (or simply "rover help")' % (USAGE, DAEMON, LOWLEVEL))
+        raise Exception('Help is available for: %s, %s, %s, and individual commands (or simply "rover help")' % (USAGE, BACKGROUND, LOWLEVEL))
 
     def _help(self):
         from rover import COMMANDS   # avoid import loop
