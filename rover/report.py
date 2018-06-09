@@ -94,13 +94,15 @@ WARNING: Since the final download had some errors, it may be
 ''' % (LIST_RETRIEVE, RETRIEVE)
         elif source.consistent == INCONSISTENT:
             msg += '''
-WARNING: Inconsistent behaviour was detected in the web services
-         (eg dataselect not providing data promised by availability)
+WARNING: Inconsistent behaviour was detected in the web 
+         services (eg dataselect not providing data promised 
+         by availability)
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''
 The consistency of the web services could not be confirmed.
-Re-run the %s command with %s > 1 to check
+Re-run the %s command with %s > 1 to 
+check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
         return 'Rover %s complete' % RETRIEVE, msg
@@ -131,8 +133,9 @@ WARNING: Since the final download had some errors, it may be
 ''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
         elif source.consistent == INCONSISTENT:
             msg += '''
-WARNING: Inconsistent behaviour was detected in the web services
-         (eg dataselect not providing data promised by availability)
+WARNING: Inconsistent behaviour was detected in the web 
+         services (eg dataselect not providing data promised 
+         by availability)
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''

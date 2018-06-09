@@ -93,10 +93,7 @@ class Retrieval:
         self.n_downloads += 1
         if return_code:
             self.n_errors += 1
-            if self._name:
-                self._log.error('Download failed for subscription %d (return code %d)' % (self._name, return_code))
-            else:
-                self._log.error('Download failed (return code %d)' % return_code)
+            self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
 
     def new_worker(self, workers, config_path, rover_cmd):
         # this is where the real work is done, and it's called from the manager.
@@ -179,12 +176,29 @@ class Source(SqliteSupport):
     def new_worker(self, workers, config_path, rover_cmd):
         self._retrieval.new_worker(workers, config_path, rover_cmd)
 
+    @property
+    def _name(self):
+        """
+        Name for log messages - empty string for retrieve, otherwise identifies subscription.
+        """
+        # don't mention subscriptions when called from `rover retrieve`
+        return '' if self.name == DEFAULT_NAME else 'subscription %s ' % self.name
+
     def is_complete(self):
 
-        # don't mention subscriptions when called from `rover retrieve`
-        opt_name = '' if self.name == DEFAULT_NAME else 'subscription %s ' % self.name
+        retry_possible = self.n_retries < self.download_retries
 
-        # chad's main loop logic
+        # this is complicated by the fact that we also check for consistency.
+        # inconsistency is when we expect to download no data, but still get some, or expect to get
+        # some, but get nothing.  we can't detect all cases, but we do our best by waiting until
+        # we get a clean download (no errors and so presumably complete) and then running an
+        # extra download.  that should generate no downloads.  if it doesn't, we have problems.
+
+        # that sounds fairly simple, but when you consider all possible cases you get the code below...
+
+        # the default value for consistent is UNCERTAIN so it is left unchanged in many places below
+        # we throw an exception if we finish with incomplete data (errors) or proof of inconsistency.
+
         if self._retrieval.is_complete():
 
             # update public stats
@@ -192,105 +206,121 @@ class Source(SqliteSupport):
             self.n_errors += self._retrieval.n_errors
             self.n_final_errors = self._retrieval.n_errors
 
-            # this is complicated by the fact that we also check for consistency.
-            # inconsistency is when we expect to download no data, but still get some, or expect to get
-            # some, but get nothing.  we can't detect all cases, but we do our best by waiting until
-            # we get a clean download (no errors and so presumably complete) and then running an
-            # extra download.  that should generate no downloads.  if it doesn't, we have problems.
-
-            # that sounds fairly simple, but when you consider all possible cases you get the code below...
-
-            # the default value for consistent is UNCERTAIN so it is left unchanged in many places below
-            # we throw an exception if we finish with incomplete data (errors) or proof of inconsistency.
-
-            # the last retrieval had errors.
-            if self._retrieval.n_errors:
-                # if we can retry, then do so
-                if self.n_retries < self.download_retries:
-                    self._log.info('Latest download %shad %d errors; retrying at %d attempts' %
-                                   (opt_name, self._retrieval.n_errors, self.n_retries))
-                    self._new_retrieval()
-                    return False
-                # otherwise, we can't retry so we're done, but failed.  don't forget to call the callback
-                # on the way out.
+            complete = True  # default if exception thrown
+            try:
+                if self._expect_empty:
+                    complete = self._is_complete_final_read(retry_possible)
                 else:
+                    complete = self._is_complete_inital_reads(retry_possible)
+                return complete
+            finally:
+                if complete:
                     self._completion_callback(self)
-                    raise Exception('Latest download %shad %d errors on final attempt (of %d)' %
-                                    (opt_name, self._retrieval.n_errors, self.download_retries))
-
-            # no errors last retrieval, but we did download some more data
-            elif self._retrieval.n_downloads:
-                # we downloaded data even though previously we appeared complete
-                if self._expect_empty:
-                    self.consistent = INCONSISTENT
-                    # can we try again, in case this was some weird hiccup?
-                    if self.n_retries < self.download_retries:
-                        self._log.info('Latest download %sretrieved unexpected data so trying again' % opt_name)
-                        self._new_retrieval()
-                        return False
-                    # something odd is happening
-                    else:
-                        self._completion_callback(self)
-                        raise Exception(('Latest download %sretrieved unexpected data (%d) on final attempt (of %d)' +
-                                         ' (inconsistent web services?)') %
-                                        (opt_name, self._retrieval.n_downloads, self.download_retries))
-                # can we try again, to make sure there are no more data?
-                elif self.n_retries < self.download_retries:
-                    self._log.info('Latest download %shad no errors, but downloaded data so trying again' % opt_name)
-                    self._expect_empty = True
-                    self._new_retrieval()
-                    return False
-                # if not, we're going to say we're complete anyway, since we didn't have any errors.
-                else:
-                    self._log.info(
-                        'Latest download %shad no errors, but downloaded data; no retry as already made %d attempts'
-                        % (opt_name, self.n_retries))
-
-            # no errors and no data
-            else:
-                # if we were expecting this then it wasn't the initial download...
-                if self._expect_empty:
-                    self.consistent = CONFIRMED
-                    self._log.info('Latest download %shad no downloads and no errors, so complete' % opt_name)
-                # presumably this was an empty initial download
-                elif self.n_retries == 1:
-                    # can we try again to make sure things are consistent?
-                    if self.n_retries < self.download_retries:
-                        self._expect_empty = True
-                        self._log.info('Initial download %shad no errors or data, but retry to check consistency' %
-                                       opt_name)
-                        self._new_retrieval()
-                        return False
-                    # if not, we're going to say we're complete anyway.
-                    else:
-                        self._log.info('Initial download %shad no errors and no retries configured' % opt_name)
-                # something odd has happened - no data when it wasn't expected
-                else:
-                    # can we try again to make sure things are consistent?
-                    if self.n_retries < self.download_retries:
-                        self._expect_empty = True
-                        self._log.info('Latest download %shad no errors or data, but retry to check consistency' %
-                                       opt_name)
-                        self._new_retrieval()
-                        return False
-                    else:
-                        self.consistent = INCONSISTENT
-                        self._completion_callback(self)
-                        raise Exception(('Latest download %sretrieved no data on final attempt (of %d) ' +
-                                         'following error (inconsistent web services?)') %
-                                        (opt_name, self.download_retries))
-
         else:
             # the current retrieval isn't complete, so we're certainly not done
             return False
 
-        # if we're here, we're complete
-        self._completion_callback(self)
-        return True
+    def _is_complete_inital_reads(self, retry_possible):
+
+        # the last retrieval had errors.
+        if self._retrieval.n_errors:
+            # if we can retry, then do so
+            if retry_possible:
+                self._log.info('Latest %sretrieval had %d errors; retrying at %d attempts' %
+                               (self._name, self._retrieval.n_errors, self.n_retries))
+                self._new_retrieval()
+                return False
+            # otherwise, we can't retry so we're done, but failed.
+            else:
+                raise Exception('Latest %sretrieval had %d errors on final attempt (of %d)' %
+                                (self._name, self._retrieval.n_errors, self.download_retries))
+
+        # no errors last retrieval, but we did download some more data
+        elif self._retrieval.n_downloads:
+            # can we try again, to make sure there are no more data?
+            if retry_possible:
+                self._log.info('Latest %sretrieval had no errors, but downloaded data so trying again' % self._name)
+                self._expect_empty = True
+                self._new_retrieval()
+                return False
+            # if not, we're going to say we're complete anyway, since we didn't have any errors.
+            else:
+                self._log.info(
+                    'Latest %sretrieval had no errors, but downloaded data; no retry as already made %d attempts'
+                    % (self._name, self.n_retries))
+                return True
+
+        # no errors and no data
+        else:
+            # presumably this was an empty initial download
+            if self.n_retries == 1:
+                # can we try again to make sure things are consistent?
+                if retry_possible:
+                    self._expect_empty = True
+                    self._log.info('Initial %sretrieval had no errors or data, but retry to check consistency' %
+                                   self._name)
+                    self._new_retrieval()
+                    return False
+                # if not, we're going to say we're complete anyway.
+                else:
+                    self._log.info('Initial %sretrieval had no errors and no retries configured' % self._name)
+                    return True
+            # something odd has happened - no data when it wasn't expected
+            else:
+                # can we try again to make sure things are consistent?
+                if retry_possible:
+                    self._expect_empty = True
+                    self._log.info('Latest %sretrieval had no errors or data, but retry to check consistency' %
+                                   self._name)
+                    self._new_retrieval()
+                    return False
+                else:
+                    self.consistent = INCONSISTENT
+                    raise Exception(('Latest %sretrieval downloaded no data on final attempt (of %d) ' +
+                                     'following error (inconsistent web services?)') %
+                                    (self._name, self.download_retries))
+
+    def _is_complete_final_read(self, retry_possible):
+
+        # the last retrieval had errors (it shouldn't have - we should be on final empty download)
+        if self._retrieval.n_errors:
+            self.consistent = INCONSISTENT
+            # if we can retry, then do so
+            if retry_possible:
+                self._log.info('Final %sretrieval had %d errors; retrying at %d attempts' %
+                               (self._name, self._retrieval.n_errors, self.n_retries))
+                self._new_retrieval()
+                return False
+            # otherwise, we can't retry so we're done, but failed.
+            else:
+                raise Exception('Final %sretrieval had %d errors on final attempt (of %d)' %
+                                (self._name, self._retrieval.n_errors, self.download_retries))
+
+        # no errors last retrieval, but we did download some more data (again, unexpected)
+        elif self._retrieval.n_downloads:
+            self.consistent = INCONSISTENT
+            # can we try again, in case this was some weird hiccup?
+            if retry_possible:
+                self._log.info('Final %sretrieval downloaded unexpected data so trying again' % self._name)
+                self._new_retrieval()
+                return False
+            # something odd is happening
+            else:
+                raise Exception(('Final %sretrieval downloaded unexpected data (%d) on final attempt (of %d)' +
+                                 ' (inconsistent web services?)') %
+                                (self._name, self._retrieval.n_downloads, self.download_retries))
+
+        # no errors and no data
+        else:
+            self.consistent = CONFIRMED
+            self._log.info('Final %sretrieval had no downloads and no errors, so complete' % self._name)
+            return True
 
     def _new_retrieval(self):
         self.n_retries += 1
-        self._retrieval = Retrieval(self._log, self.name, self._dataselect_url, self._force_failures)
+        self._log.info('Trying new %sretrieval (attempt %d of %d)' %
+                       (self._name, self.n_retries, self.download_retries))
+        self._retrieval = Retrieval(self._log, self._name, self._dataselect_url, self._force_failures)
         request = self._build_request(self._request_path)
         response = self._get_availability(request, self._availability_url)
         try:
