@@ -52,7 +52,10 @@ class Reporter:
                 email['To'] = self._email_to
                 self._log.info('Sending completion email to %s (subject %s)' % (self._email_to, subject))
                 smtp = SMTP(self._smtp_address, port=self._smtp_port)
-                smtp.send_message(email)
+                if version_info[0] >= 3:
+                    smtp.send_message(email)
+                else:
+                    smtp.sendmail(self._email_from, [self._email_to], msg)
                 smtp.quit()
             except Exception as e:
                 self._log.error('Error sending email to %s via %s:%d: %s' %
