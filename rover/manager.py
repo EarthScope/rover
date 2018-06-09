@@ -256,9 +256,9 @@ class Source(SqliteSupport):
             if self.n_retries == 1:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._expect_empty = True
                     self._log.info('Initial %sretrieval had no errors or data, but retry to check consistency' %
                                    self._name)
+                    self._expect_empty = True
                     self._new_retrieval()
                     return False
                 # if not, we're going to say we're complete anyway.
@@ -269,9 +269,9 @@ class Source(SqliteSupport):
             else:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._expect_empty = True
                     self._log.info('Latest %sretrieval had no errors or data, but retry to check consistency' %
                                    self._name)
+                    self._expect_empty = True
                     self._new_retrieval()
                     return False
                 else:
