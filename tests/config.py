@@ -29,6 +29,8 @@ dev=False
 delete-files=True
 # display help in markdown format?
 md-format=False
+# force cmd use (dangerous)
+force-cmd=False
 # the local store - mseed data, index.sql
 mseed-dir=mseed
 # fractional tolerance for overlapping timespans

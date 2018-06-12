@@ -54,6 +54,7 @@ DEV = 'dev'
 EMAIL = 'email'
 EMAILFROM = 'email-from'
 F, FILE = 'f', 'file'
+FORCECMD = 'force-cmd'
 FORCEFAILURES = 'force-failures'
 FORCEREQUEST = 'force-request'
 HTTPBINDADDRESS = 'http-bind-address'
@@ -211,6 +212,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
         self.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
+        self.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
 
         # the local store
         self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='the local store - mseed data, index.sql', metavar=DIRVAR)

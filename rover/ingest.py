@@ -3,7 +3,8 @@ from datetime import datetime
 from os.path import exists, join
 from re import match
 
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX, HTTPTIMEOUT, HTTPRETRIES
+from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, \
+    FORCECMD
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner

@@ -2,7 +2,8 @@
 from sqlite3 import OperationalError
 from time import sleep, time
 
-from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, STOP, UserFeedback
+from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, STOP, UserFeedback, \
+    FORCECMD
 from .config import write_config
 from .manager import DownloadManager
 from .report import Reporter

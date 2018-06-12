@@ -651,7 +651,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
 
 Start a web server that provides information on the progress of the download manager (the core of the `rover daemon` and `rover retrieve` commands).
 
-With the default configuration this is started automatically, provided `--no-http` is not used with `rover retrieve` or `rover start`.
+With the default configuration this is started automatically, provided `--no-web` is not used with `rover retrieve` or `rover start`.
 
 As with the `rover download` command, empty logs are removed on exit to avoid cluttering the log directory.
 

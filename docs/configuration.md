@@ -71,9 +71,9 @@ structure:
        +- tmp/
           +- ...
 
-The configuration file created automatically if not found, so **to use 
-Rover with a completely new database, configuration, etc, it is only
-necessary to sepecify a new path for the configuration file:**
+The configuration file is created automatically if not found, so **to
+use Rover with a completely new database, configuration, etc, it is
+only necessary to sepecify a new path for the configuration file:**
 
     rover -f newdir/config
 
@@ -88,6 +88,7 @@ This will place all files in `newdir`.
 | dev                 | False                | Development mode (show exceptions)? |
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
+| force-cmd           | False                | Force cmd use (dangerous)      |
 | mseed-dir           | mseed                | The local store - mseed data, index.sql |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
@@ -104,6 +105,7 @@ This will place all files in `newdir`.
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | force-failures      | 0                    | Force failures for testing (dangerous) (percent) |
+| sort-in-python      | False                | Avoid OS sort (slower)?        |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
 | subscriptions-dir   | subscriptions        | Directory for subscriptions    |

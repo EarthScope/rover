@@ -48,15 +48,20 @@ def check_cmd(config, param, name):
     """
     Check the command exists and, if not, inform the user.
     """
+    from .args import FORCECMD
     value = config.arg(param)
-    cmd = '%s -h' % value
-    try:
-        check_output(cmd, stderr=STDOUT, shell=True)
+    if not config.arg(FORCECMD):
+        cmd = '%s -h' % value
+        try:
+            check_output(cmd, stderr=STDOUT, shell=True)
+            return value
+        except Exception as e:
+            config.log.error('Command "%s" failed' % cmd)
+            config.log.error('Install %s or configure %s correctly' % (name, param))
+            raise Exception('Cannot find %s (using %s)' % (name, cmd))
+    else:
+        config.log.warn('Not checking command %s' % name)
         return value
-    except:
-        config.log.error('Command "%s" failed' % cmd)
-        config.log.error('Install %s or configure %s correctly' % (name, param))
-        raise Exception('Cannot find %s (using %s)' % (name, cmd))
 
 
 def canonify(path):

@@ -5,7 +5,7 @@ from sqlite3 import OperationalError
 
 from .config import mseed_db
 from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDINDEXWORKERS, HTTPTIMEOUT, \
-    HTTPRETRIES
+    HTTPRETRIES, FORCECMD
 from .args import TIMESPANTOL
 from .coverage import MultipleSNCLBuilder
 from .help import HelpFormatter
