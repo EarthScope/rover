@@ -7,7 +7,7 @@ from subprocess import Popen
 from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
-    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB
+    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
@@ -154,6 +154,7 @@ class Source(SqliteSupport):
         self._http_retries = config.arg(HTTPRETRIES)
         self._timespan_tol = config.arg(TIMESPANTOL)
         self.download_retries = config.arg(DOWNLOADRETRIES)
+        self._sort_in_python = config.arg(SORTINPYTHON)
         self.name = name
         self._request_path = request_path
         self._availability_url = availability_url
@@ -382,7 +383,7 @@ class Source(SqliteSupport):
     def _get_availability(self, request, availability_url):
         response = unique_path(self._temp_dir, TMPRESPONSE, request)
         response = post_to_file(availability_url, request, response, self._http_timeout, self._http_retries, self._log)
-        sort_file_inplace(self._log, response, self._temp_dir)
+        sort_file_inplace(self._log, response, self._temp_dir, self._sort_in_python)
         return response
 
     def _parse_line(self, line):

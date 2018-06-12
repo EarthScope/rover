@@ -61,6 +61,8 @@ http-timeout=60
 http-retries=3
 # force failures for testing (dangerous)
 force-failures=0
+# avoid OS sort (slower)?
+sort-in-python=False
 # process all files (not just modified)?
 all=False
 # when given a directory, process children?

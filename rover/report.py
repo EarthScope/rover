@@ -55,7 +55,7 @@ class Reporter:
                 if version_info[0] >= 3:
                     smtp.send_message(email)
                 else:
-                    smtp.sendmail(self._email_from, [self._email_to], msg)
+                    smtp.sendmail(self._email_from, [self._email_to], email.as_string())
                 smtp.quit()
             except Exception as e:
                 self._log.error('Error sending email to %s via %s:%d: %s' %

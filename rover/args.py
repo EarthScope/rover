@@ -81,6 +81,7 @@ RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
 SMTPADDRESS = 'smtp-address'
 SMTPPORT = 'smtp-port'
+SORTINPYTHON = 'sort-in-python'
 SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
@@ -232,6 +233,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar=SECSVAR, type=int)
         self.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar=NVAR, type=int)
         self.add_argument(mm(FORCEFAILURES), default=DEFAULT_FORCEFAILURES, action='store', help='force failures for testing (dangerous)', metavar=PERCENTVAR, type=int)
+        self.add_argument(mm(SORTINPYTHON), default=False, action='store_bool', help='avoid OS sort (slower)?', metavar='')
 
         # index
         self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')

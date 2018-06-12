@@ -394,15 +394,36 @@ def build_file(path, args):
         print(' '.join(parts), file=req)
 
 
-def sort_file_inplace(log, path, temp_dir):
+def sort_file_inplace(log, path, temp_dir, sort_in_python):
     """
     Sort file using UNIX command line utility.
     """
-    sorted = unique_path(temp_dir, 'rover_sort', path)
-    log.debug('Sorting %s into %s' % (path, sorted))
-    run('sort %s > %s' % (path, sorted), log)
+    done = False
+    try:
+        if not sort_in_python:
+            _os_sort(log, path, temp_dir)
+            done = True
+    except Exception as e:
+        log.warn('OS sorting failed (%s) using python fallback' % e)
+    if not done:
+        _python_sort(log, path)
+
+
+def _python_sort(log, path):
+    log.debug('Sorting %s in memory' % path)
+    with open(path, 'r') as source:
+        lines = source.readlines()
+    with open(path, 'w') as dest:
+        for line in sorted(lines):
+            print(line.rstrip(), file=dest)
+
+
+def _os_sort(log, path, temp_dir):
+    sorted_path = unique_path(temp_dir, 'rover_sort', path)
+    log.debug('Sorting %s into %s' % (path, sorted_path))
+    run('sort %s > %s' % (path, sorted_path), log)
     safe_unlink(path)
-    move(sorted, path)
+    move(sorted_path, path)
 
 
 def process_exists(pid):
