@@ -1,9 +1,10 @@
 
+import ctypes
 import datetime
 import time
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink, kill
+from os import makedirs, stat, getpid, listdir, unlink, kill, name
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from re import match
 from shutil import move
@@ -11,6 +12,7 @@ from subprocess import Popen, check_output, STDOUT
 
 from requests import get, post, Session
 from requests.adapters import HTTPAdapter
+
 
 """
 Assorted utilities.
@@ -435,10 +437,20 @@ def process_exists(pid):
     """
     Check whether the given PID exists.
     """
-    try:
-        kill(pid, 0)
-        return True
-    except OSError:
-        return False
+    if name == 'Windows':
+        # https://stackoverflow.com/questions/17620833/check-if-pid-exists-on-windows-with-python-without-requiring-libraries
+        kernel32 = ctypes.windll.kernel32
+        process = kernel32.OpenProcess(0x100000, 0, pid)
+        if process:
+            kernel32.CloseHandle(process)
+            return True
+        else:
+            return False
+    else:
+        try:
+            kill(pid, 0)
+            return True
+        except OSError:
+            return False
 
 
