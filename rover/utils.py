@@ -99,7 +99,7 @@ def run(cmd, log, uncouple=False):
             process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
     else:
         process = Popen(cmd, shell=True)
-    process.wait()
+        process.wait()
     if process.returncode:
         raise Exception('Command "%s" failed' % cmd)
 
