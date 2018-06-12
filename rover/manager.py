@@ -116,7 +116,7 @@ class Retrieval:
         else:
             # we only pass arguments on the command line that are different from the
             # default (which is in the file)
-            command = '%s -f \'%s\' %s \'%s\'' % (rover_cmd, config_path, DOWNLOAD, url)
+            command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, url)
         self._log.debug(command)
         workers.execute(command, self._worker_callback)
         self.worker_count += 1
