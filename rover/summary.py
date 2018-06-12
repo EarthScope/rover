@@ -51,12 +51,15 @@ will create the summary.
             raise Exception('Usage: rover %s' % SUMMARY)
         self._log.info('Generating summary table')
         self.execute('drop table if exists tsindex_summary')
-        self.execute('''create table tsindex_summary as
-                          select network, station, location, channel, 
-                                 min(starttime) as earliest, max(endtime) as latest, 
-                                 datetime('now') as updt
-                          from tsindex
-                          group by 1,2,3,4''')
+        try:
+            self.execute('''create table tsindex_summary as
+                              select network, station, location, channel, 
+                                     min(starttime) as earliest, max(endtime) as latest, 
+                                     datetime('now') as updt
+                              from tsindex
+                              group by 1,2,3,4''')
+        except OperationalError:
+            self._log.debug('No index - first time using rover?')
 
 
 class SummaryLister(SqliteSupport):
