@@ -76,9 +76,9 @@ structure:
        +- tmp/
           +- ...
 
-The configuration file created automatically if not found, so **to use 
-Rover with a completely new database, configuration, etc, it is only
-necessary to sepecify a new path for the configuration file:**
+The configuration file is created automatically if not found, so **to
+use Rover with a completely new database, configuration, etc, it is
+only necessary to sepecify a new path for the configuration file:**
 
     rover -f newdir/config
 
