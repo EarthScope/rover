@@ -18,7 +18,7 @@ def test_ingester():
         root = find_root()
         config = TestConfig(dir)
         ingester = Ingester(config)
-        ingester.run((join(root, 'tests', 'data', 'IU.ANMO.00-2010-02-27T06:30:00.000-2010-02-27T10:30:00.000.mseed'),))
+        ingester.run((join(root, 'tests', 'data', 'IU.ANMO.00-2010-02-27T06-30-00.000-2010-02-27T10-30-00.000.mseed'),))
         mseed_dir = config.arg(MSEEDDIR)
         assert_files(mseed_dir, 'IU')
         assert_files(join(mseed_dir, 'IU'), '2010')
