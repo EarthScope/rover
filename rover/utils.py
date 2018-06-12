@@ -95,8 +95,8 @@ def run(cmd, log, uncouple=False):
     else:
         process = Popen(cmd, shell=True)
         process.wait()
-    if process.returncode:
-        raise Exception('Command "%s" failed' % cmd)
+        if process.returncode:
+            raise Exception('Command "%s" failed' % cmd)
 
 
 def check_leap(enabled, expire, file, url, timeout, retries, log):
