@@ -150,3 +150,4 @@ class ProcessManager(SqliteSupport):
                 return 'The %s is running (process %d)' % (DAEMON, pid)
             except NoResult:
                 return 'The %s is not running' % DAEMON
+

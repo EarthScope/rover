@@ -235,7 +235,9 @@ will start the daemon without the web server.
     def __init__(self, config):
         self._bind_address = config.arg(HTTPBINDADDRESS)
         self._http_port = config.arg(HTTPPORT)
-        self._ppid = getppid()
+        self._ppid = ProcessManager(config).current_command()[0]
+        if not self._ppid:
+            raise Exception('Cannot start web server independently of retrieve / dameon')
         self._log = config.log
         self._log_path = config.log_path
         self._config = config
