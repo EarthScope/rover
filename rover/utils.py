@@ -96,6 +96,8 @@ def run(cmd, log, uncouple=False):
             # https://stackoverflow.com/questions/1196074/how-to-start-a-background-process-in-python/7224186
             # https://stackoverflow.com/questions/14797236/python-howto-launch-a-full-process-not-a-child-process-and-retrieve-the-pid
             creation_flags = 0x00000008 | 0x00000200
+        else:
+            cmd += ' &'
         process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
                         creationflags=creation_flags)
     else:

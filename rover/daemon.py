@@ -100,7 +100,7 @@ will start the daemon, processing subscriptions every 24 hours.
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % START)
-        run('%s %s -f %s &' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
+        run('%s %s -f %s' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
         self._log.info('The %s was started' % DAEMON)
         self.display_feedback()
 
