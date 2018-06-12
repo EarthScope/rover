@@ -74,3 +74,36 @@ machine (in the system python), but once you are using virtualenv you
 can run `python setup.py install` from inside `rover23` to install.
 To delete the install, remake the virtualenv.
 
+## Windows
+
+* Install git and clone the project:
+
+  * Install git.  In addition to git we will use `git bash` (all command
+    lines below).
+
+  * Configure ssh keys.
+
+  * Clone the repo.
+
+* Install Python and get virtualenv working:
+
+  * Install Python (including options for PATH).
+
+  * `pip install virtualenv` and update pip to latest version.
+
+  * Edit `dev/make-env3.sh` to use `virtualenv`.
+
+  * Run `dev/make-env3.sh` (ignore error on updating pip).
+
+  * Run `env3/Scripts/activate`
+
+  * The `rover` command is now installed and available.
+
+* Install mseedindex:
+
+  * Install Visual Studio (community edition is free).
+
+  * Clone mseedindex from github.
+
+  * This is as far as I got....
+

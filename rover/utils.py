@@ -91,7 +91,12 @@ def run(cmd, log, uncouple=False):
     """
     log.debug('Running "%s"' % cmd)
     if uncouple:
-        process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
+        creation_flags = 0
+        if windows():
+            # https://stackoverflow.com/questions/1196074/how-to-start-a-background-process-in-python/7224186
+            creation_flags = 0x00000008
+        process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
+                        creationflags=creation_flags)
     else:
         process = Popen(cmd, shell=True)
     process.wait()
@@ -437,7 +442,7 @@ def process_exists(pid):
     """
     Check whether the given PID exists.
     """
-    if name in('Windows', 'nt'):
+    if windows():
         # https://stackoverflow.com/questions/17620833/check-if-pid-exists-on-windows-with-python-without-requiring-libraries
         kernel32 = ctypes.windll.kernel32
         process = kernel32.OpenProcess(0x100000, 0, pid)
@@ -454,3 +459,8 @@ def process_exists(pid):
             return False
 
 
+def windows():
+    """
+    Are we running on windows?
+    """
+    return name in ('Windows', 'nt')
