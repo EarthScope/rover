@@ -91,12 +91,7 @@ def run(cmd, log, uncouple=False):
     """
     log.debug('Running "%s"' % cmd)
     if uncouple:
-        if windows():
-            process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True,
-                            start_new_session=True)
-        else:
-            cmd += ' &'
-            process = Popen(cmd, shell=True, stdin=None, stdout=None, stderr=None, close_fds=True)
+        process = Popen(cmd, shell=True, close_fds=True, start_new_session=True)
     else:
         process = Popen(cmd, shell=True)
         process.wait()
