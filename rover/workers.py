@@ -75,7 +75,7 @@ class Workers:
                 return
             sleep(0.1)
 
-    def _popen(self ,command):
+    def _popen(self, command):
         return Popen(command, shell=True)
 
 
