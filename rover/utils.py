@@ -437,7 +437,7 @@ def process_exists(pid):
     """
     Check whether the given PID exists.
     """
-    if name == 'Windows':
+    if name in('Windows', 'nt'):
         # https://stackoverflow.com/questions/17620833/check-if-pid-exists-on-windows-with-python-without-requiring-libraries
         kernel32 = ctypes.windll.kernel32
         process = kernel32.OpenProcess(0x100000, 0, pid)
