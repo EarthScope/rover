@@ -9,7 +9,7 @@ from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import run, check_cmd, check_leap, create_parents, touch, safe_unlink
+from .utils import run, check_cmd, check_leap, create_parents, touch, safe_unlink, windows
 
 """
 The 'rover ingest' command - copy downloaded data into the local store (and then call index).
@@ -99,8 +99,12 @@ will add all the data in the given file to the local store.
             safe_unlink(self._db_path)
         updated = set()
         try:
-            run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
-                % (self._leap_file, self._mseed_cmd, self._db_path, file), self._log)
+            if windows():
+                run('set LIBMSEED_LEAPSECOND_FILE=%s && %s -sqlite %s %s'
+                    % (self._leap_file, self._mseed_cmd, self._db_path, file), self._log)
+            else:
+                run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
+                    % (self._leap_file, self._mseed_cmd, self._db_path, file), self._log)
             with SqliteContext(self._db_path, self._log) as db:
                 rows = db.fetchall('''select network, station, starttime, endtime, byteoffset, bytes
                                   from tsindex order by byteoffset''')

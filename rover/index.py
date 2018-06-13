@@ -12,7 +12,7 @@ from .help import HelpFormatter
 from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .sqlite import SqliteSupport
-from .utils import format_epoch
+from .utils import format_epoch, windows
 from .utils import check_leap, check_cmd, STATION, NETWORK, CHANNEL, LOCATION
 from .workers import NoConflictPerDatabaseWorkers
 
@@ -94,10 +94,16 @@ will index the entire store.
         Run mseedindex asynchronously in a worker.
         """
         self._log.info('Indexing %s' % path)
-        self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
-                                        % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                           self._mseed_db, path),
-                                        path)
+        if windows():
+            self._workers.execute_with_lock('set LIBMSEED_LEAPSECOND_FILE=%s && %s %s -sqlite %s %s'
+                                            % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
+                                               self._mseed_db, path),
+                                            path)
+        else:
+            self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
+                                            % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
+                                               self._mseed_db, path),
+                                            path)
 
     def done(self):
         self._workers.wait_for_all()

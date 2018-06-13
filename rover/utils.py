@@ -43,7 +43,10 @@ def safe_unlink(path):
     Delete a file if it exists.
     """
     if exists(path):
-        unlink(path)
+        try:
+            unlink(path)
+        except PermissionError:
+            pass  # file still in use on windows
 
 
 def check_cmd(config, param, name):
