@@ -13,7 +13,7 @@ from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
 from .sqlite import SqliteSupport
 from .utils import utc, EPOCH_UTC, PushBackIterator, format_epoch, safe_unlink, unique_path, post_to_file, \
-    sort_file_inplace, parse_epoch, check_cmd
+    sort_file_inplace, parse_epoch, check_cmd, run, windows
 from .workers import Workers
 
 
@@ -641,10 +641,8 @@ class DownloadManager(SqliteSupport):
                                   source.n_retries, source.download_retries))
 
     def _start_web(self):
-        # don't use shell so PPID is us
-        cmd = self._rover_cmd.split(' ')
-        cmd.append(WEB)
-        cmd.extend(['-f', self._config_path])
-        cmd.extend([mm(VERBOSITY), '0'])
-        self._log.debug('Starting web: %s' % cmd)
-        Popen(cmd, shell=False, stdin=None, stdout=None, stderr=None, close_fds=True)
+        if windows():
+            cmd = 'pythonw -m rover %s -f %s %s 0' % (WEB, self._config_path, mm(VERBOSITY))
+        else:
+            cmd = '%s %s -f %s %s 0' % (self._rover_cmd, WEB, self._config_path, mm(VERBOSITY))
+        run(cmd, self._log, uncouple=True)
