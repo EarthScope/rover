@@ -82,8 +82,9 @@ class WindowsTemp:
     An ugly hack to work around problems with TemporaryDir on windows.
     """
 
-    def __init__(self, context):
+    def __init__(self, context, cleanup=True):
         self._context = context
+        self._cleanup = cleanup
         self._dir = "C:\\Users\\%s\\AppData\\Local\\Temp\\rover\\%d-%s" % (getuser(), time(), randint(1000, 9999))
 
     def __enter__(self):
@@ -97,6 +98,7 @@ class WindowsTemp:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if windows():
-            rmtree(self._dir, ignore_errors=True)
+            if self._cleanup:
+                rmtree(self._dir, ignore_errors=True)
         else:
             return self._context.__exit__(exc_type, exc_val, exc_tb)
