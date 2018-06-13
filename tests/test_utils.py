@@ -3,8 +3,10 @@ from fnmatch import fnmatch
 from getpass import getuser
 from os import listdir, makedirs
 from os.path import dirname, join, exists
+from random import randint
 from re import sub
 from shutil import rmtree
+from time import time
 
 import rover
 from rover.config import BaseConfig
@@ -79,7 +81,7 @@ class WindowsTemp:
 
     def __init__(self, context):
         self._context = context
-        self._dir = "C:\\Users\\%s\\AppData\\Local\\Temp\\rover" % getuser()
+        self._dir = "C:\\Users\\%s\\AppData\\Local\\Temp\\rover\\%d-%s" % (getuser(), time(), randint(1000, 9999))
 
     def __enter__(self):
         if windows():
