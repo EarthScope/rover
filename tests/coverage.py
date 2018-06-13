@@ -1,6 +1,8 @@
 from random import randint, seed
 from sys import version_info
 
+from test_utils import WindowsTemp
+
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
 else:
@@ -114,7 +116,7 @@ def run(log, tolerance,
 
 
 def test_coverage():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         log = init_log(dir, 10, 1, 5, 4, 'coverage', False, 1)[0]
         run(log, 0.5, 2, 1, -1, 3, 2, 0, ((2,3),))
         run(log, 0.5, 2, 1, -1, 3, 2, 1, ((5,6),))

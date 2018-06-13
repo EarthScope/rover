@@ -141,8 +141,8 @@ def test_CONFIGDIR_start():
 
 
 def test_CONFIGDIR_middle():
-    if not windows():
-        with TemporaryDirectory as dir:
+    if not windows():  # gets confused over messed up path
+        with WindowsTemp(TemporaryDirectory) as dir:
             dir = canonify(dir)
             config = join(dir, '.rover')
             with open(config, 'w') as output:

@@ -16,12 +16,12 @@ else:
     from backports.tempfile import TemporaryDirectory
 
 from rover.index import Indexer
-from .test_utils import find_root, ingest_and_index
+from .test_utils import find_root, ingest_and_index, WindowsTemp
 
 
 def test_ingest_and_index():
     root = find_root()
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]
         assert n == 36, n
@@ -29,7 +29,7 @@ def test_ingest_and_index():
 
 def test_deleted_file():
     root = find_root()
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
         unlink(join(config.arg(MSEEDDIR), 'IU', '2010', '058', 'ANMO.IU.2010.058'))
         indexer = Indexer(config)
@@ -55,21 +55,21 @@ def assert_bad_args(dir, args, msg):
 
 
 def test_bad_begin():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         assert_bad_args(dir, ['begin=2010-1'], 'Poorly formed time "2010-1"')
 
 
 def test_ambiguous():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         assert_bad_args(dir, ['s=foo'], 'Ambiguous parameter: s')
 
 
 def test_two_flags():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         assert_bad_args(dir, ['count', 'join'], 'Cannot specify multiple keys')
 
 
 def test_count():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         n = run_list_index(dir, ['count'])
         assert int(n) == 36, n

@@ -10,11 +10,11 @@ else:
     from backports.tempfile import TemporaryDirectory
 
 from rover.ingest import Ingester
-from .test_utils import find_root, assert_files, TestConfig
+from .test_utils import find_root, assert_files, TestConfig, WindowsTemp
 
 
 def test_ingester():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         root = find_root()
         config = TestConfig(dir)
         ingester = Ingester(config)
