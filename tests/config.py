@@ -9,7 +9,7 @@ else:
 
 from rover.config import BaseConfig
 from rover.args import Arguments, TEMPDIR, MSEEDDIR, FILE
-from rover.utils import canonify
+from rover.utils import canonify, windows
 
 from .test_utils import WindowsTemp
 
@@ -126,7 +126,7 @@ def test_multiple_flags():
 
 
 def test_CONFIGDIR_start():
-      with WindowsTemp(TemporaryDirectory) as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         config = join(dir, '.rover')
         with open(config, 'w') as output:
             output.write('temp-dir=${CONFIGDIR}/foo\n')
@@ -141,23 +141,24 @@ def test_CONFIGDIR_start():
 
 
 def test_CONFIGDIR_middle():
-      with WindowsTemp(TemporaryDirectory) as dir:
-        dir = canonify(dir)
-        config = join(dir, '.rover')
-        with open(config, 'w') as output:
-            output.write('temp-dir=xx${CONFIGDIR}/foo\n')
-            output.write('mseed-dir=xx$${CONFIGDIR}/foo\n')
-        argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, None, args, None, configdir)
-        assert config.dir(TEMPDIR)
-        assert config.dir(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir(TEMPDIR)
-        assert config.dir(MSEEDDIR)
-        assert config.dir(MSEEDDIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir(MSEEDDIR)
+    if not windows():
+        with TemporaryDirectory as dir:
+            dir = canonify(dir)
+            config = join(dir, '.rover')
+            with open(config, 'w') as output:
+                output.write('temp-dir=xx${CONFIGDIR}/foo\n')
+                output.write('mseed-dir=xx$${CONFIGDIR}/foo\n')
+            argparse = Arguments()
+            args, configdir = argparse.parse_args(['-f', config])
+            config = BaseConfig(None, None, args, None, configdir)
+            assert config.dir(TEMPDIR)
+            assert config.dir(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir(TEMPDIR)
+            assert config.dir(MSEEDDIR)
+            assert config.dir(MSEEDDIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir(MSEEDDIR)
 
 
 def test_CONFIGDIR_bad():
-      with WindowsTemp(TemporaryDirectory) as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         config = join(dir, '.rover')
         with open(config, 'w') as output:
             output.write('temp-dir=${FOO}\n')
