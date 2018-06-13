@@ -12,6 +12,8 @@ else:
 from rover.logs import init_log
 from rover.args import DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
 
+from .test_utils import WindowsTemp
+
 
 def log_all(log):
     log.debug('debug')
@@ -26,7 +28,7 @@ def remove_timestamp(text):
 
 def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
 
         logdir = join(dir, '.rover')
         stderr = StringIO()

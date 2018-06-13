@@ -2,19 +2,20 @@
 from os.path import join
 from sys import version_info
 
-from rover.config import BaseConfig
-
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
 else:
     from backports.tempfile import TemporaryDirectory
 
+from rover.config import BaseConfig
 from rover.args import Arguments, TEMPDIR, MSEEDDIR, FILE
 from rover.utils import canonify
 
+from .test_utils import WindowsTemp
+
 
 def test_write_config():
-    with TemporaryDirectory() as dir:
+    with WindowsTemp(TemporaryDirectory) as dir:
         path = join(dir, '.rover')
         argparse = Arguments()
         args, configdir = argparse.parse_args(['-f', path])
