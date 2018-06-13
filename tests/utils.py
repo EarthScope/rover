@@ -2,8 +2,6 @@
 from os.path import join, exists
 from sys import version_info
 
-from test_utils import WindowsTemp
-
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
 else:
@@ -12,6 +10,8 @@ else:
 from rover.args import DEFAULT_LEAPURL, DEFAULT_LEAPEXPIRE, DEFAULT_HTTPTIMEOUT, DEFAULT_HTTPRETRIES
 from rover.logs import init_log
 from rover.utils import check_leap
+
+from .test_utils import WindowsTemp
 
 
 def test_download_leap():

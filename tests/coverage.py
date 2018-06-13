@@ -1,8 +1,6 @@
 from random import randint, seed
 from sys import version_info
 
-from test_utils import WindowsTemp
-
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
 else:
@@ -11,6 +9,8 @@ else:
 from rover.logs import init_log
 from rover.coverage import Coverage
 from rover.utils import format_epoch, parse_epoch
+
+from .test_utils import WindowsTemp
 
 
 def loop_date(d1, known=None):
