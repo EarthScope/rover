@@ -78,6 +78,9 @@ def ingest_and_index(dir, data, **opts):
 
 
 class WindowsTemp:
+    """
+    An ugly hack to work around problems with TemporaryDir on windows.
+    """
 
     def __init__(self, context):
         self._context = context
