@@ -126,7 +126,7 @@ def test_multiple_flags():
 
 
 def test_CONFIGDIR_start():
-      with TemporaryDirectory() as dir:
+      with WindowsTemp(TemporaryDirectory) as dir:
         config = join(dir, '.rover')
         with open(config, 'w') as output:
             output.write('temp-dir=${CONFIGDIR}/foo\n')
@@ -141,7 +141,7 @@ def test_CONFIGDIR_start():
 
 
 def test_CONFIGDIR_middle():
-      with TemporaryDirectory() as dir:
+      with WindowsTemp(TemporaryDirectory) as dir:
         dir = canonify(dir)
         config = join(dir, '.rover')
         with open(config, 'w') as output:
@@ -157,7 +157,7 @@ def test_CONFIGDIR_middle():
 
 
 def test_CONFIGDIR_bad():
-      with TemporaryDirectory() as dir:
+      with WindowsTemp(TemporaryDirectory) as dir:
         config = join(dir, '.rover')
         with open(config, 'w') as output:
             output.write('temp-dir=${FOO}\n')

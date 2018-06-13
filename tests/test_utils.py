@@ -79,19 +79,19 @@ class WindowsTemp:
 
     def __init__(self, context):
         self._context = context
+        self._dir = "C:\\Users\\%s\\AppData\\Local\\Temp\\rover" % getuser()
 
     def __enter__(self):
         if windows():
-            dir = "C:\\Users\\%s\\AppData\\Local\\Temp\\rover" % getuser()
-            if not exists(dir):
-                makedirs(dir)
-            return dir
+            if not exists(self._dir):
+                makedirs(self._dir)
+            return self._dir
         else:
             self._context = self._context()
             return self._context.__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if windows():
-            rmtree(dir, ignore_errors=True)
+            rmtree(self._dir, ignore_errors=True)
         else:
             return self._context.__exit__(exc_type, exc_val, exc_tb)
