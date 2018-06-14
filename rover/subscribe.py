@@ -107,14 +107,14 @@ dates that are missing from the local store.
 
     def run(self, args):
         # input is a temp file as we prepend parameters
-        path = unique_path(self._subscriptions_dir, SUBSCRIBEFILE, args[0])
-        if len(args) == 1:
-            copyfile(args[0], path)
-        else:
-            try:
+        try:
+            path = unique_path(self._subscriptions_dir, SUBSCRIBEFILE, args[0])
+            if len(args) == 1:
+                copyfile(args[0], path)
+            else:
                 build_file(path, args)
-            except:
-                raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % SUBSCRIBE)
+        except:
+            raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % SUBSCRIBE)
         if self._force_request:
             self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in store' % (mm(FORCEREQUEST)))
         else:

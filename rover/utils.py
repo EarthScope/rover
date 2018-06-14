@@ -6,7 +6,7 @@ from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink, kill, name
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
-from re import match
+from re import match, sub
 from shutil import move
 from subprocess import Popen, check_output, STDOUT
 
@@ -55,6 +55,9 @@ def check_cmd(config, param, name):
     """
     from .args import FORCECMD
     value = config.arg(param)
+    if windows() and '/' in value:
+        config.log.warn('Replacing slashes with back-slashes in "%s"' % value)
+        value = sub(r'/', '\\', value)
     if not config.arg(FORCECMD):
         cmd = '%s -h' % value
         try:

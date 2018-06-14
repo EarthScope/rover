@@ -31,8 +31,8 @@ class Reporter:
         self._email_from = config.arg(EMAILFROM)
         self._smtp_address = config.arg(SMTPADDRESS)
         self._smtp_port = config.arg(SMTPPORT)
-        self._log = config.log
         self._recheck_period = config.arg(RECHECKPERIOD)
+        self._log = config.log
 
     def send_email(self, subject, msg):
         """
