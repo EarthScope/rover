@@ -1,4 +1,4 @@
-del /q env3
+rmdir /q /s env3
 virtualenv env3
 call env3\Scripts\Activate.bat
 pip install --upgrade pip
