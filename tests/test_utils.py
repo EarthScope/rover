@@ -46,6 +46,7 @@ class TestConfig(BaseConfig):
         kargs[_(MSEEDINDEXCMD)] = join(root, '..', 'mseedindex', 'mseedindex')
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
+        self.command = args.command
         log, log_path = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
         dbpath = join(canonify(args.mseed_dir), 'index.sql')
         create_parents(dbpath)

@@ -9,6 +9,7 @@ from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from re import match, sub
 from shutil import move
 from subprocess import Popen, check_output, STDOUT
+from sys import version_info
 
 from requests import get, post, Session
 from requests.adapters import HTTPAdapter
@@ -97,7 +98,10 @@ def run(cmd, log, uncouple=False):
     """
     log.debug('Running "%s"' % cmd)
     if uncouple:
-        process = Popen(cmd, shell=True, close_fds=True, start_new_session=True)
+        if version_info[0] >= 3:
+            Popen(cmd, shell=True, close_fds=True, start_new_session=True)
+        else:
+            Popen(cmd, shell=True, close_fds=True)
     else:
         process = Popen(cmd, shell=True)
         process.wait()

@@ -1,5 +1,4 @@
 
-from os import getppid
 from os.path import exists
 from sqlite3 import OperationalError
 from threading import Thread
