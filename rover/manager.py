@@ -117,7 +117,7 @@ class Retrieval:
             # we only pass arguments on the command line that are different from the
             # default (which is in the file)
             if windows():
-                command = 'pythonw -m rover  %s %s "%s"' % (config_path, DOWNLOAD, url)
+                command = 'pythonw -m rover -f %s %s "%s"' % (config_path, DOWNLOAD, url)
             else:
                 command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, url)
         self._log.debug(command)
