@@ -318,6 +318,8 @@ printed to stdout.
                     raise Exception('Ambiguous parameter: %s' % name)
                 else:
                     found = key
+        if not found:
+            raise Exception('Did not recognise "%s"' % value)
         self._multiple_constraints[found].append(value)
 
     def _build_query(self):
