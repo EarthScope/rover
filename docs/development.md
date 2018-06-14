@@ -55,6 +55,7 @@ appropriate virtualenvs for testing, then create new virtualenvs
 
     dev/run-all-nose-tests.sh
     dev/run-all-robot-tests.sh
+    dev/run-all-tests.sh
 
 ## Generating Installable Code
 
@@ -78,26 +79,31 @@ To delete the install, remake the virtualenv.
 
 * Install git and clone the project:
 
-  * Install git.  In addition to git we will use `git bash` (all command
-    lines below).
+  * Install git.
 
-  * Configure ssh keys.
+  * Configure ssh keys (openssh is available in git bash).
 
   * Clone the repo.
 
-* Install Python and get virtualenv working:
+* Install Python 3 and get virtualenv working:
 
   * Install Python (including options for PATH).
 
   * `pip install virtualenv` and update pip to latest version.
 
-  * Edit `dev/make-env3.sh` to use `virtualenv`.
+  * Run `dev\make-env3.bat` to create the environment.
 
-  * Run `dev/make-env3.sh` (ignore error on updating pip).
-
-  * Run `env3/Scripts/activate`
+  * Run `env3\Scripts\Activate.bat` to activate the environment.
 
   * The `rover` command is now installed and available.
+
+* Install Python 2:
+
+  * Install Python (no options for path - it's placed in C:\Python27)
+
+  * Run `dev\make-env2.bat` to create the environment.
+
+  * Run `env2\Scripts\Activate.bat` to activate the environment,
 
 * Install mseedindex:
 
@@ -105,5 +111,13 @@ To delete the install, remake the virtualenv.
 
   * Clone mseedindex from github.
 
-  * This is as far as I got....
+  * Compile mseedindex (no need for sqlite install - see mseedindex
+    docs)
+
+* You can now install and run rover:
+
+  * See other batch scripts in dev. 
+
+  * You will need to configure rover as normal to find mseedindex.
+
 

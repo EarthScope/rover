@@ -351,21 +351,17 @@ def format_time_epoch_local(epoch):
 
 def parse_epoch(date):
     """
-    Parse a date in the standard format.
+    Parse a date in the standard formats
     """
     if date.endswith('Z'):
         date = date[:-1]
-    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
-    return (dt - EPOCH).total_seconds()
-
-
-def parse_short_epoch(date):
-    """
-    Parse a date without fractional seconds.
-    """
-    if date.endswith('Z'):
-        date = date[:-1]
-    dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+    try:
+        dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
+    except ValueError:
+        try:
+            dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+        except ValueError:
+            dt = datetime.datetime.strptime(date, '%Y-%m-%d')
     return (dt - EPOCH).total_seconds()
 
 

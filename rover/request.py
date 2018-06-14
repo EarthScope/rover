@@ -4,8 +4,7 @@ from functools import reduce
 from re import sub, compile
 
 from .args import mm, FORCEREQUEST
-from .utils import parse_short_epoch
-
+from .utils import parse_epoch
 
 """
 Comparison of requests to check for overlap.
@@ -69,8 +68,8 @@ def overlapping_pair(pair1, pair2):
     # if they're both lower bounds, they must overlap
     if len(pair1) == 1 and len(pair2) == 1:
         return True
-    pair1 = list(map(parse_short_epoch, pair1))
-    pair2 = list(map(parse_short_epoch, pair2))
+    pair1 = list(map(parse_epoch, pair1))
+    pair2 = list(map(parse_epoch, pair2))
     # dates1 is a range
     if len(pair1) == 2:
         # dates2 is a lower bound?

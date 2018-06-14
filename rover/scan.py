@@ -6,8 +6,7 @@ from sqlite3 import OperationalError
 
 from .args import MSEEDDIR, ALL, RECURSE
 from .sqlite import SqliteSupport
-from .utils import canonify, lastmod, parse_short_epoch, PushBackIterator, in_memory, canonify_dir_and_make
-
+from .utils import canonify, lastmod, PushBackIterator, in_memory, parse_epoch
 
 """
 Iterators over files on the file system, or in the database, and - building
@@ -144,7 +143,7 @@ class ModifiedScanner(SqliteSupport):
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:
-                dbepoch = parse_short_epoch(dblastmod) + 1   # add one because it's rounded down
+                dbepoch = parse_epoch(dblastmod) + 1   # add one because it's rounded down
                 if self._all or lastmod(fspath) > dbepoch:
                     self.process(fspath)
 
