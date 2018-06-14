@@ -120,4 +120,6 @@ To delete the install, remake the virtualenv.
 
   * You will need to configure rover as normal to find mseedindex.
 
+Note that on Windows we ignore the `rover-cmd` parameter because we
+must use `pythonw` for sub-processes.
 
