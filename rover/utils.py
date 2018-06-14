@@ -57,7 +57,7 @@ def check_cmd(config, param, name):
     value = config.arg(param)
     if windows() and '/' in value:
         config.log.warn('Replacing slashes with back-slashes in "%s"' % value)
-        value = sub(r'/', '\\', value)
+        value = sub(r'/', r'\\', value)
     if not config.arg(FORCECMD):
         cmd = '%s -h' % value
         try:
