@@ -32,13 +32,13 @@ Create a virtualenv for Python 3 development (you may need to alter
 the script details slightly depending on your python version):
 
     cd rover
-    dev/make-env-py3.sh
+    dev/make-env3.sh
     source env3/bin/activate
 
 You can now edit the source.  To test your changes:
 
-    dev/run-nose-tests-py3-on-py3.sh
-    dev/run-robot-tests-py3-on-py3.sh
+    dev/run-nose-tests-py3-in-py3.sh
+    dev/run-robot-tests-py3-in-py3.sh
 
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
