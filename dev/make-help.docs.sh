@@ -14,7 +14,7 @@ The parameter names are the same in both cases.
 The default location for the configuration file is \`~/rover/config\`
 (the file \`config\` in the \`rover\` directory located in the user's home
 directory).  This file is generated when Rover is first used and can
-be reset with \`rover reset-config\`.
+be reset with \`rover make-config\`.
 
 If a file in a different location is used, the location can be given
 with \`-f\` or \`--file\` on the command line:
