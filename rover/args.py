@@ -289,7 +289,7 @@ class Arguments(ArgumentParser):
             args = sys.argv[1:]
         args = self.__preprocess_booleans(args)
         config, args = self.__extract_config(args)
-        if not exists(config):
+        if not exists(config) and WRITE_CONFIG not in args:
             self.write_config(config, None)
         args = self.__patch_config(args, config)
         return super().parse_args(args=args, namespace=namespace), dirname(config)
