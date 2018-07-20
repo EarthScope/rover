@@ -14,6 +14,8 @@ from .utils import create_parents, canonify, check_cmd
 Command line / file configuration parameters.
 """
 
+ROVER_VERSION = '0.0.0'
+
 
 # commands
 DAEMON = 'daemon'
@@ -87,7 +89,8 @@ SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
 TIMESPANTOL = 'timespan-tol'
-V, VERBOSITY = 'v', 'verbosity'
+VERBOSITY = 'verbosity'
+V, VERSION = 'v', 'version'
 
 
 # default values (for non-boolean parameters)
@@ -204,6 +207,8 @@ class Arguments(ArgumentParser):
                          Defaults are read from the configuration file (%s).
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
+
+        self.add_argument(m(V), mm(VERSION), action='version', version='rover %s' % ROVER_VERSION)
 
         # operation details
         self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
@@ -351,7 +356,7 @@ class Arguments(ArgumentParser):
         with open(path, 'w') as out:
             for action in self._actions:
                 name, default = action.dest, action.default
-                if name not in (HELP, FILE):
+                if name not in (HELP, FILE, VERSION):
                     if default is not None:
                         if name in kargs:
                             value = kargs[name]

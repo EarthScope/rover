@@ -75,6 +75,14 @@ machine (in the system python), but once you are using virtualenv you
 can run `python setup.py install` from inside `rover23` to install.
 To delete the install, remake the virtualenv.
 
+When making a new release:
+
+    dev/new-version.sh X.Y.Z
+
+where X.Y.Z is the new version number.  This will set the version in
+the source, tag the version in git, and build a suitably named tarball
+in the `roverdev` directory.
+
 ## Windows
 
 * Install git and clone the project:
