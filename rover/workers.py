@@ -82,7 +82,7 @@ class Workers:
 class NoConflictPerProcessWorkers(Workers):
     """
     Extend the above to block attempts to have two processes for the same key
-    (typically SNCL and day, or the path to the file in the store).  This avoid
+    (typically N_S_L_C and day, or the path to the file in the store).  This avoid
     simultaneous modification of the file by multiple processes without using file
     locking (which is has problems with NFS, isn't great cross-platform, and used
     to cause issues with "compact" when we re-wrote files).

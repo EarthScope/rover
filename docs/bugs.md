@@ -6,16 +6,17 @@
 MSEED files can contain data at multiple qualities and sampling
 frequencies.  When `rover retrieve` uses the index to assess what data
 already exist it uses the *maximal* range across all qualities and
-sampling frequencies.  So if N.S.L.C has 20Hz data from 06:00 to 10:00
+sampling frequencies.  So if N_S_L_C has 20Hz data from 06:00 to 10:00
 hours, but 10Hz data only from 08:00 to 09:00 then `rover retrieve`
 will assume all data exist from 08:00 to 10:00 hours.  Any "missing"
 10Hz data will never be downloaded.
 
 Also, when calculating differences between timespans of available data
-and local data for a particular SNCL, differences are only considered
-significant if they exceed the minimum sample time (multiplied by
-`--timespan-tol`, which by default is 1.5).  So if a SNCL contains
-20Hz and 1Hz data a significant gap in the 20Hz data my go undetected.
+and local data for a particular N_S_L_C, differences are only
+considered significant if they exceed the minimum sample time
+(multiplied by `--timespan-tol`, which by default is 1.5).  So if a
+N_S_L_C contains 20Hz and 1Hz data a significant gap in the 20Hz data
+my go undetected.
 
 ## Handling Of Duplicate Data
 

@@ -3,18 +3,18 @@ from .utils import PushBackIterator, format_epoch
 
 
 """
-Interface to the SNCL / timespan data in tsindex - how much data do we have
+Interface to the N_S_L_C / timespan data in tsindex - how much data do we have
 for particular channels?
 """
 
 
 class Coverage:
     """
-    The data coverage (timespans) with the index for a given sncl.
+    The data coverage (timespans) with the index for a given N_S_L_C.
 
-    This includes the logic to merge timespans.  The sncl parameter is
+    This includes the logic to merge timespans.  The N_S_L_C parameter is
     a free string (or arbitrary object) and so this class can be used
-    for SNCLS, SNCL + sampling rate, etc.
+    for N_S_L_C, N_S_L_C + sampling rate, etc.
     """
 
     def __init__(self, log, frac_tolerance, sncl):
@@ -33,7 +33,7 @@ class Coverage:
 
     def add_epochs(self, begin, end, samplerate=None):
         """
-        Add a timesspan to those that already exist, merging if necessary.
+        Add a timespan to those that already exist, merging if necessary.
 
         IMPORTANT: This assumes that the timestamps are added ordered
         by increasing start time - see builders that guarantee that.
@@ -63,7 +63,7 @@ class Coverage:
                         else:
                             joined.append((begin, end))
                 else:
-                    self._log.debug('Disarding %d-%d (too small)' % (begin, end))
+                    self._log.debug('Discarding %d-%d (too small)' % (begin, end))
             self.timespans = joined
 
     def __str__(self):
@@ -186,7 +186,7 @@ class BaseBuilder:
 
 class SingleSNCLBuilder(BaseBuilder):
     """
-    Sort the timestamp information before creating the coverage (for a single SNCL)
+    Sort the timestamp information before creating the coverage (for a single N_S_C_C)
 
     The mseedindex schema design makes it difficult to sort this information in SQL.
     """
@@ -209,7 +209,7 @@ class SingleSNCLBuilder(BaseBuilder):
 
 class MultipleSNCLBuilder(BaseBuilder):
     """
-    Sort the teimstamp information before creating the coverage (for multiple SNCLSs).
+    Sort the teimstamp information before creating the coverage (for multiple N_S_L_Cs).
 
     The mseedindex schema design makes it difficult to sort this information in SQL.
     """

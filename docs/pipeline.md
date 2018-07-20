@@ -17,17 +17,17 @@ When the `rover retrieve` command is used, the following steps are taken:
     to see what timespans are missing.  Again, this work is done by
     the `retrieve` command.
 
-* **Chunking** - Required timespans are split and arranged by SNCL and
-    day.  This work is done by the Download Manager as part of the
+* **Chunking** - Required timespans are split and arranged by N_S_L_C
+    and day.  This work is done by the Download Manager as part of the
     `retrieve` command.
 
 * **Separate Processes** - The following steps are done in a separate
     process for each download.  This reduces the damage that any error
     can have on the retieval as a whole.
 
-  * **Download** - A day's data for a particular SNCL are downloaded
-    from the Data Select service.  This is done by the `rover
-    download` command.
+  * **Download** - A day's data for a particular N_S_L_C are
+    downloaded from the Data Select service.  This is done by the
+    `rover download` command.
 
   * **Indexing for Ingest** - The `mseedindex` command is used to
     index the downloaded data.  This is done by `rover ingest`.  This

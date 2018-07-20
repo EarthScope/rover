@@ -13,7 +13,7 @@ Comparison of requests to check for overlap.
 
 def parse_request(path, regexp_only):
     """
-    Read the request into memory, extracting the SNCL and date data.
+    Read the request into memory, extracting the N_S_L_C and date data.
     """
     lines = []   # in-memory rather than a generator because we need to sort manually
     with open(path, 'r') as input:
@@ -46,7 +46,7 @@ def parse_request(path, regexp_only):
 
 def unique(input):
     """
-    If the same SNCL occurs twice, merge the dates into a single entry.
+    If the same N_S_L_C occurs twice, merge the dates into a single entry.
     Needed for the fast comparison (of sorted files) to work correctly.
     """
     output = []

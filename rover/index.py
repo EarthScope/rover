@@ -132,10 +132,10 @@ List index entries for the local store (config parameter mseed-dir) that match t
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
-#### SNCLQ and Samplerate
+#### Net_Sta_Chan_Loc_Qual and Samplerate
 
 Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations
-are accepted.  Alternatively, a SNCLQ can be supplied (which can be truncated on the right, but must contain at least
+are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least
 one underscore).
 
 The wildcards '*' and '?' can be used.
@@ -288,7 +288,7 @@ printed to stdout.
     def _set_snclq(self, snclq):
         components = snclq.split('_')
         if len(components) < 2 or len(components) > 5:
-            raise Exception('Cannot parse %s (expect 2 to 5 values separated by "_" for SNCLQ)' % snclq)
+            raise Exception('Cannot parse %s (expect 2 to 5 values separated by "_" for N_S_L_C_Q)' % snclq)
         self._set_name_value(NETWORK, components[0])
         self._set_name_value(STATION, components[1])
         if len(components) > 2: self._set_name_value(LOCATION, components[2])

@@ -35,7 +35,7 @@
 
 Compare available data with the local store, then download, ingest and index data.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
+The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
 
 In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed containing that data.
 
@@ -93,9 +93,9 @@ In addition, parameters for sub-commands (download, ingest, index) will be used 
 
 ##### Examples
 
-    rover retrieve sncls.txt
+    rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the local store for SNCLs / timespans present in the given file.
+will download, ingest, and index any data missing from the local store for N_S_L_Cs / timespans present in the given file.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
@@ -110,7 +110,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
 
 Display what data would be downloaded if the `retrieve` equivalent command was run.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a (single-line) file will be automatically constructed containing that data.
+The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_S_L_C and timespan are given, a (single-line) file will be automatically constructed containing that data.
 
 ##### Significant Parameters
 
@@ -125,7 +125,7 @@ The file argument should contain a list of SNCLs and timespans, as appropriate f
 
 ##### Examples
 
-    rover list-retrieve sncls.txt
+    rover list-retrieve N_S_L_C.txt
 
 will display the data missing form the local store to match what is available for the stations in the given file.
 
@@ -146,9 +146,9 @@ List index entries for the local store (config parameter mseed-dir) that match t
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
-#### SNCLQ and Samplerate
+#### Net_Sta_Chan_Loc_Qual and Samplerate
 
-Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternatively, a SNCLQ can be supplied (which can be truncated on the right, but must contain at least one underscore).
+Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least one underscore).
 
 The wildcards '*' and '?' can be used.
 
@@ -197,9 +197,9 @@ List summary entries for the local store (config parameter mseed-dir) that match
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
-#### SNCL
+#### Net_Sta_Loc_Chan
 
-Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternatively, a SNCL can be supplied (which can be truncated on the right, but must contain at least one underscore).
+Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least one underscore).
 
 The wildcards '*' and '?' can be used.
 
@@ -264,7 +264,7 @@ Arrange for the background service (daemon) to regularly compare available data 
 
 This is similar to `rover retrieve`, but uses a background service to regularly update the store.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
+The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
 
 In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed containing that data.
 
@@ -289,9 +289,9 @@ Most of the download process is controlled by the parameters provided when start
 
 ##### Examples
 
-    rover subscribe sncls.txt
+    rover subscribe N_S_L_C.txt
 
-will instruct the daemon to regularly download, ingest, and index any data missing from the local store for SNCLS / timespans in the given file.
+will instruct the daemon to regularly download, ingest, and index any data missing from the local store for NSLCs / timespans in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
@@ -561,7 +561,7 @@ will index the entire store.
 
     rover summary
 
-Create a summary of the index in the database.  This lists the overall span of data for each SNCL and can be queries using `rover list-summary`.
+Create a summary of the index in the database.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queries using `rover list-summary`.
 
 ##### Significant Parameters
 

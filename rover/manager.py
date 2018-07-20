@@ -512,9 +512,9 @@ class DownloadManager(SqliteSupport):
             if name != DEFAULT_NAME:
                 if source_sncls:
                     print()
-                print('  %s: %d SNCLSs; %4.2f sec' % (name, source_sncls, source_seconds))
+                print('  %s: %d N_S_L_C; %4.2f sec' % (name, source_sncls, source_seconds))
                 print()
-        print('  Total: %d SNCLSs; %4.2f sec' % (total_sncls, total_seconds))
+        print('  Total: %d N_S_L_C; %4.2f sec' % (total_sncls, total_seconds))
         print()
         return total_sncls
 

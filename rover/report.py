@@ -77,7 +77,7 @@ class Reporter:
 A rover %s task on %s started %s 
 (%s local) has completed.
 
-The task comprised of %d SNCLs with data covering %ds.
+The task comprised of %d N_S_L_Cs with data covering %ds.
 
 A total of %d downloads were made, with %d errors (%d on
 final download of %d).
@@ -114,7 +114,7 @@ check
         msg = '''
 Subscription %s has been processed by the rover %s on %s.
 
-The task comprised of %d SNCLs with data covering %ds.
+The task comprised of %d N_S_L_Cs with data covering %ds.
 
 A total of %d downloads were made, with %d errors (%d on
 final download of %d).

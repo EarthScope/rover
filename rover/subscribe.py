@@ -38,7 +38,7 @@ download, ingest and index any new data.
 This is similar to `rover retrieve`, but uses a background service to regularly update the store.  To
 start the service use `rover start`.  See also `rover status` and `rover stop`.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
+The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
 service (eg http://service.iris.edu/irisws/availability/1/).
 
 In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
@@ -68,10 +68,10 @@ Most of the download process is controlled by the parameters provided when start
 
 ##### Examples
 
-    rover subscribe sncls.txt
+    rover subscribe N_S_L_C.txt
 
 will instruct the daemon to regularly download, ingest, and index any data missing from the local store for
-SNCLS / timespans in the given file.
+NSLCs / timespans in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
@@ -114,7 +114,7 @@ dates that are missing from the local store.
             else:
                 build_file(path, args)
         except:
-            raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % SUBSCRIBE)
+            raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % SUBSCRIBE)
         if self._force_request:
             self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in store' % (mm(FORCEREQUEST)))
         else:

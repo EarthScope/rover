@@ -63,14 +63,14 @@ def usage(config):
     return '''
                     Common Rover Commands
                     
-rover %s (file | sta=... [start [end]] | sncl [start [end]])
+rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Compare the local index with the data available remotely 
   (config parameter %s), then download (config parameter 
   %s) and ingest the missing files.  Use %s (below) to
   see what data would be downloaded (without doing the work).
   
-rover %s (file | sta=... [start [end]] | sncl [start [end]])
+rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Compare the local index with the data available remotely 
   (config parameter %s), then display the difference.  
@@ -115,7 +115,7 @@ rover %s
 
   Display the status of, and stop, the background process.
                    
-rover %s (file | sta=... [start [end]] | sncl [start [end]])
+rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Subscribe to retrieve updates whenever they become available.
   This has the same syntax as `rover %s`, but runs regularly in

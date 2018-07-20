@@ -41,7 +41,7 @@ class BaseRetriever(SqliteSupport, UserFeedback):
 
 Compare available data with the local store, then download, ingest and index data.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
+The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
 service (eg http://service.iris.edu/irisws/availability/1/).
 
 In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
@@ -107,9 +107,9 @@ commands for more details.
 
 ##### Examples
 
-    rover retrieve sncls.txt
+    rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the local store for SNCLs / timespans present in the given file.
+will download, ingest, and index any data missing from the local store for N_S_L_Cs / timespans present in the given file.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
@@ -140,7 +140,7 @@ store.
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
-        usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | sncl [begin [end]])' % command
+        usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % command
         if not args:
             raise Exception(usage)
         # input is a temp file as we prepend parameters
@@ -220,8 +220,8 @@ class ListRetriever(BaseRetriever):
 
 Display what data would be downloaded if the `retrieve` equivalent command was run.
 
-The file argument should contain a list of SNCLs and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SNCL and timespan are given, a
+The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
+service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_S_L_C and timespan are given, a
 (single-line) file will be automatically constructed containing that data.
 
 ##### Significant Parameters
@@ -235,7 +235,7 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a SN
 
 ##### Examples
 
-    rover list-retrieve sncls.txt
+    rover list-retrieve N_S_L_C.txt
 
 will display the data missing form the local store to match what is available for the stations in the given file.
 

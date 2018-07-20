@@ -141,7 +141,7 @@ Last active: %s (%s local)</pre></p>''' %
                                                n_retries, download_retries
                                           from rover_download_stats where submission = ?''', (name,))
             self._write('<p>Progress for download attempt %d of %d:<pre>\n' % (n_retries, download_retries))
-            self._write_bar('SNCLs', initial_coverages, remaining_coverages)
+            self._write_bar('N_S_L_Cs', initial_coverages, remaining_coverages)
             self._write_bar('timespan', initial_time, remaining_time)
             self._write('</pre></p>')
         except NoResult:
@@ -172,7 +172,7 @@ Last active: %s (%s local)</pre></p>''' %
 <h2>Notes</h2>
 <ul>
 <li>Progress values are based on data still to be downloaded; they do not include data within the pipeline.</li>
-<li>The SNCL statistic is the number of distinct SNCLs that will be requested.</li>
+<li>The N_S_L_C statistic is the number of distinct Net_Sta_Loc_Chan that will be requested.</li>
 <li>The timespan statistic is the total time (s) covered by the data in the downloads.</li>
 <li>Firefox will not open file:// URLs, but you can copy them to the address bar, where they will work.</li>
 </ul>

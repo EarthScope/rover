@@ -24,8 +24,8 @@ class Summarizer(SqliteSupport):
 
     rover summary
 
-Create a summary of the index in the database.  This lists the overall span of data for each SNCL and can
-be queries using `rover list-summary`.
+Create a summary of the index in the database.  This lists the overall span of data for each Net_Sta_Loc_Chan
+and can be queries using `rover list-summary`.
 
 ##### Significant Parameters
 
@@ -76,10 +76,10 @@ Because of this the `list-summary` command runs more quickly, but shows less inf
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
-#### SNCL
+#### Net_Sta_Loc_Chan
 
 Query parameters can be named (network, station, location, channel) and unambiguous abbreviations
-are accepted.  Alternatively, a SNCL can be supplied (which can be truncated on the right, but must contain at least
+are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least
 one underscore).
 
 The wildcards '*' and '?' can be used.
@@ -149,7 +149,7 @@ will list all entries in the summary after the year 2000.
     def _set_snclq(self, snclq):
         components = snclq.split('_')
         if len(components) < 2 or len(components) > 4:
-            raise Exception('Cannot parse %s (expect 2 to 4 values separated by "_" for SNCL)' % snclq)
+            raise Exception('Cannot parse %s (expect 2 to 4 values separated by "_" for N_S_L_C)' % snclq)
         self._set_name_value(NETWORK, components[0])
         self._set_name_value(STATION, components[1])
         if len(components) > 2: self._set_name_value(LOCATION, components[2])
