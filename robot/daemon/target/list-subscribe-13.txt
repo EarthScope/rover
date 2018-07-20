@@ -8,7 +8,7 @@
   IU_ANMO_10_LHZ  (43200.00 sec)
     2016-01-01T00:00:00.000000 - 2016-01-01T12:00:00.000000  (43200.00 sec)
 
-  1: 3 SNCLSs; 129600.00 sec
+  1: 3 N_S_L_C; 129600.00 sec
 
   Subscription 2 (http://service.iris.edu/fdsnws/dataselect/1/query) 
 
@@ -17,7 +17,7 @@
   IU_ANMO_10_LH2  (21600.00 sec)
     2016-01-01T18:00:00.000000 - 2016-01-02T00:00:00.000000  (21600.00 sec)
 
-  2: 2 SNCLSs; 43200.00 sec
+  2: 2 N_S_L_C; 43200.00 sec
 
-  Total: 5 SNCLSs; 172800.00 sec
+  Total: 5 N_S_L_C; 172800.00 sec
 
