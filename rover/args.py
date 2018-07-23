@@ -1,14 +1,12 @@
 
+import sys
+from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter, SUPPRESS
 from os.path import exists, join, dirname
+from re import sub
 from smtplib import SMTP_PORT
 from textwrap import dedent
-import sys
-from re import sub, compile
-
-from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter
 
 from .utils import create_parents, canonify, check_cmd
-
 
 """
 Command line / file configuration parameters.
@@ -59,6 +57,7 @@ F, FILE = 'f', 'file'
 FORCECMD = 'force-cmd'
 FORCEFAILURES = 'force-failures'
 FORCEREQUEST = 'force-request'
+H, FULLHELP = 'H', 'full-help'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
 HTTPRETRIES = 'http-retries'
@@ -92,6 +91,8 @@ TIMESPANTOL = 'timespan-tol'
 VERBOSITY = 'verbosity'
 V, VERSION = 'v', 'version'
 
+LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
+               VERSION, HELP, FULLHELP, FILE)
 
 # default values (for non-boolean parameters)
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
@@ -179,8 +180,31 @@ class StoreBoolAction(Action):
         setattr(namespace, self.dest, values[0])
 
 
+class FullHelpAction(Action):
+    """
+    Associate -H or --full-help with all help details.
+    """
+
+    def __init__(self,
+                 option_strings,
+                 dest=SUPPRESS,
+                 default=SUPPRESS,
+                 help=None):
+        super(FullHelpAction, self).__init__(
+            option_strings=option_strings,
+            dest=dest,
+            default=default,
+            nargs=0,
+            help=help)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.print_big_help()
+        parser.exit()
+
+
 def m(string): return '-' + string
 def mm(string): return '--' + string
+
 
 
 class Arguments(ArgumentParser):
@@ -209,6 +233,7 @@ class Arguments(ArgumentParser):
         self.register('action', 'store_bool', StoreBoolAction)
 
         self.add_argument(m(V), mm(VERSION), action='version', version='rover %s' % ROVER_VERSION)
+        self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
 
         # operation details
         self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
@@ -356,7 +381,7 @@ class Arguments(ArgumentParser):
         with open(path, 'w') as out:
             for action in self._actions:
                 name, default = action.dest, action.default
-                if name not in (HELP, FILE, VERSION):
+                if name not in (HELP, FULLHELP, FILE, VERSION):
                     if default is not None:
                         if name in kargs:
                             value = kargs[name]
@@ -404,6 +429,10 @@ class Arguments(ArgumentParser):
             name += ' / -f'
         elif name == HELP:
             name += ' / -h'
+            default = False
+            help = help.replace('this', 'the')
+        elif name == FULLHELP:
+            name += ' / -H'
             default = False
             help = help.replace('this', 'the')
         if help:
@@ -464,6 +493,44 @@ class Arguments(ArgumentParser):
         """
         self.print_docs_header()
         self.__print_docs_rows_md()
+
+    def print_big_help(self, file=None):
+        """
+        With the new -H / --full-help option to the old implementation,
+        """
+        if file is None:
+            file = sys.stdout
+        self._print_message(self.format_help(), file)
+
+    def print_help(self, file=None):
+        """
+        Subvert the -h option to only print a restricted set of options.
+        """
+        if file is None:
+            file = sys.stdout
+        self._print_message(self.format_little_help(), file)
+
+    def format_little_help(self):
+        """
+        A hacked version of format_help that restricts actions to those in LITTLE_HELP.
+        """
+        formatter = self._get_formatter()
+        actions = [action for action in self._actions if sub('_', '-', action.dest) in LITTLE_HELP]
+        formatter.add_usage(self.usage, actions,
+                            self._mutually_exclusive_groups)
+        formatter.add_text(self.description)
+        for action_group in self._action_groups:
+            formatter.start_section(action_group.title)
+            formatter.add_text(action_group.description)
+            for action in action_group._group_actions:
+                if sub('_', '-', action.dest) in LITTLE_HELP:
+                    formatter.add_argument(action)
+            formatter.end_section()
+        formatter.add_text(self.epilog)
+        return formatter.format_help()
+
+
+
 
 
 def fail_early(config):
