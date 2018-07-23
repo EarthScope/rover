@@ -152,7 +152,7 @@ store.
                 copyfile(args[0], path)
             else:
                 try:
-                    build_file(path, args)
+                    build_file(self._log, path, args)
                 except:
                     raise Exception(usage)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)

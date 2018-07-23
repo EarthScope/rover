@@ -307,14 +307,16 @@ EPOCH = datetime.datetime.utcfromtimestamp(0)
 EPOCH_UTC = EPOCH.replace(tzinfo=utc)
 
 
-def assert_valid_time(time):
+def assert_valid_time(log, time):
     """
     Check timestamp format.
     """
     if match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
         return time
     else:
-        raise Exception('Invalid time format "%s"' % time)
+        msg = 'Invalid time format "%s"' % time
+        log.error(msg)
+        raise Exception(msg)
 
 
 def format_epoch(epoch):
@@ -378,7 +380,7 @@ CHANNEL = 'channel'
 LOCATION = 'location'
 
 
-def build_file(path, args):
+def build_file(log, path, args):
     """
     Given a N_S_L_C or net=... and begin/end dates, construct an input file in
     the correct (availability service) format.
@@ -401,7 +403,7 @@ def build_file(path, args):
     parts = [sncl[NETWORK], sncl[STATION], sncl[LOCATION], sncl[CHANNEL]]
     while args:
         arg = args.pop(0)
-        assert_valid_time(arg)
+        assert_valid_time(log, arg)
         parts.append(arg)
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)

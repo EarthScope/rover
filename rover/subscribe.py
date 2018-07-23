@@ -112,7 +112,7 @@ dates that are missing from the local store.
             if len(args) == 1:
                 copyfile(args[0], path)
             else:
-                build_file(path, args)
+                build_file(self._log, path, args)
         except:
             raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % SUBSCRIBE)
         if self._force_request:
