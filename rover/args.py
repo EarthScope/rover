@@ -93,6 +93,7 @@ V, VERSION = 'v', 'version'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
                VERSION, HELP, FULLHELP, FILE)
+DYNAMIC_ARGS = (VERSION, HELP, FULLHELP)
 
 # default values (for non-boolean parameters)
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
@@ -204,7 +205,7 @@ class FullHelpAction(Action):
 
 def m(string): return '-' + string
 def mm(string): return '--' + string
-
+def unbar(string): return sub('_', '-', string)
 
 
 class Arguments(ArgumentParser):
@@ -335,7 +336,7 @@ class Arguments(ArgumentParser):
             if arg.startswith(NO):
                 arg = '--' + arg[5:]
             for action in self._actions:
-                name = '--' + sub('_', '-', action.dest)
+                name = '--' + unbar(action.dest)
                 if name == arg and type(action) is StoreBoolAction:
                     indices.append(index)
         for index in reversed(indices):
@@ -381,7 +382,7 @@ class Arguments(ArgumentParser):
         with open(path, 'w') as out:
             for action in self._actions:
                 name, default = action.dest, action.default
-                if name not in (HELP, FULLHELP, FILE, VERSION):
+                if unbar(name) not in DYNAMIC_ARGS:
                     if default is not None:
                         if name in kargs:
                             value = kargs[name]
@@ -391,7 +392,7 @@ class Arguments(ArgumentParser):
                             value = default
                         if action.help:
                             out.write('# %s\n' % action.help)
-                        out.write('%s=%s\n' % (sub('_', '-', name), value))
+                        out.write('%s=%s\n' % (unbar(name), value))
 
     def __patch_config(self, args, config):
         """
@@ -419,7 +420,7 @@ class Arguments(ArgumentParser):
 
     @staticmethod
     def __document_action(action):
-        name = sub('_', '-', action.dest)
+        name = unbar(action.dest)
         unit = action.metavar
         default = action.default
         help = action.help
@@ -441,13 +442,13 @@ class Arguments(ArgumentParser):
 
     def __documentation(self, name):
         for action in self._actions:
-            if name == sub('_', '-', action.dest):
+            if name == unbar(action.dest):
                 return self.__document_action(action)
         raise Exception('Unknown parameter %s' % name)
 
     def __documentation_names(self):
         for action in self._actions:
-            name = sub('_', '-', action.dest)
+            name = unbar(action.dest)
             if name not in (COMMAND, ARGS):
                 yield name
 
@@ -515,7 +516,7 @@ class Arguments(ArgumentParser):
         A hacked version of format_help that restricts actions to those in LITTLE_HELP.
         """
         formatter = self._get_formatter()
-        actions = [action for action in self._actions if sub('_', '-', action.dest) in LITTLE_HELP]
+        actions = [action for action in self._actions if unbar(action.dest) in LITTLE_HELP]
         formatter.add_usage(self.usage, actions,
                             self._mutually_exclusive_groups)
         formatter.add_text(self.description)
@@ -523,7 +524,7 @@ class Arguments(ArgumentParser):
             formatter.start_section(action_group.title)
             formatter.add_text(action_group.description)
             for action in action_group._group_actions:
-                if sub('_', '-', action.dest) in LITTLE_HELP:
+                if unbar(action.dest) in LITTLE_HELP:
                     formatter.add_argument(action)
             formatter.end_section()
         formatter.add_text(self.epilog)

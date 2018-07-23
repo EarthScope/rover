@@ -7,11 +7,10 @@ from re import compile, sub
 from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, HELP, DIRVAR, FILE, TEMPDIR, MSEEDDIR, COMMAND
+    FILEVAR, DIRVAR, FILE, TEMPDIR, MSEEDDIR, COMMAND, unbar, DYNAMIC_ARGS
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
-
 
 """
 Package common data used in all/most classes (db connection, lgs and parameters).
@@ -74,7 +73,7 @@ class BaseConfig:
         args = {}
         for action in Arguments()._actions:
             name = action.dest
-            if name not in (FILEVAR, HELP):
+            if unbar(name) not in DYNAMIC_ARGS:   # todo - should this include FILE?
                 if action.metavar in (DIRVAR, FILEVAR):
                     value = self.path(name)
                 else:

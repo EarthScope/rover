@@ -1,4 +1,4 @@
 #!/bin/bash
 
 source env3/bin/activate
-python -m rover "$@"
+python -m rover "$@" --rover-cmd `pwd`/dev/rover
