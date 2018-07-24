@@ -49,11 +49,11 @@ An escaped value `$${...}` is replaced by `${...}`.
 Relative paths for files and directories (bit not commands) are intepreted
 as relative to `${CONFIGDIR}`.  So, in the configuration file
 
-    mseed_dir=mseed
+    data_dir=mseed
 
 is equivalent to
 
-    mseed_dir=${CONFIGDIR}/mseed
+    data_dir=${CONFIGDIR}/mseed
 
 The default configuration uses relative paths only and assumes that the
 configuration file is in `~/rover`.  This implies the following directory

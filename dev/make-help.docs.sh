@@ -54,11 +54,11 @@ An escaped value \`\$\${...}\` is replaced by \`\${...}\`.
 Relative paths for files and directories (bit not commands) are intepreted
 as relative to \`\${CONFIGDIR}\`.  So, in the configuration file
 
-    mseed_dir=mseed
+    data_dir=mseed
 
 is equivalent to
 
-    mseed_dir=\${CONFIGDIR}/mseed
+    data_dir=\${CONFIGDIR}/mseed
 
 The default configuration uses relative paths only and assumes that the
 configuration file is in \`~/rover\`.  This implies the following directory
@@ -99,7 +99,7 @@ cat <<EOF > docs/commands.md
   * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
   * [List Summary](#list-summary)
-  * [Write Config](#write-config)
+  * [Init Repository](#init-repository)
 * [Advanced Usage](#advanced-usage)
   * [Subscribe](#subscribe)
   * [Start](#start)
@@ -123,7 +123,7 @@ dev/rover help retrieve --md-format >> docs/commands.md
 dev/rover help list-retrieve --md-format >> docs/commands.md
 dev/rover help list-index --md-format >> docs/commands.md
 dev/rover help list-summary --md-format >> docs/commands.md
-dev/rover help write-config --md-format >> docs/commands.md
+dev/rover help init-repository --md-format >> docs/commands.md
 
 cat <<EOF >> docs/commands.md
 ## Advanced Usage (Daemon Mode)

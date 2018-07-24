@@ -82,7 +82,7 @@ They also cause the command to exit with an error status.
 @post-summary
 @rover-cmd
 @mseedindex-cmd
-@mseed-dir
+@data-dir
 @download-workers
 @download-retries
 @http-timeout
@@ -228,7 +228,7 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_
 
 @availability-url
 @timespan-tol
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity

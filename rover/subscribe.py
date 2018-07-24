@@ -162,7 +162,7 @@ the subscription is processed (in the future) the available data have changed.
 
 ##### Significant Parameters
 
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity
@@ -249,7 +249,7 @@ displayed by `rover list-subscrive`), or ranges (N:M).
 
 ##### Significant Parameters
 
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity
@@ -294,7 +294,7 @@ database (typically once per minute) it will process the subscription.
 
 #### Significant Parameters
 
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity

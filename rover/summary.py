@@ -29,7 +29,7 @@ and can be queries using `rover list-summary`.
 
 ##### Significant Parameters
 
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity
@@ -92,7 +92,7 @@ to be included:
 
 ##### Significant Parameters
 
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity

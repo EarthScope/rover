@@ -37,7 +37,7 @@ The file should not contain data that spans multiple calendar days.
 ##### Significant Parameters
 
 @mseedindex-cmd
-@mseed-dir
+@data-dir
 @index
 @leap
 @leap-expire

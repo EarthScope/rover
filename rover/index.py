@@ -47,7 +47,7 @@ than `--leap-expire` days.
 ##### Significant Parameters
 
 @all
-@mseed-dir
+@data-dir
 @mseedindex-cmd
 @mseedindex-workers
 @leap
@@ -160,7 +160,7 @@ value:
 ##### Significant Parameters
 
 @timespan-tol
-@mseed-dir
+@data-dir
 @verbosity
 @log-dir
 @log-verbosity
