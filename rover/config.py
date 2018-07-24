@@ -151,7 +151,7 @@ class Config(BaseConfig):
 
 class RepoInitializer:
     """
-### Initialise The Local Store
+### Init Repository
 
     rover init-repository [directory]
 

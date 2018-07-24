@@ -223,7 +223,7 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 will list all entries in the summary after the year 2000.
 
 
-### Initialise The Local Store
+### Init Repository
 
     rover init-repository [directory]
 
