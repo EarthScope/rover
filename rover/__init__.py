@@ -57,7 +57,7 @@ def main():
         config = Config()
         config.lazy_validate()
         # initialise without a database...
-        if config.command == INIT_REPOSITORY:
+        if config.command in (INIT_REPOSITORY, HELP):
             execute(config.command, config)
         else:
             with ProcessManager(config):

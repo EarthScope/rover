@@ -1,15 +1,15 @@
 
 from argparse import Namespace
 from genericpath import exists
-from os import makedirs
+from os import makedirs, getcwd
 from os.path import isabs, join, realpath, abspath, expanduser, dirname
 from re import compile, sub
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F
+    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE
 from .logs import init_log
 from .sqlite import init_db
-from .utils import safe_unlink
+from .utils import safe_unlink, canonify
 
 """
 Package common data used in all/most classes (db connection, lgs and parameters).
@@ -89,22 +89,22 @@ class BaseConfig:
             path = join(self._configdir, path)
         return realpath(abspath(path))
 
-    def dir(self, name):
+    def dir(self, name, create_dir=True):
         """
         Ensure the directory exists.
         """
         path = self.path(name)
-        if not exists(path):
+        if create_dir and not exists(path):
             makedirs(path)
         return path
 
-    def file(self, name):
+    def file(self, name, create_dir=True):
         """
         Ensure the enclosing directory exists.
         """
         path = self.path(name)
         dir = dirname(path)
-        if not exists(dir):
+        if create_dir and not exists(dir):
             makedirs(dir)
         return path
 
@@ -119,6 +119,8 @@ class Config(BaseConfig):
     """
 
     def __init__(self):
+        # there's a pile of ugliness here so that we delay error handling until we have logs.
+        # see also comments in parse_args.
         argparse = Arguments()
         args, self.__config = argparse.parse_args()
         self.__error = self.__config and not exists(self.__config)  # see logic in parse_args
@@ -136,10 +138,15 @@ class Config(BaseConfig):
     def lazy_validate(self):
         # allow Config() to be created so we can log on error
         if self.__error:
-            self.log.error('Could not find %s' % self.__config)
             self.log.error('You may need to configure the local store using `rover %s %s %s`).' %
                            (INIT_REPOSITORY, m(F), self.__config))
-            raise Exception('Could not find configuration file')
+            raise Exception('Could not find configuration file (%s)' % self.__config)
+
+    def set_configdir(self, configdir):
+        """
+        Called only from initialisation, when using a new config dir.
+        """
+        self._configdir = configdir
 
 
 class RepoInitializer:
@@ -150,6 +157,9 @@ class RepoInitializer:
 
 Creates the expected directory structure and writes default values to the
 config file.
+
+To avoid over-writing data, it is an error if the config file, data directory
+or log directory already exist.
 
 ##### Significant Parameters
 
@@ -170,42 +180,50 @@ will create the local store in ~/rover
     """
 
     def __init__(self, config):
-        self._log = config.log
-        self._args = config._args
+        self.__config = config
+        self.__log = config.log
+        self.__args = config._args
 
     def run(self, args):
-        """
-        Implement the reset-config command - write the default parameters to the file
-        given by -f (or default).
-        """
-        self.__validate()
-        self.__check_target()
+        self.__validate(args)
+        self.__check_empty()
         self.__create()
 
-    def __validate(self):
-        pass
+    def __validate(self, args):
+        if not args:
+            configdir = getcwd()
+        elif len(args) == 1:
+            configdir = args[0]
+        else:
+            raise Exception('Command %s takes at most one argument - the directory to initialise' %
+                            INIT_REPOSITORY)
+        configdir = canonify(configdir)
+        self.__config.set_configdir(configdir)
+        file = self.__config.file(FILE, create_dir=False)
+        if not file.startswith(configdir):
+            raise Exception('A configuration file was specified outside the local store (%s)' % file)
+        return configdir
 
-    def __check_target(self):
-        pass
+    def __check_empty(self):
+        data_dir = self.__config.dir(DATADIR, create_dir=False)
+        if exists(data_dir):
+            raise Exception('The data directory already exists (%s)' % data_dir)
+        config_file = self.__config.file(FILE, create_dir=False)
+        if exists(config_file):
+            raise Exception('The configuration file already exists (%s)' % config_file)
+        log_dir = self.__config.dir(LOGDIR, create_dir=False)
+        if exists(log_dir):
+            raise Exception('The log directory already exists (%s)' % log_dir)
+        # no need to check database because that's inside the data dir
 
     def __create(self):
-        pass
-
-
-        # argparse = Arguments()
-        # if exists(self._file):
-        #     if not isfile(self._file):
-        #         raise Exception('"%s" is not a file' % self._file)
-        #     old = self._file + "~"
-        #     if not exists(old) or isfile(old):
-        #         self._log.info('Moving old config file to "%s"' % basename(old))
-        #         safe_unlink(old)
-        #         move(self._file, old)
-        #     else:
-        #         self._log.warn('Deleting %s' % self._file)
-        #         safe_unlink(self._file)
-        # self._log.info('Writing new config file "%s"' % self._file)
-        # argparse.write_config(self._file, self._args)
+        config_file = self.__config.file(FILE)
+        self.__log.info('Writing new config file "%s"' % config_file)
+        Arguments().write_config(config_file, self.__args)
+        self.__config.dir(DATADIR)
+        # we don't really need this
+        init_db(mseed_db(self.__config), self.__log)
+        # todo - log to memory and dump log in logdir
 
 
 def write_config(config, filename, **kargs):
