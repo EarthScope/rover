@@ -8,7 +8,7 @@ else:
     from backports.tempfile import TemporaryDirectory
 
 from rover.config import BaseConfig
-from rover.args import Arguments, TEMPDIR, MSEEDDIR, FILE
+from rover.args import Arguments, TEMPDIR, DATADIR, FILE
 from rover.utils import canonify, windows
 
 from .test_utils import WindowsTemp
@@ -136,8 +136,8 @@ def test_CONFIGDIR_start():
         config = BaseConfig(None, None, args, None, configdir)
         assert config.dir(TEMPDIR)
         assert config.dir(TEMPDIR) == canonify(dir + '/foo'), config.dir(TEMPDIR)
-        assert config.dir(MSEEDDIR)
-        assert config.dir(MSEEDDIR) == canonify(join(dir, '${CONFIGDIR}/foo')), config.dir(MSEEDDIR)
+        assert config.dir(DATADIR)
+        assert config.dir(DATADIR) == canonify(join(dir, '${CONFIGDIR}/foo')), config.dir(DATADIR)
 
 
 def test_CONFIGDIR_middle():
@@ -153,8 +153,8 @@ def test_CONFIGDIR_middle():
             config = BaseConfig(None, None, args, None, configdir)
             assert config.dir(TEMPDIR)
             assert config.dir(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir(TEMPDIR)
-            assert config.dir(MSEEDDIR)
-            assert config.dir(MSEEDDIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir(MSEEDDIR)
+            assert config.dir(DATADIR)
+            assert config.dir(DATADIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir(DATADIR)
 
 
 def test_CONFIGDIR_bad():

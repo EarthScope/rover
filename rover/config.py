@@ -1,13 +1,12 @@
 
 from argparse import Namespace
-from genericpath import exists, isfile
+from genericpath import exists
 from os import makedirs
-from os.path import basename, isabs, join, realpath, abspath, expanduser, dirname
+from os.path import isabs, join, realpath, abspath, expanduser, dirname
 from re import compile, sub
-from shutil import move
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, DIRVAR, FILE, TEMPDIR, MSEEDDIR, COMMAND, unbar, DYNAMIC_ARGS
+    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F
 from .logs import init_log
 from .sqlite import init_db
 from .utils import safe_unlink
@@ -111,58 +110,67 @@ class BaseConfig:
 
 
 def mseed_db(config):
-    return join(config.dir(MSEEDDIR), 'index.sql')
+    return join(config.dir(DATADIR), 'index.sql')
 
 
 class Config(BaseConfig):
     """
-    A container that encapsulates the core compoennts common to all commands.  Used to
-    reduce the amount of argument passing and simplify chaining commands.
+    An alternative constructor for BaseConfig (bootstrap from command line).
     """
 
     def __init__(self):
         argparse = Arguments()
-        args, configdir = argparse.parse_args()
+        args, self.__config = argparse.parse_args()
+        self.__error = self.__config and not exists(self.__config)  # see logic in parse_args
+        full_config = self.__config and not self.__error
         # this is a bit ugly, but we need to use the base methods to construct the log and db
         # note that log is not used in base!
-        super().__init__(None, None, args, None, configdir)
+        super().__init__(None, None, args, None, dirname(self.__config) if full_config else None)
         self.log, self.log_path = \
-            init_log(self.dir(LOGDIR), self.arg(LOGSIZE), self.arg(LOGCOUNT), self.arg(LOGVERBOSITY),
-                     self.arg(VERBOSITY), self.arg(COMMAND) or 'rover', self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
-        self.log.debug('Args: %s' % self._args)
-        self.db = init_db(mseed_db(self), self.log)
+            init_log(self.dir(LOGDIR) if full_config else None, self.arg(LOGSIZE), self.arg(LOGCOUNT),
+                     self.arg(LOGVERBOSITY), self.arg(VERBOSITY), self.arg(COMMAND) or 'rover',
+                     self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
+        if full_config:  # if initializing, we have no database...
+            self.db = init_db(mseed_db(self), self.log)
+
+    def lazy_validate(self):
+        # allow Config() to be created so we can log on error
+        if self.__error:
+            self.log.error('Could not find %s' % self.__config)
+            self.log.error('You may need to configure the local store using `rover %s %s %s`).' %
+                           (INIT_REPOSITORY, m(F), self.__config))
+            raise Exception('Could not find configuration file')
 
 
-class ConfigWriter:
+class RepoInitializer:
     """
-### Write Config
+### Initialise The Local Store
 
-    rover write-config
+    rover init-repository [directory]
 
-Write default values to the config file.
+Creates the expected directory structure and writes default values to the
+config file.
 
 ##### Significant Parameters
 
-@file
 @verbosity
 @log-dir
 @log-verbosity
 
 ##### Examples
 
-    rover write-config
+    rover init-repository
 
-will reset the configuraton in the default location.
+will create the local store in the current directory.
 
-    rover write-config -f ~/.roverrc
+    rover init-repository ~/rover
 
-will write the config to the given file.
+will create the local store in ~/rover
 
     """
 
     def __init__(self, config):
         self._log = config.log
-        self._file = config.arg(FILE)
         self._args = config._args
 
     def run(self, args):
@@ -170,20 +178,34 @@ will write the config to the given file.
         Implement the reset-config command - write the default parameters to the file
         given by -f (or default).
         """
-        argparse = Arguments()
-        if exists(self._file):
-            if not isfile(self._file):
-                raise Exception('"%s" is not a file' % self._file)
-            old = self._file + "~"
-            if not exists(old) or isfile(old):
-                self._log.info('Moving old config file to "%s"' % basename(old))
-                safe_unlink(old)
-                move(self._file, old)
-            else:
-                self._log.warn('Deleting %s' % self._file)
-                safe_unlink(self._file)
-        self._log.info('Writing new config file "%s"' % self._file)
-        argparse.write_config(self._file, self._args)
+        self.__validate()
+        self.__check_target()
+        self.__create()
+
+    def __validate(self):
+        pass
+
+    def __check_target(self):
+        pass
+
+    def __create(self):
+        pass
+
+
+        # argparse = Arguments()
+        # if exists(self._file):
+        #     if not isfile(self._file):
+        #         raise Exception('"%s" is not a file' % self._file)
+        #     old = self._file + "~"
+        #     if not exists(old) or isfile(old):
+        #         self._log.info('Moving old config file to "%s"' % basename(old))
+        #         safe_unlink(old)
+        #         move(self._file, old)
+        #     else:
+        #         self._log.warn('Deleting %s' % self._file)
+        #         safe_unlink(self._file)
+        # self._log.info('Writing new config file "%s"' % self._file)
+        # argparse.write_config(self._file, self._args)
 
 
 def write_config(config, filename, **kargs):

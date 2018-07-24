@@ -3,7 +3,7 @@ from datetime import datetime
 from os.path import exists, join
 from re import match
 
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, MSEEDDIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, \
+from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, \
     FORCECMD
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
@@ -71,7 +71,7 @@ will add all the data in the given file to the local store.
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
                                      config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._db_path = None
-        self._mseed_dir = config.dir(MSEEDDIR)
+        self._mseed_dir = config.dir(DATADIR)
         self._index = config.arg(INDEX)
         self._config = config
         self._log = config.log

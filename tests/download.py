@@ -2,7 +2,7 @@
 from sys import version_info
 from os.path import join
 
-from rover.args import MSEEDDIR
+from rover.args import DATADIR
 
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
@@ -18,7 +18,7 @@ def test_download():
         config = TestConfig(dir)
         downloader = Downloader(config)
         downloader.run(['http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000'])
-        mseed_dir = config.arg(MSEEDDIR)
+        mseed_dir = config.arg(DATADIR)
         assert_files(join(mseed_dir, 'IU'), '2010')
         assert_files(join(mseed_dir, 'IU', '2010'), '058')
         assert_files(join(mseed_dir, 'IU', '2010', '058'), 'ANMO.IU.2010.058')

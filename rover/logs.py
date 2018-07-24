@@ -39,21 +39,25 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     log = getLogger(name)
     log.setLevel(DEBUG)
 
-    dir = canonify(log_dir)
-    if not exists(dir):
-        makedirs(dir)
-    if not isdir(dir):
-        raise Exception('"%s" is not a directory (log-dir)' % dir)
+    if log_dir:  # on initialisation we have no log dir
+        dir = canonify(log_dir)
+        if not exists(dir):
+            makedirs(dir)
+        if not isdir(dir):
+            raise Exception('"%s" is not a directory (log-dir)' % dir)
 
-    time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
-    path = join(dir, name + '.log')
-    # smallest size is 8kB (2^13), largest size 4MB (2^22)
-    size = 2 ** (12 + max(min(log_size, 10), 1))
-    count = max(min(log_count, 100), 1)
-    file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)
-    file_handler.setLevel(level(log_verbosity))
-    file_handler.setFormatter(time_formatter)
-    log.addHandler(file_handler)
+        time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
+        path = join(dir, name + '.log')
+        # smallest size is 8kB (2^13), largest size 4MB (2^22)
+        size = 2 ** (12 + max(min(log_size, 10), 1))
+        count = max(min(log_count, 100), 1)
+        file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)
+        file_handler.setLevel(level(log_verbosity))
+        file_handler.setFormatter(time_formatter)
+        log.addHandler(file_handler)
+
+    else:
+        path, dir = None, None
 
     name_formatter = Formatter('%(name)s %(levelname)8s: %(message)s')
     stdout_handler = StreamHandler(stderr if stderr else sys.stderr)
@@ -61,6 +65,7 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     stdout_handler.setFormatter(name_formatter)
     log.addHandler(stdout_handler)
 
-    clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
+    if dir:
+        clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
     return log, path

@@ -3,10 +3,10 @@ import sys
 from traceback import print_exc
 
 from .web import ServerStarter
-from .args import WRITE_CONFIG, INDEX, INGEST, LIST_INDEX, \
+from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, RESUBSCRIBE
-from .config import Config, ConfigWriter
+from .config import Config, RepoInitializer
 from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
 from .index import Indexer, IndexLister
@@ -18,7 +18,7 @@ from .summary import Summarizer, SummaryLister
 
 
 COMMANDS = {
-    WRITE_CONFIG: (ConfigWriter, 'Reset the configuration'),
+    INIT_REPOSITORY: (RepoInitializer, 'Configure the local store'),
     INDEX: (Indexer, 'Index the local store'),
     INGEST: (Ingester, 'Ingest data from a file into the local store'),
     SUMMARY: (Summarizer, 'Update summary table'),
@@ -55,8 +55,13 @@ def main():
     config = None
     try:
         config = Config()
-        with ProcessManager(config):
+        config.lazy_validate()
+        # initialise without a database...
+        if config.command == INIT_REPOSITORY:
             execute(config.command, config)
+        else:
+            with ProcessManager(config):
+                execute(config.command, config)
     except Exception as e:
         if config and config.log:
             config.log.critical(str(e))
@@ -68,5 +73,5 @@ def main():
                 print_exc()
         else:
             print_exc()
-        # use an exit code so that workers are detected aas failing
+        # use an exit code so that workers are detected as failing
         exit(1)

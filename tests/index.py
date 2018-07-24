@@ -8,7 +8,7 @@ from os import unlink
 from os.path import join
 
 from rover import IndexLister
-from rover.args import MSEEDDIR
+from rover.args import DATADIR
 
 if version_info[0] >= 3:
     from tempfile import TemporaryDirectory
@@ -31,7 +31,7 @@ def test_deleted_file():
     root = find_root()
     with WindowsTemp(TemporaryDirectory) as dir:
         config = ingest_and_index(dir, (join(root, 'tests', 'data'),))
-        unlink(join(config.arg(MSEEDDIR), 'IU', '2010', '058', 'ANMO.IU.2010.058'))
+        unlink(join(config.arg(DATADIR), 'IU', '2010', '058', 'ANMO.IU.2010.058'))
         indexer = Indexer(config)
         indexer.run([])
         n = config.db.cursor().execute('select count(*) from tsindex').fetchone()[0]

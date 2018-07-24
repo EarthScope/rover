@@ -34,7 +34,7 @@ SUBSCRIBE = 'subscribe'
 RESUBSCRIBE = 'resubscribe'
 UNSUBSCRIBE = 'unsubscribe'
 WEB = 'web'
-WRITE_CONFIG = 'write-config'
+INIT_REPOSITORY = 'init-repository'
 
 
 # flag negation
@@ -46,6 +46,7 @@ ALL = 'all'
 ARGS = 'args'
 AVAILABILITYURL = 'availability-url'
 COMMAND = 'command'
+DATADIR = 'data-dir'
 DATASELECTURL = 'dataselect-url'
 DELETEFILES = 'delete-files'
 DOWNLOADRETRIES = 'download-retries'
@@ -73,7 +74,6 @@ LOGUNIQUE = 'log-unique'
 LOGUNIQUEEXPIRE = 'log-unique-expire'
 LOGCOUNT = 'log-count'
 MDFORMAT = 'md-format'
-MSEEDDIR = 'mseed-dir'
 MSEEDINDEXCMD = 'mseedindex-cmd'
 MSEEDINDEXWORKERS = 'mseedindex-workers'
 POSTSUMMARY = 'post-summary'
@@ -97,11 +97,12 @@ DYNAMIC_ARGS = (VERSION, HELP, FULLHELP)
 
 # default values (for non-boolean parameters)
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
+DEFAULT_DATADIR = 'data'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADRETRIES = 3
 DEFAULT_DOWNLOADWORKERS = 10
 DEFAULT_EMAILFROM = 'noreply@rover'
-DEFAULT_FILE = join('~', 'rover', 'config')
+DEFAULT_FILE = join('rover.config')
 DEFAULT_FORCEFAILURES = 0
 DEFAULT_HTTPBINDADDRESS = '127.0.0.1'
 DEFAULT_HTTPPORT = 8000
@@ -115,7 +116,6 @@ DEFAULT_LOGVERBOSITY = 5
 DEFAULT_LOGSIZE = 6
 DEFAULT_LOGCOUNT = 10
 DEFAULT_LOGUNIQUE_EXPIRE = 7
-DEFAULT_MSEEDDIR = 'mseed'
 DEFAULT_MSEEDINDEXCMD = 'mseedindex'
 DEFAULT_MSEEDINDEXWORKERS = 10
 DEFAULT_RECHECKPERIOD = 12
@@ -204,7 +204,11 @@ class FullHelpAction(Action):
 
 
 def m(string): return '-' + string
+
+
 def mm(string): return '--' + string
+
+
 def unbar(string): return sub('_', '-', string)
 
 
@@ -246,7 +250,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
 
         # the local store
-        self.add_argument(mm(MSEEDDIR), default=DEFAULT_MSEEDDIR, action='store', help='the local store - mseed data, index.sql', metavar=DIRVAR)
+        self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the local store - data, index.sql', metavar=DIRVAR)
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
@@ -315,15 +319,19 @@ class Arguments(ArgumentParser):
         * scan initial args to find if config file location specified
         * if config file is missing, generate defaults
         * read config file before command line args
+        If there's an error here - in particular, if the config file does not exist -
+        then we continue with Nones, so that we can generate the log before raising
+        an error in Config.
         """
         if args is None:
             args = sys.argv[1:]
         args = self.__preprocess_booleans(args)
-        config, args = self.__extract_config(args)
-        if not exists(config) and WRITE_CONFIG not in args:
-            self.write_config(config, None)
-        args = self.__patch_config(args, config)
-        return super().parse_args(args=args, namespace=namespace), dirname(config)
+        config = None
+        if INIT_REPOSITORY not in args:
+            config, args = self.__extract_config(args)
+            if exists(config):
+                args = self.__patch_config(args, config)
+        return super().parse_args(args=args, namespace=namespace), config
 
     def __preprocess_booleans(self, args):
         """
@@ -396,13 +404,9 @@ class Arguments(ArgumentParser):
 
     def __patch_config(self, args, config):
         """
-        Force the reading of the config file (ignored for reset-config
-        because we may be rewriting it because it has errors).
+        Force the reading of the config file (ignored for init-repository).
         """
-        if WRITE_CONFIG in args:
-            return args
-        else:
-            return ['@'+config] + args
+        return ['@'+config] + args
 
     def convert_arg_line_to_args(self, arg_line):
         '''
@@ -529,9 +533,6 @@ class Arguments(ArgumentParser):
             formatter.end_section()
         formatter.add_text(self.epilog)
         return formatter.format_help()
-
-
-
 
 
 def fail_early(config):
