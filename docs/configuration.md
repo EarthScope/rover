@@ -9,7 +9,7 @@ The parameter names are the same in both cases.
 The default location for the configuration file is `~/rover/config`
 (the file `config` in the `rover` directory located in the user's home
 directory).  This file is generated when Rover is first used and can
-be reset with `rover reset-config`.
+be reset with `rover make-config`.
 
 If a file in a different location is used, the location can be given
 with `-f` or `--file` on the command line:
@@ -84,12 +84,14 @@ This will place all files in `newdir`.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | help / -h           | False                | Show the help message and exit |
-| file / -f           | ~/rover/config       | Specify configuration file     |
+| version             | ==SUPPRESS==         | Show program's version number and exit |
+| full-help / -H      | False                | Show full help details         |
+| file / -f           | rover.config         | Specify configuration file     |
 | dev                 | False                | Development mode (show exceptions)? |
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
 | force-cmd           | False                | Force cmd use (dangerous)      |
-| mseed-dir           | mseed                | The local store - mseed data, index.sql |
+| data-dir            | data                 | The local store - data, index.sql |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | download-workers    | 10                   | Number of download instances to run |
@@ -122,7 +124,7 @@ This will place all files in `newdir`.
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
-| leap-file           | leap-seconds.lst     | File for leapsecond data       |
+| leap-file           | leap-seconds.list    | File for leapsecond data       |
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |

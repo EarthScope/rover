@@ -55,7 +55,8 @@ def main():
     config = None
     try:
         config = Config()
-        config.lazy_validate()
+        if config.command != HELP:
+            config.lazy_validate()
         # initialise without a database...
         if config.command in (INIT_REPOSITORY, HELP):
             execute(config.command, config)
