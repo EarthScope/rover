@@ -22,4 +22,4 @@ Help
     Log    ${result.stdout}
     Log    ${result.stderr}
     Should Match Regexp    ${result.stdout}  help
-    Should Match Regexp    ${result.stdout}  roverrc
+    Should Match Regexp    ${result.stdout}  rover.config
