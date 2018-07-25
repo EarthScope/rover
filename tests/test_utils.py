@@ -39,7 +39,7 @@ class TestConfig(BaseConfig):
 
     def __init__(self, dir, **kargs):
         kargs = dict(kargs)
-        kargs[_(DATADIR)] = join(dir, 'mseed')
+        kargs[_(DATADIR)] = join(dir, 'data')
         kargs[_(TEMPDIR)] = join(dir, 'tmp')
         kargs[_(LOGDIR)] = join(dir, 'logs')
         root = find_root()
@@ -48,7 +48,7 @@ class TestConfig(BaseConfig):
         args = TestArgs(**kargs)
         self.command = args.command
         log, log_path, log_stream = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
-        dbpath = join(canonify(args.mseed_dir), 'index.sql')
+        dbpath = join(canonify(args.data_dir), 'index.sql')
         create_parents(dbpath)
         super().__init__(log, log_path, args, init_db(dbpath, log), dir)
 

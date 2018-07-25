@@ -35,7 +35,7 @@ class Indexer(ModifiedScanner, DirectoryScanner):
 
 Index the files (add or change entires in the tsindex table in the mseed database).
 
-When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
+When no argument is give all modified files in the repository are processed.  To force all files, use `--all`.
 
 When a directory is given, all files contained in that directory are processed, along with the contents of
 sub-directories, unless `--no-recurse` is specified.
@@ -62,7 +62,7 @@ than `--leap-expire` days.
 
     rover index --all
 
-will index the entire store.
+will index the entire repository.
 
 """
 
@@ -85,7 +85,7 @@ will index the entire store.
         """
         if not args:
             self._log.info('Indexing all changed files')
-            self.scan_mseed_dir()
+            self.scan_data_dir()
         else:
             self.scan_dirs_and_files(args)
 
@@ -128,7 +128,7 @@ class IndexLister(SqliteSupport, HelpFormatter):
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \\
     [count|join|join-samplerates]
 
-List index entries for the local store (config parameter mseed-dir) that match the given constraints.
+List index entries for the repository (config parameter data-dir) that match the given constraints.
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
@@ -194,7 +194,7 @@ will list all entries in the index after the year 2000.
 
     def _display_help(self):
         self.print('''
-The list_store command prints entries from the index that match 
+The list-index command prints entries from the index that match 
 the query parameters.  Parameters generally have the form 
 name=value (no spaces).
 

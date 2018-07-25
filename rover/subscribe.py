@@ -32,10 +32,10 @@ class Subscriber(SqliteSupport):
 
     rover subscribe N_S_L_C [begin [end]]
 
-Arrange for the background service (daemon) to regularly compare available data with the local store then
+Arrange for the background service (daemon) to regularly compare available data with the repository then
 download, ingest and index any new data.
 
-This is similar to `rover retrieve`, but uses a background service to regularly update the store.  To
+This is similar to `rover retrieve`, but uses a background service to regularly update the repository.  To
 start the service use `rover start`.  See also `rover status` and `rover stop`.
 
 The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
@@ -70,13 +70,13 @@ Most of the download process is controlled by the parameters provided when start
 
     rover subscribe N_S_L_C.txt
 
-will instruct the daemon to regularly download, ingest, and index any data missing from the local store for
+will instruct the daemon to regularly download, ingest, and index any data missing from the repository for
 NSLCs / timespans in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
 will instruct the daemon to regularly download, ingest and index and data for IU.ANMO.00.BH1 between the given
-dates that are missing from the local store.
+dates that are missing from the repository.
 
     """
 
@@ -116,7 +116,7 @@ dates that are missing from the local store.
         except:
             raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % SUBSCRIBE)
         if self._force_request:
-            self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in store' % (mm(FORCEREQUEST)))
+            self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in the repository' % (mm(FORCEREQUEST)))
         else:
             self._check_all_for_overlap(path)
         self.execute('''insert into rover_subscriptions (file, availability_url, dataselect_url) values (?, ?, ?)''',

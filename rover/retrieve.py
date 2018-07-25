@@ -39,7 +39,7 @@ class BaseRetriever(SqliteSupport, UserFeedback):
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compare available data with the local store, then download, ingest and index data.
+Compare available data with the repository, then download, ingest and index data.
 
 The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
 service (eg http://service.iris.edu/irisws/availability/1/).
@@ -54,7 +54,7 @@ available locally are downloaded and ingested.
 In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
 and samplerate information is "merged").
 
-This command also indexes modified data in the store before processing.
+This command also indexes modified data in the repository before processing.
 
 When the process is running status should be visible at http://localhost:8000 (by default).  When the process
 ends an email can be sent to the user (if `--email` is used).
@@ -109,12 +109,11 @@ commands for more details.
 
     rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the local store for N_S_L_Cs / timespans present in the given file.
+will download, ingest, and index any data missing from the repository for N_S_L_Cs / timespans present in the given file.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the local
-store.
+will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the repository.
 
 """
 
@@ -237,11 +236,11 @@ service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_
 
     rover list-retrieve N_S_L_C.txt
 
-will display the data missing form the local store to match what is available for the stations in the given file.
+will display the data missing form the repository to match what is available for the stations in the given file.
 
     rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
 
-will display the data missing from the local store to match what is available for IU.ANMO.00.BH1.
+will display the data missing from the repository to match what is available for IU.ANMO.00.BH1.
 
 """
 

@@ -1,5 +1,5 @@
 
-from os.path import join
+from os.path import join, dirname
 from sys import version_info
 
 if version_info[0] >= 3:
@@ -7,24 +7,35 @@ if version_info[0] >= 3:
 else:
     from backports.tempfile import TemporaryDirectory
 
-from rover.config import BaseConfig
-from rover.args import Arguments, TEMPDIR, DATADIR, FILE
+from rover.config import BaseConfig, RepoInitializer
+from rover.args import Arguments, TEMPDIR, DATADIR, FILE, INIT_REPOSITORY, DEFAULT_FILE
 from rover.utils import canonify, windows
 
 from .test_utils import WindowsTemp
 
 
+class DummyLog:
+
+    def debug(self, *args): pass
+    def info(self, *args): pass
+    def warn(self, *args): pass
+    def error(self, *args): pass
+    def critical(self, *args): pass
+
+
 def test_write_config():
     with WindowsTemp(TemporaryDirectory) as dir:
-        path = join(dir, '.rover')
         argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', path])
-        config = BaseConfig(None, None, args, None, configdir)
-        assert canonify(config.arg(FILE)) == canonify(path), config.arg(FILE)
+        args, config_path = argparse.parse_args([INIT_REPOSITORY])
+        config = BaseConfig(DummyLog(), None, args, None, dir)
+        RepoInitializer(config).run([dir])
+        path = config.file(FILE)
         with open(path, 'r') as input:
             contents = input.read()
             assert contents == \
-'''# development mode (show exceptions)?
+'''# specify configuration file
+file=rover.config
+# development mode (show exceptions)?
 dev=False
 # delete temporary files?
 delete-files=True
@@ -32,8 +43,8 @@ delete-files=True
 md-format=False
 # force cmd use (dangerous)
 force-cmd=False
-# the local store - mseed data, index.sql
-mseed-dir=mseed
+# the local store - data, index.sql
+data-dir=data
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # maximum number of attempts to download data
@@ -99,7 +110,7 @@ leap=True
 # number of days before refreshing file
 leap-expire=30
 # file for leapsecond data
-leap-file=leap-seconds.lst
+leap-file=leap-seconds.list
 # URL for leapsecond data
 leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
 # auto-start the download progress web server?
@@ -121,19 +132,19 @@ smtp-port=25
 
 def test_multiple_flags():
     argparse = Arguments()
-    args, configdir = argparse.parse_args(['--index', '--no-index'])
+    args, config_path = argparse.parse_args(['--index', '--no-index'])
     assert not args.index
 
 
 def test_CONFIGDIR_start():
     with WindowsTemp(TemporaryDirectory) as dir:
-        config = join(dir, '.rover')
+        config = join(dir, DEFAULT_FILE)
         with open(config, 'w') as output:
             output.write('temp-dir=${CONFIGDIR}/foo\n')
-            output.write('mseed-dir=$${CONFIGDIR}/foo\n')
+            output.write('data-dir=$${CONFIGDIR}/foo\n')
         argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, None, args, None, configdir)
+        args, config_path = argparse.parse_args(['-f', config])
+        config = BaseConfig(None, None, args, None, dirname(config_path))
         assert config.dir(TEMPDIR)
         assert config.dir(TEMPDIR) == canonify(dir + '/foo'), config.dir(TEMPDIR)
         assert config.dir(DATADIR)
@@ -147,10 +158,10 @@ def test_CONFIGDIR_middle():
             config = join(dir, '.rover')
             with open(config, 'w') as output:
                 output.write('temp-dir=xx${CONFIGDIR}/foo\n')
-                output.write('mseed-dir=xx$${CONFIGDIR}/foo\n')
+                output.write('data-dir=xx$${CONFIGDIR}/foo\n')
             argparse = Arguments()
-            args, configdir = argparse.parse_args(['-f', config])
-            config = BaseConfig(None, None, args, None, configdir)
+            args, config_path = argparse.parse_args(['-f', config])
+            config = BaseConfig(None, None, args, None, dirname(config_path))
             assert config.dir(TEMPDIR)
             assert config.dir(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir(TEMPDIR)
             assert config.dir(DATADIR)
@@ -163,8 +174,8 @@ def test_CONFIGDIR_bad():
         with open(config, 'w') as output:
             output.write('temp-dir=${FOO}\n')
         argparse = Arguments()
-        args, configdir = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, None, args, None, configdir)
+        args, config_path = argparse.parse_args(['-f', config])
+        config = BaseConfig(None, None, args, None, dirname(config_path))
         try:
             config.arg(TEMPDIR)
         except Exception as e:

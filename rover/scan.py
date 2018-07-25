@@ -45,7 +45,7 @@ class DatabasePathIterator(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        self._mseed_dir = config.dir(DATADIR)
+        self._data_dir = config.dir(DATADIR)
         self._stem = 0
         self._prev_path = None
         self._cursor = self._db.cursor()
@@ -68,10 +68,10 @@ class DatabasePathIterator(SqliteSupport):
             if self._cursor:
                 lastmod, path = next(self._cursor)
                 if not self._prev_path:
-                    self._stem = find_stem(path, self._mseed_dir, self._log)
+                    self._stem = find_stem(path, self._data_dir, self._log)
                 if self._prev_path != path:
                     self._prev_path = path
-                return lastmod, join(self._mseed_dir, path[self._stem + 1:])
+                return lastmod, join(self._data_dir, path[self._stem + 1:])
             else:
                 raise StopIteration()
         except:
@@ -80,11 +80,11 @@ class DatabasePathIterator(SqliteSupport):
             raise
 
 
-def localStoreIterator(root, depth=1):
+def RepositoryIterator(root, depth=1):
     """
     Ordered iterator over the filesystem, returning only files from
     the fourth directory level, corresponding to the data files in
-    the store.
+    the repository.
     """
     root = canonify(root)
     files = sorted(listdir(root))
@@ -92,7 +92,7 @@ def localStoreIterator(root, depth=1):
         path = join(root, file)
         if isdir(path) and depth < 4:
             # cannot use 'yield from' as 3to2 doesn't translate it
-            for path in localStoreIterator(path, depth=depth + 1):
+            for path in RepositoryIterator(path, depth=depth + 1):
                 yield path
         elif depth == 4:
             yield path
@@ -107,17 +107,17 @@ class ModifiedScanner(SqliteSupport):
 
     def __init__(self, config):
         super().__init__(config)
-        self._mseed_dir = config.dir(DATADIR)
+        self._data_dir = config.dir(DATADIR)
         self._all = config.arg(ALL)
         self._log = config.log
         self._config = config
 
-    def scan_mseed_dir(self):
-        if not exists(self._mseed_dir):
-            makedirs(self._mseed_dir)
+    def scan_data_dir(self):
+        if not exists(self._data_dir):
+            makedirs(self._data_dir)
         # pull into memory here to avoid open database when processing
         dbpaths = PushBackIterator(in_memory(DatabasePathIterator(self._config)))
-        fspaths = localStoreIterator(self._mseed_dir)
+        fspaths = RepositoryIterator(self._data_dir)
         while True:
             # default values for paths work with ordering
             closed, dblastmod, dbpath, fspath = False, 0, ' ', ' '

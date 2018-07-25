@@ -12,7 +12,7 @@ from .sqlite import SqliteSupport, SqliteContext
 from .utils import run, check_cmd, check_leap, create_parents, touch, safe_unlink, windows
 
 """
-The 'rover ingest' command - copy downloaded data into the local store (and then call index).
+The 'rover ingest' command - copy downloaded data into the repository (and then call index).
 """
 
 
@@ -27,10 +27,10 @@ class Ingester(SqliteSupport, DirectoryScanner):
 
     rover ingest file
 
-Add the contents of the file (MSEED format) to the local store and index the new data.
+Add the contents of the file (MSEED format) to the repository and index the new data.
 
 The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte
-ranges are then appended to the appropriate files in the local store.
+ranges are then appended to the appropriate files in the repository.
 
 The file should not contain data that spans multiple calendar days.
 
@@ -54,7 +54,7 @@ for more details.
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
-will add all the data in the given file to the local store.
+will add all the data in the given file to the repository.
 
 """
 
@@ -71,7 +71,7 @@ will add all the data in the given file to the local store.
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
                                      config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._db_path = None
-        self._mseed_dir = config.dir(DATADIR)
+        self._data_dir = config.dir(DATADIR)
         self._index = config.arg(INDEX)
         self._config = config
         self._log = config.log
@@ -143,7 +143,7 @@ will add all the data in the given file to the local store.
         date_string = match(r'\d{4}-\d{2}-\d{2}', starttime).group(0)
         time_data = datetime.strptime(date_string, '%Y-%m-%d').timetuple()
         year, day = time_data.tm_year, time_data.tm_yday
-        return join(self._mseed_dir, network, str(year), '%03d' % day, '%s.%s.%04d.%03d' % (station, network, year, day))
+        return join(self._data_dir, network, str(year), '%03d' % day, '%s.%s.%04d.%03d' % (station, network, year, day))
 
     def _append_data(self, data, dest):
         if not exists(dest):

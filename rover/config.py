@@ -32,6 +32,12 @@ class BaseConfig:
         self.args = args.args
         self.command = args.command
 
+    def set_configdir(self, configdir):
+        """
+        Called only from initialisation, when using a new config dir.
+        """
+        self._configdir = configdir
+
     def arg(self, name, depth=0):
         """
         Look-up an arg with variable substitution.
@@ -108,6 +114,10 @@ class BaseConfig:
             makedirs(dir)
         return path
 
+    def dump_log(self):
+        """Only for tests"""
+        pass
+
 
 def mseed_db(config):
     return join(config.dir(DATADIR), 'index.sql')
@@ -138,15 +148,9 @@ class Config(BaseConfig):
     def lazy_validate(self):
         # allow Config() to be created first so we can log on error (see main()),
         if self.__error:
-            self.log.error('You may need to configure the local store using `rover %s %s %s`).' %
+            self.log.error('You may need to configure the repository using `rover %s %s %s`).' %
                            (INIT_REPOSITORY, m(F), self.__config))
             raise Exception('Could not find configuration file (%s)' % self.__config)
-
-    def set_configdir(self, configdir):
-        """
-        Called only from initialisation, when using a new config dir.
-        """
-        self._configdir = configdir
 
     def dump_log(self):
         """
@@ -180,11 +184,11 @@ or log directory already exist.
 
     rover init-repository
 
-will create the local store in the current directory.
+will create the repository in the current directory.
 
     rover init-repository ~/rover
 
-will create the local store in ~/rover
+will create the repository in ~/rover
 
     """
 
@@ -210,7 +214,7 @@ will create the local store in ~/rover
         self.__config.set_configdir(configdir)
         file = self.__config.file(FILE, create_dir=False)
         if not file.startswith(configdir):
-            raise Exception('A configuration file was specified outside the local store (%s)' % file)
+            raise Exception('A configuration file was specified outside the repository (%s)' % file)
 
     def __check_empty(self):
         data_dir = self.__config.dir(DATADIR, create_dir=False)

@@ -5,7 +5,7 @@ delete-files=True
 # display help in markdown format?
 md-format=False
 # the local store - mseed data, index.sql
-mseed-dir=run/mseed
+data-dir=run/mseed
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # number of download instances to run

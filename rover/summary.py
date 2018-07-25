@@ -70,7 +70,7 @@ class SummaryLister(SqliteSupport):
 
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List summary entries for the local store (config parameter mseed-dir) that match the given constraints.
+List summary entries for the repository (config parameter data-dir) that match the given constraints.
 The summary entries are pre-calculated and record the whole time span, from earliest to latest data.
 Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
 

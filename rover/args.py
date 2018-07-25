@@ -249,7 +249,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
         self.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
 
-        # the local store
+        # the repository
         self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the local store - data, index.sql', metavar=DIRVAR)
 
         # retrieval

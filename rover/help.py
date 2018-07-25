@@ -79,13 +79,13 @@ rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
 rover %s ...
 
-  List index entries for the local store (config parameter 
+  List index entries for the repository (config parameter 
   %s) that match the given constraints.  For more information, 
   run "rover %s" (with no arguments).
 
 rover %s ...
 
-  List summary entries for the local store (config parameter 
+  List summary entries for the repository (config parameter 
   %s) that match the given constraints.  This is faster than
   `rover %s` but gives less detail.  For more information, 
   run "rover %s" (with no arguments).
@@ -136,7 +136,7 @@ rover %s N
   
 rover %s N
 
-  Delete the subscription (the data remain in the local store, 
+  Delete the subscription (the data remain in the repository, 
   but no more downloads will be made) 
   
 ''' % (START, STATUS, STOP,
@@ -156,12 +156,12 @@ rover %s url
 
   Download data from the given URL to the temporary store
   (config parameter %s).  When downloaded, ingest into the
-  local store (config parameter %s) and delete.  Called
+  repository (config parameter %s) and delete.  Called
   by %s and the %s when needed.
 
 rover %s (file|dir) ...
 
-  Add the specified files to the local store (config
+  Add the specified files to the repository (config
   parameter %s) and update the database index 
   Called by %s when needed.
   
@@ -170,11 +170,11 @@ rover %s [(file|dir) ...]
   Scan files and update the database index using the mseedindex 
   command (config parameter %s). Called by %s when needed.
   
-  If no arguments are given then files in the local store
+  If no arguments are given then files in the repository
   (config parameter %s) that have been modified since the 
-  store was last indexed are processed.  The config parameter 
-  %s can be used (eg %s on the command line) to force 
-  processing of all files in the store.
+  repository was last indexed are processed.  The config 
+  parameter %s can be used (eg %s on the command line) to force 
+  processing of all files in the repository.
   
 rover %s
 

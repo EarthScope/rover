@@ -18,12 +18,12 @@ from .summary import Summarizer, SummaryLister
 
 
 COMMANDS = {
-    INIT_REPOSITORY: (RepoInitializer, 'Configure the local store'),
-    INDEX: (Indexer, 'Index the local store'),
-    INGEST: (Ingester, 'Ingest data from a file into the local store'),
+    INIT_REPOSITORY: (RepoInitializer, 'Create / configure the repository'),
+    INDEX: (Indexer, 'Index the repository'),
+    INGEST: (Ingester, 'Ingest data from a file into the repository'),
     SUMMARY: (Summarizer, 'Update summary table'),
-    LIST_INDEX: (IndexLister, 'List the contents of the local store'),
-    LIST_SUMMARY: (SummaryLister, 'List a summary of the local store'),
+    LIST_INDEX: (IndexLister, 'List the contents of the repository'),
+    LIST_SUMMARY: (SummaryLister, 'List a summary of the repository'),
     DOWNLOAD: (Downloader, 'Download data from a remote service'),
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
     LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
