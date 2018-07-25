@@ -7,7 +7,7 @@ workflow for special cases.
 
 When the `rover retrieve` command is used, the following steps are taken:
 
-* **Indexing** - Any modified files in the local store are indexed.
+* **Indexing** - Any modified files in the repository are indexed.
     This step can be omitted with `--no-pre-index`.
 
 * **Availability** - The Availability service is contacted to see what
@@ -33,13 +33,13 @@ When the `rover retrieve` command is used, the following steps are taken:
     index the downloaded data.  This is done by `rover ingest`.  This
     and later steps can be omitted with `--no-ingest`.
 
-  * **Ingest** - Each block of indexed data is added to the local data
-    store.  This is done by `rover ingest`, which takes the byte
+  * **Ingest** - Each block of indexed data is added to the
+    repository.  This is done by `rover ingest`, which takes the byte
     offset and length of the block and appends that data to the
-    existing data in the store.
+    existing data in the repository.
 
   * **Indexing** - The command `rover index` updates the index for the
-    local store.  This step can be omitted with `--no-index`.
+    repository.  This step can be omitted with `--no-index`.
     
 * **Summary** - A summary table is generated.  This step can be ommitted
   with `--no-post-summary`.

@@ -1,7 +1,7 @@
 
 # An Introduction to Rover
 
-The `rover` command helps build, index and maintain a local store of
+The `rover` command helps build, index and maintain a repository of
 data.  The data are retrieved from a [dataselect
 service](http://service.iris.edu/fdsnws/dataselect/1/); details of
 available data re retrieved from an [availability
@@ -27,7 +27,7 @@ displays all the configuration parameters.
 * [Commands](./commands.md) and [configuration](./configuration.md).
 
 * Examples of commands for [downloading data](./download.md) and
-  [maintaining the store](./maintenance.md).
+  [maintaining the repository](./maintenance.md).
 
 * An explanation of the [processing pipeline](./pipeline.md) used
   during retrieval of data.

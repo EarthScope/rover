@@ -43,7 +43,7 @@ delete-files=True
 md-format=False
 # force cmd use (dangerous)
 force-cmd=False
-# the local store - data, index.sql
+# the data directory - data, index.sql
 data-dir=data
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5

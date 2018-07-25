@@ -91,7 +91,7 @@ This will place all files in `newdir`.
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
 | force-cmd           | False                | Force cmd use (dangerous)      |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | download-workers    | 10                   | Number of download instances to run |

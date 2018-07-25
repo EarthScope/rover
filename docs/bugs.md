@@ -21,9 +21,9 @@ my go undetected.
 ## Handling Of Duplicate Data
 
 If `rover ingest` is used manually it is possible for duplcaite data
-to be added to the store (eg by ingesting the same file twice).  This
-cannot (or should not) happen in normal use, because Rover does not
-download duplicate data, so cannot ingest it.
+to be added to the repository (eg by ingesting the same file twice).
+This cannot (or should not) happen in normal use, because Rover does
+not download duplicate data, so cannot ingest it.
 
 Ideally either ingets should check and refuse to add duplicate data,
 or we should have an additional command that compacts files.
@@ -33,7 +33,7 @@ or we should have an additional command that compacts files.
 The `rover ingest` command rejects files that span multiple calendar
 days.  This is because it works by blindly copying byte ranges based
 on the mseedindex output, and the targets for this data (the files in
-the local store) are per-day.
+the repository) are per-day.
 
 This is not a problem for normal use (because files are downloaded in
 day-sized chunks), but is restrictive when ingesting local files (see

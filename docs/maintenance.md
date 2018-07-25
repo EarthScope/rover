@@ -1,5 +1,5 @@
 
-# Example Commands to Manage and Maintain the Local Store
+# Example Commands to Manage and Maintain the Repository
 
 ## Configuration
 
@@ -19,7 +19,7 @@
 ## Ingest of Local Data
 
 * `rover ingest file.mseed` - will include a file from the local
-  filesystem into the store.
+  filesystem into the repository.
 
   **WARNING**: Repeated use of this command with the same file will
   give duplicated data.

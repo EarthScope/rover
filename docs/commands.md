@@ -69,7 +69,7 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | post-summary        | True                 | Call summary after retrieval?  |
 | rover-cmd           | rover                | Command to run rover           |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | download-workers    | 10                   | Number of download instances to run |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |
@@ -118,7 +118,7 @@ The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as a
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -171,7 +171,7 @@ The following parameters are simple flags that change the output format.  They a
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -211,7 +211,7 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -410,7 +410,7 @@ Delete one or more subscriptions.  The arguments can be single numbers (identify
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -435,7 +435,7 @@ More exactly, this command resets the "last checked" date in the database, so wh
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
@@ -502,7 +502,7 @@ The file should not contain data that spans multiple calendar days.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -540,7 +540,7 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
@@ -568,7 +568,7 @@ Create a summary of the index in the database.  This lists the overall span of d
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The local store - data, index.sql |
+| data-dir            | data                 | The data directory - data, index.sql |
 | verbosity           | 4                    | Console verbosity (0-5)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 5                    | Log verbosity (0-5)            |
