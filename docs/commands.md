@@ -33,7 +33,7 @@
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compare available data with the local store, then download, ingest and index data.
+Compare available data with the repository, then download, ingest and index data.
 
 The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
 
@@ -43,7 +43,7 @@ The list of available data is retrieved from the service and compared with the l
 
 In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality and samplerate information is "merged").
 
-This command also indexes modified data in the store before processing.
+This command also indexes modified data in the repository before processing.
 
 When the process is running status should be visible at http://localhost:8000 (by default).  When the process ends an email can be sent to the user (if `--email` is used).
 
@@ -95,11 +95,11 @@ In addition, parameters for sub-commands (download, ingest, index) will be used 
 
     rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the local store for N_S_L_Cs / timespans present in the given file.
+will download, ingest, and index any data missing from the repository for N_S_L_Cs / timespans present in the given file.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the local store.
+will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the repository.
 
 
 ### List Retrieve
@@ -127,11 +127,11 @@ The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as a
 
     rover list-retrieve N_S_L_C.txt
 
-will display the data missing form the local store to match what is available for the stations in the given file.
+will display the data missing form the repository to match what is available for the stations in the given file.
 
     rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
 
-will display the data missing from the local store to match what is available for IU.ANMO.00.BH1.
+will display the data missing from the repository to match what is available for IU.ANMO.00.BH1.
 
 
 ### List Index
@@ -142,7 +142,7 @@ will display the data missing from the local store to match what is available fo
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
     [count|join|join-samplerates]
 
-List index entries for the local store (config parameter mseed-dir) that match the given constraints.
+List index entries for the repository (config parameter data-dir) that match the given constraints.
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
@@ -193,7 +193,7 @@ will list all entries in the index after the year 2000.
 
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List summary entries for the local store (config parameter mseed-dir) that match the given constraints. The summary entries are pre-calculated and record the whole time span, from earliest to latest data. Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
+List summary entries for the repository (config parameter data-dir) that match the given constraints. The summary entries are pre-calculated and record the whole time span, from earliest to latest data. Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
@@ -243,11 +243,11 @@ To avoid over-writing data, it is an error if the config file, data directory or
 
     rover init-repository
 
-will create the local store in the current directory.
+will create the repository in the current directory.
 
     rover init-repository ~/rover
 
-will create the local store in ~/rover
+will create the repository in ~/rover
 
     
 ## Advanced Usage (Daemon Mode)
@@ -261,9 +261,9 @@ will create the local store in ~/rover
 
     rover subscribe N_S_L_C [begin [end]]
 
-Arrange for the background service (daemon) to regularly compare available data with the local store then download, ingest and index any new data.
+Arrange for the background service (daemon) to regularly compare available data with the repository then download, ingest and index any new data.
 
-This is similar to `rover retrieve`, but uses a background service to regularly update the store.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
+This is similar to `rover retrieve`, but uses a background service to regularly update the repository.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
 
 The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
 
@@ -292,11 +292,11 @@ Most of the download process is controlled by the parameters provided when start
 
     rover subscribe N_S_L_C.txt
 
-will instruct the daemon to regularly download, ingest, and index any data missing from the local store for NSLCs / timespans in the given file.
+will instruct the daemon to regularly download, ingest, and index any data missing from the repository for NSLCs / timespans in the given file.
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will instruct the daemon to regularly download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the local store.
+will instruct the daemon to regularly download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the repository.
 
     
 
@@ -491,9 +491,9 @@ will download, ingest and index data from the given URL..
 
     rover ingest file
 
-Add the contents of the file (MSEED format) to the local store and index the new data.
+Add the contents of the file (MSEED format) to the repository and index the new data.
 
-The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the local store.
+The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the repository.
 
 The file should not contain data that spans multiple calendar days.
 
@@ -518,7 +518,7 @@ In addition, parameters for sub-commands (index) will be used - see help for tho
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
-will add all the data in the given file to the local store.
+will add all the data in the given file to the repository.
 
 
 ### Index
@@ -529,7 +529,7 @@ will add all the data in the given file to the local store.
 
 Index the files (add or change entires in the tsindex table in the mseed database).
 
-When no argument is give all modified files in the local store are processed.  To force all files, use `--all`.
+When no argument is give all modified files in the repository are processed.  To force all files, use `--all`.
 
 When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
@@ -555,7 +555,7 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 
     rover index --all
 
-will index the entire store.
+will index the entire repository.
 
 
 ### Summary
