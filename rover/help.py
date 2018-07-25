@@ -3,7 +3,7 @@ from re import sub
 
 from .args import HELP, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
-    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON, LIST_SUMMARY, SUMMARY
+    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE
 
 """
 The 'rover help' command.
@@ -56,13 +56,19 @@ To display this screen again, type "rover" or "rover help".
        HELP, BACKGROUND,
        HELP, LOWLEVEL,
        HELP, HELP,
-       config.arg(FILE))
+       DEFAULT_FILE)
 
 
 def usage(config):
     return '''
                     Common Rover Commands
                     
+rover %s [directory]
+
+  Initialize the given directory (or the current directory)
+  as the repository.  This will create a configuration file
+  (by default %s) as well as directories for logs and data.
+  
 rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Compare the local index with the data available remotely 
@@ -90,15 +96,11 @@ rover %s ...
   `rover %s` but gives less detail.  For more information, 
   run "rover %s" (with no arguments).
 
-rover %s
-
-  Delete and re-write the configuration file.
-  
-''' % (RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
+''' % (INIT_REPOSITORY, DEFAULT_FILE,
+       RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
        LIST_RETRIEVE, AVAILABILITYURL,
        LIST_INDEX, DATADIR, LIST_INDEX,
-       LIST_SUMMARY, DATADIR, LIST_INDEX, LIST_SUMMARY,
-       INIT_REPOSITORY)
+       LIST_SUMMARY, DATADIR, LIST_INDEX, LIST_SUMMARY)
 
 
 def background(config):

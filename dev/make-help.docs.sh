@@ -95,11 +95,11 @@ cat <<EOF > docs/commands.md
 # Rover Commands
 
 * [Normal Usage](#normal-usage)
+  * [Init Repository](#init-repository)
   * [Retrieve](#retrieve)
   * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
   * [List Summary](#list-summary)
-  * [Init Repository](#init-repository)
 * [Advanced Usage](#advanced-usage)
   * [Subscribe](#subscribe)
   * [Start](#start)
@@ -119,11 +119,11 @@ cat <<EOF > docs/commands.md
 
 EOF
 
+dev/rover help init-repository --md-format >> docs/commands.md
 dev/rover help retrieve --md-format >> docs/commands.md
 dev/rover help list-retrieve --md-format >> docs/commands.md
 dev/rover help list-index --md-format >> docs/commands.md
 dev/rover help list-summary --md-format >> docs/commands.md
-dev/rover help init-repository --md-format >> docs/commands.md
 
 cat <<EOF >> docs/commands.md
 ## Advanced Usage (Daemon Mode)

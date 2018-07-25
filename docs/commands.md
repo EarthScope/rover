@@ -2,11 +2,11 @@
 # Rover Commands
 
 * [Normal Usage](#normal-usage)
+  * [Init Repository](#init-repository)
   * [Retrieve](#retrieve)
   * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
   * [List Summary](#list-summary)
-  * [Init Repository](#init-repository)
 * [Advanced Usage](#advanced-usage)
   * [Subscribe](#subscribe)
   * [Start](#start)
@@ -24,6 +24,34 @@
 
 ## Normal Usage
 
+
+### Init Repository
+
+    rover init-repository [directory]
+
+Creates the expected directory structure and writes default values to the config file.
+
+To avoid over-writing data, it is an error if the config file, data directory or log directory already exist.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| verbosity           | 4                    | Console verbosity (0-5)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 5                    | Log verbosity (0-5)            |
+
+##### Examples
+
+    rover init-repository
+
+will create the repository in the current directory.
+
+    rover init-repository ~/rover
+
+will create the repository in ~/rover
+
+    
 
 ### Retrieve
 
@@ -222,34 +250,6 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
 will list all entries in the summary after the year 2000.
 
-
-### Init Repository
-
-    rover init-repository [directory]
-
-Creates the expected directory structure and writes default values to the config file.
-
-To avoid over-writing data, it is an error if the config file, data directory or log directory already exist.
-
-##### Significant Parameters
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| verbosity           | 4                    | Console verbosity (0-5)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 5                    | Log verbosity (0-5)            |
-
-##### Examples
-
-    rover init-repository
-
-will create the repository in the current directory.
-
-    rover init-repository ~/rover
-
-will create the repository in ~/rover
-
-    
 ## Advanced Usage (Daemon Mode)
 
 

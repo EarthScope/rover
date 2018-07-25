@@ -55,10 +55,10 @@ def main():
     config = None
     try:
         config = Config()
-        if config.command != HELP:
+        if config.command and config.command != HELP:
             config.lazy_validate()
         # initialise without a database...
-        if config.command in (INIT_REPOSITORY, HELP):
+        if not config.command or config.command in (INIT_REPOSITORY, HELP):
             execute(config.command, config)
         else:
             with ProcessManager(config):
