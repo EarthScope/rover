@@ -1,5 +1,6 @@
 
 import sys
+from io import StringIO
 from logging import getLogger, StreamHandler, Formatter, DEBUG
 from logging.handlers import RotatingFileHandler
 from os import makedirs, getpid
@@ -26,6 +27,16 @@ def match_unique(name):
     return match(r'\w+_\d+\.log', name)
 
 
+def log_name(log_dir, name):
+    dir = canonify(log_dir)
+    if not exists(dir):
+        makedirs(dir)
+    if not isdir(dir):
+        raise Exception('"%s" is not a directory (log-dir)' % dir)
+    path = join(dir, name + '.log')
+    return path, dir
+
+
 def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_unique, log_unique_expire, stderr=None):
     """
     Create a log with two handlers.
@@ -40,24 +51,21 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     log.setLevel(DEBUG)
 
     if log_dir:  # on initialisation we have no log dir
-        dir = canonify(log_dir)
-        if not exists(dir):
-            makedirs(dir)
-        if not isdir(dir):
-            raise Exception('"%s" is not a directory (log-dir)' % dir)
-
-        time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
-        path = join(dir, name + '.log')
+        path, dir = log_name(log_dir, name)
         # smallest size is 8kB (2^13), largest size 4MB (2^22)
         size = 2 ** (12 + max(min(log_size, 10), 1))
         count = max(min(log_count, 100), 1)
         file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)
-        file_handler.setLevel(level(log_verbosity))
-        file_handler.setFormatter(time_formatter)
-        log.addHandler(file_handler)
-
+        stream = None
     else:
+        stream = StringIO()
+        file_handler = StreamHandler(stream)
         path, dir = None, None
+
+    time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
+    file_handler.setFormatter(time_formatter)
+    file_handler.setLevel(level(log_verbosity))
+    log.addHandler(file_handler)
 
     name_formatter = Formatter('%(name)s %(levelname)8s: %(message)s')
     stdout_handler = StreamHandler(stderr if stderr else sys.stderr)
@@ -68,4 +76,4 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     if dir:
         clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
-    return log, path
+    return log, path, stream

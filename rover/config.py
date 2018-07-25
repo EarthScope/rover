@@ -7,7 +7,7 @@ from re import compile, sub
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
     FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE
-from .logs import init_log
+from .logs import init_log, log_name
 from .sqlite import init_db
 from .utils import safe_unlink, canonify
 
@@ -119,16 +119,16 @@ class Config(BaseConfig):
     """
 
     def __init__(self):
-        # there's a pile of ugliness here so that we delay error handling until we have logs.
-        # see also comments in parse_args.
         argparse = Arguments()
         args, self.__config = argparse.parse_args()
+        # there's a pile of ugliness here so that we delay error handling until we have logs.
+        # see also comments in parse_args.
         self.__error = self.__config and not exists(self.__config)  # see logic in parse_args
         full_config = self.__config and not self.__error
         # this is a bit ugly, but we need to use the base methods to construct the log and db
         # note that log is not used in base!
         super().__init__(None, None, args, None, dirname(self.__config) if full_config else None)
-        self.log, self.log_path = \
+        self.log, self.log_path, self.__log_stream = \
             init_log(self.dir(LOGDIR) if full_config else None, self.arg(LOGSIZE), self.arg(LOGCOUNT),
                      self.arg(LOGVERBOSITY), self.arg(VERBOSITY), self.arg(COMMAND) or 'rover',
                      self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
@@ -136,7 +136,7 @@ class Config(BaseConfig):
             self.db = init_db(mseed_db(self), self.log)
 
     def lazy_validate(self):
-        # allow Config() to be created so we can log on error
+        # allow Config() to be created first so we can log on error (see main()),
         if self.__error:
             self.log.error('You may need to configure the local store using `rover %s %s %s`).' %
                            (INIT_REPOSITORY, m(F), self.__config))
@@ -147,6 +147,15 @@ class Config(BaseConfig):
         Called only from initialisation, when using a new config dir.
         """
         self._configdir = configdir
+
+    def dump_log(self):
+        """
+        Called only from initialisation, when logging to an in-memory stream.
+        """
+        path, dir = log_name(self.dir(LOGDIR), self.arg(COMMAND))
+        self.log.info('Dumping log to %s' % path)
+        with open(path, 'w') as out:
+            out.write(self.__log_stream.getvalue())
 
 
 class RepoInitializer:
@@ -202,7 +211,6 @@ will create the local store in ~/rover
         file = self.__config.file(FILE, create_dir=False)
         if not file.startswith(configdir):
             raise Exception('A configuration file was specified outside the local store (%s)' % file)
-        return configdir
 
     def __check_empty(self):
         data_dir = self.__config.dir(DATADIR, create_dir=False)
@@ -223,7 +231,7 @@ will create the local store in ~/rover
         self.__config.dir(DATADIR)
         # we don't really need this
         init_db(mseed_db(self.__config), self.__log)
-        # todo - log to memory and dump log in logdir
+        self.__config.dump_log()
 
 
 def write_config(config, filename, **kargs):
