@@ -100,7 +100,7 @@ DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATADIR = 'data'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADRETRIES = 3
-DEFAULT_DOWNLOADWORKERS = 10
+DEFAULT_DOWNLOADWORKERS = 5
 DEFAULT_EMAILFROM = 'noreply@rover'
 DEFAULT_FILE = join('rover.config')
 DEFAULT_FORCEFAILURES = 0
@@ -541,6 +541,13 @@ def fail_early(config):
     """
     check_cmd(config, ROVERCMD, 'rover')
     check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
+    workers = config.arg(DOWNLOADWORKERS)
+    if workers > 10:
+        raise Exception('Too many workers - risks overloading DMC servers (%s %d)' %
+                        (mm(DOWNLOADWORKERS), workers))
+    elif workers > 5:
+        config.log.warn('Many workers - data centre may refuser service (%s %d)' %
+                        (mm(DOWNLOADWORKERS), workers))
 
 
 class UserFeedback:
