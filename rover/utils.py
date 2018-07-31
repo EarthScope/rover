@@ -387,7 +387,7 @@ def build_file(log, path, args):
     """
     # just go crazy because any error is caught by the caller and changed into a 'bad syntax' error
     if '_' in args[0]:
-        (n, s, l, c) = args[0].split('_')
+        (n, s, l, c) = (code if code else '--' for code in args[0].split('_'))
         args = ['net=' + n, 'sta=' + s, 'loc=' + l, 'cha=' + c] + args[1:]
     sncl = {NETWORK: '*', STATION: '*', LOCATION: '*', CHANNEL: '*'}
     count = 0
