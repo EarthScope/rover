@@ -12,7 +12,7 @@ from .help import HelpFormatter
 from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .sqlite import SqliteSupport
-from .utils import format_epoch, windows
+from .utils import format_epoch, windows, tidy_timestamp
 from .utils import check_leap, check_cmd, STATION, NETWORK, CHANNEL, LOCATION
 from .workers import NoConflictPerDatabaseWorkers
 
@@ -298,10 +298,7 @@ printed to stdout.
     def _set_time_limit(self, name, value):
         if self._single_constraints[name]:
             raise Exception('Multiple values for %s' % name)
-        if not match('^\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}(.\d{1,6})?)?)?)?)?)?$', value):
-            raise Exception('Poorly formed time "%s" (should be 2017, 2017-01-01T01:01:01.00 etc' % value)
-        value = value + '2000-01-01T00:00:00.000000'[len(value):]
-        self._log.debug('Padded time "%s"'% value)
+        value = tidy_timestamp(self._log, value)
         self._single_constraints[name] = value
         if self._single_constraints[BEGIN] and self._single_constraints[END] \
                 and self._single_constraints[BEGIN] > self._single_constraints[END]:
@@ -332,15 +329,20 @@ printed to stdout.
                 sql += ', quality '
         sql += 'from tsindex '
         constrained = False
+
+        def conjunction(sql, constrained):
+            if constrained:
+                sql += 'and '
+            else:
+                sql += 'where '
+                constrained = True
+            return sql, constrained
+
         for name in self._multiple_constraints:
             repeated = False
             for value in self._multiple_constraints[name]:
                 if not repeated:
-                    if constrained:
-                        sql += 'and '
-                    else:
-                        sql += 'where '
-                        constrained = True
+                    sql, constrained = conjunction(sql, constrained)
                     sql += '( '
                     repeated = True
                 else:
@@ -350,10 +352,12 @@ printed to stdout.
             if repeated:
                 sql += ') '
         if self._single_constraints[BEGIN]:
-            sql += 'and endtime > ?'
+            sql, constrained = conjunction(sql, constrained)
+            sql += 'endtime > ?'
             params.append(self._single_constraints[BEGIN])
         if self._single_constraints[END]:
-            sql += 'and starttime < ?'
+            sql, constrained = conjunction(sql, constrained)
+            sql += 'starttime < ?'
             params.append(self._single_constraints[END])
         return sql, tuple(params)
 

@@ -363,8 +363,23 @@ def parse_epoch(date):
         try:
             dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
         except ValueError:
-            dt = datetime.datetime.strptime(date, '%Y-%m-%d')
+            try:
+                dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                dt = datetime.datetime.strptime(date, '%Y-%m-%d')
     return (dt - EPOCH).total_seconds()
+
+
+def tidy_timestamp(log, timestamp):
+    try:
+        tidied = format_epoch(parse_epoch(timestamp))
+        if tidied != timestamp:
+            log.debug('Tidied timestamp: "%s" -> "%s"' % (timestamp, tidied))
+        return tidied
+    except:
+        msg = 'Cannot parse timestamp "%s"' % timestamp
+        log.error(msg)
+        raise Exception(msg)
 
 
 def in_memory(iterator):
@@ -402,8 +417,7 @@ def build_file(log, path, args):
     assert len(args) < 3
     parts = [sncl[NETWORK], sncl[STATION], sncl[LOCATION], sncl[CHANNEL]]
     while args:
-        arg = args.pop(0)
-        assert_valid_time(log, arg)
+        arg = tidy_timestamp(log, args.pop(0))
         parts.append(arg)
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)

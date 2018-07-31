@@ -5,7 +5,7 @@ from sqlite3 import OperationalError
 
 from .config import mseed_db
 from .index import BEGIN, END
-from .utils import STATION, NETWORK, CHANNEL, LOCATION, format_epoch
+from .utils import STATION, NETWORK, CHANNEL, LOCATION, format_epoch, tidy_timestamp
 from .args import SUMMARY
 from .sqlite import SqliteSupport
 
@@ -158,10 +158,7 @@ will list all entries in the summary after the year 2000.
     def _set_time_limit(self, name, value):
         if self._single_constraints[name]:
             raise Exception('Multiple values for %s' % name)
-        if not match('^\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}(.\d{1,6})?)?)?)?)?)?$', value):
-            raise Exception('Poorly formed time "%s" (should be 2017, 2017-01-01T01:01:01.00 etc' % value)
-        value = value + '2000-01-01T00:00:00.000000'[len(value):]
-        self._log.debug('Padded time "%s"'% value)
+        value = tidy_timestamp(self._log, value)
         self._single_constraints[name] = value
         if self._single_constraints[BEGIN] and self._single_constraints[END] \
                 and self._single_constraints[BEGIN] > self._single_constraints[END]:
@@ -183,15 +180,20 @@ will list all entries in the summary after the year 2000.
     def _build_query(self):
         sql, params = 'select network, station, location, channel, earliest, latest from tsindex_summary ', []
         constrained = False
+
+        def conjunction(sql, constrained):
+            if constrained:
+                sql += 'and '
+            else:
+                sql += 'where '
+                constrained = True
+            return sql, constrained
+
         for name in self._multiple_constraints:
             repeated = False
             for value in self._multiple_constraints[name]:
                 if not repeated:
-                    if constrained:
-                        sql += 'and '
-                    else:
-                        sql += 'where '
-                        constrained = True
+                    sql, constrained = conjunction(sql, constrained)
                     sql += '( '
                     repeated = True
                 else:
@@ -201,10 +203,12 @@ will list all entries in the summary after the year 2000.
             if repeated:
                 sql += ') '
         if self._single_constraints[BEGIN]:
-            sql += 'and endtime > ?'
+            sql, constrained = conjunction(sql, constrained)
+            sql += 'latest > ?'
             params.append(self._single_constraints[BEGIN])
         if self._single_constraints[END]:
-            sql += 'and starttime < ?'
+            sql, constrained = conjunction(sql, constrained)
+            sql += 'earliest < ?'
             params.append(self._single_constraints[END])
         return sql, tuple(params)
 
