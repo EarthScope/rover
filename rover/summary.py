@@ -105,7 +105,7 @@ will list all entries in the summary after the year 2000.
 
 """
 
-    # this is suspiciously close to list-index, but teh differences are significant and
+    # this is suspiciously close to list-index, but the differences are significant and
     # to make a common base class would likely have made things more opaque.
 
     def __init__(self, config):
@@ -169,7 +169,7 @@ will list all entries in the summary after the year 2000.
                             % (self._single_constraints[BEGIN], self._single_constraints[END]))
 
     def _set_name_value(self, name, value):
-        if not match('^[\w\*\?]+$', value):
+        if not match('^[\w\*\?]*$', value):
             raise Exception('Illegal characters in "%s"' % value)
         found = None
         for key in self._multiple_constraints.keys():
@@ -181,7 +181,7 @@ will list all entries in the summary after the year 2000.
         self._multiple_constraints[found].append(value)
 
     def _build_query(self):
-        sql, params = 'select network, station, location, channel, earliest, latest from tsindex_summary', []
+        sql, params = 'select network, station, location, channel, earliest, latest from tsindex_summary ', []
         constrained = False
         for name in self._multiple_constraints:
             repeated = False
