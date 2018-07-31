@@ -92,7 +92,8 @@ class Retrieval:
         return False
 
     def _build_url(self, sncl, begin, end):
-        url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % tuple(sncl.split('_'))
+        url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % \
+                     tuple(code if code else '--' for code in tuple(sncl.split('_')))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
     def _worker_callback(self, command, return_code):

@@ -1,20 +1,17 @@
 
 import datetime
-from os import makedirs
-from os.path import exists
 from shutil import copyfile
 
-from .report import Reporter
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
     HTTPRETRIES
 from .download import DEFAULT_NAME
-from .manager import DownloadManager
 from .index import Indexer
+from .manager import DownloadManager
+from .report import Reporter
 from .sqlite import SqliteSupport
 from .summary import Summarizer
 from .utils import clean_old_files, match_prefixes, check_leap, unique_path, safe_unlink, build_file
-
 
 """
 Commands related to data retrieval:
