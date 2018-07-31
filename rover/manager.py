@@ -3,7 +3,6 @@ import datetime as dt
 from collections import deque
 from random import randint
 from sqlite3 import OperationalError
-from subprocess import Popen
 from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
@@ -15,7 +14,6 @@ from .sqlite import SqliteSupport
 from .utils import utc, EPOCH_UTC, PushBackIterator, format_epoch, safe_unlink, unique_path, post_to_file, \
     sort_file_inplace, parse_epoch, check_cmd, run, windows
 from .workers import Workers
-
 
 """
 The core logic for scheduling multiple downloads.  Called by both the daemon and `rover retrieve`.
