@@ -50,7 +50,7 @@ timespan-tol=1.5
 # maximum number of attempts to download data
 download-retries=3
 # number of download instances to run
-download-workers=10
+download-workers=5
 # command to run rover
 rover-cmd=rover
 # index before retrieval?
