@@ -88,8 +88,8 @@ SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
 TIMESPANTOL = 'timespan-tol'
-VERBOSITY = 'verbosity'
-V, VERSION = 'v', 'version'
+LITTLE_V, VERBOSITY = 'v', 'verbosity'
+BIG_V, VERSION = 'V', 'version'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
                VERSION, HELP, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
@@ -237,7 +237,7 @@ class Arguments(ArgumentParser):
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
 
-        self.add_argument(m(V), mm(VERSION), action='version', version='rover %s' % ROVER_VERSION)
+        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='rover %s' % ROVER_VERSION)
         self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
 
         # operation details
@@ -288,7 +288,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar=NVAR, type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar=NVAR, type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar=NVAR, type=int)
-        self.add_argument(mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-5)', metavar=NVAR, type=int)
+        self.add_argument(m(LITTLE_V), mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-5)', metavar=NVAR, type=int)
 
         # mseedindex
         self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar=CMDVAR)
