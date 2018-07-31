@@ -22,7 +22,7 @@ class DeadMan(Thread):
     """
     Repeatedly check the parent process and exit when that dies.
 
-    (Maybe processes should do this anyway with HUP, but this seems to be called...)
+    (Maybe processes should do this anyway with HUP, but this seems to be needed...)
     """
 
     def __init__(self, log, ppid, server, log_path):
@@ -48,7 +48,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     """
     Generate the web page.
 
-    BaseHTTPRequestHandler is part of the standard Python library HHTP server code - we extend it for this
+    BaseHTTPRequestHandler is part of the standard Python library HTTP server code - we extend it for this
     particular application.
     """
 

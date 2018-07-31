@@ -143,8 +143,6 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         if not args:
             raise Exception(usage)
         # input is a temp file as we prepend parameters
-        if not exists(self._temp_dir):
-            makedirs(self._temp_dir)
         path = unique_path(self._temp_dir, RETRIEVEWEB, args[0])
         try:
             if len(args) == 1:

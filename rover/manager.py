@@ -342,7 +342,7 @@ class Source(SqliteSupport):
                 return False
             # something odd is happening
             else:
-                raise Exception(('Final %sretrieval downloaded unexpected data (%d) on final attempt (of %d)' +
+                raise Exception(('Final %sretrieval downloaded unexpected data (%d N_S_L_C days) on final attempt (of %d)' +
                                  ' (inconsistent web services?)') %
                                 (self._name, self._retrieval.n_downloads, self.download_retries))
 
