@@ -390,7 +390,7 @@ class Source(SqliteSupport):
         return response
 
     def _parse_line(self, line):
-        n, s, l, c, b, e = line.split()
+        n, s, l, c, b, e = ('' if token == '--' else token for token in line.split())
         return "%s_%s_%s_%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
 
     def _parse_availability(self, response):
