@@ -285,10 +285,10 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
         self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar=DAYSVAR, type=int)
-        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-5)', metavar=NVAR, type=int)
+        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-6)', metavar=NVAR, type=int)
         self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar=NVAR, type=int)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar=NVAR, type=int)
-        self.add_argument(m(LITTLE_V), mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-5)', metavar=NVAR, type=int)
+        self.add_argument(m(LITTLE_V), mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-6)', metavar=NVAR, type=int)
 
         # mseedindex
         self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar=CMDVAR)

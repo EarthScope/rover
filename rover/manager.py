@@ -37,6 +37,7 @@ class Retrieval:
         self.worker_count = 0
         self.n_downloads = 0
         self.n_errors = 0
+        self.n_days = 0
 
     def add_coverage(self, coverage):
         """
@@ -87,6 +88,7 @@ class Retrieval:
                     self._days.append((sncl, begin, min(left, end)))
                     if right < end:
                         timespans.push((right, end))
+            self.n_days = len(self._days)
             if self._days:
                 return True
         return False
@@ -103,11 +105,15 @@ class Retrieval:
             self.n_errors += 1
             self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
 
-    def new_worker(self, workers, config_path, rover_cmd):
+    def new_worker(self, workers, config_path, rover_cmd, n_coverages):
         """
         Launch a new worker (called by manager main loop).
         """
-        url = self._build_url(*self._days.popleft())
+        sncl, begin, end = self._days.popleft()
+        self._log.default('Downloading %s (%d/%d); day %d/%d' %
+                          (sncl, n_coverages - self.stats()[0], n_coverages,
+                           self.n_days - len(self._days), self.n_days))
+        url = self._build_url(sncl, begin, end)
         # for testing error handling we can inject random errors here
         if randint(1, 100) <= self._force_failures:
             self._log.warn('Random failure expected (%s %d)' % (mm(FORCEFAILURES), self._force_failures))
@@ -206,7 +212,7 @@ class Source(SqliteSupport):
         """
         Launch a new worker (called by manager main loop).
         """
-        self._retrieval.new_worker(workers, config_path, rover_cmd)
+        self._retrieval.new_worker(workers, config_path, rover_cmd, self.initial_stats[0])
 
     @property
     def _name(self):
@@ -261,7 +267,7 @@ class Source(SqliteSupport):
         if self._retrieval.n_errors:
             # if we can retry, then do so
             if retry_possible:
-                self._log.info('Latest %sretrieval had %d errors; retrying at %d attempts' %
+                self._log.default('Latest %sretrieval had %d errors; retrying at %d attempts' %
                                (self._name, self._retrieval.n_errors, self.n_retries))
                 self._new_retrieval()
                 return False
@@ -274,13 +280,13 @@ class Source(SqliteSupport):
         elif self._retrieval.n_downloads:
             # can we try again, to make sure there are no more data?
             if retry_possible:
-                self._log.info('Latest %sretrieval had no errors, but downloaded data so trying again' % self._name)
+                self._log.default('Latest %sretrieval had no errors, but downloaded data so trying again' % self._name)
                 self._expect_empty = True
                 self._new_retrieval()
                 return False
             # if not, we're going to say we're complete anyway, since we didn't have any errors.
             else:
-                self._log.info(
+                self._log.default(
                     'Latest %sretrieval had no errors, but downloaded data; no retry as already made %d attempts'
                     % (self._name, self.n_retries))
                 return True
@@ -291,20 +297,20 @@ class Source(SqliteSupport):
             if self.n_retries == 1:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._log.info('Initial %sretrieval had no errors or data, but retry to check consistency' %
+                    self._log.default('Initial %sretrieval had no errors or data, but retry to check consistency' %
                                    self._name)
                     self._expect_empty = True
                     self._new_retrieval()
                     return False
                 # if not, we're going to say we're complete anyway.
                 else:
-                    self._log.info('Initial %sretrieval had no errors and no retries configured' % self._name)
+                    self._log.default('Initial %sretrieval had no errors and no retries configured' % self._name)
                     return True
             # something odd has happened - no data when it wasn't expected
             else:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._log.info('Latest %sretrieval had no errors or data, but retry to check consistency' %
+                    self._log.default('Latest %sretrieval had no errors or data, but retry to check consistency' %
                                    self._name)
                     self._expect_empty = True
                     self._new_retrieval()
@@ -322,7 +328,7 @@ class Source(SqliteSupport):
             self.consistent = INCONSISTENT
             # if we can retry, then do so
             if retry_possible:
-                self._log.info('Final %sretrieval had %d errors; retrying at %d attempts' %
+                self._log.default('Final %sretrieval had %d errors; retrying at %d attempts' %
                                (self._name, self._retrieval.n_errors, self.n_retries))
                 self._new_retrieval()
                 return False
@@ -336,7 +342,7 @@ class Source(SqliteSupport):
             self.consistent = INCONSISTENT
             # can we try again, in case this was some weird hiccup?
             if retry_possible:
-                self._log.info('Final %sretrieval downloaded unexpected data so trying again' % self._name)
+                self._log.default('Final %sretrieval downloaded unexpected data so trying again' % self._name)
                 self._new_retrieval()
                 return False
             # something odd is happening
@@ -348,7 +354,7 @@ class Source(SqliteSupport):
         # no errors and no data
         else:
             self.consistent = CONFIRMED
-            self._log.info('Final %sretrieval had no downloads and no errors, so complete' % self._name)
+            self._log.default('Final %sretrieval had no downloads and no errors, so complete' % self._name)
             return True
 
     def _new_retrieval(self):

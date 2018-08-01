@@ -1,7 +1,7 @@
 
 import sys
 from io import StringIO
-from logging import getLogger, StreamHandler, Formatter, DEBUG
+from logging import getLogger, StreamHandler, Formatter, DEBUG, LoggerAdapter, addLevelName
 from logging.handlers import RotatingFileHandler
 from os import makedirs, getpid
 from os.path import join, exists, isdir
@@ -14,13 +14,31 @@ from .utils import clean_old_files, canonify
 Support for logging.
 """
 
+DEFAULT = 25   # a new logging level, between INFO and WARN
+
 
 def level(n):
     '''
-    Our log levels are 0-5 (silent - verbose).
+    Our log levels are 0-6 (silent - verbose).
     Logging levels are 50-10 (quiet - verbose)
+
+    Ours        Logging
+    0  None     60
+    1  Critical 50
+    2  Error    40
+    3  Warning  30
+    4  Default  25
+    5  Info     20
+    6  Debug    10
+
     '''
-    return 10 * (6 - (max(min(n, 5), 0)))
+    n = max(0, min(n, 6))
+    if n == 4:
+        return 25
+    elif n < 4:
+        return 60 - 10 * n
+    else:
+        return 70 - 10 * n
 
 
 def match_unique(name):
@@ -43,6 +61,8 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     One handler is a rotated file, the other stderr.
     The file is for details, stderr for errors to the user.
     """
+
+    addLevelName(DEFAULT, 'DEFAULT')
 
     if log_unique:
         name = '%s.%d' % (name, getpid())
@@ -76,4 +96,13 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     if dir:
         clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
-    return log, path, stream
+    return RoverLogger(log, {}), path, stream
+
+
+class RoverLogger(LoggerAdapter):
+
+    def default(self, msg, *args, **kwargs):
+        """
+        Delegate a debug call to the underlying logger.
+        """
+        self.log(DEFAULT, msg, *args, **kwargs)

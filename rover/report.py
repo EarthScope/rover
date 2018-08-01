@@ -39,7 +39,7 @@ class Reporter:
         Send the email using the pre-configured parameters.
         """
         if not self._email_to:
-            self._log.warn('Not sending email (see %s)' % mm(EMAIL))
+            self._log.default('Not sending email (see %s)' % mm(EMAIL))
         else:
             try:
                 if version_info[0] >= 3:
@@ -50,7 +50,7 @@ class Reporter:
                 email['Subject'] = subject
                 email['From'] = self._email_from
                 email['To'] = self._email_to
-                self._log.info('Sending completion email to %s (subject %s)' % (self._email_to, subject))
+                self._log.default('Sending completion email to %s (subject %s)' % (self._email_to, subject))
                 smtp = SMTP(self._smtp_address, port=self._smtp_port)
                 if version_info[0] >= 3:
                     smtp.send_message(email)
