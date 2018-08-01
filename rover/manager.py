@@ -37,7 +37,6 @@ class Retrieval:
         self.worker_count = 0
         self.n_downloads = 0
         self.n_errors = 0
-        self.n_days = 0
 
     def add_coverage(self, coverage):
         """
@@ -69,7 +68,8 @@ class Retrieval:
             for timespan in coverage.timespans:
                 begin, end = timespan
                 total_seconds += (end - begin)
-        return coverage_count, total_seconds
+        self.has_days()  # load days
+        return coverage_count, total_seconds, len(self._days)
 
     def has_days(self):
         """
@@ -88,7 +88,6 @@ class Retrieval:
                     self._days.append((sncl, begin, min(left, end)))
                     if right < end:
                         timespans.push((right, end))
-            self.n_days = len(self._days)
             if self._days:
                 return True
         return False
@@ -105,14 +104,15 @@ class Retrieval:
             self.n_errors += 1
             self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
 
-    def new_worker(self, workers, config_path, rover_cmd, n_coverages):
+    def new_worker(self, workers, config_path, rover_cmd, initial):
         """
         Launch a new worker (called by manager main loop).
         """
         sncl, begin, end = self._days.popleft()
+        stats = self.stats()
         self._log.default('Downloading %s (%d/%d); day %d/%d' %
-                          (sncl, n_coverages - self.stats()[0], n_coverages,
-                           self.n_days - len(self._days), self.n_days))
+                          (sncl, initial[0] - stats[0], initial[0],
+                           initial[2] - stats[2], initial[2]))
         url = self._build_url(sncl, begin, end)
         # for testing error handling we can inject random errors here
         if randint(1, 100) <= self._force_failures:
@@ -212,7 +212,7 @@ class Source(SqliteSupport):
         """
         Launch a new worker (called by manager main loop).
         """
-        self._retrieval.new_worker(workers, config_path, rover_cmd, self.initial_stats[0])
+        self._retrieval.new_worker(workers, config_path, rover_cmd, self.initial_stats)
 
     @property
     def _name(self):
