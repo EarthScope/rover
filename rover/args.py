@@ -543,10 +543,10 @@ def fail_early(config):
     check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
     workers = config.arg(DOWNLOADWORKERS)
     if workers > 10:
-        raise Exception('Too many workers - risks overloading DMC servers (%s %d)' %
+        raise Exception('Too many workers - risks overloading data center services (%s %d)' %
                         (mm(DOWNLOADWORKERS), workers))
     elif workers > 5:
-        config.log.warn('Many workers - data centre may refuser service (%s %d)' %
+        config.log.warn('Many workers - data center may refuse service (%s %d)' %
                         (mm(DOWNLOADWORKERS), workers))
 
 
