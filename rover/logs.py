@@ -103,6 +103,6 @@ class RoverLogger(LoggerAdapter):
 
     def default(self, msg, *args, **kwargs):
         """
-        Delegate a debug call to the underlying logger.
+        Delegate a default level call to the underlying logger.
         """
         self.log(DEFAULT, msg, *args, **kwargs)
