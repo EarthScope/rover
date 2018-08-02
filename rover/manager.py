@@ -68,7 +68,6 @@ class Retrieval:
             for timespan in coverage.timespans:
                 begin, end = timespan
                 total_seconds += (end - begin)
-        self.has_days()  # load days
         return coverage_count, total_seconds, len(self._days)
 
     def has_days(self):
@@ -177,8 +176,7 @@ class Source(SqliteSupport):
         self._expect_empty = False
         self.consistent = UNCERTAIN
         # load first retrieval immediately so we don't print messages in the middle of list-retrieve
-        self._new_retrieval()
-        self.initial_stats = self._retrieval.stats()
+        self.initial_stats = self._new_retrieval()
 
     def __str__(self):
         return '%s (%s)' % (self.name, self._dataselect_url)
@@ -267,28 +265,30 @@ class Source(SqliteSupport):
         if self._retrieval.n_errors:
             # if we can retry, then do so
             if retry_possible:
-                self._log.default('Latest %sretrieval had %d errors; retrying at %d attempts' %
-                               (self._name, self._retrieval.n_errors, self.n_retries))
+                self._log.default(('The latest %sretrieval attempt completed with %d errors after %d attempts. '+
+                                   'We will retry to check that all data were retrieved') %
+                                  (self._name, self._retrieval.n_errors, self.n_retries))
                 self._new_retrieval()
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
-                raise Exception('Latest %sretrieval had %d errors on final attempt (of %d)' %
-                                (self._name, self._retrieval.n_errors, self.download_retries))
+                raise Exception('The latest %sretrieval attempt had %d errors on the final attempt (%d of %d)' %
+                                (self._name, self._retrieval.n_errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data
         elif self._retrieval.n_downloads:
             # can we try again, to make sure there are no more data?
             if retry_possible:
-                self._log.default('Latest %sretrieval had no errors, but downloaded data so trying again' % self._name)
+                self._log.default(('The latest %sretrieval attempt had no errors, but we downloaded data so ' +
+                                   'will try again to check that all data were retrieved') % self._name)
                 self._expect_empty = True
                 self._new_retrieval()
                 return False
             # if not, we're going to say we're complete anyway, since we didn't have any errors.
             else:
                 self._log.default(
-                    'Latest %sretrieval had no errors, but downloaded data; no retry as already made %d attempts'
-                    % (self._name, self.n_retries))
+                    ('The latest %sretrieval attempt completed with no errors.  We will not retry (to check complete) ' +
+                     'as we already made %d attempts') % (self._name, self.n_retries))
                 return True
 
         # no errors and no data
@@ -297,29 +297,30 @@ class Source(SqliteSupport):
             if self.n_retries == 1:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._log.default('Initial %sretrieval had no errors or data, but retry to check consistency' %
-                                   self._name)
+                    self._log.default(('The initial %sretrieval attempt had no errors or data.  ' +
+                                       'We will retry to double-check that this is correct') % self._name)
                     self._expect_empty = True
                     self._new_retrieval()
                     return False
                 # if not, we're going to say we're complete anyway.
                 else:
-                    self._log.default('Initial %sretrieval had no errors and no retries configured' % self._name)
+                    self._log.default('The initial %sretrieval attempt had no errors and no retries are configured'
+                                      % self._name)
                     return True
             # something odd has happened - no data when it wasn't expected
             else:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._log.default('Latest %sretrieval had no errors or data, but retry to check consistency' %
-                                   self._name)
+                    self._log.default(('The latest %sretrieval attempt had no errors or data.  ' +
+                                       'We will retry to check that all data were retrieved.') % self._name)
                     self._expect_empty = True
                     self._new_retrieval()
                     return False
                 else:
                     self.consistent = INCONSISTENT
-                    raise Exception(('Latest %sretrieval downloaded no data on final attempt (of %d) ' +
-                                     'following error (inconsistent web services?)') %
-                                    (self._name, self.download_retries))
+                    raise Exception(('The latest %sretrieval attempt downloaded no data on final attempt (%d of %d) ' +
+                                     'following an earlier error (inconsistent web services?)') %
+                                    (self._name, self.n_retries, self.download_retries))
 
     def _is_complete_final_read(self, retry_possible):
 
@@ -328,38 +329,41 @@ class Source(SqliteSupport):
             self.consistent = INCONSISTENT
             # if we can retry, then do so
             if retry_possible:
-                self._log.default('Final %sretrieval had %d errors; retrying at %d attempts' %
-                               (self._name, self._retrieval.n_errors, self.n_retries))
+                self._log.default(('The latest %sretrieval attempt had %d errors after %d attempts.  ' +
+                                   'We will retry to complete the retrieval.') %
+                                  (self._name, self._retrieval.n_errors, self.n_retries))
                 self._new_retrieval()
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
-                raise Exception('Final %sretrieval had %d errors on final attempt (of %d)' %
-                                (self._name, self._retrieval.n_errors, self.download_retries))
+                raise Exception('The latest %sretrieval attempt had %d errors on final attempt (%d of %d)' %
+                                (self._name, self._retrieval.n_errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data (again, unexpected)
         elif self._retrieval.n_downloads:
             self.consistent = INCONSISTENT
             # can we try again, in case this was some weird hiccup?
             if retry_possible:
-                self._log.default('Final %sretrieval downloaded unexpected data so trying again' % self._name)
+                self._log.default(('The latest %sretrieval attempt downloaded unexpected data so trying again ' +
+                                   'to check behaviour') % self._name)
                 self._new_retrieval()
                 return False
             # something odd is happening
             else:
-                raise Exception(('Final %sretrieval downloaded unexpected data (%d N_S_L_C days) on final attempt (of %d)' +
-                                 ' (inconsistent web services?)') %
-                                (self._name, self._retrieval.n_downloads, self.download_retries))
+                raise Exception(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C days) on the ' +
+                                 'final attempt (%d of %d) (inconsistent web services?)') %
+                                (self._name, self._retrieval.n_downloads, self.n_retries, self.download_retries))
 
         # no errors and no data
         else:
             self.consistent = CONFIRMED
-            self._log.default('Final %sretrieval had no downloads and no errors, so complete' % self._name)
+            self._log.default('The latest %sretrieval attempt had no downloads and no errors, so we are complete' %
+                              self._name)
             return True
 
     def _new_retrieval(self):
         self.n_retries += 1
-        self._log.info('Trying new %sretrieval (attempt %d of %d)' %
+        self._log.default('Trying new %sretrieval (attempt %d of %d)' %
                        (self._name, self.n_retries, self.download_retries))
         self._retrieval = Retrieval(self._log, self._name, self._dataselect_url, self._force_failures)
         request = self._build_request(self._request_path)
@@ -376,6 +380,12 @@ class Source(SqliteSupport):
             if self._delete_files:
                 safe_unlink(request)
                 safe_unlink(response)
+        stats = self._retrieval.stats()
+        if not self._retrieval.has_days():
+            self._log.default('The availability service indicates that there are no more data to download')
+        # update stats with days after days are loaded by has_days
+        days_stats = self._retrieval.stats()
+        return stats[:2] + days_stats[2:3]
 
     def _build_request(self, path):
         tmp = unique_path(self._temp_dir, TMPREQUEST, path)
@@ -389,29 +399,48 @@ class Source(SqliteSupport):
         return tmp
 
     def _get_availability(self, request, availability_url):
+        self._log.info('Checking availability service')
         response = unique_path(self._temp_dir, TMPRESPONSE, request)
         response = post_to_file(availability_url, request, response, self._http_timeout, self._http_retries, self._log)
         sort_file_inplace(self._log, response, self._temp_dir, self._sort_in_python)
         return response
 
     def _parse_line(self, line):
-        n, s, l, c, b, e = ('' if token == '--' else token for token in line.split())
-        return "%s_%s_%s_%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
+        try:
+            n, s, l, c, b, e = ('' if token == '--' else token for token in line.split())
+            return "%s_%s_%s_%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
+        except:
+            raise Exception('Could not parse "%s" in the response from the availability service' % line)
 
     def _parse_availability(self, response):
-        with open(response, 'r') as input:
-            availability = None
-            for line in input:
-                if not line.startswith('#'):
-                    sncl, b, e = self._parse_line(line)
-                    if availability and not availability.sncl == sncl:
-                        yield availability
-                        availability = None
-                    if not availability:
-                        availability = Coverage(self._log, self._timespan_tol, sncl)
-                    availability.add_epochs(b, e)
-            if availability:
-                yield availability
+        try:
+            with open(response, 'r') as input:
+                availability = None
+                for line in input:
+                    line = line.strip()
+                    if line and not line.startswith('#'):
+                        sncl, b, e = self._parse_line(line)
+                        if availability and not availability.sncl == sncl:
+                            yield availability
+                            availability = None
+                        if not availability:
+                            availability = Coverage(self._log, self._timespan_tol, sncl)
+                        availability.add_epochs(b, e)
+                if availability:
+                    yield availability
+        except Exception as e:
+            self._log.error('Problems parsing the availability service response.  ' +
+                            'Will log file contents (max 10 lines) here.')
+            count = 0
+            with open(response, 'r') as input:
+                for line in input:
+                    line = line.strip()
+                    if line:
+                        self._log.error('> %s' % line)
+                        count += 1
+                        if count >= 10:
+                            break
+            raise e
 
     def _scan_index(self, sncl):
         availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
@@ -609,7 +638,6 @@ class DownloadManager(SqliteSupport):
         """
         Run to completion (for a single shot, after add()).
         """
-        print('download')
         if len(self._sources) != 1:
             raise Exception('download() logic intended for single source (retrieve)')
         source = next(iter(self._sources.values()))

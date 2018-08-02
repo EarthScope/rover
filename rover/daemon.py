@@ -103,7 +103,7 @@ will start the daemon, processing subscriptions every 24 hours.
             run('%s %s -f %s' % ('pythonw -m rover', DAEMON, self._config_path), self._log, uncouple=True)
         else:
             run('%s %s -f %s' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
-        self._log.info('The %s was started' % DAEMON)
+        self._log.default('The %s was started' % DAEMON)
         self.display_feedback()
 
 
@@ -307,7 +307,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
         try:
             path, availability_url, dataselect_url = self.fetchone(
                 '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
-            self._log.info('Adding subscription %d (%s, %s)' % (id, availability_url, dataselect_url))
+            self._log.default('Adding subscription %d (%s, %s)' % (id, availability_url, dataselect_url))
             self._download_manager.add(id, path, availability_url, dataselect_url, self._source_callback)
         finally:
             self.execute('''update rover_subscriptions set last_check_epoch = ? where id = ?''', (time(), id))

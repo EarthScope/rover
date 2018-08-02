@@ -67,9 +67,9 @@ def main():
         if config and config.log:
             config.log.critical(str(e))
             if config.command in COMMANDS:
-                config.log.info('See "rover help %s"' % config.command)
+                config.log.default('See "rover help %s"' % config.command)
             elif config.command != HELP:
-                config.log.info('See "rover help help" for a list of commands')
+                config.log.default('See "rover help help" for a list of commands')
             if not config or not config._args or config.arg(DEV):
                 print_exc()
         else:

@@ -136,7 +136,7 @@ class ProcessManager(SqliteSupport):
             with self._db:
                 self._db.cursor().execute('begin')
                 pid = self._pid_inside_transaction(DAEMON)
-                self._log.info('Killing %s (pid %d)' % (DAEMON, pid))
+                self._log.default('Killing %s (pid %d)' % (DAEMON, pid))
                 kill(pid, 9)
                 self._delete_command_inside_transaction(DAEMON)
         except NoResult:

@@ -104,7 +104,7 @@ The consistency of the web services could not be confirmed.
 Re-run the %s command with %s > 1 to 
 check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
-        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
+        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.default)
         return 'Rover %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
@@ -142,5 +142,5 @@ WARNING: Inconsistent behaviour was detected in the web
 The consistency of the web services could not be confirmed
 (daemon must have %s > 1).
 ''' % mm(DOWNLOADRETRIES)
-        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.info)
+        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.default)
         return 'Rover subscription %s processed' % source.name, msg

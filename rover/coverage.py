@@ -43,7 +43,7 @@ class Coverage:
 
     def join(self):
         self._log.debug('Joining overlapping timespans')
-        if self.timespans:  # avoid looking at samplerate if no data
+        if self:  # avoid looking at samplerate if no data
             joined, tolerance = [], self.tolerance()
             for begin, end in self.timespans:
                 if abs(end - begin) > tolerance:
@@ -79,6 +79,9 @@ class Coverage:
         except:
             return False
 
+    def __bool__(self):
+        return bool(self.timespans)
+
     def tolerance(self):
         if not self.samplerate:
             raise Exception('No samplerate available')
@@ -91,7 +94,7 @@ class Coverage:
         """
         if not self.sncl == other.sncl:
             raise Exception('Cannot subtract mismatched availabilities')
-        if not other.timespans:  # subtracting zero (avoid checking samplerate)
+        if not other:  # subtracting zero (avoid checking samplerate)
             return self
 
         # minimal samplerate

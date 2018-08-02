@@ -230,7 +230,7 @@ will create the repository in ~/rover
 
     def __create(self):
         config_file = self.__config.file(FILE)
-        self.__log.info('Writing new config file "%s"' % config_file)
+        self.__log.default('Writing new config file "%s"' % config_file)
         Arguments().write_config(config_file, self.__args)
         self.__config.dir(DATADIR)
         # we don't really need this

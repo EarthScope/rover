@@ -150,6 +150,8 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
                 except:
                     raise Exception(usage)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
+            if fetch:
+                self.display_feedback()
             self._query(path)
             if fetch:
                 return self._fetch()
@@ -175,7 +177,6 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         Fetch data from the download manager.
         """
         try:
-            self.display_feedback()
             n_downloads = self._download_manager.download()
         finally:
             if self._post_summary:

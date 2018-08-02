@@ -121,7 +121,7 @@ dates that are missing from the repository.
             self._check_all_for_overlap(path)
         self.execute('''insert into rover_subscriptions (file, availability_url, dataselect_url) values (?, ?, ?)''',
                      (path, self._availability_url, self._dataselect_url))
-        self._log.info('Subscribed')
+        self._log.default('Subscribed')
 
 
 def parse_integers(args):
@@ -277,7 +277,7 @@ will delete subscriptions 1, 2 and 3.
 
             self.foreachrow('''select file from rover_subscriptions where id >= ? and id <= ?''', (id1, id2), callback)
             self.execute('''delete from rover_subscriptions where id >= ? and id <= ?''', (id1, id2))
-            self._log.info('Cleared subscriptions between %d and %d' % (id1, id2))
+            self._log.default('Cleared subscriptions between %d and %d' % (id1, id2))
 
 
 class Resubscriber(SqliteSupport):
@@ -316,4 +316,4 @@ will ask the daemon to re-process subscription 2.
         for id1, id2 in parse_integers(args):
             self.execute('''update rover_subscriptions set last_check_epoch = NULL where id >= ? and id <= ?''',
                          (id1, id2))
-            self._log.info('Cleared last check date for subscriptions between %d and %d' % (id1, id2))
+            self._log.default('Cleared last check date for subscriptions between %d and %d' % (id1, id2))
