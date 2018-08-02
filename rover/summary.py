@@ -59,7 +59,7 @@ will create the summary.
                               from tsindex
                               group by 1,2,3,4''')
         except OperationalError:
-            self._log.debug('No index - first time using rover?')
+            self._log.default('No index - first time using rover?')
 
 
 class SummaryLister(SqliteSupport):

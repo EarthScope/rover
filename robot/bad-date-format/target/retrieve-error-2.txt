@@ -1,0 +1,18 @@
+retrieve  DEFAULT: Status available at http://127.0.0.1:8000
+retrieve  DEFAULT: No email status (see --email configuration parameter)
+retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
+retrieve    ERROR: Problems parsing the availability service response.  Will log response contents (max 10 lines) here:
+retrieve    ERROR: > DATE UTC
+retrieve    ERROR: > Error 400: bad line: TA MSTX -- BH? 2012-02-DATE-02-4 un-regognized time format: 2012-02-4 [should be like: 2001-01-02T12:34:56, 2001-01-02T12:34:56.123, 2001-01-02T12:34:56.123456]
+retrieve    ERROR: > http://service.iris.edu/irisws/availability/1/query
+retrieve    ERROR: > Request:
+retrieve    ERROR: > Request Submitted:
+retrieve    ERROR: > Service: irisws-availability  version: 1.2.3
+retrieve    ERROR: > Service version:
+retrieve    ERROR: Please pay special attention to the first lines of the message - they often contains useful information.
+retrieve    ERROR: The most likely cause of this problem is that the request contains errors.  Will log request contents (max 10 lines) here:
+retrieve    ERROR: > TA MSTX -- BH? 2012-02-DATE-02-4
+retrieve    ERROR: The request is either provided by the user or created from the user input.
+retrieve    ERROR: To ensure consistency rover copies files.  To see the paths and avoid deleting temporary copies re-run the command with the --verbosity 5 and --no-delete-files options
+retrieve CRITICAL: Could not parse "DATE UTC" in the response from the availability service
+retrieve  DEFAULT: See "rover help retrieve"
