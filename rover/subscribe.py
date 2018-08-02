@@ -213,7 +213,7 @@ will show what data would be downloaded by the daemon if the subscription were p
                     path, availability_url, dataselect_url = self.fetchone(
                         '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,),
                     quiet=True)
-                    download_manager.add(id, path, availability_url, dataselect_url, None)
+                    self.add = download_manager.add(id, path, False, availability_url, dataselect_url, None)
                 except (NoResult, OperationalError):
                     self._log.warn('No subscription %d' % id)
         download_manager.display()

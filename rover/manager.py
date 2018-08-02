@@ -151,7 +151,7 @@ class Source(SqliteSupport):
     # second. it collects and reports statistics that are used by the download manager and displayed to the user.
     # these are the public attributes and properties (delegated to the current retriever).
 
-    def __init__(self, config, name, request_path, availability_url, dataselect_url, completion_callback):
+    def __init__(self, config, name, fetch, request_path, availability_url, dataselect_url, completion_callback):
         super().__init__(config)
         self._log = config.log
         self._force_failures = config.arg(FORCEFAILURES)
@@ -176,7 +176,7 @@ class Source(SqliteSupport):
         self._expect_empty = False
         self.consistent = UNCERTAIN
         # load first retrieval immediately so we don't print messages in the middle of list-retrieve
-        self.initial_stats = self._new_retrieval()
+        self.initial_stats = self._new_retrieval(fetch)
 
     def __str__(self):
         return '%s (%s)' % (self.name, self._dataselect_url)
@@ -268,7 +268,7 @@ class Source(SqliteSupport):
                 self._log.default(('The latest %sretrieval attempt completed with %d errors after %d attempts. '+
                                    'We will retry to check that all data were retrieved') %
                                   (self._name, self._retrieval.n_errors, self.n_retries))
-                self._new_retrieval()
+                self._new_retrieval(True)
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
@@ -282,7 +282,7 @@ class Source(SqliteSupport):
                 self._log.default(('The latest %sretrieval attempt had no errors, but we downloaded data so ' +
                                    'will try again to check that all data were retrieved') % self._name)
                 self._expect_empty = True
-                self._new_retrieval()
+                self._new_retrieval(True)
                 return False
             # if not, we're going to say we're complete anyway, since we didn't have any errors.
             else:
@@ -300,7 +300,7 @@ class Source(SqliteSupport):
                     self._log.default(('The initial %sretrieval attempt had no errors or data.  ' +
                                        'We will retry to double-check that this is correct') % self._name)
                     self._expect_empty = True
-                    self._new_retrieval()
+                    self._new_retrieval(True)
                     return False
                 # if not, we're going to say we're complete anyway.
                 else:
@@ -314,7 +314,7 @@ class Source(SqliteSupport):
                     self._log.default(('The latest %sretrieval attempt had no errors or data.  ' +
                                        'We will retry to check that all data were retrieved.') % self._name)
                     self._expect_empty = True
-                    self._new_retrieval()
+                    self._new_retrieval(True)
                     return False
                 else:
                     self.consistent = INCONSISTENT
@@ -332,7 +332,7 @@ class Source(SqliteSupport):
                 self._log.default(('The latest %sretrieval attempt had %d errors after %d attempts.  ' +
                                    'We will retry to complete the retrieval.') %
                                   (self._name, self._retrieval.n_errors, self.n_retries))
-                self._new_retrieval()
+                self._new_retrieval(True)
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
@@ -346,7 +346,7 @@ class Source(SqliteSupport):
             if retry_possible:
                 self._log.default(('The latest %sretrieval attempt downloaded unexpected data so trying again ' +
                                    'to check behaviour') % self._name)
-                self._new_retrieval()
+                self._new_retrieval(True)
                 return False
             # something odd is happening
             else:
@@ -361,7 +361,9 @@ class Source(SqliteSupport):
                               self._name)
             return True
 
-    def _new_retrieval(self):
+    def _new_retrieval(self, fetch):
+        # fetch indicates we're not simply querying and so should check for no data and
+        # prime days for stats
         self.n_retries += 1
         self._log.default('Trying new %sretrieval (attempt %d of %d)' %
                        (self._name, self.n_retries, self.download_retries))
@@ -381,7 +383,7 @@ class Source(SqliteSupport):
                 safe_unlink(request)
                 safe_unlink(response)
         stats = self._retrieval.stats()
-        if not self._retrieval.has_days():
+        if fetch and not self._retrieval.has_days():
             self._log.default('The availability service indicates that there are no more data to download')
         # update stats with days after days are loaded by has_days
         days_stats = self._retrieval.stats()
@@ -511,10 +513,12 @@ class DownloadManager(SqliteSupport):
             raise Exception('Unexpected source: %s' % name)
         return self._sources[name]
 
-    def add(self, name, request_path, availability_url, dataselect_url, completion_callback):
+    def add(self, name, request_path, fetch, availability_url, dataselect_url, completion_callback):
+        # fetch is necessary here because source wants to prime days for retrieval
         if name in self._sources and self._sources[name].worker_count:
             raise Exception('Cannot overwrite active source %s' % self._sources[name])
-        self._sources[name] = Source(self._config, name, request_path, availability_url, dataselect_url, completion_callback)
+        self._sources[name] = Source(self._config, name, fetch, request_path, availability_url, dataselect_url,
+                                     completion_callback)
 
     # display expected downloads
 

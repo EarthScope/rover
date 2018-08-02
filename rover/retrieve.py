@@ -152,7 +152,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             if fetch:
                 self.display_feedback()
-            self._query(path)
+            self._query(path, fetch)
             if fetch:
                 return self._fetch()
             else:
@@ -161,7 +161,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             if self._delete_files:
                 safe_unlink(path)
 
-    def _query(self, up):
+    def _query(self, up, fetch):
         """
         Populate the download manager by comparing the data from the
         availability service with the local index.
@@ -169,7 +169,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         if self._pre_index:
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
-        self._download_manager.add(DEFAULT_NAME, up,
+        self._download_manager.add(DEFAULT_NAME, up, fetch,
                                    self._availability_url, self._dataselect_url, self._source_callback)
 
     def _fetch(self):

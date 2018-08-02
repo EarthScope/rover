@@ -308,6 +308,6 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
             path, availability_url, dataselect_url = self.fetchone(
                 '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
             self._log.default('Adding subscription %d (%s, %s)' % (id, availability_url, dataselect_url))
-            self._download_manager.add(id, path, availability_url, dataselect_url, self._source_callback)
+            self._download_manager.add(id, path, True, availability_url, dataselect_url, self._source_callback)
         finally:
             self.execute('''update rover_subscriptions set last_check_epoch = ? where id = ?''', (time(), id))

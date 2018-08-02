@@ -18,6 +18,7 @@ class DummyLog:
 
     def debug(self, *args): pass
     def info(self, *args): pass
+    def default(self, *args): pass
     def warn(self, *args): pass
     def error(self, *args): pass
     def critical(self, *args): pass
@@ -93,13 +94,13 @@ log-dir=logs
 log-unique=False
 # number of days before deleting unique logs
 log-unique-expire=7
-# log verbosity (0-5)
-log-verbosity=5
+# log verbosity (0-6)
+log-verbosity=6
 # maximum log size (1-10)
 log-size=6
 # maximum number of logs
 log-count=10
-# console verbosity (0-5)
+# console verbosity (0-6)
 verbosity=4
 # mseedindex command
 mseedindex-cmd=mseedindex

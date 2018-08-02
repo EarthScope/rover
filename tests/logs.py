@@ -18,6 +18,7 @@ from .test_utils import WindowsTemp
 def log_all(log):
     log.debug('debug')
     log.info('info')
+    log.default('default')
     log.warn('warn')
     log.error('error')
     log.critical('critical')
@@ -48,28 +49,31 @@ def test_default_levels():
     do_all_levels(DEFAULT_LOGVERBOSITY,
 '''DEBUG    [timestamp]: debug
 INFO     [timestamp]: info
+DEFAULT  [timestamp]: default
 WARNING  [timestamp]: warn
 ERROR    [timestamp]: error
 CRITICAL [timestamp]: critical
 ''',
                   DEFAULT_VERBOSITY,
-'''rover     INFO: info
+'''rover  DEFAULT: default
 rover  WARNING: warn
 rover    ERROR: error
 rover CRITICAL: critical
 ''')
 
 def test_all_levels():
-    do_all_levels(5,
+    do_all_levels(6,
 '''DEBUG    [timestamp]: debug
 INFO     [timestamp]: info
+DEFAULT  [timestamp]: default
 WARNING  [timestamp]: warn
 ERROR    [timestamp]: error
 CRITICAL [timestamp]: critical
 ''',
-                  5,
+                  6,
 '''rover    DEBUG: debug
 rover     INFO: info
+rover  DEFAULT: default
 rover  WARNING: warn
 rover    ERROR: error
 rover CRITICAL: critical
