@@ -74,6 +74,8 @@ class Reporter:
         Generate the message sent by `rover retrieve`.
         """
         msg = '''
+----- Retrieval Finished -----
+        
 A rover %s task on %s started %s 
 (%s local) has completed.
 
@@ -112,6 +114,8 @@ check
         Generate the message sent by the daemon.
         """
         msg = '''
+----- Subscription Processed -----
+        
 Subscription %s has been processed by the rover %s on %s.
 
 The task comprised of %d N_S_L_Cs with data covering %ds.
