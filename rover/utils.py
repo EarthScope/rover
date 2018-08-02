@@ -211,7 +211,7 @@ def _session(retries):
     https_adapter = HTTPAdapter(max_retries=retries)
     session.mount('http://', http_adapter)
     session.mount('http2://', https_adapter)
-    return session;
+    return session
 
 
 def get_to_file(url, down, timeout, retries, log, unique=True):

@@ -1,14 +1,13 @@
 
 import sys
 from io import StringIO
-from logging import getLogger, StreamHandler, Formatter, DEBUG, LoggerAdapter, addLevelName
+from logging import getLogger, StreamHandler, Formatter, DEBUG, addLevelName
 from logging.handlers import RotatingFileHandler
 from os import makedirs, getpid
 from os.path import join, exists, isdir
 from re import match
 
 from .utils import clean_old_files, canonify
-
 
 """
 Support for logging.
@@ -96,13 +95,13 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     if dir:
         clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
-    return RoverLogger(log, {}), path, stream
+    # monkey patch logger (LogAdapter works in 3, but fails on 2)
+    def default(msg, *args, **kwargs):
+        log.log(DEFAULT, msg, *args, **kwargs)
 
+    log.default = default
 
-class RoverLogger(LoggerAdapter):
+    if dir:
+        clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
-    def default(self, msg, *args, **kwargs):
-        """
-        Delegate a default level call to the underlying logger.
-        """
-        self.log(DEFAULT, msg, *args, **kwargs)
+    return log, path, stream

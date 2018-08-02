@@ -159,7 +159,7 @@ class RequestComparison:
         """
         # we need to be careful here, because the files can contain wildcards.
         # so we build regexps of the wildcards and test those, in addition to explicit equality.
-        # note that we're careul to use regexp that match the regexp themselves.
+        # note that we're careful to use regexp that match the regexp themselves.
         regexp1 = self._build_regexp(self._path1)
         regexp2 = self._build_regexp(self._path2)
         # we sort manually, in-memory, rather than on-disc because we don't trust the formatting to be regular
