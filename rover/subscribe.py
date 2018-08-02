@@ -5,10 +5,9 @@ from sqlite3 import OperationalError
 from .request import RequestComparison
 from .manager import DownloadManager
 from .args import SUBSCRIBE, LIST_SUBSCRIBE, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV, \
-    FORCEREQUEST, mm, RESUBSCRIBE
+    FORCEREQUEST, mm, RESUBSCRIBE, VERBOSITY, NO, DELETEFILES
 from .sqlite import SqliteSupport, NoResult
-from .utils import unique_path, build_file, format_day_epoch, safe_unlink, format_time_epoch
-
+from .utils import unique_path, build_file, format_day_epoch, safe_unlink, format_time_epoch, log_file_contents
 
 """
 Commands related to subscription:
@@ -103,7 +102,19 @@ dates that are missing from the repository.
     def _check_all_for_overlap(self, path1):
         rows = self.fetchall('''select file from rover_subscriptions''')
         for row in rows:
-            RequestComparison(path1, row[0]).assert_no_overlap()
+            try:
+                RequestComparison(path1, row[0]).assert_no_overlap()
+            except Exception as e:
+                self._log.error('To avoid duplicating data, subscriptions for the same N_S_L_C and '+
+                                'time range are not allowed.')
+                self._log.error('Your latest subscription appears to overlap an existing subscription ' +
+                                '(see error below).')
+                self._log.error('The first 10 lines of your new subscription are:')
+                log_file_contents(path1, self._log, 10)
+                self._log.error('The first 10 lines of the existing subscription are:')
+                log_file_contents(row[0], self._log, 10)
+                raise e
+
 
     def run(self, args):
         # input is a temp file as we prepend parameters

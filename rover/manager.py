@@ -6,13 +6,13 @@ from sqlite3 import OperationalError
 from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
-    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON
+    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, NO
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
 from .sqlite import SqliteSupport
 from .utils import utc, EPOCH_UTC, PushBackIterator, format_epoch, safe_unlink, unique_path, post_to_file, \
-    sort_file_inplace, parse_epoch, check_cmd, run, windows
+    sort_file_inplace, parse_epoch, check_cmd, run, windows, log_file_contents
 from .workers import Workers
 
 """
@@ -430,16 +430,17 @@ class Source(SqliteSupport):
                     yield availability
         except Exception as e:
             self._log.error('Problems parsing the availability service response.  ' +
-                            'Will log file contents (max 10 lines) here.')
-            count = 0
-            with open(response, 'r') as input:
-                for line in input:
-                    line = line.strip()
-                    if line:
-                        self._log.error('> %s' % line)
-                        count += 1
-                        if count >= 10:
-                            break
+                            'Will log response contents (max 10 lines) here:')
+            log_file_contents(response, self._log, 10)
+            self._log.error('Please pay special attention to the first lines of the message - ' +
+                            'they often contains useful information.')
+            self._log.error('The most likely cause of this problem is that the request contains errors.  ' +
+                            'Will log request contents (max 10 lines) here:')
+            log_file_contents(self._request_path, self._log, 10)
+            self._log.error('The request is either provided by the user or created from the user input.')
+            self._log.error('To ensure consistency rover copies files.  ' +
+                            'To see the paths and avoid deleting temporary copies re-run the command ' +
+                            'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
             raise e
 
     def _scan_index(self, sncl):

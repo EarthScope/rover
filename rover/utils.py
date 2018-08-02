@@ -481,3 +481,17 @@ def windows():
     Are we running on windows?
     """
     return name in ('Windows', 'nt')
+
+
+def log_file_contents(path, log, max_lines=10):
+    log.info('Displaying contents of file %s:' % path)
+    count = 0
+    with open(path, 'r') as input:
+        for line in input:
+            line = line.strip()
+            if line:
+                log.error('> %s' % line)
+                count += 1
+                if count >= 10:
+                    break
+
