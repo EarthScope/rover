@@ -94,7 +94,7 @@ This will place all files in `newdir`.
 | data-dir            | data                 | The data directory - data, index.sql |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
-| download-workers    | 10                   | Number of download instances to run |
+| download-workers    | 5                    | Number of download instances to run |
 | rover-cmd           | rover                | Command to run rover           |
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
@@ -116,10 +116,10 @@ This will place all files in `newdir`.
 | log-dir             | logs                 | Directory for logs             |
 | log-unique          | False                | Unique log names (with PIDs)?  |
 | log-unique-expire   | 7                    | Number of days before deleting unique logs (days) |
-| log-verbosity       | 5                    | Log verbosity (0-5)            |
+| log-verbosity       | 6                    | Log verbosity (0-6)            |
 | log-size            | 6                    | Maximum log size (1-10)        |
 | log-count           | 10                   | Maximum number of logs         |
-| verbosity           | 4                    | Console verbosity (0-5)        |
+| verbosity           | 4                    | Console verbosity (0-6)        |
 | mseedindex-cmd      | mseedindex           | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
