@@ -6,9 +6,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rover",
-    version="0.0.0",
+    version="0.0.1",
     author="IRIS",
-    author_email="info@iris.edu",
+    author_email="software-owner@iris.washington.edu",
     description="Retrieval of Various Experiment data Robustly",
     long_description=long_description,
     long_description_content_type="text/markdown",
