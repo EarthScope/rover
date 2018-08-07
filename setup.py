@@ -9,10 +9,10 @@ setuptools.setup(
     version="0.0.0",
     author="IRIS",
     author_email="software-owner@iris.washington.edu",
-    description="Retrieval of Various Experiment data Robustly",
+    description="Tool for the robust retrieval of seismic data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/iris-edu/rover",
+    url="https://iris-edu.github.io/rover",
     packages=setuptools.find_packages(),
     classifiers=(
         "Development Status :: 4 - Beta",
