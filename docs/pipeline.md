@@ -1,5 +1,5 @@
 
-# Rover's Processing Pipeline
+# Rover's processing pipeline
 
 **Expert use only** - the default configuration should "just work".
 The options described here give precise control over the pipeline

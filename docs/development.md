@@ -1,22 +1,21 @@
 
-# Rover Development
+# Rover development
 
-## Python 2
+## Python 2 and 3 support
 
-Rover is developed using "pure" Python 3.  **This gives the most
-maintainable, future-proof source.**
+Rover is developed using in Python 3.
 
-However, we must also support Python 2.7.  To do this we auto-generate
-code that can run on Python 2.7 *and* Python 3 using the
+A combination of Python 2.7 and Python 3.5 and later are supported
+by auto-generating portable code using the
 [pasteurize](http://python-future.org/pasteurize.html) tool from the
 [future](http://python-future.org/index.html) package.
 
 One consequence of this is that the "installable" code (typically
-available from [PyPI](https://pypi.org/) or a tarball) is not
-identical to the development code (typically available from
-[github](https://github.com/iris-edu/rover/)).
+available via `pip` from the [PyPI rover project](https://pypi.org/project/rover/) or a tarball) is not
+identical to the development code (typically available from the
+[rover repository](https://github.com/iris-edu/rover/)).
 
-## Getting Started
+## Getting started
 
 First, create a directory that will contain both the development and
 auto-generated code:
@@ -26,7 +25,7 @@ auto-generated code:
 Then change into this directory and clone github:
 
     cd roverdev
-    git clone git@github.com:iris-edu/rover.git
+    git clone https://github.com/iris-edu/rover.git
 
 Create a virtualenv for Python 3 development (you may need to alter
 the script details slightly depending on your python version):
@@ -57,7 +56,7 @@ appropriate virtualenvs for testing, then create new virtualenvs
     dev/run-all-robot-tests.sh
     dev/run-all-tests.sh
 
-## Generating Installable Code
+## Generating installable code
 
 To simply generate the tarball:
 
@@ -80,8 +79,7 @@ When making a new release:
     dev/new-version.sh X.Y.Z
 
 where X.Y.Z is the new version number.  This will set the version in
-the source, tag the version in git, and build a suitably named tarball
-in the `roverdev` directory.
+the source, tag the version in git, and build a suitably named tarball in the `roverdev` directory.
 
 ## Windows
 
