@@ -1,6 +1,7 @@
 
 from sys import version_info
 from socket import gethostname
+from time import time
 
 if version_info[0] >= 3:
     from email.message import EmailMessage
@@ -69,6 +70,17 @@ class Reporter:
             line = line.rstrip()
             logger(line)
 
+    @staticmethod
+    def _human_duration(seconds):
+        if seconds > 86400:
+            return "{0:0.1f} days".format(seconds / 86400)
+        elif seconds > 3600:
+            return "{0:0.1f} hours".format(seconds / 3600)
+        elif seconds > 60:
+            return "{0:0.1f} minutes".format(seconds / 60)
+        else:
+            return "{0:0.2f} seconds".format(seconds)
+
     def describe_retrieve(self, source):
         """
         Generate the message sent by `rover retrieve`.
@@ -77,7 +89,7 @@ class Reporter:
 ----- Retrieval Finished -----
 
 A rover %s task on %s started %s
-(%s local) has completed.
+(%s local) has completed in %s
 
 The task comprised of %d N_S_L_Cs with data covering %ds.
 
@@ -85,6 +97,7 @@ A total of %d downloads were made, with %d errors (%d on
 final pass of %d).
 ''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
        format_time_epoch_local(source.start_epoch),
+       self._human_duration(time() - source.start_epoch),
        source.initial_stats[0], source.initial_stats[1],
        source.n_downloads, source.n_errors, source.n_final_errors, source.n_retries)
         if source.n_final_errors:
