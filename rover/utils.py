@@ -13,7 +13,7 @@ from sys import version_info
 
 from requests import get, post, Session
 from requests.adapters import HTTPAdapter
-
+from requests import __version__ as requests_version
 
 """
 Assorted utilities.
@@ -211,6 +211,12 @@ def _session(retries):
     https_adapter = HTTPAdapter(max_retries=retries)
     session.mount('http://', http_adapter)
     session.mount('http2://', https_adapter)
+
+    # Create a UserAgent header with package, requests and Python identifiers
+    from rover.args import ROVER_VERSION
+    user_agent = 'rover/%s python-requests/%s Python/%s' % (ROVER_VERSION, requests_version, ".".join(map(str, version_info[:3])))
+    session.headers.update({'UserAgent': user_agent})
+
     return session
 
 
