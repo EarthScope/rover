@@ -120,7 +120,7 @@ class BaseConfig:
 
 
 def mseed_db(config):
-    return join(config.dir(DATADIR), 'index.sql')
+    return join(config.dir(DATADIR), 'timeseries.sqlite')
 
 
 class Config(BaseConfig):

@@ -250,7 +250,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
 
         # the repository
-        self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, index.sql', metavar=DIRVAR)
+        self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, timeseries.sqlite', metavar=DIRVAR)
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
