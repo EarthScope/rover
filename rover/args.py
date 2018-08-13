@@ -566,8 +566,8 @@ class UserFeedback:
         if self._web:
             self._log.default('Status available at %s' % self._url)
         else:
-            self._log.default('No web status (see %s configuration parameter)' % mm(WEB))
+            self._log.info('No web status (see %s configuration parameter)' % mm(WEB))
         if self._email:
             self._log.default('Email status will be sent to %s' % self._email)
         else:
-            self._log.default('No email status (see %s configuration parameter)' % mm(EMAIL))
+            self._log.info('No email status (see %s configuration parameter)' % mm(EMAIL))

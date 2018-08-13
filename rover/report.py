@@ -39,7 +39,7 @@ class Reporter:
         Send the email using the pre-configured parameters.
         """
         if not self._email_to:
-            self._log.default('Not sending email (see %s)' % mm(EMAIL))
+            self._log.info('Not sending email (see %s)' % mm(EMAIL))
         else:
             try:
                 if version_info[0] >= 3:
