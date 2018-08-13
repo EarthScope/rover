@@ -3,7 +3,7 @@ import sys
 from re import match, sub
 from sqlite3 import OperationalError
 
-from .config import mseed_db
+from .config import timeseries_db
 from .index import BEGIN, END
 from .utils import STATION, NETWORK, CHANNEL, LOCATION, format_epoch, tidy_timestamp
 from .args import SUMMARY
@@ -110,7 +110,7 @@ will list all entries in the summary after the year 2000.
 
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
-        self._mseed_db = mseed_db(config)
+        self._timeseries_db = timeseries_db(config)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
@@ -130,7 +130,7 @@ will list all entries in the summary after the year 2000.
         try:
             self.execute('select count(*) from tsindex_summary')
         except OperationalError:
-            raise Exception('''Cannot access the summary table in the database (%s).  Bad configuration or summary not generated?''' % self._mseed_db)
+            raise Exception('''Cannot access the summary table in the database (%s).  Bad configuration or summary not generated?''' % self._timeseries_db)
 
     def _parse_args(self, args):
         for arg in args:

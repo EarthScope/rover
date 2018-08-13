@@ -119,7 +119,7 @@ class BaseConfig:
         pass
 
 
-def mseed_db(config):
+def timeseries_db(config):
     return join(config.dir(DATADIR), 'timeseries.sqlite')
 
 
@@ -143,7 +143,7 @@ class Config(BaseConfig):
                      self.arg(LOGVERBOSITY), self.arg(VERBOSITY), self.arg(COMMAND) or 'rover',
                      self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
         if full_config:  # if initializing, we have no database...
-            self.db = init_db(mseed_db(self), self.log)
+            self.db = init_db(timeseries_db(self), self.log)
 
     def lazy_validate(self):
         # allow Config() to be created first so we can log on error (see main()),
@@ -234,7 +234,7 @@ will create the repository in ~/rover
         Arguments().write_config(config_file, self.__args)
         self.__config.dir(DATADIR)
         # we don't really need this
-        init_db(mseed_db(self.__config), self.__log)
+        init_db(timeseries_db(self.__config), self.__log)
         self.__config.dump_log()
 
 
