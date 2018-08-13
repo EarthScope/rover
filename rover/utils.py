@@ -210,7 +210,7 @@ def _session(retries):
     http_adapter = HTTPAdapter(max_retries=retries)
     https_adapter = HTTPAdapter(max_retries=retries)
     session.mount('http://', http_adapter)
-    session.mount('http2://', https_adapter)
+    session.mount('https://', https_adapter)
 
     # Create a UserAgent header with package, requests and Python identifiers
     from rover.args import ROVER_VERSION
