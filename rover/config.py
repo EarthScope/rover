@@ -233,8 +233,8 @@ will create the repository in ~/rover
         self.__log.default('Writing new config file "%s"' % config_file)
         Arguments().write_config(config_file, self.__args)
         self.__config.dir(DATADIR)
-        # we don't really need this
-        init_db(timeseries_db(self.__config), self.__log)
+        db = init_db(timeseries_db(self.__config), self.__log)
+        db.execute('PRAGMA journal_mode=WAL')
         self.__config.dump_log()
 
 
