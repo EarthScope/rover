@@ -498,6 +498,6 @@ def log_file_contents(path, log, max_lines=10):
             if line:
                 log.error('> %s' % line)
                 count += 1
-                if count >= 10:
+                if count >= max_lines:
                     break
 
