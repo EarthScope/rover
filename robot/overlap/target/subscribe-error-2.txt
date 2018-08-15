@@ -4,5 +4,5 @@ subscribe    ERROR: The first 10 lines of your new subscription are:
 subscribe    ERROR: > TA MSTX -- BH? 2012-02-01 2012-02-04
 subscribe    ERROR: The first 10 lines of the existing subscription are:
 subscribe    ERROR: > TA MSTX -- BH? 2012-02-01 2012-02-04
-subscribe CRITICAL: A pattern in /home/andrew/project/rover/rover/robot/overlap/subscriptions/rover_subscribe_HASH matches an entry in /home/andrew/project/rover/rover/robot/overlap/subscriptions/rover_subscribe_HASH (TA MSTX -- BH? 2012-02-01 - 2012-02-04)
+subscribe CRITICAL: A pattern in PATH matches an entry in PATH (TA MSTX -- BH? 2012-02-01 - 2012-02-04)
 subscribe  DEFAULT: See "rover help subscribe"

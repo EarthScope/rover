@@ -1,5 +1,5 @@
+retrieve  DEFAULT: Rover version 0.0.0 - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
-retrieve  DEFAULT: No email status (see --email configuration parameter)
 retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
 retrieve    ERROR: Problems parsing the availability service response.  Will log response contents (max 10 lines) here:
 retrieve    ERROR: > DATE UTC
