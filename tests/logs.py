@@ -47,9 +47,7 @@ def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 
 def test_default_levels():
     do_all_levels(DEFAULT_LOGVERBOSITY,
-'''DEBUG    [timestamp]: debug
-INFO     [timestamp]: info
-DEFAULT  [timestamp]: default
+'''DEFAULT  [timestamp]: default
 WARNING  [timestamp]: warn
 ERROR    [timestamp]: error
 CRITICAL [timestamp]: critical
