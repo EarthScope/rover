@@ -212,10 +212,10 @@ def _session(retries):
     session.mount('http://', http_adapter)
     session.mount('https://', https_adapter)
 
-    # Create a UserAgent header with package, requests and Python identifiers
+    # Create a User-Agent header with package, requests and Python identifiers
     from .args import ROVER_VERSION
     user_agent = 'rover/%s python-requests/%s Python/%s' % (ROVER_VERSION, requests_version, ".".join(map(str, version_info[:3])))
-    session.headers.update({'UserAgent': user_agent})
+    session.headers.update({'User-Agent': user_agent})
 
     return session
 
