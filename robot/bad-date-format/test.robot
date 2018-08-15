@@ -23,7 +23,7 @@ Bad Date Format Command Line
 Bad Date Format File
 
     Run Process    rover  -f  ../rover.config  retrieve  ../TA_MSTX_BH_Feb2012.req  cwd=${CURDIR}${/}run  stderr=retrieve-error-2.txt
-    Run Process    sed  -i.bak  -E  -e  s/[0-9-]+ [0-9:]+/DATE/g  ${CURDIR}${/}run${/}retrieve-error-2.txt  shell=True
+    Run Process    sed  -i.bak  -E  -e  s/[0-9\/]{10} [0-9:]{8}/DATE/g  ${CURDIR}${/}run${/}retrieve-error-2.txt  shell=True
     ${run} =    Get File    ${CURDIR}${/}run${/}retrieve-error-2.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}retrieve-error-2.txt
     Should Be Equal    ${run}  ${target}
