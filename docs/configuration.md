@@ -91,7 +91,7 @@ This will place all files in `newdir`.
 | delete-files        | True                 | Delete temporary files?        |
 | md-format           | False                | Display help in markdown format? |
 | force-cmd           | False                | Force cmd use (dangerous)      |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | download-workers    | 5                    | Number of download instances to run |
@@ -116,11 +116,11 @@ This will place all files in `newdir`.
 | log-dir             | logs                 | Directory for logs             |
 | log-unique          | False                | Unique log names (with PIDs)?  |
 | log-unique-expire   | 7                    | Number of days before deleting unique logs (days) |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
-| log-size            | 6                    | Maximum log size (1-10)        |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
+| log-size            | 10M                  | Maximum log size (e.g. 10M)    |
 | log-count           | 10                   | Maximum number of logs         |
 | verbosity           | 4                    | Console verbosity (0-6)        |
-| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
