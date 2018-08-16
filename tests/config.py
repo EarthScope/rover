@@ -96,8 +96,8 @@ log-unique=False
 log-unique-expire=7
 # log verbosity (0-6)
 log-verbosity=4
-# maximum log size (1-10)
-log-size=6
+# maximum log size (e.g. 10M)
+log-size=10M
 # maximum number of logs
 log-count=10
 # console verbosity (0-6)

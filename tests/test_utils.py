@@ -47,7 +47,7 @@ class TestConfig(BaseConfig):
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
         self.command = args.command
-        log, log_path, log_stream = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
+        log, log_path, log_stream = init_log(args.log_dir, '7M', 1, 5, 0, 'test', args.leap, 0)
         dbpath = join(canonify(args.data_dir), 'timeseries.sqlite')
         create_parents(dbpath)
         super().__init__(log, log_path, args, init_db(dbpath, log), dir)

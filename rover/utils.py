@@ -501,3 +501,28 @@ def log_file_contents(path, log, max_lines=10):
                 if count >= max_lines:
                     break
 
+
+def calc_bytes (sizestring):
+    """
+    Calculate a size in bytes for the specified size string.  If the
+    string is terminated with the following suffixes the specified
+    scaling will be applied:
+
+    'K' or 'k' : kilobytes - value * 1024
+    'M' or 'm' : megabytes - value * 1024*1024
+    'G' or 'g' : gigabytes - value * 1024*1024*1024
+
+    Returns a size in bytes.
+    """
+
+    if sizestring.endswith('k') or sizestring.endswith('K'):
+        return int(sizestring[:-1]) * 1024
+
+    elif sizestring.endswith('m') or sizestring.endswith('M'):
+        return int(sizestring[:-1]) * 1024 * 1024
+
+    elif sizestring.endswith('g') or sizestring.endswith('G'):
+        return int(sizestring[:-1]) * 1024 * 1024 * 1024
+
+    else:
+        return int(sizestring)
