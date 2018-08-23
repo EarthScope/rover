@@ -340,7 +340,9 @@ class Arguments(ArgumentParser):
             args = sys.argv[1:]
         args = self.__preprocess_booleans(args)
         config = None
-        if INIT_REPOSITORY not in (cmd_or_alias(arg) for arg in args):
+        # we run this to parse and isolate the command, but will re-run below
+        # once the config file is known
+        if super().parse_args(args=args).command != INIT_REPOSITORY:
             config, args = self.__extract_config(args)
             if exists(config):
                 args = self.__patch_config(args, config)
