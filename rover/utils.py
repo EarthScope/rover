@@ -13,7 +13,7 @@ from sys import version_info
 
 from requests import get, post, Session
 from requests.adapters import HTTPAdapter
-
+from requests import __version__ as requests_version
 
 """
 Assorted utilities.
@@ -210,7 +210,13 @@ def _session(retries):
     http_adapter = HTTPAdapter(max_retries=retries)
     https_adapter = HTTPAdapter(max_retries=retries)
     session.mount('http://', http_adapter)
-    session.mount('http2://', https_adapter)
+    session.mount('https://', https_adapter)
+
+    # Create a User-Agent header with package, requests and Python identifiers
+    from .args import ROVER_VERSION
+    user_agent = 'rover/%s python-requests/%s Python/%s' % (ROVER_VERSION, requests_version, ".".join(map(str, version_info[:3])))
+    session.headers.update({'User-Agent': user_agent})
+
     return session
 
 
@@ -492,6 +498,31 @@ def log_file_contents(path, log, max_lines=10):
             if line:
                 log.error('> %s' % line)
                 count += 1
-                if count >= 10:
+                if count >= max_lines:
                     break
 
+
+def calc_bytes (sizestring):
+    """
+    Calculate a size in bytes for the specified size string.  If the
+    string is terminated with the following suffixes the specified
+    scaling will be applied:
+
+    'K' or 'k' : kilobytes - value * 1024
+    'M' or 'm' : megabytes - value * 1024*1024
+    'G' or 'g' : gigabytes - value * 1024*1024*1024
+
+    Returns a size in bytes.
+    """
+
+    if sizestring.endswith('k') or sizestring.endswith('K'):
+        return int(sizestring[:-1]) * 1024
+
+    elif sizestring.endswith('m') or sizestring.endswith('M'):
+        return int(sizestring[:-1]) * 1024 * 1024
+
+    elif sizestring.endswith('g') or sizestring.endswith('G'):
+        return int(sizestring[:-1]) * 1024 * 1024 * 1024
+
+    else:
+        return int(sizestring)

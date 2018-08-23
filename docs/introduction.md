@@ -1,20 +1,20 @@
 
-# An Introduction to Rover
+# An Introduction to rover
 
 The `rover` command helps build, index and maintain a repository of
-data.  The data are retrieved from a [dataselect
+data.  The data are retrieved from a [fdsnws-dataselect
 service](http://service.iris.edu/fdsnws/dataselect/1/); details of
-available data re retrieved from an [availability
+available data are retrieved from an [irisws-availability
 service](http://service.iris.edu/irisws/availability/1/).
 
-For install instructions see the [README](../README.md).
+For install instructions see the [Installation](index.md#installation) section.
 
-## Exploring Rover
+## Exploring rover
 
 There may be no need to read all this documentation.  Rover has some
 help built-in.  Simply typing
 
-    rover
+    rover help
 
 will give you an introductory screen.  While
 
@@ -22,15 +22,15 @@ will give you an introductory screen.  While
 
 displays all the configuration parameters.
 
-## Further Documentation
+## Further documentation
 
-* [Commands](./commands.md) and [configuration](./configuration.md).
+* [Commands](commands.md) and [configuration](configuration.md).
 
-* Examples of commands for [downloading data](./download.md) and
-  [maintaining the repository](./maintenance.md).
+* Examples of commands for [downloading data](download.md) and
+  [maintaining the repository](maintenance.md).
 
-* An explanation of the [processing pipeline](./pipeline.md) used
+* An explanation of the [processing pipeline](pipeline.md) used
   during retrieval of data.
 
-* Notes on [Rover development](./development.md) and [mseedindex 
-  install guidelines](./mseedindex.md).
+* Notes on [rover development](development.md) and [mseedindex
+  install guidelines](mseedindex.md).

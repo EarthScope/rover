@@ -33,7 +33,7 @@ def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 
         logdir = join(dir, '.rover')
         stderr = StringIO()
-        log = init_log(logdir, 7, 1, log_level, stderr_level, 'rover', False, 0, stderr=stderr)[0]
+        log = init_log(logdir, '7M', 1, log_level, stderr_level, 'rover', False, 0, stderr=stderr)[0]
         log_all(log)
         stderr.seek(0)
         stderr_contents = stderr.read()
@@ -47,9 +47,7 @@ def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 
 def test_default_levels():
     do_all_levels(DEFAULT_LOGVERBOSITY,
-'''DEBUG    [timestamp]: debug
-INFO     [timestamp]: info
-DEFAULT  [timestamp]: default
+'''DEFAULT  [timestamp]: default
 WARNING  [timestamp]: warn
 ERROR    [timestamp]: error
 CRITICAL [timestamp]: critical

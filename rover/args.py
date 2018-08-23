@@ -112,11 +112,11 @@ DEFAULT_LEAPEXPIRE = 30
 DEFAULT_LEAPFILE = 'leap-seconds.list'
 DEFAULT_LEAPURL = 'http://www.ietf.org/timezones/data/leap-seconds.list'
 DEFAULT_LOGDIR = 'logs'
-DEFAULT_LOGVERBOSITY = 6
-DEFAULT_LOGSIZE = 6
+DEFAULT_LOGVERBOSITY = 4
+DEFAULT_LOGSIZE = '10M'
 DEFAULT_LOGCOUNT = 10
 DEFAULT_LOGUNIQUE_EXPIRE = 7
-DEFAULT_MSEEDINDEXCMD = 'mseedindex'
+DEFAULT_MSEEDINDEXCMD = 'mseedindex -sqlitebusyto 60000'
 DEFAULT_MSEEDINDEXWORKERS = 10
 DEFAULT_RECHECKPERIOD = 12
 DEFAULT_ROVERCMD = 'rover'
@@ -139,7 +139,7 @@ HOURSVAR = 'HOURS'
 PERCENTVAR = 'PERCENT'
 ADDRESSVAR = 'ADDRESS'
 URLVAR = 'URL'
-
+SIZE = 'SIZE'
 
 def parse_bool(value):
     """
@@ -250,7 +250,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
 
         # the repository
-        self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, index.sql', metavar=DIRVAR)
+        self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, timeseries.sqlite', metavar=DIRVAR)
 
         # retrieval
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
@@ -286,7 +286,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
         self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar=DAYSVAR, type=int)
         self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-6)', metavar=NVAR, type=int)
-        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (1-10)', metavar=NVAR, type=int)
+        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (e.g. 10M)', metavar=SIZE)
         self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar=NVAR, type=int)
         self.add_argument(m(LITTLE_V), mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-6)', metavar=NVAR, type=int)
 
@@ -566,8 +566,8 @@ class UserFeedback:
         if self._web:
             self._log.default('Status available at %s' % self._url)
         else:
-            self._log.default('No web status (see %s configuration parameter)' % mm(WEB))
+            self._log.info('No web status (see %s configuration parameter)' % mm(WEB))
         if self._email:
             self._log.default('Email status will be sent to %s' % self._email)
         else:
-            self._log.default('No email status (see %s configuration parameter)' % mm(EMAIL))
+            self._log.info('No email status (see %s configuration parameter)' % mm(EMAIL))

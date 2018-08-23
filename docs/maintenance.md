@@ -1,9 +1,5 @@
 
-# Example Commands to Manage and Maintain the Repository
-
-## Configuration
-
-* `rover reset-config` - will reset the configuration to the default.
+# Example commands to manage and maintain a repository
 
 ## Indexing
 
@@ -22,7 +18,7 @@
   filesystem into the repository.
 
   **WARNING**: Repeated use of this command with the same file will
-  give duplicated data.
+  result in duplicated data in the repository.
 
 ## Inspection
 
@@ -34,5 +30,5 @@
 
 * `rover list-summary net=XX` - will show the overall (earliest to
   latest) voerage for all data belonging to the given network (in
-  general, `rover list-summary` will rub much more quickly that `rover
+  general, `rover list-summary` will run much more quickly that `rover
   list-index` because it uses a pre-computed summary table).

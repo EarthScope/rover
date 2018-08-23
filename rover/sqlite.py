@@ -14,11 +14,10 @@ def init_db(dbpath, log):
     Open a connection to the database.
     """
     log.debug('Connecting to sqlite3 %s' % dbpath)
-    db = connect(dbpath)
+    db = connect(dbpath, 60.0)
     # https://www.sqlite.org/foreignkeys.html
     db.execute('PRAGMA foreign_keys = ON')
     db.execute('PRAGMA case_sensitive_like = ON')  # as used by mseedindex
-    # db.execute('PRAGMA busy_timeout = 10000')
     return db
 
 

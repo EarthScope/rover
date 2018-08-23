@@ -1,6 +1,7 @@
 
 from sys import version_info
 from socket import gethostname
+from time import time
 
 if version_info[0] >= 3:
     from email.message import EmailMessage
@@ -39,7 +40,7 @@ class Reporter:
         Send the email using the pre-configured parameters.
         """
         if not self._email_to:
-            self._log.default('Not sending email (see %s)' % mm(EMAIL))
+            self._log.info('Not sending email (see %s)' % mm(EMAIL))
         else:
             try:
                 if version_info[0] >= 3:
@@ -69,15 +70,26 @@ class Reporter:
             line = line.rstrip()
             logger(line)
 
+    @staticmethod
+    def _human_duration(seconds):
+        if seconds > 86400:
+            return "{0:0.1f} days".format(seconds / 86400)
+        elif seconds > 3600:
+            return "{0:0.1f} hours".format(seconds / 3600)
+        elif seconds > 60:
+            return "{0:0.1f} minutes".format(seconds / 60)
+        else:
+            return "{0:0.2f} seconds".format(seconds)
+
     def describe_retrieve(self, source):
         """
         Generate the message sent by `rover retrieve`.
         """
         msg = '''
 ----- Retrieval Finished -----
-        
-A rover %s task on %s started %s 
-(%s local) has completed.
+
+A rover %s task on %s started %s
+(%s local) has completed in %s
 
 The task comprised of %d N_S_L_Cs with data covering %ds.
 
@@ -85,6 +97,7 @@ A total of %d downloads were made, with %d errors (%d on
 final pass of %d).
 ''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
        format_time_epoch_local(source.start_epoch),
+       self._human_duration(time() - source.start_epoch),
        source.initial_stats[0], source.initial_stats[1],
        source.n_downloads, source.n_errors, source.n_final_errors, source.n_retries)
         if source.n_final_errors:
@@ -96,15 +109,14 @@ WARNING: Since the final download had some errors, it may be
 ''' % (LIST_RETRIEVE, RETRIEVE)
         elif source.consistent == INCONSISTENT:
             msg += '''
-WARNING: Inconsistent behaviour was detected in the web 
-         services (eg dataselect not providing data promised 
+WARNING: Inconsistent behaviour was detected in the web
+         services (eg dataselect not providing data promised
          by availability)
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''
 The consistency of the web services could not be confirmed.
-Re-run the %s command with %s > 1 to 
-check
+Re-run the %s command with %s > 1 to check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.n_final_errors else self._log.default)
         return 'Rover %s complete' % RETRIEVE, msg
@@ -115,7 +127,7 @@ check
         """
         msg = '''
 ----- Subscription Processed -----
-        
+
 Subscription %s has been processed by the rover %s on %s.
 
 The task comprised of %d N_S_L_Cs with data covering %ds.
@@ -130,15 +142,15 @@ The subscription will be checked again in %d hours.
        self._recheck_period)
         if source.n_final_errors:
             msg += '''
-WARNING: Since the final download had some errors, it may be 
+WARNING: Since the final download had some errors, it may be
          incomplete.
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
         elif source.consistent == INCONSISTENT:
             msg += '''
-WARNING: Inconsistent behaviour was detected in the web 
-         services (eg dataselect not providing data promised 
+WARNING: Inconsistent behaviour was detected in the web
+         services (eg dataselect not providing data promised
          by availability)
 '''
         elif source.consistent == UNCERTAIN:

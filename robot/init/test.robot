@@ -25,6 +25,5 @@ Init
     Directory Should Exist    ${CURDIR}${/}run${/}logs
     File Should Exist    ${CURDIR}${/}run${/}logs/init-repository.log
     File Should Exist    ${CURDIR}${/}run${/}rover.config
-    File Should Exist    ${CURDIR}${/}run${/}data${/}index.sql
-    
-    
+    File Should Exist    ${CURDIR}${/}run${/}data${/}timeseries.sqlite
+

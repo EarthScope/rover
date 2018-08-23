@@ -4,7 +4,7 @@ from shutil import copyfile
 
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
-    HTTPRETRIES
+    HTTPRETRIES, ROVER_VERSION
 from .download import DEFAULT_NAME
 from .index import Indexer
 from .manager import DownloadManager
@@ -15,7 +15,7 @@ from .utils import clean_old_files, match_prefixes, check_leap, unique_path, saf
 
 """
 Commands related to data retrieval:
- 
+
 The `rover retrieve` command - check for remote data that we don't already have, download it and ingest it.
 The `rover list-retrieve` command - shows what data would be downloaded by `rover retrieve`.
 """
@@ -151,6 +151,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
                     raise Exception(usage)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             if fetch:
+                self._log.default('Rover version %s - starting retrieve' % ROVER_VERSION)
                 self.display_feedback()
             self._query(path, fetch)
             if fetch:

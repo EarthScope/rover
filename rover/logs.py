@@ -7,7 +7,7 @@ from os import makedirs, getpid
 from os.path import join, exists, isdir
 from re import match
 
-from .utils import clean_old_files, canonify
+from .utils import clean_old_files, canonify, calc_bytes
 
 """
 Support for logging.
@@ -69,10 +69,9 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     log = getLogger(name)
     log.setLevel(DEBUG)
 
-    if log_dir:  # on initialisation we have no log dir
+    if log_dir:  # on initialization we have no log dir
         path, dir = log_name(log_dir, name)
-        # smallest size is 8kB (2^13), largest size 4MB (2^22)
-        size = 2 ** (12 + max(min(log_size, 10), 1))
+        size = calc_bytes (log_size)
         count = max(min(log_count, 100), 1)
         file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)
         stream = None

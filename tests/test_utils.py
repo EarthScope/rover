@@ -47,8 +47,8 @@ class TestConfig(BaseConfig):
         kargs[_(LEAP)] = False
         args = TestArgs(**kargs)
         self.command = args.command
-        log, log_path, log_stream = init_log(args.log_dir, 7, 1, 5, 0, 'test', args.leap, 0)
-        dbpath = join(canonify(args.data_dir), 'index.sql')
+        log, log_path, log_stream = init_log(args.log_dir, '7M', 1, 5, 0, 'test', args.leap, 0)
+        dbpath = join(canonify(args.data_dir), 'timeseries.sqlite')
         create_parents(dbpath)
         super().__init__(log, log_path, args, init_db(dbpath, log), dir)
 
@@ -59,8 +59,8 @@ def find_root():
 
 def assert_files(dir, *files):
     found = listdir(dir)
-    if 'index.sql' in found:
-        found.remove('index.sql')
+    if 'timeseries.sqlite' in found:
+        found.remove('timeseries.sqlite')
     assert len(files) == len(found), 'Found %d files in %s (not %d)' % (len(found), dir, len(files))
     for file in found:
         ok = False

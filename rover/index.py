@@ -3,7 +3,7 @@ import sys
 from re import match, sub
 from sqlite3 import OperationalError
 
-from .config import mseed_db
+from .config import timeseries_db
 from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDINDEXWORKERS, HTTPTIMEOUT, \
     HTTPRETRIES, FORCECMD
 from .args import TIMESPANTOL
@@ -73,7 +73,7 @@ will index the entire repository.
         ModifiedScanner.__init__(self, config)
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
-        self._mseed_db = mseed_db(config)
+        self._timeseries_db = timeseries_db(config)
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
                                      config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5
@@ -97,12 +97,12 @@ will index the entire repository.
         if windows():
             self._workers.execute_with_lock('set LIBMSEED_LEAPSECOND_FILE=%s && %s %s -sqlite %s %s'
                                             % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                               self._mseed_db, path),
+                                               self._timeseries_db, path),
                                             path)
         else:
             self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
                                             % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                               self._mseed_db, path),
+                                               self._timeseries_db, path),
                                             path)
 
     def done(self):
@@ -181,7 +181,7 @@ will list all entries in the index after the year 2000.
         SqliteSupport.__init__(self, config)
         HelpFormatter.__init__(self, False)
         self._timespan_tol = config.arg(TIMESPANTOL)
-        self._mseed_db = mseed_db(config)
+        self._timeseries_db = timeseries_db(config)
         self._multiple_constraints = {STATION: [],
                                       NETWORK: [],
                                       CHANNEL: [],
@@ -257,7 +257,7 @@ printed to stdout.
         try:
             self.execute('select count(*) from tsindex')
         except OperationalError:
-            raise Exception('''Cannot access the index table in the database (%s).  Bad configuration or no data indexed?''' % self._mseed_db)
+            raise Exception('''Cannot access the index table in the database (%s).  Bad configuration or no data indexed?''' % self._timeseries_db)
 
     def _parse_args(self, args):
         for arg in args:

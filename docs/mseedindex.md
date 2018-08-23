@@ -1,28 +1,21 @@
 
-# Mseedindex Install Guidelines
+# mseedindex install guidelines (for rover)
 
-The [mseedindex](https://github.com/iris-edu/mseedindex) packaged is
-used by Rover.
+The [mseedindex](https://github.com/iris-edu/mseedindex) program is
+used by rover to maintain an index of downloaded miniSEED data.
+
+You must have a `C` (or `C++`) compiler and the `make` program to build mseedindex.
 
 Only sqlite database support is required, so install may be as easy
 as:
 
-* Downloading the latest source from
-  [here](https://github.com/iris-edu/mseedindex/releases)
+* Downloading the latest source code from the
+  [mseedindex release page](https://github.com/iris-edu/mseedindex/releases).
 
-* Unpacking the source
+* Unpack the source code, i.e. untar or unzip.
 
-* Building with `WITHOUTPOSTGRESQL=1 make`
+* On Unix-like computers, build/compile with `WITHOUTPOSTGRESQL=1 make`.
 
-* Copying the `mseedindex` program to `/usr/bin` or similar.
+* Copy the `mseedindex` program to `/usr/bin` or similar location that is in your PATH.
 
-If you do not want to install `mseedinindex` globally then you may
-need to configure rover:
-
-* Install rover
-
-* Run `rover reset-config` to generate a configurration file
-  (by default at `~/rover/config`).
-
-* Edit the `mseed-cmd` value in that file appropriately, so that
-  rover can execute mseedindex.
+If you do not want to install mseedinindex in a location in your PATH then you will need to set the `mseedindex-cmd` option in your `rover.config` file(s) to the location of the mseedinindex binary.

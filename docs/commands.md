@@ -39,7 +39,7 @@ To avoid over-writing data, it is an error if the config file, data directory or
 | ------------------- | -------------------- | ------------------------------ |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -96,8 +96,8 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | index               | True                 | Call index after ingest?       |
 | post-summary        | True                 | Call summary after retrieval?  |
 | rover-cmd           | rover                | Command to run rover           |
-| mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| data-dir            | data                 | The data directory - data, index.sql |
+| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | download-workers    | 5                    | Number of download instances to run |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |
@@ -114,7 +114,7 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 | temp-expire         | 1                    | Number of days before deleting temp files (days) |
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
@@ -146,10 +146,10 @@ The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as a
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -199,10 +199,10 @@ The following parameters are simple flags that change the output format.  They a
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 #### Examples
 
@@ -239,10 +239,10 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 #### Examples
 
@@ -284,7 +284,7 @@ A user may have multiple subscriptions (see `rover list-subscribe`), but to avoi
 | force-request       | False                | Skip overlap checks (dangerous)? |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 Most of the download process is controlled by the parameters provided when starting the service (see `rover start`).
 
@@ -311,7 +311,7 @@ See also `rover stop`, `rover status` and `rover daemon`.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | rover-cmd           | rover                | Command to run rover           |
-| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | download-workers    | 5                    | Number of download instances to run |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | temp-dir            | tmp                  | Temporary storage for downloads |
@@ -329,7 +329,7 @@ See also `rover stop`, `rover status` and `rover daemon`.
 | smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 | dev                 | False                | Development mode (show exceptions)? |
 
 In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
@@ -368,7 +368,7 @@ See also `rover start`, `rover status`.
 | ------------------- | -------------------- | ------------------------------ |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -390,7 +390,7 @@ See also `rover start`, `rover stop`.
 | ------------------- | -------------------- | ------------------------------ |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -410,10 +410,10 @@ Delete one or more subscriptions.  The arguments can be single numbers (identify
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -435,10 +435,10 @@ More exactly, this command resets the "last checked" date in the database, so wh
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -475,14 +475,14 @@ This task is the main low-level task called in the processing pipeline (it calls
 | index               | True                 | Call index after ingest?       |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 In addition, parameters for sub-commands (ingest, index) will be used - see help for those commands for more details.
 
 ##### Examples
 
     rover download \
-    http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000
+    'http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000'
 
 will download, ingest and index data from the given URL..
 
@@ -501,8 +501,8 @@ The file should not contain data that spans multiple calendar days.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| mseedindex-cmd      | mseedindex           | Mseedindex command             |
-| data-dir            | data                 | The data directory - data, index.sql |
+| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | index               | True                 | Call index after ingest?       |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -510,7 +510,7 @@ The file should not contain data that spans multiple calendar days.
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 In addition, parameters for sub-commands (index) will be used - see help for those commands for more details.
 
@@ -540,8 +540,8 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | all                 | False                | Process all files (not just modified)? |
-| data-dir            | data                 | The data directory - data, index.sql |
-| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
+| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
 | leap-expire         | 30                   | Number of days before refreshing file |
@@ -549,7 +549,7 @@ The `mseedindex` command is used to index the data.  This optionally uses a file
 | leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -568,10 +568,10 @@ Create a summary of the index in the database.  This lists the overall span of d
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The data directory - data, index.sql |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
@@ -595,7 +595,7 @@ See also `rover stop`, `rover status`.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | rover-cmd           | rover                | Command to run rover           |
-| mseedindex-cmd      | mseedindex           | Mseedindex command             |
+| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | download-workers    | 5                    | Number of download instances to run |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | temp-dir            | tmp                  | Temporary storage for downloads |
@@ -613,7 +613,7 @@ See also `rover stop`, `rover status`.
 | smtp-port           | 25                   | Port for SMTP server           |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 | dev                 | False                | Development mode (show exceptions)? |
 
 In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
@@ -665,7 +665,7 @@ As with the `rover download` command, empty logs are removed on exit to avoid cl
 | http-port           | 8000                 | Port for HTTP server           |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 6                    | Log verbosity (0-6)            |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
 
 ##### Examples
 
