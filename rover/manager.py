@@ -403,9 +403,13 @@ class Source(SqliteSupport):
     def _get_availability(self, request, availability_url):
         self._log.info('Checking availability service')
         response = unique_path(self._temp_dir, TMPRESPONSE, request)
-        response = post_to_file(availability_url, request, response, self._http_timeout, self._http_retries, self._log)
-        sort_file_inplace(self._log, response, self._temp_dir, self._sort_in_python)
-        return response
+        response, check_status = post_to_file(availability_url, request, response, self._http_timeout, self._http_retries, self._log)
+        try:
+            check_status()
+            return response
+        except Exception as e:
+            self._diagnose_error(str(e), request, response)
+            raise
 
     def _parse_line(self, line):
         try:
@@ -416,6 +420,7 @@ class Source(SqliteSupport):
 
     def _parse_availability(self, response):
         try:
+            sort_file_inplace(self._log, response, self._temp_dir, self._sort_in_python)
             with open(response, 'r') as input:
                 availability = None
                 for line in input:
@@ -431,19 +436,23 @@ class Source(SqliteSupport):
                 if availability:
                     yield availability
         except Exception as e:
-            self._log.error('Problems parsing the availability service response.  ' +
-                            'Will log response contents (max 10 lines) here:')
-            log_file_contents(response, self._log, 10)
-            self._log.error('Please pay special attention to the first lines of the message - ' +
-                            'they often contains useful information.')
-            self._log.error('The most likely cause of this problem is that the request contains errors.  ' +
-                            'Will log request contents (max 10 lines) here:')
-            log_file_contents(self._request_path, self._log, 10)
-            self._log.error('The request is either provided by the user or created from the user input.')
-            self._log.error('To ensure consistency rover copies files.  ' +
-                            'To see the paths and avoid deleting temporary copies re-run the command ' +
-                            'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
-            raise e
+            self._diagnose_error('Problems parsing the availability service response.',
+                                 self._request_path, response)
+            raise
+
+    def _diagnose_error(self, error, request, response):
+        self._log.error(error)
+        self._log.error('Will log response contents (max 10 lines) here:')
+        log_file_contents(response, self._log, 10)
+        self._log.error('Please pay special attention to the first lines of the message - ' +
+                        'they often contains useful information.')
+        self._log.error('The most likely cause of this problem is that the request contains errors.  ' +
+                        'Will log request contents (max 10 lines) here:')
+        log_file_contents(request, self._log, 10)
+        self._log.error('The request is either provided by the user or created from the user input.')
+        self._log.error('To ensure consistency rover copies files.  ' +
+                        'To see the paths and avoid deleting temporary copies re-run the command ' +
+                        'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
 
     def _scan_index(self, sncl):
         availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)

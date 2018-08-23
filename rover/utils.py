@@ -197,7 +197,7 @@ def _stream_output(request, down, unique=True):
         for chunk in request.iter_content(chunk_size=1024):
             if chunk:
                 output.write(chunk)
-    return down
+    return down, request.raise_for_status
 
 
 def _session(retries):

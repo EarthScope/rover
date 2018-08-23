@@ -118,7 +118,9 @@ will download, ingest and index data from the given URL..
         if exists(path):
             raise Exception('Path %s for download already exists' % path)
         create_parents(path)
-        return get_to_file(url, path, self._http_timeout, self._http_retries, self._log)
+        response, check_status = get_to_file(url, path, self._http_timeout, self._http_retries, self._log)
+        check_status()
+        return response
 
     def _ingesters_db_path(self, url, pid):
         name = uniqueish('rover_ingester', url)
