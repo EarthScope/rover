@@ -3,7 +3,7 @@ from re import sub
 
 from .args import HELP, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
-    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE
+    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, RESUBSCRIBE, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT
 
 """
 The 'rover help' command.
@@ -69,6 +69,8 @@ rover %s [directory]
   as the repository.  This will create a configuration file
   (by default %s) as well as directories for logs and data.
   
+  The aliases `rover %s` and `rover %s` also exist.
+
 rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Compare the local index with the data available remotely 
@@ -96,7 +98,7 @@ rover %s ...
   `rover %s` but gives less detail.  For more information, 
   run "rover %s" (with no arguments).
 
-''' % (INIT_REPOSITORY, DEFAULT_FILE,
+''' % (INIT_REPOSITORY, DEFAULT_FILE, INIT, INIT_REPO,
        RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
        LIST_RETRIEVE, AVAILABILITYURL,
        LIST_INDEX, DATADIR, LIST_INDEX,

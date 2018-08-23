@@ -29,6 +29,10 @@
 
     rover init-repository [directory]
 
+    rover init-repo [directory]
+
+    rover init [directory]
+
 Creates the expected directory structure and writes default values to the config file.
 
 To avoid over-writing data, it is an error if the config file, data directory or log directory already exist.

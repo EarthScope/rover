@@ -34,6 +34,8 @@ SUBSCRIBE = 'subscribe'
 RESUBSCRIBE = 'resubscribe'
 UNSUBSCRIBE = 'unsubscribe'
 WEB = 'web'
+INIT = 'init'
+INIT_REPO = 'init-repo'
 INIT_REPOSITORY = 'init-repository'
 
 
@@ -212,6 +214,17 @@ def mm(string): return '--' + string
 def unbar(string): return sub('_', '-', string)
 
 
+def cmd_or_alias(cmd):
+    """
+    We use the 'type' of the command argument to handle aliases.  In this
+    way we avoid having to have multiple checks elsewhere in the startup
+    logic.
+    """
+    if cmd in (INIT, INIT_REPO):
+        cmd = INIT_REPOSITORY
+    return cmd
+
+
 class Arguments(ArgumentParser):
     """
     Extend the standard arg parsing to:
@@ -310,7 +323,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(SMTPPORT), default=DEFAULT_SMTPPORT, action='store', help='port for SMTP server', metavar=NVAR, type=int)
 
         # commands / args
-        self.add_argument(COMMAND, metavar='COMMAND', nargs='?', help='use "help" for further information')
+        self.add_argument(COMMAND, metavar='COMMAND', nargs='?', type=cmd_or_alias, help='use "help" for further information')
         self.add_argument(ARGS, nargs='*', help='command arguments (depend on the command)')
 
     def parse_args(self, args=None, namespace=None):
@@ -327,7 +340,7 @@ class Arguments(ArgumentParser):
             args = sys.argv[1:]
         args = self.__preprocess_booleans(args)
         config = None
-        if INIT_REPOSITORY not in args:
+        if INIT_REPOSITORY not in (cmd_or_alias(arg) for arg in args):
             config, args = self.__extract_config(args)
             if exists(config):
                 args = self.__patch_config(args, config)
@@ -342,9 +355,9 @@ class Arguments(ArgumentParser):
         indices = []
         for (index, arg) in enumerate(args):
             if arg.startswith(NO):
-                arg = '--' + arg[5:]
+                arg = mm(arg[5:])
             for action in self._actions:
-                name = '--' + unbar(action.dest)
+                name = mm(unbar(action.dest))
                 if name == arg and type(action) is StoreBoolAction:
                     indices.append(index)
         for index in reversed(indices):
