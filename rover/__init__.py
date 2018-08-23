@@ -1,8 +1,6 @@
 
-import sys
 from traceback import print_exc
 
-from .web import ServerStarter
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, RESUBSCRIBE
@@ -15,6 +13,7 @@ from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
 from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Resubscriber
 from .summary import Summarizer, SummaryLister
+from .web import ServerStarter
 
 
 COMMANDS = {
