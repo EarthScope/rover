@@ -42,8 +42,8 @@ You can now edit the source.  To test your changes:
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
 
-Tests assume that executable `/mseedindex/mseedindex` is installed in the parent directory of `roverdev`,
-`roverdev/../mseedindex/mseedindex`.
+Tests assume that executable `/mseedindex/mseedindex` is installed in the parent directory of `rover`,
+`rover/../mseedindex/mseedindex`.
 
 You may need to edit tests or change configuration if this is not the
 case.
