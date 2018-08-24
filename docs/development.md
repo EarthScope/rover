@@ -36,13 +36,15 @@ the script details slightly depending on your python version):
 
 You can now edit the source.  To test your changes:
 
-    dev/run-nose-tests-py3-in-py3.sh
-    dev/run-robot-tests-py3-in-py3.sh
+    dev/run-nose-tests-py3-in-env3.sh 
+    dev/run-robot-tests-py3-in-env3.sh
 
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
 
-Tests assume that `mseedindex` is installed in `roverdev/mseedindex`.
+Tests assume that executable `/mseedindex/mseedindex` is installed in the parent directory of `roverdev`,
+`roverdev/../mseedindex/mseedindex`.
+
 You may need to edit tests or change configuration if this is not the
 case.
 
