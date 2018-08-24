@@ -272,7 +272,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
 
     def _source_callback(self, source):
         self.execute('''update rover_subscriptions set last_error_count = ?, consistent = ? where id = ?''',
-                     (source.n_final_errors, source.consistent, source.name))
+                     (source.errors.final_errors, source.consistent, source.name))
         if self._post_summary:
             Summarizer(self._config).run([])
         subject, msg = self._reporter.describe_daemon(source)

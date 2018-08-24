@@ -98,9 +98,10 @@ final pass of %d).
 ''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
        format_time_epoch_local(source.start_epoch),
        self._human_duration(time() - source.start_epoch),
-       source.initial_stats[0], source.initial_stats[1],
-       source.n_downloads, source.n_errors, source.n_final_errors, source.n_retries)
-        if source.n_final_errors:
+       source.initial_progress.coverages[1], source.initial_progress.seconds[1],
+       source.errors.downloads, source.errors.errors, source.errors.final_errors,
+       source.n_retries)
+        if source.errors.final_errors:
             msg += '''
 WARNING: Since the final download had some errors, it may be
          incomplete.
@@ -118,7 +119,7 @@ WARNING: Inconsistent behaviour was detected in the web
 The consistency of the web services could not be confirmed.
 Re-run the %s command with %s > 1 to check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
-        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.default)
+        self._log_message(msg, self._log.warn if source.errors.final_errors else self._log.default)
         return 'Rover %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
@@ -137,10 +138,10 @@ final pass of %d).
 
 The subscription will be checked again in %d hours.
 ''' % (source.name, DAEMON, gethostname(),
-       source.initial_stats[0], source.initial_stats[1],
-       source.n_downloads, source.n_errors, source.n_final_errors, source.n_retries,
-       self._recheck_period)
-        if source.n_final_errors:
+       source.initial_progress.coverages[1], source.initial_progress.seconds[1],
+       source.errors.downloads, source.errors.errors, source.errors.final_errors,
+       source.n_retries, self._recheck_period)
+        if source.errors.final_errors:
             msg += '''
 WARNING: Since the final download had some errors, it may be
          incomplete.
@@ -158,5 +159,5 @@ WARNING: Inconsistent behaviour was detected in the web
 The consistency of the web services could not be confirmed
 (daemon must have %s > 1).
 ''' % mm(DOWNLOADRETRIES)
-        self._log_message(msg, self._log.warn if source.n_final_errors else self._log.default)
+        self._log_message(msg, self._log.warn if source.errors.final_errors else self._log.default)
         return 'Rover subscription %s processed' % source.name, msg

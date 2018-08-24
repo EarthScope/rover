@@ -20,6 +20,58 @@ The core logic for scheduling multiple downloads.  Called by both the daemon and
 """
 
 
+class ProgressStatistics:
+    """
+    Encapsulate the statistics that measure progress for a single retrieval.
+    Statistics are pairs of values:
+      index 0 - current value
+      index 1 - initial value / limit
+    """
+
+    def __init__(self):
+        self.coverages = [0, 0]
+        self.seconds = [0, 0]
+        self.days = [0, 0]
+
+    def __count_coverage(self, coverage, index):
+        self.coverages[index] += 1
+        for begin, end in coverage.timespans:
+            self.seconds[index] += (end - begin)
+
+    def add_coverage(self, coverage):
+        self.__count_coverage(coverage, 1)
+
+    def pop_coverage(self, coverage):
+        self.__count_coverage(coverage, 0)
+
+    def add_days(self, n):
+        # the day count isn't global - it's per sncl (coverage) - so resets
+        self.days[0] = 0
+        self.days[1] = n
+
+    def pop_day(self):
+        self.days[0] += 1
+
+    def __str__(self):
+        return '(%d/%d); day %d/%d' % (self.coverages[0], self.coverages[1], self.days[0], self.days[1])
+
+
+class ErrorStatistics:
+    """
+    Encapsulate the statistics that count errors.
+    Raw values are per retrieval, they are accumulated on the source.
+    """
+    def __init__(self):
+        self.downloads = 0
+        self.errors = 0
+        self.final_errors = None
+
+    def accumulate(self, errors):
+        self.downloads += errors.downloads
+        self.errors += errors.errors
+        self.final_errors = errors.errors
+
+
 class Retrieval:
     """
     A single attempt at downloading data for a subscription or retrieval
@@ -35,14 +87,15 @@ class Retrieval:
         self._coverages = deque()  # fifo: appendright / popleft; exposed for display
         self._days = deque()  # fifo: appendright / popleft
         self.worker_count = 0
-        self.n_downloads = 0
-        self.n_errors = 0
+        self.errors = ErrorStatistics()
+        self.progress = ProgressStatistics()
 
     def add_coverage(self, coverage):
         """
         Add a coverage to retrieve.
         """
         self._coverages.append(coverage)
+        self.progress.add_coverage(coverage)
 
     def get_coverages(self):
         """
@@ -58,18 +111,6 @@ class Retrieval:
         left = right - 0.000001
         return left, right
 
-    def stats(self):
-        """
-        Calculate current stats (for progress reporting).
-        """
-        coverage_count, total_seconds = 0, 0
-        for coverage in self._coverages:
-            coverage_count += 1
-            for timespan in coverage.timespans:
-                begin, end = timespan
-                total_seconds += (end - begin)
-        return coverage_count, total_seconds, len(self._days)
-
     def has_days(self):
         """
         Ensure days has some data, if possible, and return whether it has any.
@@ -78,6 +119,7 @@ class Retrieval:
             return True
         while self._coverages:
             coverage = self._coverages.popleft()
+            self.progress.pop_coverage(coverage)
             sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
             for begin, end in timespans:
                 if begin == end:
@@ -88,6 +130,7 @@ class Retrieval:
                     if right < end:
                         timespans.push((right, end))
             if self._days:
+                self.progress.add_days(len(self._days))
                 return True
         return False
 
@@ -98,20 +141,18 @@ class Retrieval:
 
     def _worker_callback(self, command, return_code):
         self.worker_count -= 1
-        self.n_downloads += 1
+        self.errors.downloads += 1
         if return_code:
-            self.n_errors += 1
+            self.errors.errors += 1
             self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
 
-    def new_worker(self, workers, config_path, rover_cmd, initial):
+    def new_worker(self, workers, config_path, rover_cmd):
         """
         Launch a new worker (called by manager main loop).
         """
         sncl, begin, end = self._days.popleft()
-        stats = self.stats()
-        self._log.default('Downloading %s (%d/%d); day %d/%d' %
-                          (sncl, initial[0] - stats[0], initial[0],
-                           initial[2] - stats[2], initial[2]))
+        self.progress.pop_day()
+        self._log.default('Downloading %s %s' % (sncl, self.progress))
         url = self._build_url(sncl, begin, end)
         # for testing error handling we can inject random errors here
         if randint(1, 100) <= self._force_failures:
@@ -170,13 +211,12 @@ class Source(SqliteSupport):
         self.n_retries = 0
         self._retrieval = None
         self.start_epoch = time()
-        self.n_downloads = 0
-        self.n_errors = 0
-        self.n_final_errors = None
+        self.errors = ErrorStatistics()
         self._expect_empty = False
         self.consistent = UNCERTAIN
         # load first retrieval immediately so we don't print messages in the middle of list-retrieve
-        self.initial_stats = self._new_retrieval(fetch)
+        self._new_retrieval(fetch)
+        self.initial_progress = self._retrieval.progress
 
     def __str__(self):
         return '%s (%s)' % (self.name, self._dataselect_url)
@@ -191,7 +231,7 @@ class Source(SqliteSupport):
         """
         Provide access to latest stats (for reporting).
         """
-        return self._retrieval.stats()
+        return self._retrieval.progress
 
     def has_days(self):
         """
@@ -210,7 +250,7 @@ class Source(SqliteSupport):
         """
         Launch a new worker (called by manager main loop).
         """
-        self._retrieval.new_worker(workers, config_path, rover_cmd, self.initial_stats)
+        self._retrieval.new_worker(workers, config_path, rover_cmd)
 
     @property
     def _name(self):
@@ -239,12 +279,7 @@ class Source(SqliteSupport):
         # we throw an exception if we finish with incomplete data (errors) or proof of inconsistency.
 
         if self._retrieval.is_complete():
-
-            # update public stats
-            self.n_downloads += self._retrieval.n_downloads
-            self.n_errors += self._retrieval.n_errors
-            self.n_final_errors = self._retrieval.n_errors
-
+            self.errors.accumulate(self._retrieval.errors)
             complete = True  # default if exception thrown
             try:
                 if self._expect_empty:
@@ -262,21 +297,21 @@ class Source(SqliteSupport):
     def _is_complete_initial_reads(self, retry_possible):
 
         # the last retrieval had errors.
-        if self._retrieval.n_errors:
+        if self._retrieval.errors.errors:
             # if we can retry, then do so
             if retry_possible:
                 self._log.default(('The latest %sretrieval attempt completed with %d errors after %d attempts. '+
                                    'We will retry to check that all data were retrieved') %
-                                  (self._name, self._retrieval.n_errors, self.n_retries))
+                                  (self._name, self._retrieval.errors.errors, self.n_retries))
                 self._new_retrieval(True)
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
                 raise Exception('The latest %sretrieval attempt had %d errors on the final attempt (%d of %d)' %
-                                (self._name, self._retrieval.n_errors, self.n_retries, self.download_retries))
+                                (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data
-        elif self._retrieval.n_downloads:
+        elif self._retrieval.errors.downloads:
             # can we try again, to make sure there are no more data?
             if retry_possible:
                 self._log.default(('The latest %sretrieval attempt had no errors, but we downloaded data so ' +
@@ -325,22 +360,22 @@ class Source(SqliteSupport):
     def _is_complete_final_read(self, retry_possible):
 
         # the last retrieval had errors (it shouldn't have - we should be on final empty download)
-        if self._retrieval.n_errors:
+        if self._retrieval.errors.errors:
             self.consistent = INCONSISTENT
             # if we can retry, then do so
             if retry_possible:
                 self._log.default(('The latest %sretrieval attempt had %d errors after %d attempts.  ' +
                                    'We will retry to complete the retrieval.') %
-                                  (self._name, self._retrieval.n_errors, self.n_retries))
+                                  (self._name, self._retrieval.errors.errors, self.n_retries))
                 self._new_retrieval(True)
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
                 raise Exception('The latest %sretrieval attempt had %d errors on final attempt (%d of %d)' %
-                                (self._name, self._retrieval.n_errors, self.n_retries, self.download_retries))
+                                (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data (again, unexpected)
-        elif self._retrieval.n_downloads:
+        elif self._retrieval.errors.downloads:
             self.consistent = INCONSISTENT
             # can we try again, in case this was some weird hiccup?
             if retry_possible:
@@ -352,7 +387,7 @@ class Source(SqliteSupport):
             else:
                 raise Exception(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C days) on the ' +
                                  'final attempt (%d of %d) (inconsistent web services?)') %
-                                (self._name, self._retrieval.n_downloads, self.n_retries, self.download_retries))
+                                (self._name, self._retrieval.errors.downloads, self.n_retries, self.download_retries))
 
         # no errors and no data
         else:
@@ -362,8 +397,7 @@ class Source(SqliteSupport):
             return True
 
     def _new_retrieval(self, fetch):
-        # fetch indicates we're not simply querying and so should check for no data and
-        # prime days for stats
+        # fetch indicates we're not simply querying and so should check for no data and prime days
         self.n_retries += 1
         self._log.default('Trying new %sretrieval (attempt %d of %d)' %
                        (self._name, self.n_retries, self.download_retries))
@@ -382,12 +416,8 @@ class Source(SqliteSupport):
             if self._delete_files:
                 safe_unlink(request)
                 safe_unlink(response)
-        stats = self._retrieval.stats()
         if fetch and not self._retrieval.has_days():
             self._log.default('The availability service indicates that there are no more data to download')
-        # update stats with days after days are loaded by has_days
-        days_stats = self._retrieval.stats()
-        return stats[:2] + days_stats[2:3]
 
     def _build_request(self, path):
         tmp = unique_path(self._temp_dir, TMPREQUEST, path)
@@ -682,12 +712,14 @@ class DownloadManager(SqliteSupport):
             self._db.cursor().execute('begin')
             self._db.execute('delete from rover_download_stats', tuple())
             for source in self._sources.values():
-                stats = source.stats()
+                progress = source.stats()
                 self._db.execute('''insert into rover_download_stats
                                       (submission, initial_coverages, remaining_coverages, initial_time, remaining_time, 
                                        n_retries, download_retries)
                                       values (?, ?, ?, ?, ?, ?, ?)''',
-                                 (source.name, source.initial_stats[0], stats[0], source.initial_stats[1], stats[1],
+                                 (source.name,
+                                  progress.coverages[1], progress.coverages[1] - progress.coverages[0],
+                                  progress.seconds[1], progress.seconds[1] - progress.seconds[0],
                                   source.n_retries, source.download_retries))
 
     def _start_web(self):
