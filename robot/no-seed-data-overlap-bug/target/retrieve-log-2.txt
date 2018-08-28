@@ -1,0 +1,31 @@
+retrieve  DEFAULT: Rover version 0.0.0 - starting retrieve
+retrieve  DEFAULT: Status available at http://127.0.0.1:8000
+retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
+retrieve  DEFAULT: Downloading TA_MSTX__BHE (1/3); day 1/2
+retrieve  DEFAULT: Downloading TA_MSTX__BHE (1/3); day 2/2
+retrieve  DEFAULT: Downloading TA_MSTX__BHN (2/3); day 1/2
+retrieve  DEFAULT: Downloading TA_MSTX__BHN (2/3); day 2/2
+retrieve  DEFAULT: Downloading TA_MSTX__BHZ (3/3); day 1/2
+ERROR: Cannot read /home/andrew/project/rover/rover/robot/no-seed-data-overlap-bug/tmp/rover_download_15bac3_5542: No SEED data detected
+download.5542 CRITICAL: Command "LIBMSEED_LEAPSECOND_FILE=/home/andrew/project/rover/rover/robot/no-seed-data-overlap-bug/leap-seconds.list ../../../../mseedindex/mseedindex -sqlite /home/andrew/project/rover/rover/robot/no-seed-data-overlap-bug/tmp/rover_ingester_15bac3_5542 /home/andrew/project/rover/rover/robot/no-seed-data-overlap-bug/tmp/rover_download_15bac3_5542" failed
+download.5542  DEFAULT: See "rover help download"
+retrieve    ERROR: Download failed (return code 1)
+retrieve  DEFAULT: Downloading TA_MSTX__BHZ (3/3); day 2/2
+retrieve  DEFAULT: The latest retrieval attempt completed with 1 errors after 1 attempts. We will retry to check that all data were retrieved
+retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
+retrieve  DEFAULT: The availability service indicates that there are no more data to download
+retrieve  DEFAULT: The latest retrieval attempt had no errors or data.  We will retry to check that all data were retrieved.
+retrieve  DEFAULT: Trying new retrieval (attempt 3 of 3)
+retrieve  DEFAULT: The availability service indicates that there are no more data to download
+retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
+retrieve  DEFAULT: 
+retrieve  DEFAULT: ----- Retrieval Finished -----
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A rover retrieve task on HOST started DATE
+retrieve  DEFAULT: (DATE local) has completed in DURATION
+retrieve  DEFAULT: 
+retrieve  DEFAULT: The task comprised of 3 N_S_L_Cs with data covering 259200s.
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A total of 6 downloads were made, with 1 errors (0 on
+retrieve  DEFAULT: final pass of 3).
+retrieve  DEFAULT: 

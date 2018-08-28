@@ -9,7 +9,7 @@ Library    OperatingSystem
 
 Bad Date Format Command Line
 
-    Remove Directory    ${CURDIR}${/}run  resursive=True
+    Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
 
     Run Process    rover  -f  ../rover.config  retrieve  TA_MSTX__BH?  2012-02-01  2012-02-2  cwd=${CURDIR}${/}run  stderr=retrieve-error-1.txt

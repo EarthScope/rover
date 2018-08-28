@@ -1,0 +1,21 @@
+retrieve  DEFAULT: Rover version 0.0.0 - starting retrieve
+retrieve  DEFAULT: Status available at http://127.0.0.1:8000
+retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
+retrieve  DEFAULT: Downloading TA_MSTX__BHE (1/3); day 1/1
+retrieve  DEFAULT: Downloading TA_MSTX__BHN (2/3); day 1/1
+retrieve  DEFAULT: Downloading TA_MSTX__BHZ (3/3); day 1/1
+retrieve  DEFAULT: The latest retrieval attempt had no errors, but we downloaded data so will try again to check that all data were retrieved
+retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
+retrieve  DEFAULT: The availability service indicates that there are no more data to download
+retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
+retrieve  DEFAULT: 
+retrieve  DEFAULT: ----- Retrieval Finished -----
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A rover retrieve task on HOST started DATE
+retrieve  DEFAULT: (DATE local) has completed in DURATION
+retrieve  DEFAULT: 
+retrieve  DEFAULT: The task comprised of 3 N_S_L_Cs with data covering 10800s.
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A total of 3 downloads were made, with 0 errors (0 on
+retrieve  DEFAULT: final pass of 2).
+retrieve  DEFAULT: 

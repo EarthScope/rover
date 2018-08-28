@@ -10,7 +10,7 @@ Suite Setup   Setup Run Directory
 *** Keywords ***
 
 Setup Run Directory
-    Remove Directory    ${CURDIR}${/}run  resursive=True,
+    Remove Directory    ${CURDIR}${/}run  recursive=True,
     Create Directory    ${CURDIR}${/}run
 
 

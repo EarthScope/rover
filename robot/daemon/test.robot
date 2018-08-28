@@ -9,7 +9,7 @@ Library    OperatingSystem
 
 Daemon
 
-    Remove Directory    ${CURDIR}${/}run  resursive=True
+    Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
 
     ${result} =  Run Process    rover  -f  ../roverrc  subscribe  ../request.1  cwd=${CURDIR}${/}run

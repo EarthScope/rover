@@ -17,3 +17,6 @@ leap-seconds.list
 build
 dist
 rover.egg-info
+logs
+subscriptions
+config

@@ -9,7 +9,7 @@ Library    OperatingSystem
 
 Single Day
 
-    Remove Directory    ${CURDIR}${/}run  resursive=True
+    Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
 
     Run Process    rover  -f  ../roverrc  retrieve  IU_ANMO_*_*  2016-01-01  2016-01-02  cwd=${CURDIR}${/}run

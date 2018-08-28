@@ -9,7 +9,7 @@ Library    OperatingSystem
 
 Cross Day
 
-    Remove Directory    ${CURDIR}${/}run  resursive=True
+    Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
 
     Run Process    rover  -f  ../roverrc  retrieve  IU_ANMO_3?_*  2016-01-01T20:00:00  2016-01-02T04:00:00  cwd=${CURDIR}${/}run
