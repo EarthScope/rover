@@ -18,7 +18,7 @@ Setup Run Directory
 
 Help
     Comment  check that help starts and shows basic info
-    ${result} =    Run Process    rover  -f  ../roverrc  cwd=${CURDIR}${/}run
+    ${result} =    Run Process    rover  -f  ../rover.config  cwd=${CURDIR}${/}run
     Log    ${result.stdout}
     Log    ${result.stderr}
     Should Match Regexp    ${result.stdout}  help
