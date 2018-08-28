@@ -13,7 +13,7 @@ by auto-generating portable code using the
 One consequence of this is that the "installable" code (typically
 available via `pip` from the [PyPI rover project](https://pypi.org/project/rover/) or a tarball) is not
 identical to the development code (typically available from the
-[rover repository](https://github.com/iris-edu/rover/)).
+[rover repository](https://github.com/iris-edu/rover/)). Because of this disparity, instances of development Rover should not be inistalled into system Python 2.7.
 
 ## Getting started
 
