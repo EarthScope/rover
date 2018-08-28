@@ -87,10 +87,8 @@ class LockContext(SqliteSupport):
         return False
 
     def set_pid(self, pid):
-        with self._db:  # commits or rolls back
-            c = self._db.cursor()
-            c.execute('begin')
-            c.execute('update %s set pid=? where key=?' % self._table, (self._pid, self._key))
+        self._log.debug('Setting PID on %s for %s to %d' % (self._table, self._key, pid))
+        self.execute('update %s set pid=? where key=?' % self._table, (pid, self._key))
 
     def release(self):
         self._log.debug('Releasing lock on %s with %s' % (self._table, self._key))

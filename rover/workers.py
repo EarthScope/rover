@@ -135,12 +135,20 @@ class NoConflictPerDatabaseWorkers(Workers):
         self._locks = {}
 
     def execute_with_lock(self, command, key, callback=None):
+        # here we are locking for subprocess, so we need to supply the PID
+        # after acquiring the lock.
+        # note that we cannot deadlock even though this is single-threaded and blocks,
+        # because this is called only by code that iterates through the items to be locked
+        # (so doesn't contain duplicates).  any contention must be with another process.
         self._wait_for_space()
-        # this is single threaded - the locking is across processes
         self._locks[key] = self._lock_factory.lock(key)
         self._locks[key].acquire()
-        popen = self._popen(command)
-        self._locks[key].set_pid(popen.pid)
+        try:
+            popen = self._popen(command)
+            self._locks[key].set_pid(popen.pid)
+        except:  # don't let a null PID stay in the table
+            self._locks[key].release()
+            raise
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
         self._workers.append((command, popen,
                               lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))

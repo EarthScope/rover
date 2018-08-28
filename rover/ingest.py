@@ -150,6 +150,9 @@ will add all the data in the given file to the repository.
         if not exists(dest):
             create_parents(dest)
             open(dest, 'w').close()
+        # here we are locking for this process, so we can set the PID directly.
+        # there is no possibility for deadlock because we are single threaded and
+        # release on exit.
         with self._lock_factory.lock(dest, pid=getpid()):
             with open(dest, 'ba') as output:
                 output.write(data)
