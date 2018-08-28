@@ -139,8 +139,10 @@ class NoConflictPerDatabaseWorkers(Workers):
         # this is single threaded - the locking is across processes
         self._locks[key] = self._lock_factory.lock(key)
         self._locks[key].acquire()
+        popen = self._popen(command)
+        self._locks[key].set_pid(popen.pid)
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        self._workers.append((command, self._popen(command),
+        self._workers.append((command, popen,
                               lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))
 
     def execute(self, command, callback=None):

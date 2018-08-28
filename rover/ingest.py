@@ -1,5 +1,6 @@
 
 from datetime import datetime
+from os import getpid
 from os.path import exists, join
 from re import match
 
@@ -149,7 +150,7 @@ will add all the data in the given file to the repository.
         if not exists(dest):
             create_parents(dest)
             open(dest, 'w').close()
-        with self._lock_factory.lock(dest):
+        with self._lock_factory.lock(dest, pid=getpid()):
             with open(dest, 'ba') as output:
                 output.write(data)
 

@@ -1,6 +1,6 @@
 
 from os import getpid, kill
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError, IntegrityError
 from time import sleep
 
 from .utils import format_epoch, process_exists
@@ -38,8 +38,8 @@ class DatabaseBasedLockFactory(SqliteSupport):
                            creation_epoch int default (cast(strftime('%%s', 'now') as int))
         )''' % self._table_name)
 
-    def lock(self, key):
-        return LockContext(self._config, self._table_name, key)
+    def lock(self, key, pid=None):
+        return LockContext(self._config, self._table_name, key, pid)
 
 
 class LockContext(SqliteSupport):
@@ -47,34 +47,50 @@ class LockContext(SqliteSupport):
     Both context and acquire/release syntax are supported here.
     """
 
-    def __init__(self, config, table, key):
+    def __init__(self, config, table, key, pid):
         super().__init__(config)
         self._table = table
         self._key = key
+        self._pid = pid
 
     def __enter__(self):
         self.acquire()
 
     def acquire(self):
+        clean = False
         while True:
             try:
+                if clean:
+                    if not self._clean():
+                        self._log.debug('Sleeping on lock %s with %s' % (self._table, self._key))
+                        sleep(1)
                 # very careful with transactions here - want entire process to be in a single transaction
                 with self._db:  # commits or rolls back
                     c = self._db.cursor()
                     c.execute('begin')
                     if not c.execute('select count(*) from %s where key = ?' % self._table, (self._key,)).fetchone()[0]:
-                        self._log.debug('Acquired lock on %s with %s' % (self._table, self._key))
-                        c.execute('insert into %s (pid, key) values (?, ?)' % self._table, (getpid(), self._key))
+                        self._log.debug('Acquiring lock on %s with %s for PID %d' % (self._table, self._key, getpid()))
+                        c.execute('insert into %s (pid, key) values (?, ?)' % self._table, (self._pid, self._key))
                         return
-            except OperationalError:
-                pass  # database was locked
-            if not self._clean():
-                self._log.debug('Sleeping on lock %s with %s' % (self._table, self._key))
+            except IntegrityError as e:
+                self._log.debug(e)
                 sleep(1)
+                pass  # PID existed and needs to be cleaned out
+            except OperationalError as e:
+                self._log.debug(e)
+                sleep(1)
+                pass  # database was locked
+            clean = True
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()
         return False
+
+    def set_pid(self, pid):
+        with self._db:  # commits or rolls back
+            c = self._db.cursor()
+            c.execute('begin')
+            c.execute('update %s set pid=? where key=?' % self._table, (self._pid, self._key))
 
     def release(self):
         self._log.debug('Releasing lock on %s with %s' % (self._table, self._key))
@@ -85,7 +101,7 @@ class LockContext(SqliteSupport):
 
         def callback(row):
             pid, key, epoch = row
-            if not process_exists(pid):
+            if pid is not None and not process_exists(pid):
                 self._log.warn('Cleaning out old entry for PID %d on lock %s with %s (created %s)' % (
                     pid, self._table, key, format_epoch(epoch)))
                 self.execute('delete from %s where key = ?' % self._table, (self._key,))
