@@ -26,7 +26,7 @@ No SEED Data Detected / Overlapped Data
     ${target} =    Get File    ${CURDIR}${/}target${/}list-index-1.txt
     Should Be Equal    ${run}  ${target}
 
-    Run Process    msi  -tg  data/TA/2012/03*/*  cwd=${CURDIR}${/}run  stdout=msi-1.txt
+    Run Process    msi  -tg  data/TA/2012/03*/*  cwd=${CURDIR}${/}run  stdout=msi-1.txt  shell=True
     ${run} =    Get File    ${CURDIR}${/}run${/}msi-1.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}msi-1.txt
     Should Be Equal    ${run}  ${target}
@@ -45,7 +45,7 @@ No SEED Data Detected / Overlapped Data
     ${target} =    Get File    ${CURDIR}${/}target${/}list-index-2.txt
     Should Be Equal    ${run}  ${target}
 
-    Run Process    msi  -tg  data/TA/2012/03*/*  cwd=${CURDIR}${/}run  stdout=msi-2.txt
+    Run Process    msi  -tg  data/TA/2012/03*/*  cwd=${CURDIR}${/}run  stdout=msi-2.txt  shell=True
     ${run} =    Get File    ${CURDIR}${/}run${/}msi-2.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}msi-2.txt
     Should Be Equal    ${run}  ${target}
