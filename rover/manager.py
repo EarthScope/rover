@@ -450,21 +450,22 @@ class Source(SqliteSupport):
 
     def _parse_availability(self, response):
         try:
-            sort_file_inplace(self._log, response, self._temp_dir, self._sort_in_python)
-            with open(response, 'r') as input:
-                availability = None
-                for line in input:
-                    line = line.strip()
-                    if line and not line.startswith('#'):
-                        sncl, b, e = self._parse_line(line)
-                        if availability and not availability.sncl == sncl:
-                            yield availability
-                            availability = None
-                        if not availability:
-                            availability = Coverage(self._log, self._timespan_tol, sncl)
-                        availability.add_epochs(b, e)
-                if availability:
-                    yield availability
+            if response is not None:  # None when no data returned
+                sort_file_inplace(self._log, response, self._temp_dir, self._sort_in_python)
+                with open(response, 'r') as input:
+                    availability = None
+                    for line in input:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            sncl, b, e = self._parse_line(line)
+                            if availability and not availability.sncl == sncl:
+                                yield availability
+                                availability = None
+                            if not availability:
+                                availability = Coverage(self._log, self._timespan_tol, sncl)
+                            availability.add_epochs(b, e)
+                    if availability:
+                        yield availability
         except Exception as e:
             self._diagnose_error('Problems parsing the availability service response.',
                                  self._request_path, response)

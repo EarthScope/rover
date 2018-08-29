@@ -11,9 +11,10 @@ from shutil import move
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
 
-from requests import get, post, Session
-from requests.adapters import HTTPAdapter
+from requests import Session
 from requests import __version__ as requests_version
+from requests.adapters import HTTPAdapter
+
 
 """
 Assorted utilities.
@@ -43,7 +44,7 @@ def safe_unlink(path):
     """
     Delete a file if it exists.
     """
-    if exists(path):
+    if path is not None and exists(path):
         try:
             unlink(path)
         except PermissionError:
@@ -189,21 +190,26 @@ def unique_path(dir, filename, salt):
 
 
 def _stream_output(request, down, unique=True):
-    down = canonify(down)
-    create_parents(down)
-    if unique:
-        down = unique_filename(down)
-    with open(down, 'wb') as output:
-        for chunk in request.iter_content(chunk_size=1024):
-            if chunk:
-                output.write(chunk)
-    return down, request.raise_for_status
+    # special case empty return.  this avoids handling empty files elsewhere
+    # which isn't a 'serious' problem, but causes ugly logging
+    if request.status_code == 204:
+        return None, lambda: None
+    else:
+        down = canonify(down)
+        create_parents(down)
+        if unique:
+            down = unique_filename(down)
+        with open(down, 'wb') as output:
+            for chunk in request.iter_content(chunk_size=1024):
+                if chunk:
+                    output.write(chunk)
+        return down, request.raise_for_status
 
 
 def _session(retries):
     """
     Ugliness required by requests lib to set max retries.
-    (We don't really care about efficieny to the point where we need to re=use the session)
+    (We don't really care about efficiency to the point where we need to re-use the session)
     """
     # https://stackoverflow.com/questions/21371809/cleanly-setting-max-retries-on-python-requests-get-or-post-method
     session = Session()
@@ -214,7 +220,8 @@ def _session(retries):
 
     # Create a User-Agent header with package, requests and Python identifiers
     from .args import ROVER_VERSION
-    user_agent = 'rover/%s python-requests/%s Python/%s' % (ROVER_VERSION, requests_version, ".".join(map(str, version_info[:3])))
+    user_agent = 'rover/%s python-requests/%s Python/%s' % \
+                 (ROVER_VERSION, requests_version, ".".join(map(str, version_info[:3])))
     session.headers.update({'User-Agent': user_agent})
 
     return session
@@ -502,7 +509,7 @@ def log_file_contents(path, log, max_lines=10):
                     break
 
 
-def calc_bytes (sizestring):
+def calc_bytes(sizestring):
     """
     Calculate a size in bytes for the specified size string.  If the
     string is terminated with the following suffixes the specified

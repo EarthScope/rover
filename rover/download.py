@@ -99,12 +99,12 @@ will download, ingest and index data from the given URL..
             path, delete = unique_path(self._temp_dir, TMPDOWNLOAD, url), True
         db_path = self._ingesters_db_path(url, getpid())
         try:
-            self._do_download(url, path)
-            if self._ingest:
-                Ingester(self._config).run([path], db_path=db_path)
+            if self._do_download(url, path):  # False when no data available
+                if self._ingest:
+                    Ingester(self._config).run([path], db_path=db_path)
         finally:
             if self._delete_files:
-                if path and delete:
+                if delete:
                     safe_unlink(path)
                 log_path = self._config.log_path
                 # avoid lots of empty logs cluttering things up
