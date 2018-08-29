@@ -22,7 +22,7 @@ To trigger this reliably we need multiple entries in the lock table:
 
 *** Test Cases ***
 
-No SEED Data Detected / Overlapped Data
+Lock File Bug
 
     Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
