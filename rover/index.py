@@ -5,7 +5,7 @@ from sqlite3 import OperationalError
 
 from .config import timeseries_db
 from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDINDEXWORKERS, HTTPTIMEOUT, \
-    HTTPRETRIES, FORCECMD
+    HTTPRETRIES, FORCECMD, TIMESPANINC
 from .args import TIMESPANTOL
 from .coverage import MultipleSNCLBuilder
 from .help import HelpFormatter
@@ -180,6 +180,7 @@ will list all entries in the index after the year 2000.
     def __init__(self, config):
         SqliteSupport.__init__(self, config)
         HelpFormatter.__init__(self, False)
+        self._timespan_inc = config.arg(TIMESPANINC)
         self._timespan_tol = config.arg(TIMESPANTOL)
         self._timeseries_db = timeseries_db(config)
         self._multiple_constraints = {STATION: [],
@@ -371,7 +372,8 @@ printed to stdout.
 
     def _rows(self, sql, params, stdout):
         self._log.debug('%s %s' % (sql, params))
-        builder = MultipleSNCLBuilder(self._log, self._timespan_tol, self._flags[JOIN] or self._flags[JOIN_QSR])
+        builder = MultipleSNCLBuilder(self._log, self._timespan_tol, self._timespan_inc,
+                                      self._flags[JOIN] or self._flags[JOIN_QSR])
 
         def callback(row):
             if self._flags[JOIN_QSR]:

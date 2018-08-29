@@ -6,7 +6,8 @@ from sqlite3 import OperationalError
 from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
-    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, NO
+    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, NO, \
+    TIMESPANINC
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
@@ -200,6 +201,7 @@ class Source(SqliteSupport):
         self._temp_dir = config.dir(TEMPDIR)
         self._http_timeout = config.arg(HTTPTIMEOUT)
         self._http_retries = config.arg(HTTPRETRIES)
+        self._timespan_inc = config.arg(TIMESPANINC)
         self._timespan_tol = config.arg(TIMESPANTOL)
         self.download_retries = config.arg(DOWNLOADRETRIES)
         self._sort_in_python = config.arg(SORTINPYTHON)
@@ -462,7 +464,7 @@ class Source(SqliteSupport):
                                 yield availability
                                 availability = None
                             if not availability:
-                                availability = Coverage(self._log, self._timespan_tol, sncl)
+                                availability = Coverage(self._log, self._timespan_tol, self._timespan_inc, sncl)
                             availability.add_epochs(b, e)
                     if availability:
                         yield availability
@@ -486,7 +488,7 @@ class Source(SqliteSupport):
                         'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
 
     def _scan_index(self, sncl):
-        availability = SingleSNCLBuilder(self._log, self._timespan_tol, sncl)
+        availability = SingleSNCLBuilder(self._log, self._timespan_tol, self._timespan_inc, sncl)
 
         def callback(row):
             availability.add_timespans(row[0], row[1])

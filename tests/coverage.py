@@ -48,8 +48,8 @@ def coverage_to_str(coverage):
     return '(' + ','.join(map(lambda be: '(%d,%d)' % be, coverage.timespans)) + ')'
 
 
-def indices_to_coverage(log, tolerance, indices):
-    coverage = Coverage(log, tolerance, 'N.S.L.C')
+def indices_to_coverage(log, tolerance, increment, indices):
+    coverage = Coverage(log, tolerance, increment, 'N.S.L.C')
     for (begin, end) in indices:
         if begin != end:
             coverage.add_epochs(begin, end, 1)
@@ -81,7 +81,7 @@ def print_coverage(title, coverage):
     print('|')
 
 
-def run_explicit(log, tolerance, index, avail, expected):
+def run_explicit(log, tolerance, increment, index, avail, expected):
     """
     A bad test looks like:
 
@@ -92,10 +92,10 @@ def run_explicit(log, tolerance, index, avail, expected):
 
     where, for exmaple, index has data from 0-1 but it's not in missing
     """
-    index = indices_to_coverage(log, tolerance, index)
-    avail = indices_to_coverage(log, tolerance, avail)
+    index = indices_to_coverage(log, tolerance, increment, index)
+    avail = indices_to_coverage(log, tolerance, increment, avail)
     missing = avail.subtract(index)
-    expected = indices_to_coverage(log, tolerance, expected)
+    expected = indices_to_coverage(log, tolerance, increment, expected)
     if expected != missing:
         print()
         print_labels()
@@ -105,11 +105,11 @@ def run_explicit(log, tolerance, index, avail, expected):
     assert expected == missing, coverage_to_str(missing)
 
 
-def run(log, tolerance,
+def run(log, tolerance, increment,
         width_index, gap_index, offset_index,
         width_avail, gap_avail, offset_avail,
         expected):
-    run_explicit(log, tolerance,
+    run_explicit(log, tolerance, increment,
                  build_coverage(log, width_index, gap_index, offset_index),
                  build_coverage(log, width_avail, gap_avail, offset_avail),
                  expected)
@@ -118,21 +118,21 @@ def run(log, tolerance,
 def test_coverage():
     with WindowsTemp(TemporaryDirectory) as dir:
         log = init_log(dir, '10M', 1, 5, 4, 'coverage', False, 1)[0]
-        run(log, 0.5, 2, 1, -1, 3, 2, 0, ((2,3),))
-        run(log, 0.5, 2, 1, -1, 3, 2, 1, ((5,6),))
-        run(log, 0.5, 2, 1, -1, 3, 2, 2, ((5,6),))
-        run(log, 0.5, 2, 1, -1, 1, 1, 0, ((5,6),))
-        run(log, 0.5, 2, 1, 0, 1, 1, 0, ((3,4),))
-        run(log, 0.5, 2, 1, 1, 1, 1, 0, ((1,2),))
-        run(log, 0.5, 1, 2, 0, 1, 2, 0, tuple())
-        run(log, 0.5, 1, 2, 1, 1, 2, 0, ((2,3),(5,6)))
-        run(log, 0.5, 1, 2, 2, 1, 2, 0, ((2,3),(5,6)))
-        run(log, 0.5, 1, 2, 3, 1, 2, 0, tuple())
-        run(log, 0.5, 2, 2, 0, 2, 2, 0, tuple())
-        run(log, 0.5, 2, 2, 0, 2, 2, 1, ((0,1),(4,5),))
-        run(log, 0.5, 2, 2, 0, 2, 2, 2, ((0,2),(4,6)))
-        run(log, 0.5, 1, 1, 0, 3, 2, 0, ((2,3),(4,5)))
-        run(log, 0.5, 1, 1, 0, 3, 2, 1, ((0,1),(4,5)))
+        run(log, 0.5, 0.5, 2, 1, -1, 3, 2, 0, ((2,3),))
+        run(log, 0.5, 0.5, 2, 1, -1, 3, 2, 1, ((5,6),))
+        run(log, 0.5, 0.5, 2, 1, -1, 3, 2, 2, ((5,6),))
+        run(log, 0.5, 0.5, 2, 1, -1, 1, 1, 0, ((5,6),))
+        run(log, 0.5, 0.5, 2, 1, 0, 1, 1, 0, ((3,4),))
+        run(log, 0.5, 0.5, 2, 1, 1, 1, 1, 0, ((1,2),))
+        run(log, 0.5, 0.5, 1, 2, 0, 1, 2, 0, tuple())
+        run(log, 0.5, 0.5, 1, 2, 1, 1, 2, 0, ((2,3),(5,6)))
+        run(log, 0.5, 0.5, 1, 2, 2, 1, 2, 0, ((2,3),(5,6)))
+        run(log, 0.5, 0.5, 1, 2, 3, 1, 2, 0, tuple())
+        run(log, 0.5, 0.5, 2, 2, 0, 2, 2, 0, tuple())
+        run(log, 0.5, 0.5, 2, 2, 0, 2, 2, 1, ((0,1),(4,5),))
+        run(log, 0.5, 0.5, 2, 2, 0, 2, 2, 2, ((0,2),(4,6)))
+        run(log, 0.5, 0.5, 1, 1, 0, 3, 2, 0, ((2,3),(4,5)))
+        run(log, 0.5, 0.5, 1, 1, 0, 3, 2, 1, ((0,1),(4,5)))
 
 # with tolerance 1.5 these overlap
 # (this was a bug with rover retrieve IU_ANMO_3?_* 2016-01-01T20:00:00 2016-01-02T04:00:00)
@@ -140,7 +140,7 @@ def test_coverage():
 #   index |    |====|====|====|    |    |
 #   avail |    |    |    |====|====|    |
 # missing |    |    |    |    |    |    |
-        run_explicit(log, 1.5, [(1,4)], [(3,5)], [])
+        run_explicit(log, 1.5, 0.5, [(1,4)], [(3,5)], [])
 # more of same
         seed(42)
         for i in range(100):
@@ -151,4 +151,4 @@ def test_coverage():
             index_start = randint(0, min(4, avail_start+1))
             # and must end with a width of at least 2, and at least one before end (so after, within tolerance)
             index_end = randint(max(avail_end-1, index_start+2), 6)
-            run_explicit(log, 1.5, [(index_start, index_end)], [(avail_start, avail_end)], [])
+            run_explicit(log, 1.5, 0.5, [(index_start, index_end)], [(avail_start, avail_end)], [])

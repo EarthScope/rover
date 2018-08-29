@@ -46,6 +46,8 @@ md-format=False
 force-cmd=False
 # the data directory - data, timeseries.sqlite
 data-dir=data
+# fractional increment for starting next timespan
+timespan-inc=0.5
 # fractional tolerance for overlapping timespans
 timespan-tol=1.5
 # maximum number of attempts to download data

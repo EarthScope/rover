@@ -89,6 +89,7 @@ SORTINPYTHON = 'sort-in-python'
 SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
+TIMESPANINC = 'timespan-inc'
 TIMESPANTOL = 'timespan-tol'
 LITTLE_V, VERBOSITY = 'v', 'verbosity'
 BIG_V, VERSION = 'V', 'version'
@@ -127,6 +128,7 @@ DEFAULT_SMTPPORT = SMTP_PORT
 DEFAULT_SUBSCRIPTIONSDIR = 'subscriptions'
 DEFAULT_TEMPDIR = 'tmp'
 DEFAULT_TEMPEXPIRE = 1
+DEFAULT_TIMESPANINC = 0.5
 DEFAULT_TIMESPANTOL = 1.5
 DEFAULT_VERBOSITY = 4
 
@@ -266,6 +268,7 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, timeseries.sqlite', metavar=DIRVAR)
 
         # retrieval
+        self.add_argument(mm(TIMESPANINC), default=DEFAULT_TIMESPANINC, action='store', help='fractional increment for starting next timespan', metavar=SAMPLESVAR, type=float)
         self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
         self.add_argument(mm(DOWNLOADRETRIES), default=DEFAULT_DOWNLOADRETRIES, action='store', help='maximum number of attempts to download data', metavar=NVAR, type=int)
         self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar=NVAR, type=int)

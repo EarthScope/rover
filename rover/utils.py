@@ -230,6 +230,12 @@ def _session(retries):
 def get_to_file(url, down, timeout, retries, log, unique=True):
     """
     Execute an HTTP GET request, with output to a file.
+
+    Returns (path, lambda)
+    where path is the path to the file (possibly None if no data downloaded)
+          lambda() (ie when called) will raise an exception on HTTP error
+    this gives the caller both the results (which may contain error msg)
+    and the error exception.
     """
     log.info('Downloading %s from %s' % (down, url))
     request = _session(retries).get(url, stream=True, timeout=timeout)
@@ -239,6 +245,12 @@ def get_to_file(url, down, timeout, retries, log, unique=True):
 def post_to_file(url, up, down, timeout, retries, log, unique=True):
     """
     Execute an HTTP POST request, with output to a file.
+
+    Returns (path, lambda)
+    where path is the path to the file (possibly None if no data downloaded)
+          lambda() (ie when called) will raise an exception on HTTP error
+    this gives the caller both the results (which may contain error msg)
+    and the error exception.
     """
     up = canonify(up)
     log.info('Downloading %s from %s with %s' % (down, url, up))

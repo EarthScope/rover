@@ -11,6 +11,7 @@ No SEED Data Detected / Overlapped Data
 
     Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
+    Remove Directory    ${CURDIR}${/}logs  recursive=True
 
     Run Process    rover  -f  ../rover.config  retrieve  TA_MSTX_--_BH?  2012-02-02T23:00:00  2012-02-03T00:00:00  cwd=${CURDIR}${/}run  stderr=retrieve-log-1.txt
     

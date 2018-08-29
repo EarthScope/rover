@@ -17,9 +17,10 @@ class Coverage:
     for N_S_L_C, N_S_L_C + sampling rate, etc.
     """
 
-    def __init__(self, log, frac_tolerance, sncl):
+    def __init__(self, log, frac_tolerance, frac_increment, sncl):
         self._log = log
         self._frac_tolerance = frac_tolerance
+        self._frac_increment = frac_increment
         self.sncl = sncl
         self.timespans = []
         self.samplerate = None
@@ -44,7 +45,7 @@ class Coverage:
     def join(self):
         self._log.debug('Joining overlapping timespans')
         if self:  # avoid looking at samplerate if no data
-            joined, tolerance = [], self.tolerance()
+            joined, (tolerance, increment) = [], self.tolerances()
             for begin, end in self.timespans:
                 if abs(end - begin) > tolerance:
                     if not joined:
@@ -82,10 +83,10 @@ class Coverage:
     def __bool__(self):
         return bool(self.timespans)
 
-    def tolerance(self):
+    def tolerances(self):
         if not self.samplerate:
             raise Exception('No samplerate available')
-        return self._frac_tolerance / self.samplerate
+        return self._frac_tolerance / self.samplerate, self._frac_increment / self.samplerate
 
     def subtract(self, other):
         """
@@ -100,13 +101,13 @@ class Coverage:
         # minimal samplerate
         self.add_samplerate(other.samplerate)
         other.add_samplerate(self.samplerate)
-        tolerance = self.tolerance()
+        tolerance, increment = self.tolerances()
         # simplify the work by compressing both
         self.join()
         other.join()
 
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
-        difference = Coverage(self._log, self._frac_tolerance, self.sncl)
+        difference = Coverage(self._log, self._frac_tolerance, self._frac_increment, self.sncl)
         while True:
 
             try:
@@ -135,7 +136,9 @@ class Coverage:
                 # but they end first.  so some of our timespan still lives to face
                 # the next challenger.
                 else:
-                    us.push((them_end, us_end))
+                    # since this is a real difference we need to nudge forwards so
+                    # that we avoid including the end point of them again.
+                    us.push((them_end + increment, us_end))
             # we start before them (difference must be larger than tolerance - see above)
             elif us_begin < them_begin:
                 # we also end before them, so we're home free into the difference and
@@ -147,7 +150,7 @@ class Coverage:
                 # the difference and push the rest back for further consideration.
                 else:
                     # this difference must exceed tolerance - see top of block
-                    difference.add_epochs(us_begin, them_begin)
+                    difference.add_epochs(us_begin, them_begin - increment)
                     if us_end - them_begin > tolerance:
                         us.push((them_begin, us_end))
                     them.push((them_begin, them_end))
@@ -161,7 +164,9 @@ class Coverage:
                 # but we also end after them.  so some (perhaps all) of our timespan
                 # remains to face their next timespan.
                 else:
-                    us.push((max(them_end, us_begin), us_end))
+                    # again, we need to nudge forwards beyond them to avoid
+                    # re-including the point
+                    us.push((max(them_end + increment, us_begin), us_end))
 
 
 # builders are needed to buffer the data read from the database and sort it,
@@ -176,9 +181,10 @@ class BaseBuilder:
     Shared functionality for all coverage builders.
     """
 
-    def __init__(self, log, frac_tolerance):
+    def __init__(self, log, frac_tolerance, frac_increment):
         self._log = log
         self._frac_tolerance = frac_tolerance
+        self._frac_increment = frac_increment
 
     def _parse_timespans(self, timespans):
         for pair in timespans.split(','):
@@ -194,8 +200,8 @@ class SingleSNCLBuilder(BaseBuilder):
     The mseedindex schema design makes it difficult to sort this information in SQL.
     """
 
-    def __init__(self, log, frac_tolerance, sncl):
-        super().__init__(log, frac_tolerance)
+    def __init__(self, log, frac_tolerance, frac_increment, sncl):
+        super().__init__(log, frac_tolerance, frac_increment)
         self._sncl = sncl
         self._timespans = []
 
@@ -204,7 +210,7 @@ class SingleSNCLBuilder(BaseBuilder):
             self._timespans.append((begin, end, samplerate))
 
     def coverage(self):
-        coverage = Coverage(self._log, self._frac_tolerance, self._sncl)
+        coverage = Coverage(self._log, self._frac_tolerance, self._frac_increment, self._sncl)
         for begin, end, samplerate in sorted(self._timespans):
             coverage.add_epochs(begin, end, samplerate)
         return coverage
@@ -212,13 +218,13 @@ class SingleSNCLBuilder(BaseBuilder):
 
 class MultipleSNCLBuilder(BaseBuilder):
     """
-    Sort the teimstamp information before creating the coverage (for multiple N_S_L_Cs).
+    Sort the timestamp information before creating the coverage (for multiple N_S_L_Cs).
 
     The mseedindex schema design makes it difficult to sort this information in SQL.
     """
 
-    def __init__(self, log, frac_tolerance, join=True):
-        super().__init__(log, frac_tolerance)
+    def __init__(self, log, frac_tolerance, frac_increment, join=True):
+        super().__init__(log, frac_tolerance, frac_increment)
         self._join = join
         self._timespans = {}
 
@@ -232,7 +238,7 @@ class MultipleSNCLBuilder(BaseBuilder):
     def coverages(self):
         for sncl in sorted(self._timespans.keys()):
             ts = self._timespans[sncl]
-            coverage = Coverage(self._log, self._frac_tolerance, sncl)
+            coverage = Coverage(self._log, self._frac_tolerance, self._frac_increment, sncl)
             for begin, end, samplerate in sorted(ts):
                 coverage.add_epochs(begin, end, samplerate)
             if self._join:
