@@ -9,7 +9,7 @@ Library    OperatingSystem
 
 Bad Download URL
 
-    Remove Directory    ${CURDIR}${/}run  resursive=True
+    Remove Directory    ${CURDIR}${/}run  recursive=True
     Create Directory    ${CURDIR}${/}run
 
     Run Process    rover  -f  ../rover.config  download  http://example.com/bad  cwd=${CURDIR}${/}run  stderr=download.txt
