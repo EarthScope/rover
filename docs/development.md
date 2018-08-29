@@ -13,7 +13,7 @@ by auto-generating portable code using the
 One consequence of this is that the "installable" code (typically
 available via `pip` from the [PyPI rover project](https://pypi.org/project/rover/) or a tarball) is not
 identical to the development code (typically available from the
-[rover repository](https://github.com/iris-edu/rover/)).
+[rover repository](https://github.com/iris-edu/rover/)). Because of this disparity, instances of development Rover should not be inistalled into system Python 2.7.
 
 ## Getting started
 
@@ -36,13 +36,15 @@ the script details slightly depending on your python version):
 
 You can now edit the source.  To test your changes:
 
-    dev/run-nose-tests-py3-in-py3.sh
-    dev/run-robot-tests-py3-in-py3.sh
+    dev/run-nose-tests-py3-in-env3.sh 
+    dev/run-robot-tests-py3-in-env3.sh
 
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
 
-Tests assume that `mseedindex` is installed in `roverdev/mseedindex`.
+Tests assume that executable `/mseedindex/mseedindex` is installed in the parent directory of `rover`,
+`rover/../mseedindex/mseedindex`.
+
 You may need to edit tests or change configuration if this is not the
 case.
 
