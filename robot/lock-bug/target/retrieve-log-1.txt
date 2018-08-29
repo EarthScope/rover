@@ -1,0 +1,26 @@
+retrieve  DEFAULT: Rover version 0.0.0 - starting retrieve
+retrieve  DEFAULT: Status available at http://127.0.0.1:8000
+retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
+retrieve  DEFAULT: Downloading II_TAU_00_BH1 (1/8); day 1/1
+retrieve  DEFAULT: Downloading IU_TATO_00_BH1 (2/8); day 1/1
+retrieve  DEFAULT: Downloading IU_TEIG_00_BH1 (3/8); day 1/1
+retrieve  DEFAULT: Downloading IU_TIXI_00_BH1 (4/8); day 1/1
+retrieve  DEFAULT: Downloading IU_TRIS_00_BH1 (5/8); day 1/1
+retrieve  DEFAULT: Downloading IU_TRQA_00_BH1 (6/8); day 1/1
+retrieve  DEFAULT: Downloading IU_TUC_00_BH1 (7/8); day 1/1
+retrieve  DEFAULT: Downloading IW_TPAW_00_BH1 (8/8); day 1/1
+retrieve  DEFAULT: The latest retrieval attempt had no errors, but we downloaded data so will try again to check that all data were retrieved
+retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
+retrieve  DEFAULT: The availability service indicates that there are no more data to download
+retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
+retrieve  DEFAULT: 
+retrieve  DEFAULT: ----- Retrieval Finished -----
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A rover retrieve task on HOST started DATE
+retrieve  DEFAULT: (DATE local) has completed in DURATION
+retrieve  DEFAULT: 
+retrieve  DEFAULT: The task comprised of 8 N_S_L_Cs with data covering 28800s.
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A total of 8 downloads were made, with 0 errors (0 on
+retrieve  DEFAULT: final pass of 2).
+retrieve  DEFAULT: 
