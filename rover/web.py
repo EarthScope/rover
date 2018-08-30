@@ -13,13 +13,8 @@ from .sqlite import SqliteSupport, NoResult
 from .utils import process_exists, format_time_epoch, format_time_epoch_local, file_size, safe_unlink
 
 """
-THIS IS A TEST FOR SAVING ECLIPSE
+THIS IS A TEST FOR Pushing ECLIPSE
 """
-
-"""
-The 'rover web' command - run a web service that displays information on the download manager.
-"""
-
 
 class DeadMan(Thread):
     """
