@@ -16,7 +16,6 @@ def init_db(dbpath, log):
     log.debug('Connecting to sqlite3 %s' % dbpath)
     db = connect(dbpath, 60.0)
     # https://www.sqlite.org/foreignkeys.html
-    db.execute('PRAGMA journal_mode = WAL;')
     db.execute('PRAGMA foreign_keys = ON')
     db.execute('PRAGMA case_sensitive_like = ON')  # as used by mseedindex
     return db
