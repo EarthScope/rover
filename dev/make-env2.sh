@@ -21,5 +21,6 @@ pip install nose
 pip install future
 pip install robotframework
 pip install backports.tempfile
+pip install setuptools
 
 echo "source env2/bin/activate"

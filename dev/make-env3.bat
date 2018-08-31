@@ -6,5 +6,6 @@ pip install requests
 pip install nose
 pip install future
 pip install robotframework
+pip install setuptools
 
 echo "env3\Scripts\Activate.bat"

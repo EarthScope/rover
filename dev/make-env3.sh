@@ -20,5 +20,6 @@ pip install requests
 pip install nose
 pip install future
 pip install robotframework
+pip install setuptools
 
 echo "source env3/bin/activate"
