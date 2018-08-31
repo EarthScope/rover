@@ -47,24 +47,21 @@ class Coverage:
         if self:  # avoid looking at samplerate if no data
             joined, (tolerance, increment) = [], self.tolerances()
             for begin, end in self.timespans:
-                if abs(end - begin) > tolerance:
-                    if not joined:
-                        joined.append((begin, end))
-                    else:
-                        b, e = joined[-1]
-                        if begin < b:
-                            raise Exception('Unsorted start times')
-                        # do they overlap at all?
-                        if abs(begin - e) < tolerance:
-                            # if they do, and this extends previous, replace with maximal span
-                            if end > e:
-                                self._log.debug('Joining %d-%d and %d-%d' % (begin, end, b, e))
-                                joined[-1] = (b, end)
-                        # no they don't overlap
-                        else:
-                            joined.append((begin, end))
+                if not joined:
+                    joined.append((begin, end))
                 else:
-                    self._log.debug('Discarding %d-%d (too small)' % (begin, end))
+                    b, e = joined[-1]
+                    if begin < b:
+                        raise Exception('Unsorted start times')
+                    # do they overlap at all?
+                    if abs(begin - e) < 1.0 / self.samplerate + tolerance:
+                        # if they do, and this extends previous, replace with maximal span
+                        if end > e:
+                            self._log.debug('Joining %d-%d and %d-%d' % (begin, end, b, e))
+                            joined[-1] = (b, end)
+                    # no they don't overlap
+                    else:
+                        joined.append((begin, end))
             self.timespans = joined
 
     def __str__(self):
@@ -108,8 +105,8 @@ class Coverage:
 
         us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
         difference = Coverage(self._log, self._frac_tolerance, self._frac_increment, self.sncl)
+        difference.add_samplerate(self.samplerate)
         while True:
-
             try:
                 us_begin, us_end = next(us)
             except StopIteration:
@@ -119,9 +116,11 @@ class Coverage:
                 them_begin, them_end = next(them)
             except StopIteration:
                 # there's no more subtraction, so everything left goes into difference
-                difference.add_epochs(us_begin, us_end)
-                for (us_begin, us_end) in us:
+                if us_end - us_begin >= tolerance:
                     difference.add_epochs(us_begin, us_end)
+                for (us_begin, us_end) in us:
+                    if us_end - us_begin >= tolerance:
+                        difference.add_epochs(us_begin, us_end)
                 return difference
 
             # we start together
@@ -143,14 +142,15 @@ class Coverage:
             elif us_begin < them_begin:
                 # we also end before them, so we're home free into the difference and
                 # they live to try kill our next timespan
-                if us_end <= them_begin:
+                if us_end < them_begin:
                     difference.add_epochs(us_begin, us_end)
                     them.push((them_begin, them_end))
                 # we end after they start, so we overlap.  save the initial part in
                 # the difference and push the rest back for further consideration.
                 else:
-                    # this difference must exceed tolerance - see top of block
-                    difference.add_epochs(us_begin, them_begin - increment)
+                    # is (us_begin, them_begin - increment) worth adding?
+                    if them_begin - increment - us_begin >= tolerance:
+                        difference.add_epochs(us_begin, them_begin - increment)
                     if us_end - them_begin > tolerance:
                         us.push((them_begin, us_end))
                     them.push((them_begin, them_end))

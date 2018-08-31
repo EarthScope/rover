@@ -20,7 +20,7 @@ def test_retrieve():
         assert n_sncls == 1, n_sncls
         with ProcessManager(config):
             n_downloads = Retriever(config).run(config.args)
-        assert n_downloads == 3, n_downloads
+        assert n_downloads == 4, n_downloads
         n_sncls = ListRetriever(config).run(config.args)
         assert n_sncls == 0, n_sncls
         # alternate syntax

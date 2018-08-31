@@ -123,10 +123,10 @@ class IndexLister(SqliteSupport, HelpFormatter):
 ### List Index
 
     rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \\
-    [count|join|join-samplerates]
+    [count|join|join-qsr]
 
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \\
-    [count|join|join-samplerates]
+    [count|join|join-qsr]
 
 List index entries for the repository (config parameter data-dir) that match the given constraints.
 
@@ -155,7 +155,7 @@ value:
 
   join - continguous time ranges will be joined
 
-  join-samplerates - the maximal timespan across all samplerates is shown (as used by retrieve)
+  join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
 
 ##### Significant Parameters
 
@@ -220,7 +220,7 @@ value:
 
   count - only the number of matches will be shown
 
-  join - continguous time ranges will be joined
+  join - contiguous time ranges will be joined
 
   join-qsr - the maximal timespan across all quality and 
   samplerates is shown (as used by retrieve) 

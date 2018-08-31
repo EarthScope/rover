@@ -54,7 +54,7 @@ class ProgressStatistics:
         self.days[0] += 1
 
     def __str__(self):
-        return '(%d/%d); day %d/%d' % (self.coverages[0], self.coverages[1], self.days[0], self.days[1])
+        return '(%d/%d); chunk %d/%d' % (self.coverages[0], self.coverages[1], self.days[0], self.days[1])
 
 
 class ErrorStatistics:
@@ -120,6 +120,11 @@ class Retrieval:
             return True
         while self._coverages:
             coverage = self._coverages.popleft()
+            try:
+                increment = coverage.tolerances()[1]
+            except Exception:
+                # on first download we don't know this, but on second pass we don, so things work out ok
+                increment = 0
             self.progress.pop_coverage(coverage)
             sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
             for begin, end in timespans:
@@ -127,9 +132,11 @@ class Retrieval:
                     self._days.append((sncl, begin, end))
                 else:
                     left, right = self._end_of_day(begin)
-                    self._days.append((sncl, begin, min(left, end)))
-                    if right < end:
-                        timespans.push((right, end))
+                    if right > end:
+                        self._days.append((sncl, begin, end))
+                    else:
+                        self._days.append((sncl, begin, left))
+                        timespans.push((right, max(end, right + increment)))
             if self._days:
                 self.progress.add_days(len(self._days))
                 return True
@@ -378,18 +385,36 @@ class Source(SqliteSupport):
 
         # no errors last retrieval, but we did download some more data (again, unexpected)
         elif self._retrieval.errors.downloads:
-            self.consistent = INCONSISTENT
-            # can we try again, in case this was some weird hiccup?
-            if retry_possible:
-                self._log.default(('The latest %sretrieval attempt downloaded unexpected data so trying again ' +
-                                   'to check behaviour') % self._name)
-                self._new_retrieval(True)
-                return False
-            # something odd is happening
+            # special case where we had no sample interval until first request, so second request
+            # got a point at midnight that was missed because the interval was too small for the server
+            if self.n_retries == 2:
+                if retry_possible:
+                    self._log.default(('The latest %sretrieval attempt downloaded additional data - ' +
+                                       'probably a point at midnight that was not retrieved on the first pass. ' +
+                                       'We will retry to make sure data are complete.') % self._name)
+                    self._new_retrieval(True)
+                    return False
+                else:
+                    self._log.default(('The latest %sretrieval attempt downloaded additional data - ' +
+                                       'probably a point at midnight that was not retrieved on the first pass. ' +
+                                       'We cannot be certain download is complete without more retries.') % self._name)
+                    return True
             else:
-                raise Exception(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C days) on the ' +
-                                 'final attempt (%d of %d) (inconsistent web services?)') %
-                                (self._name, self._retrieval.errors.downloads, self.n_retries, self.download_retries))
+                self.consistent = INCONSISTENT
+                # can we try again, in case this was some weird hiccup?
+                # there's a case where this is expected - when we have data on a day boundary and need tp
+                # download once to get the samplerate so we can judge exactly how small a chunk to take
+                # from the next day.
+                if retry_possible:
+                    self._log.default(('The latest %sretrieval attempt downloaded unexpected data so trying again ' +
+                                       'to check behaviour.') % self._name)
+                    self._new_retrieval(True)
+                    return False
+                # something odd is happening
+                else:
+                    raise Exception(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C chunks) on the ' +
+                                     'final attempt (%d of %d) (inconsistent web services?)') %
+                                    (self._name, self._retrieval.errors.downloads, self.n_retries, self.download_retries))
 
         # no errors and no data
         else:

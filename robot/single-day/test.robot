@@ -29,6 +29,14 @@ Single Day
     Should Be Equal As Integers    ${nfiles}  1
     File Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001${/}ANMO.IU.2016.001
     ${ndirectories} =    Count Directories In Directory    ${CURDIR}${/}run${/}mseed${/}IU${/}2016
-    Should Be Equal As Integers    ${ndirectories}  1
+    Should Be Equal As Integers    ${ndirectories}  2
     Directory Should Exist    ${CURDIR}${/}run${/}mseed${/}IU${/}2016${/}001
-    
+
+*** Comment ***
+
+it may seem odd that there are 2 data directories for a single day.
+
+it is odd.  but the retrieve spec is actually for two days and so there
+is a value at T00:00:00 on the second day.  now that time calculations
+are more exact, this matters.
+

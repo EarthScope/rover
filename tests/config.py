@@ -49,7 +49,7 @@ data-dir=data
 # fractional increment for starting next timespan
 timespan-inc=0.5
 # fractional tolerance for overlapping timespans
-timespan-tol=1.5
+timespan-tol=0.5
 # maximum number of attempts to download data
 download-retries=3
 # number of download instances to run
