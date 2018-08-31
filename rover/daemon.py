@@ -262,13 +262,17 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
             Indexer(self._config).run([])
         while True:
             try:
-                id = self._find_next_subscription()
-                self._add_subscription(id)
-            except NoSubscription:
-                if self._download_manager.is_idle():
-                    sleep(60)
-            self._download_manager.step()
-            sleep(1)
+                try:
+                    id = self._find_next_subscription()
+                    self._add_subscription(id)
+                except NoSubscription:
+                    if self._download_manager.is_idle():
+                        sleep(60)
+                self._download_manager.step()
+                sleep(1)
+            except Exception as e:
+                self._reporter.send_email('Rover Failure', self._reporter.describe_error(DAEMON, e))
+                raise
 
     def _source_callback(self, source):
         self.execute('''update rover_subscriptions set last_error_count = ?, consistent = ? where id = ?''',

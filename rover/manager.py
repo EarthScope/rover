@@ -21,6 +21,12 @@ The core logic for scheduling multiple downloads.  Called by both the daemon and
 """
 
 
+class ManagerException(Exception):
+    """
+    Separate class so we can avoid sending additional emails when manager fails.
+    """
+
+
 class ProgressStatistics:
     """
     Encapsulate the statistics that measure progress for a single retrieval.
@@ -316,8 +322,8 @@ class Source(SqliteSupport):
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
-                raise Exception('The latest %sretrieval attempt had %d errors on the final attempt (%d of %d)' %
-                                (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
+                raise ManagerException('The latest %sretrieval attempt had %d errors on the final attempt (%d of %d)' %
+                                       (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data
         elif self._retrieval.errors.downloads:
@@ -362,9 +368,9 @@ class Source(SqliteSupport):
                     return False
                 else:
                     self.consistent = INCONSISTENT
-                    raise Exception(('The latest %sretrieval attempt downloaded no data on final attempt (%d of %d) ' +
-                                     'following an earlier error (inconsistent web services?)') %
-                                    (self._name, self.n_retries, self.download_retries))
+                    raise ManagerException(('The latest %sretrieval attempt downloaded no data on final attempt (%d of %d) ' +
+                                            'following an earlier error (inconsistent web services?)') %
+                                           (self._name, self.n_retries, self.download_retries))
 
     def _is_complete_final_read(self, retry_possible):
 
@@ -380,8 +386,8 @@ class Source(SqliteSupport):
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
-                raise Exception('The latest %sretrieval attempt had %d errors on final attempt (%d of %d)' %
-                                (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
+                raise ManagerException('The latest %sretrieval attempt had %d errors on final attempt (%d of %d)' %
+                                       (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data (again, unexpected)
         elif self._retrieval.errors.downloads:
@@ -412,9 +418,9 @@ class Source(SqliteSupport):
                     return False
                 # something odd is happening
                 else:
-                    raise Exception(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C chunks) on the ' +
-                                     'final attempt (%d of %d) (inconsistent web services?)') %
-                                    (self._name, self._retrieval.errors.downloads, self.n_retries, self.download_retries))
+                    raise ManagerException(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C chunks) on the ' +
+                                            'final attempt (%d of %d) (inconsistent web services?)') %
+                                           (self._name, self._retrieval.errors.downloads, self.n_retries, self.download_retries))
 
         # no errors and no data
         else:
@@ -427,7 +433,7 @@ class Source(SqliteSupport):
         # fetch indicates we're not simply querying and so should check for no data and prime days
         self.n_retries += 1
         self._log.default('Trying new %sretrieval (attempt %d of %d)' %
-                       (self._name, self.n_retries, self.download_retries))
+                          (self._name, self.n_retries, self.download_retries))
         self._retrieval = Retrieval(self._log, self._name, self._dataselect_url, self._force_failures)
         request = self._build_request(self._request_path)
         response = self._get_availability(request, self._availability_url)

@@ -1,6 +1,7 @@
 
-from sys import version_info
+from os import getpid
 from socket import gethostname
+from sys import version_info
 from time import time
 
 if version_info[0] >= 3:
@@ -80,6 +81,17 @@ class Reporter:
             return "{0:0.1f} minutes".format(seconds / 60)
         else:
             return "{0:0.2f} seconds".format(seconds)
+
+    def describe_error(self, task, error):
+        """
+        Generate an email for critical errors.
+        """
+        return '''
+The rover %s (PID %d) task on %s has failed with the error:
+
+  %s
+  (%s)
+''' % (task, getpid(), gethostname(), error, error.__class__.__name__)
 
     def describe_retrieve(self, source):
         """

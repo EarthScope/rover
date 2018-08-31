@@ -7,7 +7,7 @@ from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE
     HTTPRETRIES, ROVER_VERSION
 from .download import DEFAULT_NAME
 from .index import Indexer
-from .manager import DownloadManager
+from .manager import DownloadManager, ManagerException
 from .report import Reporter
 from .sqlite import SqliteSupport
 from .summary import Summarizer
@@ -158,6 +158,11 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
                 return self._fetch()
             else:
                 return self._display()
+        except ManagerException:
+            raise
+        except Exception as e:
+            self._reporter.send_email('Rover Failure', self._reporter.describe_error(RETRIEVE, e))
+            raise
         finally:
             if self._delete_files:
                 safe_unlink(path)
