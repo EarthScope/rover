@@ -128,5 +128,3 @@ will download, ingest and index data from the given URL..
     def _ingesters_db_path(self, url, pid):
         name = uniqueish('rover_ingester', url)
         return unique_filename(join(self._temp_dir, name))
-
-

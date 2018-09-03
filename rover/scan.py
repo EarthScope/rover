@@ -119,8 +119,7 @@ class ModifiedScanner(SqliteSupport):
         dbpaths = PushBackIterator(in_memory(DatabasePathIterator(self._config)))
         fspaths = RepositoryIterator(self._data_dir)
         while True:
-            # default values for paths work with ordering
-            closed, dblastmod, dbpath, fspath = False, 0, ' ', ' '
+            closed, dblastmod, dbpath, fspath = False, 0, None, None
             try:
                 dblastmod, dbpath = next(dbpaths)
             except StopIteration:
@@ -134,12 +133,12 @@ class ModifiedScanner(SqliteSupport):
             # extra entry in file system, so push current database value back,
             # and pretend this entry was in the database, but with a modified date
             # that implies it will be indexed
-            if fspath < dbpath:
+            if fspath and (not dbpath or fspath < dbpath):
                 if not closed:
                     dbpaths.push((dblastmod, dbpath))
                 dblastmod, dbpath = '1970-01-01T00:00:00', fspath
             # extra entry in database, needs deleting
-            if fspath > dbpath:
+            if dbpath and (not fspath or fspath > dbpath):
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:

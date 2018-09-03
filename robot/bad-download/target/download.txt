@@ -1,2 +1,2 @@
-download CRITICAL: 404 Client Error: Not Found for url: http://example.com/bad
+download CRITICAL: 404 Client Error: Not Found for url: http://example.com/bad?foo=bar&baz=boo
 download  DEFAULT: See "rover help download"
