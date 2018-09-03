@@ -568,7 +568,7 @@ class DownloadManager(SqliteSupport):
             self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
             log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
             log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
-            self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
+            self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=7)  # TODO
             self._start_web()
         else:
             self._config_path = None
@@ -672,6 +672,15 @@ class DownloadManager(SqliteSupport):
             return True
         else:
             return False
+
+    # the step method below is probably the best place to insert a call to execute
+    # pragma wal_checkpoint if we have further problems with locked databases.
+    # the idea would be to add a counter to the manager and every 1000 (say) calls,
+    # wait for all workers to close and then execute the pragma.  this would
+    # allow the database to update without contention.
+
+    # we would also need to disable automatic checkpointing with pragma
+    # wal_autocheckpoint and make sure to run a checkpoint on count 0 (ie at the start).
 
     def step(self, quiet=True):
         """

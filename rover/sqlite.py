@@ -32,7 +32,7 @@ class NoResult(Exception):
 
 class CursorContext:
     """
-    Create a curseor for the duration of the scope (and then close it).
+    Create a cursor for the duration of the scope (and then close it).
     """
 
     def __init__(self, support, quiet):
@@ -46,9 +46,9 @@ class CursorContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type:
             if self._quiet:
-                self._support._log.debug(exc_val)
+                self._support._log.debug('Cursor exit: %s' % exc_val)
             else:
-                self._support._log.error(exc_val)
+                self._support._log.error('Cursor exit: %s' % exc_val)
         else:
             self._support._db.commit()  # probably implied by close?
         self._cursor.close()

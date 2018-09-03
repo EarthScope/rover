@@ -73,11 +73,11 @@ class LockContext(SqliteSupport):
                         c.execute('insert into %s (pid, key) values (?, ?)' % self._table, (self._pid, self._key))
                         return
             except IntegrityError as e:
-                self._log.debug(e)
+                self._log.debug('Acquiring lock: %s' % e)
                 sleep(1)
                 pass  # PID existed and needs to be cleaned out
             except OperationalError as e:
-                self._log.debug(e)
+                self._log.debug('Acquiring lock: %s' % e)
                 sleep(1)
                 pass  # database was locked
             clean = True
@@ -88,11 +88,17 @@ class LockContext(SqliteSupport):
 
     def set_pid(self, pid):
         self._log.debug('Setting PID on %s for %s to %d' % (self._table, self._key, pid))
-        self.execute('update %s set pid=? where key=?' % self._table, (pid, self._key))
+        with self._db:
+            c = self._db.cursor()
+            c.execute('begin')
+            c.execute('update %s set pid=? where key=?' % self._table, (pid, self._key))
 
     def release(self):
         self._log.debug('Releasing lock on %s with %s' % (self._table, self._key))
-        self.execute('delete from %s where key = ?' % self._table, (self._key,))
+        with self._db:
+            c = self._db.cursor()
+            c.execute('begin')
+            c.execute('delete from %s where key = ?' % self._table, (self._key,))
 
     def _clean(self):
         cleaned = [False]
@@ -100,10 +106,18 @@ class LockContext(SqliteSupport):
         def callback(row):
             pid, key, epoch = row
             if pid is not None and not process_exists(pid):
+                # maybe shouldn't be warning?  seems to occur when two transactions both
+                # delete the same entry (one from the worker existing and one from a worker
+                # waiting).  waiting starts the transaction before exiting, but completes
+                # after, afaict (so the exiting has disappeared and the PID test succeeds
+                # for the waiting),
                 self._log.warn('Cleaning out old entry for PID %d on lock %s with %s (created %s)' % (
                     pid, self._table, key, format_epoch(epoch)))
-                self.execute('delete from %s where key = ?' % self._table, (self._key,))
-                cleaned[0] = True
+                with self._db:
+                    c = self._db.cursor()
+                    c.execute('begin')
+                    c.execute('delete from %s where key = ?' % self._table, (self._key,))
+                    cleaned[0] = True
 
         self.foreachrow('select pid, key, creation_epoch from %s' % self._table, tuple(), callback)
         return cleaned[0]

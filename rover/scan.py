@@ -101,7 +101,7 @@ def RepositoryIterator(root, depth=1):
 class ModifiedScanner(SqliteSupport):
     """
     Compare the filesystem and the database (using the iterators above)
-    and when there is a discrepancy eitehr remove a database entry or process
+    and when there is a discrepancy either remove a database entry or process
     (via subclass) the file.
     """
 
@@ -134,12 +134,12 @@ class ModifiedScanner(SqliteSupport):
             # extra entry in file system, so push current database value back,
             # and pretend this entry was in the database, but with a modified date
             # that implies it will be indexed
-            if fspath > dbpath:
+            if fspath < dbpath:
                 if not closed:
                     dbpaths.push((dblastmod, dbpath))
                 dblastmod, dbpath = '1970-01-01T00:00:00', fspath
             # extra entry in database, needs deleting
-            if fspath < dbpath:
+            if fspath > dbpath:
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:
