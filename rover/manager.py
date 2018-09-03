@@ -134,10 +134,15 @@ class Retrieval:
             self.progress.pop_coverage(coverage)
             sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
             for begin, end in timespans:
+                left, right = self._end_of_day(begin)
                 if begin == end:
-                    self._days.append((sncl, begin, end))
+                    # if we request with begin = end we get nothing, so we must request an
+                    # interval, but we don't want to cross a day boundary, so be careful
+                    if end + increment > left:
+                        self._days.append((sncl, begin - increment, end))
+                    else:
+                        self._days.append((sncl, begin, end + increment))
                 else:
-                    left, right = self._end_of_day(begin)
                     if right > end:
                         self._days.append((sncl, begin, end))
                     else:
@@ -392,17 +397,17 @@ class Source(SqliteSupport):
         # no errors last retrieval, but we did download some more data (again, unexpected)
         elif self._retrieval.errors.downloads:
             # special case where we had no sample interval until first request, so second request
-            # got a point at midnight that was missed because the interval was too small for the server
+            # got a single point that was missed because the interval was too small for the server
             if self.n_retries == 2:
                 if retry_possible:
                     self._log.default(('The latest %sretrieval attempt downloaded additional data - ' +
-                                       'probably a point at midnight that was not retrieved on the first pass. ' +
+                                       'probably an isolated point that was not retrieved on the first pass. ' +
                                        'We will retry to make sure data are complete.') % self._name)
                     self._new_retrieval(True)
                     return False
                 else:
                     self._log.default(('The latest %sretrieval attempt downloaded additional data - ' +
-                                       'probably a point at midnight that was not retrieved on the first pass. ' +
+                                       'probably an isolated point that was not retrieved on the first pass. ' +
                                        'We cannot be certain download is complete without more retries.') % self._name)
                     return True
             else:
@@ -432,8 +437,9 @@ class Source(SqliteSupport):
     def _new_retrieval(self, fetch):
         # fetch indicates we're not simply querying and so should check for no data and prime days
         self.n_retries += 1
-        self._log.default('Trying new %sretrieval (attempt %d of %d)' %
-                          (self._name, self.n_retries, self.download_retries))
+        if fetch:
+            self._log.default('Trying new %sretrieval (attempt %d of %d)' %
+                              (self._name, self.n_retries, self.download_retries))
         self._retrieval = Retrieval(self._log, self._name, self._dataselect_url, self._force_failures)
         request = self._build_request(self._request_path)
         response = self._get_availability(request, self._availability_url)
