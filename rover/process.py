@@ -1,7 +1,7 @@
 
 from os import getpid, kill
 
-from .args import RETRIEVE, DAEMON, START, STOP
+from .args import RETRIEVE, DAEMON, START, STOP, UNSUBSCRIBE
 from .sqlite import SqliteSupport, NoResult
 from .utils import process_exists
 
@@ -30,12 +30,14 @@ class ProcessManager(SqliteSupport):
         """
         Check whether the command should run
         """
-        # we only care about whether retrieve and the daemon run in parallel
-        # any other command is either harmless (list...) or likely done by an expert user.
-        # but retrieve in parallel with daemon can result in duplicate data.
+        # retrieve and the daemon cannot run in parallel because they may try to
+        # update the same data.
+        # unsubscribe requires that teh daemon be stopped since it may currently be
+        # being processed.
+        # any other command is either harmless (list...) or likely done by an expert user
         self._log.debug('Process check %s' % self._command)
-        if self._command == RETRIEVE:
-            self._check_retrieve()
+        if self._command in (RETRIEVE, UNSUBSCRIBE):
+            self._check_command(self._command)
         # we don't need to check start, because the daemon it spawns will be checked, but
         # it's better to have the error early and visible to the user
         elif self._command in (DAEMON, START):
@@ -70,14 +72,14 @@ class ProcessManager(SqliteSupport):
         self._log.debug('Record new process %s/%d' % (command, getpid()))
         self._db.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
 
-    def _check_retrieve(self):
+    def _check_command(self, name):
         error = None
         with self._db:  # single transaction
             self._db.cursor().execute('begin')
             pid, command = self._current_command_inside_transaction()
             if command == DAEMON:
                 error = Exception(('You cannot use rover %s while the %s is running (PID %d). ' +
-                                   'Use rover %s to stop the daemon.') %  (RETRIEVE, DAEMON, pid, STOP))
+                                   'Use "rover %s" to stop the daemon.') %  (name, DAEMON, pid, STOP))
             elif command == RETRIEVE:
                 error = Exception('rover %s is already running (PID %d).' % (RETRIEVE, pid))
             else:

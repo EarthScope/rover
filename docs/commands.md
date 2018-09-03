@@ -94,7 +94,7 @@ Errors and inconsistencies are reported in the logs and in the optional email (`
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
+| timespan-tol        | 0.5                  | Fractional tolerance for overlapping timespans (samples) |
 | pre-index           | True                 | Index before retrieval?        |
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
@@ -149,7 +149,7 @@ The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as a
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
-| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
+| timespan-tol        | 0.5                  | Fractional tolerance for overlapping timespans (samples) |
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
@@ -169,10 +169,10 @@ will display the data missing from the repository to match what is available for
 ### List Index
 
     rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \
-    [count|join|join-samplerates]
+    [count|join|join-qsr]
 
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
-    [count|join|join-samplerates]
+    [count|join|join-qsr]
 
 List index entries for the repository (config parameter data-dir) that match the given constraints.
 
@@ -196,13 +196,13 @@ The following parameters are simple flags that change the output format.  They a
 
   join - continguous time ranges will be joined
 
-  join-samplerates - the maximal timespan across all samplerates is shown (as used by retrieve)
+  join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
 
 ##### Significant Parameters
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
+| timespan-tol        | 0.5                  | Fractional tolerance for overlapping timespans (samples) |
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
@@ -409,6 +409,8 @@ will show whether the daemon using the given configuration file is running.
     rover unsubscribe N[:M]+
 
 Delete one or more subscriptions.  The arguments can be single numbers (identifying the subscriptions, as displayed by `rover list-subscrive`), or ranges (N:M).
+
+Note: To avoid conflicts with subscriptions that are currently being processed, the daemon must be stopped (with `rover stop`) before using the `unsubscribe` command.
 
 ##### Significant Parameters
 

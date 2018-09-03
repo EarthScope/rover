@@ -92,7 +92,8 @@ This will place all files in `newdir`.
 | md-format           | False                | Display help in markdown format? |
 | force-cmd           | False                | Force cmd use (dangerous)      |
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
-| timespan-tol        | 1.5                  | Fractional tolerance for overlapping timespans (samples) |
+| timespan-inc        | 0.5                  | Fractional increment for starting next timespan (samples) |
+| timespan-tol        | 0.5                  | Fractional tolerance for overlapping timespans (samples) |
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | download-workers    | 5                    | Number of download instances to run |
 | rover-cmd           | rover                | Command to run rover           |
