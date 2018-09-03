@@ -97,6 +97,9 @@ will download, ingest and index data from the given URL..
             path, delete = args[2], False
         else:
             path, delete = unique_path(self._temp_dir, TMPDOWNLOAD, url), True
+        if '&' not in url:
+            self._log.warn(('The URL provided is "%s" - this does not contain any ampersands.  ' +
+                            'You may have forgotten to quote the URL (and should expect failure).') % url)
         db_path = self._ingesters_db_path(url, getpid())
         try:
             if self._do_download(url, path):  # False when no data available
