@@ -1,4 +1,4 @@
-retrieve  DEFAULT: Rover version 0.0.0 - starting retrieve
+retrieve  DEFAULT: Rover VERSION - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
 retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
 retrieve  DEFAULT: Downloading II_TAU_00_BH1 (1/8); chunk 1/1

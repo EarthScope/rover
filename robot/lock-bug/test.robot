@@ -36,6 +36,7 @@ Lock File Bug
     Run Process    sed  -i.bak  -E  -e  s/completed in [0-9\.]+ [a-zA-Z]+$/completed in DURATION/g  ${CURDIR}${/}run${/}retrieve-log-1.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  /.*Warning: No leap.*/d  ${CURDIR}${/}run${/}retrieve-log-1.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  /.*highly recommended.*/d  ${CURDIR}${/}run${/}retrieve-log-1.txt  shell=True
+    Run Process    sed  -i.bak  -E  -e  s/version:? *[0-9.]+/VERSION/g  ${CURDIR}${/}run${/}retrieve-log-1.txt  shell=True
     ${run} =    Get File    ${CURDIR}${/}run${/}retrieve-log-1.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}retrieve-log-1.txt
     Should Be Equal    ${run}  ${target}
@@ -53,6 +54,7 @@ Lock File Bug
     Run Process    sed  -i.bak  -E  -e  s/completed in [0-9\.]+ [a-zA-Z]+$/completed in DURATION/g  ${CURDIR}${/}run${/}retrieve-log-2.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  /.*Warning: No leap.*/d  ${CURDIR}${/}run${/}retrieve-log-2.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  /.*highly recommended.*/d  ${CURDIR}${/}run${/}retrieve-log-2.txt  shell=True
+    Run Process    sed  -i.bak  -E  -e  s/version:? *[0-9.]+/VERSION/g  ${CURDIR}${/}run${/}retrieve-log-2.txt  shell=True
     ${run} =    Get File    ${CURDIR}${/}run${/}retrieve-log-2.txt
     ${target} =    Get File    ${CURDIR}${/}target${/}retrieve-log-2.txt
     Should Be Equal    ${run}  ${target}
