@@ -3,7 +3,7 @@ from traceback import print_exc
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, RESUBSCRIBE
+    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER
 from .config import Config, RepoInitializer
 from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
@@ -11,7 +11,7 @@ from .index import Indexer, IndexLister
 from .ingest import Ingester
 from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
-from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Resubscriber
+from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Trigger
 from .summary import Summarizer, SummaryLister
 from .web import ServerStarter
 
@@ -32,7 +32,7 @@ COMMANDS = {
     DAEMON: (Daemon, 'The background daemon (prefer start/stop)'),
     SUBSCRIBE: (Subscriber, 'Add a subscription'),
     LIST_SUBSCRIBE: (SubscriptionLister, 'List the subscriptions'),
-    RESUBSCRIBE: (Resubscriber, 'Ask the daemon to reprocess subscriptions'),
+    TRIGGER: (Trigger, 'Ask the daemon to reprocess subscriptions'),
     UNSUBSCRIBE: (Unsubscriber, 'Remove subscriptions'),
     WEB: (ServerStarter, 'Start a web server showing status')
 }

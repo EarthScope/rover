@@ -13,7 +13,7 @@
   * [Stop](#stop)
   * [Status](#status)
   * [Unsubscribe](#unsubscribe)
-  * [Resubscribe](#resubscribe)
+  * [Trigger](#trigger)
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
@@ -429,11 +429,11 @@ will delete subscriptions 1, 2 and 3.
 
     
 
-### Resubscribe
+### Trigger
 
-    rover resubscribe N[:M]+
+    rover trigger N[:M]+
 
-Ask the daemon to re-process the given subscriptions.  The arguments can be single numbers (identifying the subscriptions, as displayed by `rover list-subscrive`), or ranges (N:M).
+Ask the daemon to re-process the given subscriptions.  The arguments can be single numbers (identifying the subscriptions, as displayed by `rover list-subscribe`), or ranges (N:M).
 
 More exactly, this command resets the "last checked" date in the database, so when the daemon re-checks the database (typically once per minute) it will process the subscription.
 
@@ -448,7 +448,7 @@ More exactly, this command resets the "last checked" date in the database, so wh
 
 ##### Examples
 
-    rover resubscribe 2
+    rover trigger 2
 
 will ask the daemon to re-process subscription 2.
 

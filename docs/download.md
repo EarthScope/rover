@@ -53,7 +53,7 @@ to the user (`rover start --email ....`).  The daemon will automatically
 re-process the subscription regularly, to check for new data.  Processing
 can also be triggered by hand using
 
-    rover resubscribe N
+    rover trigger N
     
 where N is the subscription index, as listed below.
     

@@ -13,7 +13,7 @@ from smtplib import SMTP
 from .manager import INCONSISTENT, UNCERTAIN
 from .utils import format_time_epoch, format_time_epoch_local
 from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
-    DAEMON, RESUBSCRIBE, mm, DOWNLOADRETRIES
+    DAEMON, TRIGGER, mm, DOWNLOADRETRIES
 
 
 """
@@ -159,7 +159,7 @@ WARNING: Since the final download had some errors, it may be
          incomplete.
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
-''' % (LIST_SUBSCRIBE, source.name, RESUBSCRIBE, source.name)
+''' % (LIST_SUBSCRIBE, source.name, TRIGGER, source.name)
         elif source.consistent == INCONSISTENT:
             msg += '''
 WARNING: Inconsistent behaviour was detected in the web

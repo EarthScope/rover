@@ -5,7 +5,7 @@ from sqlite3 import OperationalError
 from .request import RequestComparison
 from .manager import DownloadManager
 from .args import SUBSCRIBE, LIST_SUBSCRIBE, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV, \
-    FORCEREQUEST, mm, RESUBSCRIBE, VERBOSITY, NO, DELETEFILES
+    FORCEREQUEST, mm, TRIGGER, VERBOSITY, NO, DELETEFILES
 from .sqlite import SqliteSupport, NoResult
 from .utils import unique_path, build_file, format_day_epoch, safe_unlink, format_time_epoch, log_file_contents
 
@@ -294,14 +294,14 @@ will delete subscriptions 1, 2 and 3.
             self._log.default('Cleared subscriptions between %d and %d' % (id1, id2))
 
 
-class Resubscriber(SqliteSupport):
+class Trigger(SqliteSupport):
     """
-### Resubscribe
+### Trigger
 
-    rover resubscribe N[:M]+
+    rover trigger N[:M]+
 
 Ask the daemon to re-process the given subscriptions.  The arguments can be single numbers (identifying the
-subscriptions, as displayed by `rover list-subscrive`), or ranges (N:M).
+subscriptions, as displayed by `rover list-subscribe`), or ranges (N:M).
 
 More exactly, this command resets the "last checked" date in the database, so when the daemon re-checks the
 database (typically once per minute) it will process the subscription.
@@ -315,7 +315,7 @@ database (typically once per minute) it will process the subscription.
 
 ##### Examples
 
-    rover resubscribe 2
+    rover trigger 2
 
 will ask the daemon to re-process subscription 2.
 
@@ -326,7 +326,7 @@ will ask the daemon to re-process subscription 2.
 
     def run(self, args):
         if not args:
-            raise Exception('Usage: rover %s (id|id1:id2)+' % RESUBSCRIBE)
+            raise Exception('Usage: rover %s (id|id1:id2)+' % TRIGGER)
         for id1, id2 in parse_integers(args):
             self.execute('''update rover_subscriptions set last_check_epoch = NULL where id >= ? and id <= ?''',
                          (id1, id2))

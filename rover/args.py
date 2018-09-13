@@ -31,7 +31,7 @@ STOP = 'stop'
 STATUS = 'status'
 SUMMARY = 'summary'
 SUBSCRIBE = 'subscribe'
-RESUBSCRIBE = 'resubscribe'
+TRIGGER = 'trigger'
 UNSUBSCRIBE = 'unsubscribe'
 WEB = 'web'
 INIT = 'init'
@@ -144,6 +144,7 @@ PERCENTVAR = 'PERCENT'
 ADDRESSVAR = 'ADDRESS'
 URLVAR = 'URL'
 SIZE = 'SIZE'
+
 
 def parse_bool(value):
     """
