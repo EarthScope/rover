@@ -37,7 +37,7 @@ the script details slightly depending on your python version):
 You can now edit the source.  To test your changes:
 
     dev/run-nose-tests-py3-in-env3.sh 
-    sudo dev/run-robot-tests-py3-in-env3.sh
+    dev/run-robot-tests-py3-in-env3.sh
 
 (nose tests are low-level code-based unit tests; robot tests are
 high-level, command-based integration tests).
@@ -55,8 +55,8 @@ appropriate virtualenvs for testing, then create new virtualenvs
 (without install) after the test.  The commands are:
 
     dev/run-all-nose-tests.sh
-    sudo dev/run-all-robot-tests.sh
-    sudo dev/run-all-tests.sh
+    dev/run-all-robot-tests.sh
+    dev/run-all-tests.sh
 
 ## Generating installable code
 
