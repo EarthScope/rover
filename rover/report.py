@@ -103,14 +103,14 @@ The rover %s (PID %d) task on %s has failed with the error:
 A rover %s task on %s started %s
 (%s local) has completed in %s
 
-The task comprised of %d N_S_L_Cs with data covering %ds.
+The task comprised of %d stations with data covering %ds.
 
 A total of %d downloads were made, with %d errors (%d on
 final pass of %d).
 ''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
        format_time_epoch_local(source.start_epoch),
        self._human_duration(time() - source.start_epoch),
-       source.initial_progress.coverages[1], source.initial_progress.seconds[1],
+       source.initial_progress.stations[1], source.initial_progress.seconds[1],
        source.errors.downloads, source.errors.errors, source.errors.final_errors,
        source.n_retries)
         if source.errors.final_errors:
@@ -143,14 +143,14 @@ Re-run the %s command with %s > 1 to check
 
 Subscription %s has been processed by the rover %s on %s.
 
-The task comprised of %d N_S_L_Cs with data covering %ds.
+The task comprised of %d stations with data covering %ds.
 
 A total of %d downloads were made, with %d errors (%d on
 final pass of %d).
 
 The subscription will be checked again in %d hours.
 ''' % (source.name, DAEMON, gethostname(),
-       source.initial_progress.coverages[1], source.initial_progress.seconds[1],
+       source.initial_progress.stations[1], source.initial_progress.seconds[1],
        source.errors.downloads, source.errors.errors, source.errors.final_errors,
        source.n_retries, self._recheck_period)
         if source.errors.final_errors:

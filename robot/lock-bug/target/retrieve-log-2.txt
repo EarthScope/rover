@@ -12,7 +12,7 @@ retrieve  DEFAULT:
 retrieve  DEFAULT: A rover retrieve task on HOST started DATE
 retrieve  DEFAULT: (DATE local) has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: The task comprised of 6 N_S_L_Cs with data covering 0s.
+retrieve  DEFAULT: The task comprised of 0 stations with data covering 0s.
 retrieve  DEFAULT: 
 retrieve  DEFAULT: A total of 0 downloads were made, with 0 errors (0 on
 retrieve  DEFAULT: final pass of 2).

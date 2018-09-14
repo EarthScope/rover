@@ -354,10 +354,18 @@ def format_epoch(epoch):
 
 def format_day_epoch(epoch):
     """
-    Format an epoch, without time.
+    Format an epoch as a date, without time.
     """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
     return datetime.datetime.strftime(dt, '%Y-%m-%d')
+
+
+def format_year_day_epoch(epoch):
+    """
+    Format an epoch as year and day
+    """
+    dt = datetime.datetime.fromtimestamp(epoch, utc)
+    return datetime.datetime.strftime(dt, '%Y-%j')
 
 
 def format_time_epoch(epoch):
@@ -506,6 +514,24 @@ def windows():
     Are we running on windows?
     """
     return name in ('Windows', 'nt')
+
+
+def diagnose_error(log, error, request, response, copied=True):
+    # avoid import loop
+    from .args import mm, VERBOSITY, NO, DELETEFILES
+    log.error(error)
+    log.error('Will log response contents (max 10 lines) here:')
+    log_file_contents(response, log, 10)
+    log.error('Please pay special attention to the first lines of the message - ' +
+              'they often contains useful information.')
+    log.error('The most likely cause of this problem is that the request contains errors.  ' +
+              'Will log request contents (max 10 lines) here:')
+    log_file_contents(request, log, 10)
+    log.error('The request is either provided by the user or created from the user input.')
+    if copied:
+        log.error('To ensure consistency rover copies files.  ' +
+                  'To see the paths and avoid deleting temporary copies re-run the command ' +
+                  'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
 
 
 def log_file_contents(path, log, max_lines=10):

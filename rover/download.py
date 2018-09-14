@@ -9,7 +9,7 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, unique_filename, \
     clean_old_files, match_prefixes, create_parents, unique_path, \
-    safe_unlink, file_size, post_to_file
+    safe_unlink, file_size, post_to_file, diagnose_error
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -33,7 +33,9 @@ class Downloader(SqliteSupport):
     rover download file [path]
 
 If given a URL, download a single request (typically for a day) to the given path, ingest and index it.  If no path
-is given then a temporary file is created and deleted after use.
+is given then a temporary file is created and deleted after use.  Rover treats the argument as a URL if it contains
+the characters "://".
+
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
 
@@ -141,10 +143,15 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
         if get:
             response, check_status = get_to_file(url, out_path,
                                                  self._http_timeout, self._http_retries, self._log)
+            check_status()
         else:
-            response, check_status = post_to_file(url, in_path, out_path,
-                                                  self._http_timeout, self._http_retries, self._log)
-        check_status()
+            try:
+                response, check_status = post_to_file(url, in_path, out_path,
+                                                      self._http_timeout, self._http_retries, self._log)
+                check_status()
+            except Exception as e:
+                diagnose_error(self._log, str(e), in_path, out_path, copied=False)
+                raise
         return response
 
     def _ingesters_db_path(self, url):

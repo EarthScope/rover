@@ -16,6 +16,7 @@ from .utils import process_exists, format_time_epoch, format_time_epoch_local, f
 The 'rover web' command - run a web service that displays information on the download manager.
 """
 
+
 class DeadMan(Thread):
     """
     Repeatedly check the parent process and exit when that dies.
@@ -134,12 +135,12 @@ Last active: %s (%s local)</pre></p>''' %
 
     def _write_progress(self, name, last_check_epoch, last_error_count, consistent):
         try:
-            initial_coverages, remaining_coverages, initial_time, remaining_time, n_retries, download_retries = \
-                self.server.fetchone('''select initial_coverages, remaining_coverages, initial_time, remaining_time,
+            initial_stations, remaining_stations, initial_time, remaining_time, n_retries, download_retries = \
+                self.server.fetchone('''select initial_stations, remaining_stations, initial_time, remaining_time,
                                                n_retries, download_retries
                                           from rover_download_stats where submission = ?''', (name,))
             self._write('<p>Progress for download attempt %d of %d:<pre>\n' % (n_retries, download_retries))
-            self._write_bar('N_S_L_Cs', initial_coverages, remaining_coverages)
+            self._write_bar('stations', initial_stations, remaining_stations)
             self._write_bar('timespan', initial_time, remaining_time)
             self._write('</pre></p>')
         except NoResult:
@@ -160,7 +161,9 @@ Last active: %s (%s local)</pre></p>''' %
             self._write('<p>Error: no statistics in database.</p>')
 
     def _write_bar(self, label, initial, current):
-        percent = int(100 * (initial - current) / initial)
+        # there's some massaging of numbers here because the seconds might not match exactly
+        # due to fractions of a sample being added to include boundary values
+        percent = max(0, min(100, int(100 * (initial - current) / max(1, initial))))
         n = int(percent / 2 + 0.5)
         self._write('%10s: %10d/%-10d  (%3d%%)  |%s|\n' %
                     (label, initial - current, initial, percent, '#' * n + ' ' * (50-n)))
@@ -170,7 +173,7 @@ Last active: %s (%s local)</pre></p>''' %
 <h2>Notes</h2>
 <ul>
 <li>Progress values are based on data still to be downloaded; they do not include data within the pipeline.</li>
-<li>The N_S_L_C statistic is the number of distinct Net_Sta_Loc_Chan that will be requested.</li>
+<li>The stations statistic is the number of distinct Net_Sta that will be requested.</li>
 <li>The timespan statistic is the total time (s) covered by the data in the downloads.</li>
 <li>Firefox will not open file:// URLs, but you can copy them to the address bar, where they will work.</li>
 </ul>

@@ -6,14 +6,14 @@ from sqlite3 import OperationalError
 from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
-    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, NO, \
+    DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, \
     TIMESPANINC
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
 from .sqlite import SqliteSupport
 from .utils import utc, EPOCH_UTC, PushBackIterator, format_epoch, safe_unlink, unique_path, post_to_file, \
-    sort_file_inplace, parse_epoch, check_cmd, run, windows, log_file_contents
+    sort_file_inplace, parse_epoch, check_cmd, run, windows, diagnose_error, format_year_day_epoch
 from .workers import Workers
 
 """
@@ -36,31 +36,34 @@ class ProgressStatistics:
     """
 
     def __init__(self):
-        self.coverages = [0, 0]
+        self.__prev_net_sta = [None, None]
+        self.stations = [0, 0]
         self.seconds = [0, 0]
-        self.days = [0, 0]
-
-    def __count_coverage(self, coverage, index):
-        self.coverages[index] += 1
-        for begin, end in coverage.timespans:
-            self.seconds[index] += (end - begin)
+        self.chunks = [0, 0]
 
     def add_coverage(self, coverage):
-        self.__count_coverage(coverage, 1)
+        net_sta = coverage.sncl.split('_')[0:2]
+        if net_sta != self.__prev_net_sta:
+            self.stations[1] += 1
+            self.__prev_net_sta = net_sta
+        # but seconds are counted either way
+        for begin, end in coverage.timespans:
+            self.seconds[1] += (end - begin)
 
-    def pop_coverage(self, coverage):
-        self.__count_coverage(coverage, 0)
+    def pop_timespan(self, begin, end):
+        self.seconds[0] += (end - begin)
 
-    def add_days(self, n):
+    def add_chunks(self, n):
+        self.stations[0] += 1  # a set of chunks is for a single station
         # the day count isn't global - it's per sncl (coverage) - so resets
-        self.days[0] = 0
-        self.days[1] = n
+        self.chunks[0] = 0
+        self.chunks[1] = n
 
-    def pop_day(self):
-        self.days[0] += 1
+    def pop_chunk(self):
+        self.chunks[0] += 1
 
     def __str__(self):
-        return '(%d/%d); chunk %d/%d' % (self.coverages[0], self.coverages[1], self.days[0], self.days[1])
+        return '(N_S %d/%d; day %d/%d)' % (self.stations[0], self.stations[1], self.chunks[0], self.chunks[1])
 
 
 class ErrorStatistics:
@@ -79,36 +82,26 @@ class ErrorStatistics:
         self.final_errors = errors.errors
 
 
-class Retrieval:
+class Chunks:
     """
-    A single attempt at downloading data for a subscription or retrieval
-    (some care is taken here to avoid large files in memory - the list of downloads is generated
-    on the fly).
+    A chunk is a collection of SNCLs and timespans that are downloaded at once.
+    We used to download each individually, but that required too many parallel requests to
+    be efficient, so now we collect them here.
+    This is a *collection* of chunks because a single chunk is only for one calendar day -
+    we may assemble multiple days when moving from the coverages to chunks.
     """
 
-    def __init__(self, log, name, dataselect_url, force_failures):
-        self._log = log
-        self._name = name
-        self._dataselect_url = dataselect_url
-        self._force_failures = force_failures
-        self._coverages = deque()  # fifo: appendright / popleft; exposed for display
-        self._days = deque()  # fifo: appendright / popleft
-        self.worker_count = 0
-        self.errors = ErrorStatistics()
-        self.progress = ProgressStatistics()
+    def __init__(self, temp_dir):
+        self.__temp_dir = temp_dir
+        self.__chunks = {}   # list of (sncl, begin, end) indexed by end of day epoch
+        self.__network = None
+        self.__station = None
 
-    def add_coverage(self, coverage):
-        """
-        Add a coverage to retrieve.
-        """
-        self._coverages.append(coverage)
-        self.progress.add_coverage(coverage)
+    def __bool__(self):
+        return bool(self.__chunks)
 
-    def get_coverages(self):
-        """
-        Provide access to coverages (for listing)
-        """
-        return list(self._coverages)
+    def __len__(self):
+        return len(self.__chunks)
 
     @staticmethod
     def _end_of_day(epoch):
@@ -118,39 +111,109 @@ class Retrieval:
         left = right - 0.000001
         return left, right
 
-    def has_days(self):
-        """
-        Ensure days has some data, if possible, and return whether it has any.
-        """
-        if self._days:
-            return True
-        while self._coverages:
-            coverage = self._coverages.popleft()
-            try:
-                increment = coverage.tolerances()[1]
-            except Exception:
-                # on first download we don't know this, but on second pass we don, so things work out ok
-                increment = 0
-            self.progress.pop_coverage(coverage)
-            sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
-            for begin, end in timespans:
-                left, right = self._end_of_day(begin)
-                if begin == end:
-                    # if we request with begin = end we get nothing, so we must request an
-                    # interval, but we don't want to cross a day boundary, so be careful
-                    if end + increment > left:
-                        self._days.append((sncl, begin - increment, end))
-                    else:
-                        self._days.append((sncl, begin, end + increment))
+    def _append(self, right, sncl, begin, end):
+        if right not in self.__chunks:
+            self.__chunks[right] = []
+        self.__chunks[right].append((sncl, begin, end))
+
+    def _set_ns(self, sncl):
+        nslc = sncl.split('_')
+        self.__network = nslc[0]
+        self.__station = nslc[1]
+
+    def sncl_ok(self, sncl):
+        nslc = sncl.split('_')
+        return not self.__chunks or (nslc[0] == self.__network and nslc[1] == self.__station)
+
+    def add_coverage(self, coverage):
+        try:
+            increment = coverage.tolerances()[1]
+        except Exception:
+            # on first download we don't know this, but on second pass we do, so things work out ok
+            increment = 0
+        sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
+        if not self.__chunks:
+            self._set_ns(sncl)
+        for begin, end in timespans:
+            left, right = self._end_of_day(begin)
+            if begin == end:
+                # if we request with begin = end we get nothing, so we must request an
+                # interval, but we don't want to cross a day boundary, so be careful
+                if end + increment > left:
+                    self._append(right, sncl, begin - increment, end)
                 else:
-                    if right > end:
-                        self._days.append((sncl, begin, end))
-                    else:
-                        self._days.append((sncl, begin, left))
-                        timespans.push((right, max(end, right + increment)))
-            if self._days:
-                self.progress.add_days(len(self._days))
-                return True
+                    self._append(right, sncl, begin, end + increment)
+            else:
+                if right > end:
+                    self._append(right, sncl, begin, end)
+                else:
+                    self._append(right, sncl, begin, left)
+                    timespans.push((right, max(end, right + increment)))
+
+    @staticmethod
+    def format_sncl(sncl):
+        return ' '.join(code if code else '--' for code in sncl.split('_'))
+
+    def pop(self, progress):
+        right = next(iter(self.__chunks.keys()))
+        description = '%s_%s %s' % (self.__network, self.__station, format_year_day_epoch(right-24*3600))
+        data = self.__chunks[right]
+        path = unique_path(self.__temp_dir, 'rover_chunk', description)
+        with open(path, 'w') as out:
+            for (sncl, begin, end) in data:
+                progress.pop_timespan(begin, end)
+                print('%s %s %s' % (self.format_sncl(sncl), format_epoch(begin), format_epoch(end)), file=out)
+        del self.__chunks[right]
+        progress.pop_chunk()
+        return description, path
+
+
+class Retrieval:
+    """
+    A single attempt at downloading data for a subscription or retrieval
+    (some care is taken here to avoid large files in memory - the list of downloads is generated
+    on the fly).
+    """
+
+    def __init__(self, log, name, temp_dir, delete_files, dataselect_url, force_failures):
+        self._log = log
+        self._name = name
+        self._temp_dir = temp_dir
+        self._delete_files = delete_files
+        self._dataselect_url = dataselect_url
+        self._force_failures = force_failures
+        self._coverages = deque()  # fifo: appendright / popleft; exposed for display
+        self._chunks = None
+        self.worker_count = 0
+        self.errors = ErrorStatistics()
+        self.progress = ProgressStatistics()
+
+    def add_coverage(self, coverage):
+        """
+        Add a coverage to retrieve.
+        """
+        if coverage:  # this avoids us showing more stations to download than are downloaded
+            self._coverages.append(coverage)
+            self.progress.add_coverage(coverage)
+
+    def get_coverages(self):
+        """
+        Provide access to coverages (for listing)
+        """
+        return list(self._coverages)
+
+    def has_chunks(self):
+        """
+        Ensure chunks has some data, if possible, and return whether it has any.
+        """
+        if self._chunks:
+            return True
+        self._chunks = Chunks(self._temp_dir)
+        while self._coverages and self._chunks.sncl_ok(self._coverages[0].sncl):
+            self._chunks.add_coverage(self._coverages.popleft())
+        if self._chunks:
+            self.progress.add_chunks(len(self._chunks))
+            return True
         return False
 
     def _build_url(self, sncl, begin, end):
@@ -158,7 +221,9 @@ class Retrieval:
                      tuple(code if code else '--' for code in tuple(sncl.split('_')))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
-    def _worker_callback(self, command, return_code):
+    def _worker_callback(self, command, return_code, path):
+        if self._delete_files:
+            safe_unlink(path)
         self.worker_count -= 1
         self.errors.downloads += 1
         if return_code:
@@ -169,10 +234,8 @@ class Retrieval:
         """
         Launch a new worker (called by manager main loop).
         """
-        sncl, begin, end = self._days.popleft()
-        self.progress.pop_day()
-        self._log.default('Downloading %s %s' % (sncl, self.progress))
-        url = self._build_url(sncl, begin, end)
+        description, path = self._chunks.pop(self.progress)
+        self._log.default('Downloading %s %s' % (description, self.progress))
         # for testing error handling we can inject random errors here
         if randint(1, 100) <= self._force_failures:
             self._log.warn('Random failure expected (%s %d)' % (mm(FORCEFAILURES), self._force_failures))
@@ -181,18 +244,18 @@ class Retrieval:
             # we only pass arguments on the command line that are different from the
             # default (which is in the file)
             if windows():
-                command = 'pythonw -m rover -f %s %s "%s"' % (config_path, DOWNLOAD, url)
+                command = 'pythonw -m rover -f %s %s "%s"' % (config_path, DOWNLOAD, path)
             else:
-                command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, url)
+                command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, path)
         self._log.debug(command)
-        workers.execute(command, self._worker_callback)
+        workers.execute(command, lambda cmd, rtn: self._worker_callback(cmd, rtn, path))
         self.worker_count += 1
 
     def is_complete(self):
         """
         Is this retrieval complete?
         """
-        return self.worker_count == 0 and not self.has_days()
+        return self.worker_count == 0 and not self.has_chunks()
 
 
 # avoid enum because python2 doesn't have it and we want code that runs on both
@@ -253,11 +316,11 @@ class Source(SqliteSupport):
         """
         return self._retrieval.progress
 
-    def has_days(self):
+    def has_chunks(self):
         """
         Does retrieval have data?
         """
-        return self._retrieval.has_days()
+        return self._retrieval.has_chunks()
 
     @property
     def worker_count(self):
@@ -440,7 +503,8 @@ class Source(SqliteSupport):
         if fetch:
             self._log.default('Trying new %sretrieval (attempt %d of %d)' %
                               (self._name, self.n_retries, self.download_retries))
-        self._retrieval = Retrieval(self._log, self._name, self._dataselect_url, self._force_failures)
+        self._retrieval = Retrieval(self._log, self._name, self._temp_dir, self._delete_files,
+                                    self._dataselect_url, self._force_failures)
         request = self._build_request(self._request_path)
         response = self._get_availability(request, self._availability_url)
         try:
@@ -455,7 +519,7 @@ class Source(SqliteSupport):
             if self._delete_files:
                 safe_unlink(request)
                 safe_unlink(response)
-        if fetch and not self._retrieval.has_days():
+        if fetch and not self._retrieval.has_chunks():
             self._log.default('The availability service indicates that there are no more data to download')
 
     def _build_request(self, path):
@@ -477,7 +541,7 @@ class Source(SqliteSupport):
             check_status()
             return response
         except Exception as e:
-            self._diagnose_error(str(e), request, response)
+            diagnose_error(self._log, str(e), request, response)
             raise
 
     def _parse_line(self, line):
@@ -506,23 +570,9 @@ class Source(SqliteSupport):
                     if availability:
                         yield availability
         except Exception as e:
-            self._diagnose_error('Problems parsing the availability service response.',
-                                 self._request_path, response)
+            diagnose_error(self._log, 'Problems parsing the availability service response.',
+                           self._request_path, response)
             raise
-
-    def _diagnose_error(self, error, request, response):
-        self._log.error(error)
-        self._log.error('Will log response contents (max 10 lines) here:')
-        log_file_contents(response, self._log, 10)
-        self._log.error('Please pay special attention to the first lines of the message - ' +
-                        'they often contains useful information.')
-        self._log.error('The most likely cause of this problem is that the request contains errors.  ' +
-                        'Will log request contents (max 10 lines) here:')
-        log_file_contents(request, self._log, 10)
-        self._log.error('The request is either provided by the user or created from the user input.')
-        self._log.error('To ensure consistency rover copies files.  ' +
-                        'To see the paths and avoid deleting temporary copies re-run the command ' +
-                        'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
 
     def _scan_index(self, sncl):
         availability = SingleSNCLBuilder(self._log, self._timespan_tol, self._timespan_inc, sncl)
@@ -640,7 +690,7 @@ class DownloadManager(SqliteSupport):
 
     def _has_data(self):
         for source in self._sources.values():
-            if source.has_days():
+            if source.has_chunks():
                 return True
         return False
 
@@ -721,7 +771,7 @@ class DownloadManager(SqliteSupport):
                 if self._has_least_workers(source):
                     break
             # todo - why is this check needed?  shouldn't this always succeed?
-            if source.has_days():
+            if source.has_chunks():
                 source.new_worker(self._workers, self._config_path, self._rover_cmd)
                 self._n_downloads += 1
             # todo - does this do anything useful without a workers.check()?
@@ -748,8 +798,8 @@ class DownloadManager(SqliteSupport):
     def _create_stats_table(self):
         self.execute('''create table if not exists rover_download_stats (
                           submission text not null,
-                          initial_coverages int not null,
-                          remaining_coverages int not null,
+                          initial_stations int not null,
+                          remaining_stations int not null,
                           initial_time float not null,
                           remaining_time float not null,
                           n_retries int not null,
@@ -763,12 +813,12 @@ class DownloadManager(SqliteSupport):
             for source in self._sources.values():
                 progress = source.stats()
                 self._db.execute('''insert into rover_download_stats
-                                      (submission, initial_coverages, remaining_coverages, initial_time, remaining_time, 
+                                      (submission, initial_stations, remaining_stations, initial_time, remaining_time, 
                                        n_retries, download_retries)
                                       values (?, ?, ?, ?, ?, ?, ?)''',
                                  (source.name,
-                                  progress.coverages[1], progress.coverages[1] - progress.coverages[0],
-                                  progress.seconds[1], progress.seconds[1] - progress.seconds[0],
+                                  progress.stations[1], progress.stations[1] - progress.stations[0],
+                                  progress.seconds[1], max(0, int(progress.seconds[1] - progress.seconds[0])),
                                   source.n_retries, source.download_retries))
 
     def _start_web(self):

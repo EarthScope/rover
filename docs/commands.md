@@ -463,9 +463,14 @@ from the command line:
 
     rover download url [path]
 
-Download a single request (typically for a day) to the given path, ingest and index it.  If no path is given then a temporary file is created and deleted after use.
+    rover download file [path]
+
+If given a URL, download a single request (typically for a day) to the given path, ingest and index it.  If no path is given then a temporary file is created and deleted after use.  Rover treats the argument as a URL if it contains the characters "://".
+
 
 The url should be for a Data Select service, and should not request data that spans multiple calendar days.
+
+If given a file name, POST that file to URL given by the `dataselect-url` configuration parameter, download the response to the given path,  ingest and index it.  If no path is given then a temporary file is created and deleted after use.
 
 This task is the main low-level task called in the processing pipeline (it calls ingest and index as needed). Because of this, to reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are automatically deleted on exit.
 
@@ -473,6 +478,7 @@ This task is the main low-level task called in the processing pipeline (it calls
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
+| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
@@ -490,7 +496,11 @@ In addition, parameters for sub-commands (ingest, index) will be used - see help
     rover download \
     'http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000'
 
-will download, ingest and index data from the given URL..
+will download, ingest and index data from the given URL.
+
+    rover download myrequest.txt
+
+will download, ingest and index data from `dataselect-url` after POSTing `myrequest.txt`.
 
 
 ### Ingest
