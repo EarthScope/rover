@@ -5,9 +5,10 @@ from sqlite3 import OperationalError
 from .request import RequestComparison
 from .manager import DownloadManager
 from .args import SUBSCRIBE, LIST_SUBSCRIBE, UNSUBSCRIBE, SUBSCRIPTIONSDIR, AVAILABILITYURL, DATASELECTURL, DEV, \
-    FORCEREQUEST, mm, TRIGGER, VERBOSITY, NO, DELETEFILES
+    FORCEREQUEST, mm, TRIGGER, VERBOSITY, NO, DELETEFILES, TEMPDIR
 from .sqlite import SqliteSupport, NoResult
-from .utils import unique_path, build_file, format_day_epoch, safe_unlink, format_time_epoch, log_file_contents
+from .utils import unique_path, build_file, format_day_epoch, safe_unlink, format_time_epoch, log_file_contents, \
+    fix_file_inplace
 
 """
 Commands related to subscription:
@@ -61,6 +62,7 @@ they must not describe overlapping data.  To enforce this, requests are checked 
 @verbosity
 @log-dir
 @log-verbosity
+@temp-dir
 
 Most of the download process is controlled by the parameters provided when starting the service (see
 `rover start`).
@@ -85,6 +87,7 @@ dates that are missing from the repository.
         self._subscriptions_dir = config.dir(SUBSCRIPTIONSDIR)
         self._availability_url = config.arg(AVAILABILITYURL)
         self._dataselect_url = config.arg(DATASELECTURL)
+        self._temp_dir = config.dir(TEMPDIR)
         self._create_table()
 
     def _create_table(self):
@@ -115,7 +118,6 @@ dates that are missing from the repository.
                 log_file_contents(row[0], self._log, 10)
                 raise e
 
-
     def run(self, args):
         # input is a temp file as we prepend parameters
         try:
@@ -124,6 +126,7 @@ dates that are missing from the repository.
                 copyfile(args[0], path)
             else:
                 build_file(self._log, path, args)
+            fix_file_inplace(self._log, path, self._temp_dir)
         except:
             raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % SUBSCRIBE)
         if self._force_request:

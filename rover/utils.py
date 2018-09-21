@@ -7,7 +7,7 @@ from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink, kill, name
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from re import match, sub
-from shutil import move
+from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
 
@@ -449,9 +449,7 @@ def build_file(log, path, args):
     assert count
     assert len(args) < 3
     parts = [sncl[NETWORK], sncl[STATION], sncl[LOCATION], sncl[CHANNEL]]
-    while args:
-        arg = tidy_timestamp(log, args.pop(0))
-        parts.append(arg)
+    parts += args
     with open(path, 'w') as req:
         print(' '.join(parts), file=req)
 
@@ -571,3 +569,82 @@ def calc_bytes(sizestring):
 
     else:
         return int(sizestring)
+
+
+def null_fixer(log, line):
+    return line
+
+
+def iris_fixer(log, line):
+    """
+    Tidy and validate a request file line as used by the retrieve command.
+
+    Empty lines and lines beginning with '#' are considered acceptable, but
+    should not be submitted to a web service.
+
+    Return the tidied request line on success.
+
+    Return None on acceptable line that should not be included in a service request.
+
+    Raise exception for unacceptable lines.
+    """
+    line = line.strip()
+
+    if len(line) == 0:
+        return None
+
+    if line.startswith('#'):
+        return None
+
+    fields = line.split()
+
+    if len(fields) != 6:
+        raise Exception ("Unrecognized request line, not enough fields: '%s'" % line)
+
+    # Acceptable source identifier codes contain only these characters
+    acceptable_code = "[-_,A-Za-z0-9*?]"
+
+    if not match(acceptable_code, fields[0]):
+        raise Exception ("Unrecognized request line, invalid network code: '%s'" % line)
+
+    if not match(acceptable_code, fields[1]):
+        raise Exception ("Unrecognized request line, invalid station code: '%s'" % line)
+
+    if not match(acceptable_code, fields[2]):
+        raise Exception ("Unrecognized request line, invalid location code: '%s'" % line)
+
+    if not match(acceptable_code, fields[3]):
+        raise Exception ("Unrecognized request line, invalid channel code: '%s'" % line)
+
+    # Tidy time values, allowing '*' as an exception (meaning "open" time)
+    if fields[4] != '*':
+        try:
+            fields[4] = tidy_timestamp(log, fields[4])
+        except:
+            raise Exception ("Unrecognized request line, invalid start time: '%s'" % line)
+
+    if fields[5] != '*':
+        try:
+            fields[5] = tidy_timestamp(log, fields[5])
+        except:
+            raise Exception ("Unrecognized request line, invalid end time: '%s'" % line)
+
+    return " ".join(fields)
+
+
+def fix_file_inplace(log, path, temp_dir, fixer=iris_fixer):
+    temp_path = unique_path(temp_dir, 'rover_fixed_request', path)
+    log.debug('Fixing %s in %s' % (path, temp_path))
+    try:
+        with open(temp_path, 'w') as output:
+            with open(path, 'r') as input:
+                for line in input.readlines():
+                    line = line.rstrip()  # remove linefeed
+                    line = fixer(log, line)
+                    if line:
+                        print(line, file=output)
+        unlink(path)
+        log.debug('Replacing %s with %s' % (path, temp_path))
+        copyfile(temp_path, path)
+    finally:
+        safe_unlink(temp_path)

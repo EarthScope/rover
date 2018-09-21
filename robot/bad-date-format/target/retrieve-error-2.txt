@@ -1,21 +1,22 @@
 retrieve  DEFAULT: Rover VERSION - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
 retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
-retrieve    ERROR: 400 Client Error: Bad Request for url: http://service.iris.edu/irisws/availability/1/query
-retrieve    ERROR: Will log response contents (max 10 lines) here:
-retrieve    ERROR: > Error 400: bad line: TA MSTX -- BH? 2012-02-01 2012-02-4 un-regognized time format: 2012-02-4 [should be like: 2001-01-02T12:34:56, 2001-01-02T12:34:56.123, 2001-01-02T12:34:56.123456]
-retrieve    ERROR: > Request:
-retrieve    ERROR: > http://service.iris.edu/irisws/availability/1/query
-retrieve    ERROR: > Request Submitted:
-retrieve    ERROR: > DATE UTC
-retrieve    ERROR: > Service version:
-retrieve    ERROR: > Service: irisws-availability  VERSION
-retrieve    ERROR: Please pay special attention to the first lines of the message - they often contains useful information.
-retrieve    ERROR: The most likely cause of this problem is that the request contains errors.  Will log request contents (max 10 lines) here:
-retrieve    ERROR: > mergequality=true
-retrieve    ERROR: > mergesamplerate=true
-retrieve    ERROR: > TA MSTX -- BH? 2012-02-01 2012-02-4
-retrieve    ERROR: The request is either provided by the user or created from the user input.
-retrieve    ERROR: To ensure consistency rover copies files.  To see the paths and avoid deleting temporary copies re-run the command with the --verbosity 5 and --no-delete-files options
-retrieve CRITICAL: 400 Client Error: Bad Request for url: http://service.iris.edu/irisws/availability/1/query
-retrieve  DEFAULT: See "rover help retrieve"
+retrieve  DEFAULT: Downloading TA_MSTX 2012-032 (N_S 1/1; day 1/4)
+retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 2/4)
+retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 3/4)
+retrieve  DEFAULT: Downloading TA_MSTX 2012-035 (N_S 1/1; day 4/4)
+retrieve  DEFAULT: The latest retrieval attempt had no errors, but we downloaded data so will try again to check that all data were retrieved
+retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
+retrieve  DEFAULT: The availability service indicates that there are no more data to download
+retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
+retrieve  DEFAULT: 
+retrieve  DEFAULT: ----- Retrieval Finished -----
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A rover retrieve task on block started DATE
+retrieve  DEFAULT: (DATE local) has completed in DURATION
+retrieve  DEFAULT: 
+retrieve  DEFAULT: The task comprised of 1 stations with data covering 518400s.
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A total of 4 downloads were made, with 0 errors (0 on
+retrieve  DEFAULT: final pass of 2).
+retrieve  DEFAULT: 

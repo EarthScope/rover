@@ -11,7 +11,7 @@ from .manager import DownloadManager, ManagerException
 from .report import Reporter
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import clean_old_files, match_prefixes, check_leap, unique_path, safe_unlink, build_file
+from .utils import clean_old_files, match_prefixes, check_leap, unique_path, safe_unlink, build_file, fix_file_inplace
 
 """
 Commands related to data retrieval:
@@ -149,6 +149,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
                     build_file(self._log, path, args)
                 except:
                     raise Exception(usage)
+            fix_file_inplace(self._log, path, self._temp_dir)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             if fetch:
                 self._log.default('Rover version %s - starting retrieve' % ROVER_VERSION)

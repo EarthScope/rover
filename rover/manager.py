@@ -155,7 +155,7 @@ class Chunks:
         return ' '.join(code if code else '--' for code in sncl.split('_'))
 
     def pop(self, progress):
-        right = next(iter(self.__chunks.keys()))
+        right = next(iter(sorted(self.__chunks.keys())))
         description = '%s_%s %s' % (self.__network, self.__station, format_year_day_epoch(right-24*3600))
         data = self.__chunks[right]
         path = unique_path(self.__temp_dir, 'rover_chunk', description)
@@ -509,6 +509,8 @@ class Source(SqliteSupport):
         response = self._get_availability(request, self._availability_url)
         try:
             # compare database and availability to construct list of missing data
+            # we could make this lazy, but then we lose progression statistics.  so
+            # just try to be as meagre with memory use as possible.
             for remote in self._parse_availability(response):
                 self._log.debug('Available data: %s' % remote)
                 local = self._scan_index(remote.sncl)
