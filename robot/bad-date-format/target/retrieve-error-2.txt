@@ -9,14 +9,3 @@ retrieve  DEFAULT: The latest retrieval attempt had no errors, but we downloaded
 retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
 retrieve  DEFAULT: The availability service indicates that there are no more data to download
 retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
-retrieve  DEFAULT: 
-retrieve  DEFAULT: ----- Retrieval Finished -----
-retrieve  DEFAULT: 
-retrieve  DEFAULT: A rover retrieve task on block started DATE
-retrieve  DEFAULT: (DATE local) has completed in DURATION
-retrieve  DEFAULT: 
-retrieve  DEFAULT: The task comprised of 1 stations with data covering 518400s.
-retrieve  DEFAULT: 
-retrieve  DEFAULT: A total of 4 downloads were made, with 0 errors (0 on
-retrieve  DEFAULT: final pass of 2).
-retrieve  DEFAULT: 
