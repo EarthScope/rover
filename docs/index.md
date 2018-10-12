@@ -45,14 +45,14 @@ You should now be able to type `rover --version` to see if it was successfully i
     cd datarepo
     ```
 
-1. Create a request file, e.g. named `request.txt` that contains:
+1. Create a request file named `request.txt` containing:
 
     ```
     IU ANMO * LHZ 2012-01-01T00:00:00 2012-02-01T00:00:00
     TA MSTX -- BH? 2012-01-01T00:00:00 2012-02-01T00:00:00
     ```
 
-1. Run rover in retrieve move to fetch these data:
+1. Run the process rover retrieve to fetch these data:
 
    ```
    rover retrieve request.txt
