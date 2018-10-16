@@ -33,9 +33,9 @@
 
     rover init [directory]
 
-Creates the expected directory structure and writes default values to the config file.
+`init-repository` Generates a rover.config file containing rover's default configuation parameters, a data directory, and a logs directory to a target path.
 
-To avoid over-writing data, it is an error if the config file, data directory or log directory already exist.
+To avoid over-writing data, `rover init-repository` returns an error if the command's target directory contains the file rover.config, or the directories data or logs.
 
 ##### Significant Parameters
 
@@ -65,22 +65,16 @@ will create the repository in ~/rover
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compare available data with the repository, then download, ingest and index data.
+`rover retrieve` post a request to the availibilty service defined in rover.config. Returned availibilty data is compared with the local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
 
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
+File arguments must only contain a list of text strings that follow the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments.
 
-In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed containing that data.
+Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` parameters; missing values, `*`, `?` are taken as wildcards. Wild cards are not accepted as starttime or endtime date strings in either file or input text arguments. 
 
-The list of available data is retrieved from the service and compared with the local index.  Data not available locally are downloaded and ingested.
 
-In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality and samplerate information is "merged").
-
-This command also indexes modified data in the repository before processing.
-
-When the process is running status should be visible at http://localhost:8000 (by default).  When the process ends an email can be sent to the user (if `--email` is used).
+During the retrieve process, the command's status is available at `http://localhost:8000` (default configuration). Users can provide an email address so they are notifed upon completion of `rover retrieve`.
 
 See `rover subscribe` for similar functionality, but with regular updates.
-
 #### Errors, Retries and Consistency
 
 If `download-retries` allows, retrievals are repeated until no errors occur and, once data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
