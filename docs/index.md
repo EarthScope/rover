@@ -30,10 +30,8 @@ that must be compiled.
 
 Install rover, and other Python requirements, with `pip`:
 
-
     pip install rover
-
-
+    
 You should now be able to type `rover --version` to see if it was successfully installed.
 
 ## Quick start <a id="quickstart"></a>
@@ -43,13 +41,10 @@ Initialize a data repository, which creates the `datarepo` directory, and change
     rover init-repository datarepo
     cd datarepo
 
-
 Create a request file named `request.txt` containing:
-
 
     IU ANMO * LHZ 2012-01-01T00:00:00 2012-02-01T00:00:00
     TA MSTX -- BH? 2012-01-01T00:00:00 2012-02-01T00:00:00
-
 
 Run the process `rover retrieve` to fetch these data:
 
