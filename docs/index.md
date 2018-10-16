@@ -52,13 +52,13 @@ You should now be able to type `rover --version` to see if it was successfully i
     TA MSTX -- BH? 2012-01-01T00:00:00 2012-02-01T00:00:00
     ```
 
-1. Run the process rover retrieve to fetch these data:
+1. Run the process `rover retrieve` to fetch these data:
 
    ```
    rover retrieve request.txt
    ```
 
-1. List a summary of the data, earliest and latest times, retrieved:
+1. `list-summary` prints the retrieved data from the earliest to the latest timespans:
 
    ```
    rover list-summary
@@ -70,14 +70,14 @@ You should now be able to type `rover --version` to see if it was successfully i
       TA_MSTX__BHZ 2012-01-01T00:00:00.000000 2012-01-31T23:59:59.975000
    ```
 
-The data, in miniSEED format, are now available in the `datareport/data/` directory.  All data for a station or a day are stored in a single file, with the following general file organization:
+Retrieved files are miniseed format that contain day lengths of station data following the path structure:
 
    ```
    <datarepo>/data/<network>/<year>/<day>/<station>.<network>.<year>.<day>
    ```
 
-There are many more options available in rover, such as the ability send an email
-when the request is finished (see the `--email` option), view a listing of contiguous traces (via the `rover list-index join` command), view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).
+There are many more options available in rover including; the ability send an email
+when the request is finished (see the `--email` option), view a listing of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).
 
 There are more options in the rover.config file and on the command line, use the `-h` option to see the command line options.
 
