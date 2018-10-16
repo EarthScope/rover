@@ -71,7 +71,7 @@ Retrieved files are miniseed format containing day lengths of station data. The 
    ```
 ## Exploring Rover 
 
-Rover has built-in help. The command `rover help` 
+Rover has built-in help. The command `rover help` prints an introduction to rover to the terminal.
 
 There are many more options available in rover including; the ability to send emails that monitor 
 rover request and subscriptions (see the `--email` option), view listings of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).`rover help help` prints a list of [commands](commands.md) available in the rover code suite. 
