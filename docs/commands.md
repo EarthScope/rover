@@ -77,7 +77,7 @@ During the retrieve process, the command's status is available at `http://localh
 See `rover subscribe` for similar functionality, but with regular updates.
 #### Errors, Retries and Consistency
 
-If `download-retries` allows, retrievals are repeated until no errors occur and, once data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
+Rover retrieve will repeat until no errors occur or its configurable limit, set by `download-retries`, is reached. Upon appecompletion of  data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
 
 Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user. They also cause the command to exit with an error status.
 
