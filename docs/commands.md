@@ -71,7 +71,6 @@ File arguments must only contain a list of text strings that follow the pattern 
 
 Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` parameters; missing values, `*`, `?` are taken as wildcards. Wild cards are not accepted as starttime or endtime date strings in either file or input text arguments. 
 
-
 During the retrieve process, the command's status is available at `http://localhost:8000` (default configuration). Users can provide an email address so they are notifed upon completion of `rover retrieve`.
 
 See `rover subscribe` for similar functionality, but with regular updates.
@@ -115,17 +114,15 @@ Inconsistencies cause rover processes to exit with an error status and are repor
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 | temp-expire         | 1                    | Number of days before deleting temp files (days) |
 
-Additional sub-commands parameters (download, ingest, index) are used - see the subcommand's documentation for more details.
+Additional sub-command (download, ingest, index) parameters affect retrieve - see the subcommand's documentation for more details.
 
 ##### Examples
 
     rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the repository for N_S_L_Cs / timespans present in the given file.
-
+will process a request to download, ingest, and index data missing from rover's local repository.
+    
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
-
-will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the repository.
 
 
 ### List Retrieve
@@ -134,9 +131,13 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
 
     rover list-retrieve N_S_L_C [begin [end]]
 
-Display what data would be downloaded if the `retrieve` equivalent command was run.
+Queries the availibilty service and report a list of requested data availble at the server. 
 
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_S_L_C and timespan are given, a (single-line) file will be automatically constructed containing that data.
+File arguments must only contain a list of text strings that follow the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments.
+
+Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` parameters; missing values, `*`, `?` are taken as wildcards. Wild cards are not accepted as starttime or endtime date strings in either file or input text arguments. 
+
+
 
 ##### Significant Parameters
 
