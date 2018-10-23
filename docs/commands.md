@@ -133,7 +133,7 @@ will process a request to download, ingest, and index data missing from rover's 
 
 Queries the availibilty service and report a list of requested data availble at the server. 
 
-File arguments must only contain a list of text strings that follow the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments.
+File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments.
 
 Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` parameters; missing values, `*`, `?` are taken as wildcards. Wild cards are not accepted as starttime or endtime date strings in either file or input text arguments. 
 
