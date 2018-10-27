@@ -13,7 +13,6 @@ Python 3.5 and above is preferred.
 
 * [Installation](#installation)
 * [Quick start](#quickstart)
-* [An introduction to rover](introduction.md)
 * [Rover commands](commands.md)
 * [Rover configuration](configuration.md)
 * [Example commands to download data](download.md)
@@ -69,6 +68,9 @@ Retrieved files are miniseed format containing day lengths of station data. The 
    ```
    <datarepo>/data/<network>/<year>/<day>/<station>.<network>.<year>.<day>
    ```
+## Exploring Rover 
+
+Rover has built-in help. The command `rover help` prints a rover introduction to the terminal.
 
 There are many more options available in rover including; the ability to send emails that monitor 
 rover request and subscriptions (see the `--email` option), view listings of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).`rover help help` prints a list of [commands](commands.md) available in the rover code suite. 
