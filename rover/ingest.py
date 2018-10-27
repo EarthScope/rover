@@ -1,16 +1,16 @@
 
 from datetime import datetime
-from os import getpid
+from os import getpid, unlink
 from os.path import exists, join
 from re import match
+from shutil import copyfile
 
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, \
-    FORCECMD
+from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import run, check_cmd, check_leap, create_parents, touch, safe_unlink, windows
+from .utils import run, check_cmd, check_leap, create_parents, safe_unlink, windows, atomic_move
 
 """
 The 'rover ingest' command - copy downloaded data into the repository (and then call index).
@@ -147,15 +147,24 @@ will add all the data in the given file to the repository.
         return join(self._data_dir, network, str(year), '%03d' % day, '%s.%s.%04d.%03d' % (station, network, year, day))
 
     def _append_data(self, data, dest):
-        if not exists(dest):
-            create_parents(dest)
-            open(dest, 'w').close()
         # here we are locking for this process, so we can set the PID directly.
-        # there is no possibility for deadlock because we are single threaded and
-        # release on exit.
+        # there is no possibility for deadlock because we are single threaded
+        # and release on exit.
         with self._lock_factory.lock(dest, pid=getpid()):
-            with open(dest, 'ba') as output:
+            # to avoid leaving broken files on unexpected exit, use a temp
+            # file and then move into position (move should be atomic)
+            tmp = dest + '.tmp'
+            if exists(tmp):
+                self._log.warn('Cleaning %s' % tmp)
+                unlink(tmp)
+            if not exists(dest):
+                create_parents(dest)
+                open(tmp, 'w').close()
+            else:
+                copyfile(dest, tmp)
+            with open(tmp, 'ba') as output:
                 output.write(data)
+            atomic_move(self._log, tmp, dest)
 
     def _assert_single_day(self, file, starttime, endtime):
         if starttime[:10] != endtime[:10]:

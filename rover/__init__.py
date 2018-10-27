@@ -3,7 +3,7 @@ from traceback import print_exc
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
     RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER
+    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER, ABORT_CODE, ERROR_CODE
 from .config import Config, RepoInitializer
 from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
@@ -53,15 +53,18 @@ def execute(command, config):
 def main():
     config = None
     try:
-        config = Config()
-        if config.command and config.command != HELP:
-            config.lazy_validate()
-        # initialise without a database...
-        if not config.command or config.command in (INIT_REPOSITORY, HELP):
-            execute(config.command, config)
-        else:
-            with ProcessManager(config):
+        try:
+            config = Config()
+            if config.command and config.command != HELP:
+                config.lazy_validate()
+            # initialise without a database...
+            if not config.command or config.command in (INIT_REPOSITORY, HELP):
                 execute(config.command, config)
+            else:
+                with ProcessManager(config):
+                    execute(config.command, config)
+        except KeyboardInterrupt:
+            exit(ABORT_CODE)
     except Exception as e:
         if config and config.log:
             config.log.critical(str(e))
@@ -74,4 +77,4 @@ def main():
         else:
             print_exc()
         # use an exit code so that workers are detected as failing
-        exit(1)
+        exit(ERROR_CODE)

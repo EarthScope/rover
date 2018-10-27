@@ -4,12 +4,15 @@ import datetime
 import time
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink, kill, name
+from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from re import match, sub
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
+
+if version_info[0] >= 3:
+    from os import replace
 
 from requests import Session
 from requests import __version__ as requests_version
@@ -648,3 +651,30 @@ def fix_file_inplace(log, path, temp_dir, fixer=iris_fixer):
         copyfile(temp_path, path)
     finally:
         safe_unlink(temp_path)
+
+
+def atomic_move(log, src, dest):
+    '''
+    This uses an atomic primitive in 3.3+ and on unix.
+    On Windows the best we can do is two operations, repeating if we catch an interrupt.
+    https://bugs.python.org/issue8828
+    '''
+    if version_info[0] >= 3:
+        log.debug('Moving %s to %s (atomic 3)' % (src, dest))
+        replace(src, dest)
+    else:
+        if windows():
+            log.debug('Moving %s to %s (windows)' % (src, dest))
+            exception = None
+            while exists(src):
+                try:
+                    safe_unlink(dest)
+                    rename(src, dest)
+                except KeyboardInterrupt as e:
+                    log.debug('Caught interrupt; will re-throw once move complete')
+                    exception = e
+            if exception:
+                raise exception
+        else:
+            log.debug('Moving %s to %s (atomic 2.7)' % (src, dest))
+            rename(src, dest)

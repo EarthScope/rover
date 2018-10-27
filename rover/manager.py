@@ -7,7 +7,7 @@ from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
     DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, \
-    TIMESPANINC
+    TIMESPANINC, ABORT_CODE
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
@@ -228,7 +228,8 @@ class Retrieval:
         self.errors.downloads += 1
         if return_code:
             self.errors.errors += 1
-            self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
+            if return_code != ABORT_CODE:   # hide message on ctrl-C as we will exit as well
+                self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
 
     def new_worker(self, workers, config_path, rover_cmd):
         """

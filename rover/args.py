@@ -14,6 +14,8 @@ Command line / file configuration parameters.
 
 ROVER_VERSION = '0.0.0'
 
+ERROR_CODE = 1
+ABORT_CODE = 2
 
 # commands
 DAEMON = 'daemon'
