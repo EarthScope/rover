@@ -37,7 +37,7 @@ echo "  git push"
 echo "  git push origin --tags"
 echo
 echo "Append 'plus' to version and push to master"
-echo "  sed -i -e 's/^__version__.*/__version__ = ${VERSION}plus/' rover/__init__.py"
+echo "  sed -i -e \"s/^__version__.*/__version__ = '${VERSION}plus'/\" rover/__init__.py"
 echo "  git commit rover/__init__.py -m 'version ${VERSION}plus'"
 echo "  git push"
 
