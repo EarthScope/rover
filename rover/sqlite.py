@@ -136,7 +136,7 @@ class SqliteContext:
     """
 
     def __init__(self, file, log):
-        self._db = SqliteDb(connect(file), log)
+        self._db = SqliteDb(connect(file, 60.0), log)
 
     def __enter__(self):
         return self._db
