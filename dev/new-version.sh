@@ -29,10 +29,15 @@ echo "rover-$VERSION.tgz in $PWD"
 popd > /dev/null
 
 echo
-echo "tagging version in git"
-git tag -a v$VERSION -m "version $VERSION"
-echo
-echo "to share the tag:"
+echo "Now is a chance to test the rover23 version, if all checks out:"
+echo "  git commit rover/__init__.py -m 'version $VERSION'"
+echo "  git tag -a v$VERSION -m 'version $VERSION'"
+echo "push changes and tag:"
+echo "  git push"
 echo "  git push origin --tags"
-echo "to delete the tag (before pushing):"
-echo "  git tag -d v$VERSION"
+echo
+echo "Append 'plus' to version and push to master"
+echo "  sed -i -e 's/^__version__.*/__version__ = ${VERSION}plus/' rover/__init__.py"
+echo "  git commit rover/__init__.py -m 'version ${VERSION}plus'"
+echo "  git push"
+
