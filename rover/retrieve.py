@@ -2,9 +2,10 @@
 import datetime
 from shutil import copyfile
 
+from rover import __version__
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
-    HTTPRETRIES, ROVER_VERSION
+    HTTPRETRIES
 from .download import DEFAULT_NAME
 from .index import Indexer
 from .manager import DownloadManager, ManagerException
@@ -152,7 +153,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             fix_file_inplace(self._log, path, self._temp_dir)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             if fetch:
-                self._log.default('Rover version %s - starting retrieve' % ROVER_VERSION)
+                self._log.default('Rover version %s - starting retrieve' % __version__)
                 self.display_feedback()
             self._query(path, fetch)
             if fetch:

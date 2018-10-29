@@ -4,9 +4,16 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+module_name = 'rover'
+
+# Extract version string from code
+import importlib
+mod = importlib.import_module(module_name)
+version = mod.__version__
+
 setuptools.setup(
-    name="rover",
-    version="0.0.0",
+    name=module_name,
+    version=version,
     author="IRIS",
     author_email="software-owner@iris.washington.edu",
     description="Tool for the robust retrieval of seismic data",
@@ -28,7 +35,7 @@ setuptools.setup(
     ),
     entry_points={
         'console_scripts': [
-            'rover = rover:main',
+            '%s = %s:main' % (module_name,module_name),
         ],
     },
     install_requires=[

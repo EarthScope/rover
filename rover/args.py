@@ -6,13 +6,12 @@ from re import sub
 from smtplib import SMTP_PORT
 from textwrap import dedent
 
+from rover import __version__
 from .utils import create_parents, canonify, check_cmd
 
 """
 Command line / file configuration parameters.
 """
-
-ROVER_VERSION = '0.0.0'
 
 ERROR_CODE = 1
 ABORT_CODE = 2
@@ -255,7 +254,7 @@ class Arguments(ArgumentParser):
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
 
-        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='rover %s' % ROVER_VERSION)
+        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='rover %s' % __version__)
         self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
 
         # operation details

@@ -1,4 +1,7 @@
 
+pkg_path = __file__
+__version__ = '0.0.6plus'
+
 from traceback import print_exc
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \

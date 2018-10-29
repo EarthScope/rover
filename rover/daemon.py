@@ -2,8 +2,9 @@
 from sqlite3 import OperationalError
 from time import sleep, time
 
+from rover import __version__
 from .args import START, DAEMON, ROVERCMD, RECHECKPERIOD, PREINDEX, POSTSUMMARY, fail_early, STOP, UserFeedback, \
-    FORCECMD, ROVER_VERSION
+    FORCECMD
 from .config import write_config
 from .manager import DownloadManager
 from .report import Reporter
@@ -103,7 +104,7 @@ will start the daemon, processing subscriptions every 24 hours.
             run('%s %s -f %s' % ('pythonw -m rover', DAEMON, self._config_path), self._log, uncouple=True)
         else:
             run('%s %s -f %s' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
-        self._log.default('Rover version %s - starting %s' % (ROVER_VERSION, DAEMON))
+        self._log.default('Rover version %s - starting %s' % (__version__, DAEMON))
         self.display_feedback()
 
 
