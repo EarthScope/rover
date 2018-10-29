@@ -106,12 +106,12 @@ class LockContext(SqliteSupport):
         def callback(row):
             pid, key, epoch = row
             if pid is not None and not process_exists(pid):
-                # maybe shouldn't be warning?  seems to occur when two transactions both
+                # no longer a warning.  seems to occur when two transactions both
                 # delete the same entry (one from the worker existing and one from a worker
                 # waiting).  waiting starts the transaction before exiting, but completes
                 # after, afaict (so the exiting has disappeared and the PID test succeeds
                 # for the waiting),
-                self._log.warn('Cleaning out old entry for PID %d on lock %s with %s (created %s)' % (
+                self._log.debug('Cleaning out old entry for PID %d on lock %s with %s (created %s)' % (
                     pid, self._table, key, format_epoch(epoch)))
                 with self._db:
                     c = self._db.cursor()
