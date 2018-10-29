@@ -1,9 +1,8 @@
 
 import sys
 from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter, SUPPRESS
-from os.path import exists, join, dirname
+from os.path import exists, join
 from re import sub
-from smtplib import SMTP_PORT
 from textwrap import dedent
 
 from .utils import create_parents, canonify, check_cmd
@@ -126,7 +125,6 @@ DEFAULT_MSEEDINDEXWORKERS = 10
 DEFAULT_RECHECKPERIOD = 12
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_SMTPADDRESS = 'localhost'
-DEFAULT_SMTPPORT = SMTP_PORT
 DEFAULT_SUBSCRIPTIONSDIR = 'subscriptions'
 DEFAULT_TEMPDIR = 'tmp'
 DEFAULT_TEMPEXPIRE = 1
@@ -320,13 +318,16 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar=URLVAR)
 
         # user feedback
+        # delay import until we can catch KeyboardInterrupt - issue 46
+        # smtplib is another lib that calls crypto routines on import
+        from smtplib import SMTP_PORT
         self.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
         self.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar=ADDRESSVAR)
         self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar=NVAR, type=int)
         self.add_argument(mm(EMAIL), default='', action='store', help='address for completion status', metavar=ADDRESSVAR)
         self.add_argument(mm(EMAILFROM), default=DEFAULT_EMAILFROM, action='store', help='from address for email', metavar=ADDRESSVAR)
         self.add_argument(mm(SMTPADDRESS), default=DEFAULT_SMTPADDRESS, action='store', help='address of SMTP server', metavar=ADDRESSVAR)
-        self.add_argument(mm(SMTPPORT), default=DEFAULT_SMTPPORT, action='store', help='port for SMTP server', metavar=NVAR, type=int)
+        self.add_argument(mm(SMTPPORT), default=SMTP_PORT, action='store', help='port for SMTP server', metavar=NVAR, type=int)
 
         # commands / args
         self.add_argument(COMMAND, metavar='COMMAND', nargs='?', type=cmd_or_alias, help='use "help" for further information')
