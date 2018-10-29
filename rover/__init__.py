@@ -1,6 +1,6 @@
 
 pkg_path = __file__
-__version__ = '0.0.6plus'
+__version__ = '0.0.7'
 
 from traceback import print_exc
 
