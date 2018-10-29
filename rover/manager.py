@@ -584,7 +584,11 @@ class Source(SqliteSupport):
             availability.add_timespans(row[0], row[1])
 
         try:
-            self.foreachrow('''select timespans, samplerate
+            # coalesce below replaces [...] with <...> based on start/endtime if timespans is missing
+            # this is handled by rover.coverage.BaseBuilder
+            # see issue 47
+            # note we separate times with space as time contains colons
+            self.foreachrow('''select coalesce(timespans,'<' || starttime || ' ' || endtime || '>'), samplerate
                                     from tsindex 
                                     where network=? and station=? and location=? and channel=?
                                     order by starttime, endtime''',

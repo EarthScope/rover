@@ -1,6 +1,5 @@
 
-from .utils import PushBackIterator, format_epoch
-
+from .utils import PushBackIterator, format_epoch, parse_epoch
 
 """
 Interface to the N_S_L_C / timespan data in tsindex - how much data do we have
@@ -26,11 +25,13 @@ class Coverage:
         self.samplerate = None
 
     def add_samplerate(self, samplerate):
-        if samplerate:
-            if self.samplerate:
+        if samplerate is not None:
+            if self.samplerate is not None:
                 self.samplerate = min(self.samplerate, samplerate)
             else:
-                self.samplerate = samplerate
+                # a samplerate of zero seems to be used for logging channels when contiguous
+                # data are separated by 0.000002s, so use a large value in that case
+                self.samplerate = samplerate if samplerate else 10000
 
     def add_epochs(self, begin, end, samplerate=None):
         """
@@ -81,7 +82,7 @@ class Coverage:
         return bool(self.timespans)
 
     def tolerances(self):
-        if not self.samplerate:
+        if self.samplerate is None:
             raise Exception('No samplerate available')
         return self._frac_tolerance / self.samplerate, self._frac_increment / self.samplerate
 
@@ -187,9 +188,16 @@ class BaseBuilder:
         self._frac_increment = frac_increment
 
     def _parse_timespans(self, timespans):
+        if timespans is None:
+            raise Exception('Unexpected NULL reading timespans')
         for pair in timespans.split(','):
-            pair = pair[1:-1]
-            begin, end = map(float, pair.split(':'))
+            inner = pair[1:-1]
+            if pair[0] == '[':
+                begin, end = map(float, inner.split(':'))
+            elif pair[0] == '<':
+                begin, end = map(parse_epoch, inner.split(' '))
+            else:
+                raise Exception('Unexpected timespans format: "%s"' % pair)
             yield begin, end
 
 

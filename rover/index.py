@@ -325,7 +325,8 @@ printed to stdout.
         if self._flags[COUNT]:
             sql += 'count(*) '
         else:
-            sql += 'network, station, location, channel, timespans, samplerate '
+            sql += ('''network, station, location, channel, 
+                       coalesce(timespans,'<' || starttime || ' ' || endtime || '>'), samplerate ''')
             if not self._flags[JOIN_QSR]:
                 sql += ', quality '
         sql += 'from tsindex '
