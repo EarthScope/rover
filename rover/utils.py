@@ -14,7 +14,7 @@ from sys import version_info
 if version_info[0] >= 3:
     from os import replace
 
-from requests import __version__ as requests_version
+from requests import __version__ as requests_version, Session
 from requests.adapters import HTTPAdapter
 
 

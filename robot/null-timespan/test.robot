@@ -17,7 +17,7 @@ Null Timespan
     Run Process    sed  -i.bak  -E  -e  s/task on [-._a-zA-Z0-9]+/task on HOST/g  ${CURDIR}${/}run${/}retrieve-1.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  s/[0-9-]+T[0-9:]+/DATE/g  ${CURDIR}${/}run${/}retrieve-1.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  s/completed in [0-9\.]+ [a-zA-Z]+$/completed in DURATION/g  ${CURDIR}${/}run${/}retrieve-1.txt  shell=True
-    Run Process    sed  -i.bak  -E  -e  s/version:? *[0-9.]+/VERSION/g  ${CURDIR}${/}run${/}retrieve-1.txt  shell=True
+    Run Process    sed  -i.bak  -E  -e  s/version:? *[0-9.]+[a-z]*/VERSION/g  ${CURDIR}${/}run${/}retrieve-1.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  '14,$d'  ${CURDIR}${/}run${/}retrieve-1.txt  shell=True
 
     ${run} =    Get File    ${CURDIR}${/}run${/}retrieve-1.txt
@@ -34,7 +34,7 @@ Null Timespan
     Run Process    sed  -i.bak  -E  -e  s/task on [-._a-zA-Z0-9]+/task on HOST/g  ${CURDIR}${/}run${/}retrieve-2.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  s/[0-9-]+T[0-9:]+/DATE/g  ${CURDIR}${/}run${/}retrieve-2.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  s/completed in [0-9\.]+ [a-zA-Z]+$/completed in DURATION/g  ${CURDIR}${/}run${/}retrieve-2.txt  shell=True
-    Run Process    sed  -i.bak  -E  -e  s/version:? *[0-9.]+/VERSION/g  ${CURDIR}${/}run${/}retrieve-2.txt  shell=True
+    Run Process    sed  -i.bak  -E  -e  s/version:? *[0-9.]+[a-z]*/VERSION/g  ${CURDIR}${/}run${/}retrieve-2.txt  shell=True
     Run Process    sed  -i.bak  -E  -e  '14,$d'  ${CURDIR}${/}run${/}retrieve-2.txt  shell=True
 
     ${run} =    Get File    ${CURDIR}${/}run${/}retrieve-2.txt
