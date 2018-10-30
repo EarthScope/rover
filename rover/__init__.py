@@ -13,7 +13,7 @@ import sys
 def signal_handler(sig, frame):
     sys.exit(2)
 
-signal.signal(signal.SIGINT, signal_handler)
+PREV_HANDLER = signal.signal(signal.SIGINT, signal_handler)
 
 
 from traceback import print_exc
@@ -71,6 +71,10 @@ def main():
     config = None
     try:
         try:
+            # reset the old handler now that we can catch keyboardinterrupt
+            # this is necessary for windows / 2.7 where copies are not atomic and we need to catch this
+            # (and it generally seems like a good idea - let's try not to change how python works too much)
+            signal.signal(signal.SIGINT, PREV_HANDLER)
             config = Config()
             if config.command and config.command != HELP:
                 config.lazy_validate()

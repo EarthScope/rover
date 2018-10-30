@@ -213,8 +213,6 @@ def _session(retries):
     Ugliness required by requests lib to set max retries.
     (We don't really care about efficiency to the point where we need to re-use the session)
     """
-    # delay import so we can catch KeyboardInterrupt - see issue 46
-    from requests import Session
     # https://stackoverflow.com/questions/21371809/cleanly-setting-max-retries-on-python-requests-get-or-post-method
     session = Session()
     http_adapter = HTTPAdapter(max_retries=retries)
