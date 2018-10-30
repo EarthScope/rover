@@ -1,5 +1,7 @@
-
-# Rover Commands
+---
+title: Rover Commands
+layout: default
+---
 
 * [Normal Usage](#normal-usage)
   * [Init Repository](#init-repository)
