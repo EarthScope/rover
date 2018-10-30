@@ -168,27 +168,21 @@ displays data that are available in the host repository but are missing from the
 `list_index` returns data available in the local repository (config parameter data-dir) that match given arguments.
 
 
-Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least one underscore).
+`list_index` accepts arguments of net=XX  sta=XXXX loc=XX cha=XXX qua=XX samp=XXX  begin=YYYY-MM-DDThh:mm:ss end=YYYY-MM-DDThh:mm:ss. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha`, `qua`, `samp` arguments. Starttime and endtime arguments cannot be assigned a wildcard. One or more `net`, `sta`, `loc`, `cha`,  `qua`, `samp`  input arguments must be provided; missing values are taken as wildcards.  
+  Alternatively, a N_S_L_C begin=YYYY-MM-DDThh:mm:ss end=YYYY-MM-DDThh:mm:ss can be supplied as arguments. N_S_L_C  can be truncated to the station level. 
 
-The wildcards '*' and '?' can be used.
 
-#### Time Range
+Flag parameters, used to change the output format, are optional arguments. Flags are mutually exclusive and take no value:
 
-The 'begin' and 'end' parameters can be given only once.  They must be of the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the right).  They define a range of times over which the data must appear (at least partially) to be included:
+ ` count - displays the total number of matches.`
 
-#### Flags
+  `join - displays data available as continuous time ranges separated by data quality and sample rate. `
 
-The following parameters are simple flags that change the output format.  They are mutually exclusive and take no value:
-
-  count - only the number of matches will be shown
-
-  join - continguous time ranges will be joined
-
-  join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
+  `join-qsr - displays the maximal timespan across all quality and sample rates, similar to the process `retrieve`.`
   
 
 
-##### Significant Parameters
+#### Significant Parameters
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -202,11 +196,11 @@ The following parameters are simple flags that change the output format.  They a
 
     rover list-index IU_ANMO_00_BH? count
 
-will display the number of entries for all time, and any quality or smaplerate.
+displays the total number of entries for all time, data quality, and sample rate.
 
     rover list-index net=* begin=2001-01-01
 
-will list all entries in the index after the year 2000.
+lists all available data in the local repository after the year 2000.
 
   Note that console logging is to stderr, while the command results are listed to stdout.
 
