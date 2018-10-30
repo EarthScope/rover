@@ -1,3 +1,8 @@
+---
+title: Home
+layout: default
+---
+
 # The IRIS rover user guide
 
 ## Description

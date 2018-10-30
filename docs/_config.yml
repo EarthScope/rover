@@ -1,5 +1,5 @@
-name: IRIS_DMC_Ops
-title: seed-xml-converter
+name: IRIS_DMC
+title: The IRIS rover user guide
 markdown: kramdown
 auto: true
 
