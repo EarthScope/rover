@@ -1,5 +1,7 @@
-
-# Example commands to manage and maintain a repository
+---
+title: Example commands to manage and maintain a repository
+layout: default
+---
 
 ## Indexing
 

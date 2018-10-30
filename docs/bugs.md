@@ -1,5 +1,7 @@
-
-# Known bugs and limitations
+---
+title: Known bugs and limitations
+layout: default
+---
 
 ## Quality, sampling frequency and timespans
 

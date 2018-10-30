@@ -1,5 +1,8 @@
 
-# Example commands to download data
+---
+title: Example commands to download data
+layout: default
+---
 
 ## Immedidate download
 

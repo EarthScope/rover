@@ -1,5 +1,7 @@
-
-# mseedindex install guidelines (for rover)
+---
+title: mseedindex install guidelines (for rover)
+layout: default
+---
 
 The [mseedindex](https://github.com/iris-edu/mseedindex) program is
 used by rover to maintain an index of downloaded miniSEED data.

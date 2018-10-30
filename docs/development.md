@@ -1,5 +1,7 @@
-
-# Rover development
+---
+title: Rover Development
+layout: default
+---
 
 ## Python 2 and 3 support
 

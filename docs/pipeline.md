@@ -1,5 +1,7 @@
-
-# Rover's processing pipeline
+---
+title: Rover's processing pipeline
+layout: default
+---
 
 **Expert use only** - the default configuration should "just work".
 The options described here give precise control over the pipeline

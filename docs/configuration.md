@@ -1,5 +1,7 @@
-
-# Rover Configuration
+---
+title: Rover Configuration
+layout: default
+---
 
 Rover can be configured via a file or using command line parameters.
 The parameter names are the same in both cases.
