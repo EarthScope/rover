@@ -1,5 +1,5 @@
 name: IRIS_DMC
-title: seed-xml-converter
+title: rover
 markdown: kramdown
 auto: true
 remote_theme: iris-edu-int/theme_ghpages
