@@ -33,7 +33,7 @@
 
     rover init [directory]
 
-`init-repository` Generates a rover.config file containing rover's default configuation parameters, a data directory, and a logs directory to a target path.
+`init-repository` generates a rover.config file containing rover's default configuration parameters; a rover.config file, a data directory, and a logs directory to a target path.
 
 To avoid over-writing data, `rover init-repository` returns an error if the command's target directory contains the file rover.config, or the directories data or logs.
 
@@ -65,18 +65,16 @@ will create the repository in ~/rover
 
     rover retrieve N_S_L_C [begin [end]]
 
-`rover retrieve` post a request to the availibilty service defined in rover.config. Returned availibilty data is compared with the local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
+`rover retrieve` post a request to the availability service defined in rover.config. Returned availability data is compared with the local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
 
-File arguments must only contain a list of text strings that follow the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments.
+File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments. Starttime and endtime arguments cannot be assigned as a wildcard. One or more `net`, `sta`, `loc`, `cha` input arguments must be provided; missing values are taken as wildcards.  
 
-Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` parameters; missing values, `*`, `?` are taken as wildcards. Wild cards are not accepted as starttime or endtime date strings in either file or input text arguments. 
-
-During the retrieve process, the command's status is available at `http://localhost:8000` (default configuration). Users can provide an email address so they are notifed upon completion of `rover retrieve`.
+During the retrieve process, the command's status is available at `http://localhost:8000` (default configuration). Users can provide an email address that is notified upon completion of `rover retrieve`.
 
 See `rover subscribe` for similar functionality, but with regular updates.
 #### Errors, Retries and Consistency
 
-Rover retrieve will repeat until no errors occur or its configurable limit, set by `download-retries`, is reached. Upon apparent process completion an additional retrieval is made, which should result in no data being downloaded. If data are downloaded during the additional retrieval phase then the data availibilty and web services servers are inconsistent.
+Rover retrieve will repeat until no errors occur or its configurable limit, set by `download-retries`, is reached. Upon apparent process completion an additional retrieval is made, which should result in no data being downloaded. If data are downloaded during the additional retrieval phase then the data availability and web services servers are inconsistent.
 
 Inconsistencies cause rover processes to exit with an error status and are reported in the logs directory and via the configurable email parameter.
 
@@ -131,11 +129,9 @@ will process a request to download, ingest, and index data missing from rover's 
 
     rover list-retrieve N_S_L_C [begin [end]]
 
-Queries the availibilty service and report a list of requested data availble at the server. 
+Queries the availability service and compares these data with the local repository's index using maximal timespans across quality and sample rates. A list of requested data available at the server that are not present in the local repository is returned to the user. 
 
-File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments.
-
-Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` parameters; missing values, `*`, `?` are taken as wildcards. Wild cards are not accepted as starttime or endtime date strings in either file or input text arguments. 
+File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments. Starttime and endtime arguments cannot be assigned a wildcard. One or more `net`, `sta`, `loc`, `cha` input arguments must be provided; missing values are taken as wildcards.  
 
 
 
@@ -154,11 +150,11 @@ Input text arguments must contain one or more `net`, `sta`, `loc`, `cha` paramet
 
     rover list-retrieve N_S_L_C.txt
 
-will display the data missing form the repository to match what is available for the stations in the given file.
+displays data that are available in the host repository but are missing from the local repository.
 
     rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
 
-will display the data missing from the repository to match what is available for IU.ANMO.00.BH1.
+displays data that are available in the host repository but are missing from the local repository.
 
 
 ### List Index
@@ -169,11 +165,8 @@ will display the data missing from the repository to match what is available for
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
     [count|join|join-qsr]
 
-List index entries for the repository (config parameter data-dir) that match the given constraints.
+`list_index` returns data available in the local repository (config parameter data-dir) that match given arguments.
 
-Note that console logging is to stderr, while the command results are listed to stdout.
-
-#### Net_Sta_Chan_Loc_Qual and Samplerate
 
 Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least one underscore).
 
@@ -192,6 +185,8 @@ The following parameters are simple flags that change the output format.  They a
   join - continguous time ranges will be joined
 
   join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
+  
+
 
 ##### Significant Parameters
 
@@ -212,6 +207,8 @@ will display the number of entries for all time, and any quality or smaplerate.
     rover list-index net=* begin=2001-01-01
 
 will list all entries in the index after the year 2000.
+
+  Note that console logging is to stderr, while the command results are listed to stdout.
 
 
 ### List Summary
