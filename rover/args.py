@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser, Action, RawDescriptionHelpFormatter, SUPPRESS
 from os.path import exists, join
 from re import sub
+from smtplib import SMTP_PORT
 from textwrap import dedent
 
 from rover import __version__
@@ -317,9 +318,6 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar=URLVAR)
 
         # user feedback
-        # delay import until we can catch KeyboardInterrupt - issue 46
-        # smtplib is another lib that calls crypto routines on import
-        from smtplib import SMTP_PORT
         self.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
         self.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar=ADDRESSVAR)
         self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar=NVAR, type=int)
