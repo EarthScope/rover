@@ -1,10 +1,7 @@
 ---
-title: Home
+title: The IRIS rover user guide
 layout: default
 ---
-
-# The IRIS rover user guide
-
 ## Description
 
 Rover is a tool to robustly retrieve geophysical timeseries data from data
