@@ -30,8 +30,8 @@ class Ingester(SqliteSupport, DirectoryScanner):
 
 Add the contents of the file (MSEED format) to the repository and index the new data.
 
-The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte
-ranges are then appended to the appropriate files in the repository.
+The `mseedindex` command is used to index the different blocks of data present in the file.
+The corresponding byte ranges are then appended to the appropriate files in the repository.
 
 The file should not contain data that spans multiple calendar days.
 
@@ -60,7 +60,7 @@ will add all the data in the given file to the repository.
 """
 
 # The simplest possible ingester:
-# * Uses mseedindx to parse the file.
+# * Uses mseedindex to parse the file.
 # * For each section, appends to any existing file using byte offsets
 # * Refuses to handle blocks that cross day boundaries
 # * Does not check for overlap, differences in sample rate, etc.
@@ -126,13 +126,13 @@ will add all the data in the given file to the repository.
         return updated
 
     def _copy_single_row(self, offset, input, file, network, station, starttime, endtime, byteoffset, bytes):
-        self._assert_single_day(file, starttime, endtime)
+        self._assert_single_day(file, starttime, endtime, "%s_%s" % (network, station))
         if offset < byteoffset:
             self._log.warn('Non-contiguous bytes in %s - skipping %d bytes' % (file, byteoffset - offset))
-            input.read(byteoffset - offset)
+            input.seek(byteoffset - offset, 1)
             offset = byteoffset
         elif offset > byteoffset:
-            raise Exception('Overlapping blocks in %s (mseedindex bug?)' % file)
+            raise Exception('Overlapping blocks in %s, index is inconsistent regarding byte ranges)' % file)
         data = input.read(bytes)
         offset += bytes
         dest = self._make_destination(network, station, starttime)
@@ -166,6 +166,7 @@ will add all the data in the given file to the repository.
                 output.write(data)
             atomic_move(self._log, tmp, dest)
 
-    def _assert_single_day(self, file, starttime, endtime):
+    def _assert_single_day(self, file, starttime, endtime, sid):
+        # Comparing time strings, presumed format 'YYYY-MM-DDThh:mm:ss.ssssss'
         if starttime[:10] != endtime[:10]:
-            raise Exception('File %s contains data from more than one day (%s-%s)' % (file, starttime, endtime))
+            raise Exception('File %s contains data from more than one day (%s-%s) for %s' % (file, starttime, endtime, sid))
