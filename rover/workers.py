@@ -3,13 +3,9 @@ from os import O_WRONLY, open
 from subprocess import Popen
 from time import sleep
 
-from .lock import DatabaseBasedLockFactory
-
-
 """
 Support for running multiple sub-processes.
 """
-
 
 class Workers:
     """
@@ -77,49 +73,3 @@ class Workers:
 
     def _popen(self, command):
         return Popen(command, shell=True)
-
-
-class NoConflictPerDatabaseWorkers(Workers):
-    """
-    Extend the above to block attempts for two processes (workers) to access
-    the same resource.  Because this uses a database table it works across
-    processes.
-    """
-
-    def __init__(self, config, n_workers, name):
-        super().__init__(config, n_workers)
-        self._lock_factory = DatabaseBasedLockFactory(config, name)
-        self._locks = {}
-
-    def execute_with_lock(self, command, key, callback=None):
-        # here we are locking for subprocess, so we need to supply the PID
-        # after acquiring the lock.
-        # note that we cannot deadlock even though this is single-threaded and blocks,
-        # because this is called only by code that iterates through the items to be locked
-        # (so doesn't contain duplicates).  any contention must be with another process.
-        self._wait_for_space()
-        self._locks[key] = self._lock_factory.lock(key)
-        self._locks[key].acquire()
-        try:
-            popen = self._popen(command)
-            self._locks[key].set_pid(popen.pid)
-        except:  # don't let a null PID stay in the table
-            self._locks[key].release()
-            raise
-        self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        self._workers.append((command, popen,
-                              lambda cmd, rtn: self._unlocking_callback(cmd, rtn, callback, key)))
-
-    def execute(self, command, callback=None):
-        raise Exception('Use execute_with_lock()')
-
-    def _unlocking_callback(self, cmd, rtn, callback, key):
-        self._log.debug('Unlocking %s' % key)
-        # again, this is single thread - the locking is across processes
-        self._locks[key].release()
-        self._locks[key] = None
-        if not callback:
-            super()._default_callback(cmd, rtn)
-        else:
-            callback(cmd, rtn)
-

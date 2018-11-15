@@ -9,12 +9,11 @@ from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBO
 from .args import TIMESPANTOL
 from .coverage import MultipleSNCLBuilder
 from .help import HelpFormatter
-from .lock import MSEED
 from .scan import ModifiedScanner, DirectoryScanner
 from .sqlite import SqliteSupport
 from .utils import format_epoch, windows, tidy_timestamp
 from .utils import check_leap, check_cmd, STATION, NETWORK, CHANNEL, LOCATION
-from .workers import NoConflictPerDatabaseWorkers
+from .workers import Workers
 
 
 """
@@ -77,7 +76,7 @@ will index the entire repository.
         self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
                                      config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5
-        self._workers = NoConflictPerDatabaseWorkers(config, config.arg(MSEEDINDEXWORKERS), MSEED)
+        self._workers = Workers(config, config.arg(MSEEDINDEXWORKERS))
 
     def run(self, args):
         """
@@ -95,15 +94,13 @@ will index the entire repository.
         """
         self._log.info('Indexing %s' % path)
         if windows():
-            self._workers.execute_with_lock('set LIBMSEED_LEAPSECOND_FILE=%s && %s %s -sqlite %s %s'
-                                            % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                               self._timeseries_db, path),
-                                            path)
+            self._workers.execute('set LIBMSEED_LEAPSECOND_FILE=%s && %s %s -sqlite %s %s'
+                                  % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
+                                     self._timeseries_db, path))
         else:
-            self._workers.execute_with_lock('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
-                                            % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                               self._timeseries_db, path),
-                                            path)
+            self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
+                                  % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
+                                     self._timeseries_db, path))
 
     def done(self):
         self._workers.wait_for_all()
@@ -195,8 +192,8 @@ will list all entries in the index after the year 2000.
 
     def _display_help(self):
         self.print('''
-The list-index command prints entries from the index that match 
-the query parameters.  Parameters generally have the form 
+The list-index command prints entries from the index that match
+the query parameters.  Parameters generally have the form
 name=value (no spaces).
 
 The following parameters take '*' and '?' as wildcards, can be
@@ -209,7 +206,7 @@ The short form N_S_L_C_Q can also be used.
 
 The following parameters can be given only once, must be of
 the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the
-right), and define a range of times over which the block must 
+right), and define a range of times over which the block must
 appear (at least partially) to be included:
 
   begin, end
@@ -222,8 +219,8 @@ value:
 
   join - contiguous time ranges will be joined
 
-  join-qsr - the maximal timespan across all quality and 
-  samplerates is shown (as used by retrieve) 
+  join-qsr - the maximal timespan across all quality and
+  samplerates is shown (as used by retrieve)
 
 Examples:
 
@@ -235,7 +232,7 @@ quality or smaplerate.
     rover list-index net=* begin=2001-01-01
 
 will list all entries in the index after the year 2000.
-  
+
 Note that console logging is to stderr, while results are
 printed to stdout.
 
@@ -325,7 +322,7 @@ printed to stdout.
         if self._flags[COUNT]:
             sql += 'count(*) '
         else:
-            sql += ('''network, station, location, channel, 
+            sql += ('''network, station, location, channel,
                        coalesce(timespans,'<' || starttime || ' ' || endtime || '>'), samplerate ''')
             if not self._flags[JOIN_QSR]:
                 sql += ', quality '
