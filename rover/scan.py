@@ -7,6 +7,7 @@ from sqlite3 import OperationalError
 from .args import DATADIR, ALL, RECURSE
 from .sqlite import SqliteSupport
 from .utils import canonify, lastmod, PushBackIterator, in_memory, parse_epoch
+from rover import ingest
 
 """
 Iterators over files on the file system, or in the database, and - building
@@ -169,7 +170,7 @@ class DirectoryScanner:
             if not exists(path):
                 raise Exception('Cannot find %s' % path)
             if isfile(path):
-                self.process(path)
+                self.process(path) # Calls the process method in rover.ingest        
             else:
                 self._scan_dir(path)
         self.done()
@@ -179,13 +180,15 @@ class DirectoryScanner:
         for file in listdir(dir):
             path = join(dir, file)
             if isfile(path):
-                self.process(path)
+                self.process(path) # Calls the process method in rover.ingest
+                print('Test', self.process(path), path)
             elif self._recurse:
                 self._scan_dir(path)
             else:
                 self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
 
     def process(self, path):
+        # This process method could/should be removed. It is confusing for the person reading the code. 
         raise Exception('Unimplemented')
 
     def done(self):
