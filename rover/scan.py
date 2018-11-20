@@ -7,7 +7,7 @@ from sqlite3 import OperationalError
 from .args import DATADIR, ALL, RECURSE
 from .sqlite import SqliteSupport
 from .utils import canonify, lastmod, PushBackIterator, in_memory, parse_epoch
-from .ingest import Ingester
+from rover import ingest
 """
 Iterators over files on the file system, or in the database, and - building
 on that - an iterator over modified files.
