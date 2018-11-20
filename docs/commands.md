@@ -67,7 +67,7 @@ will create the repository in ~/rover
 
     rover retrieve N_S_L_C [begin [end]]
 
-`rover retrieve` post a request to the availability service defined in rover.config. Returned availability data is compared with the local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
+`rover retrieve` post a URL request to the availability service defined in rover.config. Returned availability data is compared with a local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
 
 File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments. Starttime and endtime arguments cannot be assigned as a wildcard. One or more `net`, `sta`, `loc`, `cha` input arguments must be provided; missing values are taken as wildcards.  
 
@@ -76,7 +76,7 @@ During the retrieve process, the command's status is available at `http://localh
 See `rover subscribe` for similar functionality, but with regular updates.
 #### Errors, Retries and Consistency
 
-Rover retrieve will repeat until no errors occur or its configurable limit, set by `download-retries`, is reached. Upon apparent process completion an additional retrieval is made, which should result in no data being downloaded. If data are downloaded during the additional retrieval phase then the data availability and web services servers are inconsistent.
+Rover retrieve will repeat until no errors occur and no more data is downloaded or its configurable limit, set by `download-retries`, is reached. Upon apparent process completion an additional retrieval is made, which should result in no data being downloaded. If data are downloaded during the additional retrieval phase then the data availability and web services servers are inconsistent.
 
 Inconsistencies cause rover processes to exit with an error status and are reported in the logs directory and via the configurable email parameter.
 
@@ -167,14 +167,11 @@ displays data that are available in the host repository but are missing from the
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
     [count|join|join-qsr]
 
-`list_index` returns data available in the local repository (config parameter data-dir) that match given arguments.
-
-
-`list_index` accepts arguments of net=XX  sta=XXXX loc=XX cha=XXX qua=XX samp=XXX  begin=YYYY-MM-DDThh:mm:ss end=YYYY-MM-DDThh:mm:ss. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha`, `qua`, `samp` arguments. Starttime and endtime arguments cannot be assigned a wildcard. One or more `net`, `sta`, `loc`, `cha`,  `qua`, `samp`  input arguments must be provided; missing values are taken as wildcards.  
+`list_index` returns data available in the local repository (config parameter data-dir) that match given arguments. `list_index` accepts arguments of net=XX  sta=XXXX loc=XX cha=XXX qua=XX samp=XXX  begin=YYYY-MM-DDThh:mm:ss end=YYYY-MM-DDThh:mm:ss. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha`, `qua`, `samp` arguments. Starttime and endtime arguments cannot be assigned a wildcard. One or more `net`, `sta`, `loc`, `cha`,  `qua`, `samp`  input arguments must be provided; missing values are taken as wildcards.  
   Alternatively, a N_S_L_C begin=YYYY-MM-DDThh:mm:ss end=YYYY-MM-DDThh:mm:ss can be supplied as arguments. N_S_L_C  can be truncated to the station level. 
 
 
-Flag parameters, used to change the output format, are optional arguments. Flags are mutually exclusive and take no value:
+Flag parameters used to change the output format are optional arguments. Flags are mutually exclusive and take no value:
 
  ` count - displays the total number of matches.`
 
@@ -213,7 +210,8 @@ lists all available data in the local repository after the year 2000.
 
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List summary entries for the repository (config parameter data-dir) that match the given constraints. The summary entries are pre-calculated and record the whole time span, from earliest to latest data. Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
+`list_summary` returns data available in the local repository (config parameter data-dir) that match given arguments. 
+The summary entries are pre-calculated and record the whole time span, from earliest to latest data. The `list-summary` command runs more quickly than `list-index` but shows less information.
 
 Note that console logging is to stderr, while the command results are listed to stdout.
 
