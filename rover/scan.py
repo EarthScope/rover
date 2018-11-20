@@ -7,8 +7,7 @@ from sqlite3 import OperationalError
 from .args import DATADIR, ALL, RECURSE
 from .sqlite import SqliteSupport
 from .utils import canonify, lastmod, PushBackIterator, in_memory, parse_epoch
-from rover import ingest
-
+from .ingest import Ingester
 """
 Iterators over files on the file system, or in the database, and - building
 on that - an iterator over modified files.
@@ -165,6 +164,7 @@ class DirectoryScanner:
         self._log = config.log
 
     def scan_dirs_and_files(self, paths):
+        
         for path in paths:
             path = canonify(path)
             if not exists(path):
@@ -181,14 +181,13 @@ class DirectoryScanner:
             path = join(dir, file)
             if isfile(path):
                 self.process(path) # Calls the process method in rover.ingest
-                print('Test', self.process(path), path)
             elif self._recurse:
                 self._scan_dir(path)
             else:
                 self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
 
     def process(self, path):
-        # This process method could/should be removed. It is confusing for the person reading the code. 
+        #process method could/should be removed. It does nothing and is confusing for the person reading the code . 
         raise Exception('Unimplemented')
 
     def done(self):
