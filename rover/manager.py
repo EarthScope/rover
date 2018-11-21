@@ -136,19 +136,12 @@ class Chunks:
             self._set_ns(sncl)
         for begin, end in timespans:
             left, right = self._end_of_day(begin)
-            if begin == end:
-                # if we request with begin = end we get nothing, so we must request an
-                # interval, but we don't want to cross a day boundary, so be careful
-                if end + increment > left:
-                    self._append(right, sncl, begin - increment, end)
-                else:
-                    self._append(right, sncl, begin, end + increment)
+
+            if right > end:
+                self._append(right, sncl, begin, end)
             else:
-                if right > end:
-                    self._append(right, sncl, begin, end)
-                else:
-                    self._append(right, sncl, begin, left)
-                    timespans.push((right, max(end, right + increment)))
+                self._append(right, sncl, begin, left)
+                timespans.push((right, max(end, right + increment)))
 
     @staticmethod
     def format_sncl(sncl):
