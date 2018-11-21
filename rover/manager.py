@@ -137,11 +137,14 @@ class Chunks:
         for begin, end in timespans:
             left, right = self._end_of_day(begin)
 
+            # If end time is before end of day, append whole range.
+            # Otherwise, append the range that fits in the first day
+            # and add the remainder back to the timespans.
             if right > end:
                 self._append(right, sncl, begin, end)
             else:
                 self._append(right, sncl, begin, left)
-                timespans.push((right, max(end, right + increment)))
+                timespans.push((right, max(end, right)))
 
     @staticmethod
     def format_sncl(sncl):
