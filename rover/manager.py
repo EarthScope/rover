@@ -126,25 +126,43 @@ class Chunks:
         return not self.__chunks or (nslc[0] == self.__network and nslc[1] == self.__station)
 
     def add_coverage(self, coverage):
-        try:
-            increment = coverage.tolerances()[1]
-        except Exception:
-            # on first download we don't know this, but on second pass we do, so things work out ok
-            increment = 0
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
+
         if not self.__chunks:
             self._set_ns(sncl)
+
+        # Determine sampling period (interval)
+        # On initial download we do not know the sampling rate/period, but if data exists locally we do
+        # This indicates that data bounds are determined from local data
+        try:
+            sampleperiod = 1 / coverage.samplerate
+        except:
+            sampleperiod = None
+
         for begin, end in timespans:
             left, right = self._end_of_day(begin)
 
             # If end time is before end of day, append whole range.
-            # Otherwise, append the range that fits in the first day
-            # and add the remainder back to the timespans.
             if right > end:
-                self._append(right, sncl, begin, end)
+                # Skip if max request would be smaller than sample period, if known (implying local data bounds)
+                # In this case, assuming the sampling interval is regular, no data is expected
+                if sampleperiod and sampleperiod > 0 and (left - begin) < sampleperiod:
+                    continue
+                else:
+                    self._append(right, sncl, begin, end)
+
+            # Otherwise, add the range beyond the current day to the timespans and
+            # append the range that fits in the first day
             else:
-                self._append(right, sncl, begin, left)
                 timespans.push((right, max(end, right)))
+
+                # Skip if max request would be smaller than sample period, if known (implying local data bounds)
+                # In this case, assuming the sampling interval is regular, no data is expected
+                if sampleperiod and sampleperiod > 0 and (left - begin) < sampleperiod:
+                    continue
+                else:
+                    self._append(right, sncl, begin, left)
+
 
     @staticmethod
     def format_sncl(sncl):
