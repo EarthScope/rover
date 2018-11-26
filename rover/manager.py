@@ -371,7 +371,7 @@ class Source(SqliteSupport):
         self._expect_empty: Determines if the _is_complete_final_read or _is_complete_initial_reads function is called/
         complete: Terminates the loop. 
         """
-        retry_possible = self.n_retries <= self.download_retries
+        retry_possible = self.n_retries < self.download_retries
 
         # Only one possible rety needs to be written in the intial loop. Thew second loop is just there to verfy the first loop. The The total pssoible retries need to county upward in the first and second loop./  in the first loop continues to count upward in both the second and first loop. 
 
@@ -443,7 +443,7 @@ class Source(SqliteSupport):
             # if not, we're going to say we're complete anyway, since we didn't have any errors.
                 else:
                     self._log.default(
-                        ('The latest %sretrieval attempt completed with no errors.  We will not retry ' +
+                        ('The latest %sretrieval attempt completed with no errors, but we downloaded data.  We will not retry ' +
                          'because we have already made %d attempts.') % (self._name, self.n_retries))
                     return True
 
