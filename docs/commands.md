@@ -133,7 +133,7 @@ will process a request to download, ingest, and index data missing from rover's 
 
 Queries the availability service and compares these data with the local repository's index using maximal timespans across quality and sample rates. A list of requested data available at the server that are not present in the local repository is returned to the user. 
 
-File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments. Starttime and endtime arguments cannot be assigned a wildcard. One or more `net`, `sta`, `loc`, `cha` input arguments must be provided; missing values are taken as wildcards.  
+File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments. Starttime and endtime arguments cannot be assigned as a wildcard. One or more `net`, `sta`, `loc`, `cha` input arguments must be provided; missing values are taken as wildcards.  
 
 
 
@@ -211,19 +211,19 @@ lists all available data in the local repository after the year 2000.
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
 `list_summary` returns data available in the local repository (config parameter data-dir) that match given arguments. 
-The summary entries are pre-calculated and record the whole time span, from earliest to latest data. The `list-summary` command runs more quickly than `list-index` but shows less information.
+The summary entries are pre-calculated and record the whole time span, from the earliest to the latest data. `list-summary` is faster than `list-index` but shows less information.
 
-Note that console logging is to stderr, while the command results are listed to stdout.
+Please note that console logging is to stderr, while the command results are listed to stdout.
 
 #### Net_Sta_Loc_Chan
 
-Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least one underscore).
+Query parameters can be named (network, station, location, channel) and unambiguous abbreviations are accepted.  Alternatively, a N_S_L_C can be supplied. N_S_L_C can be truncated on the right, but must contain at least one underscore.
 
-The wildcards '*' and '?' can be used.
+Wildcards '*' and '?' can be used.
 
 #### Time Range
 
-The 'begin' and 'end' parameters can be given only once.  They must be of the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the right).  They define a range of times over which the data must appear (at least partially) to be included:
+The 'begin' and 'end' parameters can be provided only once per request.  They must be in the form YYYY-MM-DDTHH:MM:SS.SSSSSS, which may be truncated on the right. 'begin' and 'end' define a time range in which data are queried. 
 
 ##### Significant Parameters
 
@@ -238,7 +238,7 @@ The 'begin' and 'end' parameters can be given only once.  They must be of the fo
 
     rover list-summary net=* begin=2001-01-01
 
-will list all entries in the summary after the year 2000.
+list all entries in the summary after the year 2000.
 
 ## Advanced Usage (Daemon Mode)
 
@@ -251,9 +251,9 @@ will list all entries in the summary after the year 2000.
 
     rover subscribe N_S_L_C [begin [end]]
 
-Arrange for the background service (daemon) to regularly compare available data with the repository then download, ingest and index any new data.
+`subscribe` generates a background service (daemon) that regularly compares data available at the configured server with the local repository. If there is a discrepincy available data is downloaded, ingested and indexed.
 
-This is similar to `rover retrieve`, but uses a background service to regularly update the repository.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
+ `subscribe` is similar to `rover retrieve` but uses a daemon to regularly update the local repository.  To start the service use `rover start`.  See also `rover status` and `rover stop`.
 
 The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability service (eg http://service.iris.edu/irisws/availability/1/).
 
