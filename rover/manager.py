@@ -447,8 +447,8 @@ class Source(SqliteSupport):
             else:
                 if self.errors.bytecount > self.errors.initial_bytecount: # Determines if data was collected. 
                     if self.errors.bytecountlimit < 100: # creates a limit on the amount of times we will attempt to download a request 
-                        self._log.default(('Retrieval attempt %d of %d had no errors. The attempted download returned bytes > 0 of data so ' +
-                                   'we will retry, verfiying that all data were retrieved. Retrieval attempts will be reset to %d.') % (self.n_retries, self.download_retries, self.n_retries))
+                        self._log.default(('Retrieval attempt had no errors. The attempted download returned bytes > 0 of data so ' +
+                                   'we will retry, verfiying that all data were retrieved. Retrieval attempts will be reset to %d.') % (self.n_retries))
                         self.n_retries = self.n_retries-1
                         self._expect_empty = False
                         self._new_retrieval(True)
