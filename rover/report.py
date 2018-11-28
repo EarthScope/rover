@@ -105,7 +105,7 @@ A rover %s task on %s started %s
 
 The task comprised of %d stations with data covering %ds.
 
-A total of %d downloads were made, with %d errors (%d on
+A total of %d attempted downloads were made, with %d errors (%d on
 final pass of %d).
 ''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
        format_time_epoch_local(source.start_epoch),
@@ -145,7 +145,7 @@ Subscription %s has been processed by the rover %s on %s.
 
 The task comprised of %d stations with data covering %ds.
 
-A total of %d downloads were made, with %d errors (%d on
+A total of %d attempted downloads were made, with %d errors (%d on
 final pass of %d).
 
 The subscription will be checked again in %d hours.

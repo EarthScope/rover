@@ -2,6 +2,8 @@
 from os import O_WRONLY, open
 from subprocess import Popen
 from time import sleep
+import sys
+import subprocess
 
 """
 Support for running multiple sub-processes.
@@ -30,7 +32,12 @@ class Workers:
         if not callback:
             callback = self._default_callback
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
+        # Verify that the command outputs bytes.  
+        bytecount= subprocess.check_output(command, shell=True)
+        print("\033[F") # Adds bytes to the bytecount. Byte counter logic does not work without this line.  
         self._workers.append((command, self._popen(command), callback))
+        return bytecount
+       
 
     def _wait_for_space(self):
         while True:
@@ -73,3 +80,4 @@ class Workers:
 
     def _popen(self, command):
         return Popen(command, shell=True)
+
