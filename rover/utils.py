@@ -2,11 +2,11 @@
 import ctypes
 import datetime
 import time
+import re
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
-from re import match, sub
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
@@ -61,7 +61,7 @@ def check_cmd(config, param, name):
     value = config.arg(param)
     if windows() and '/' in value:
         config.log.warn('Replacing slashes with back-slashes in "%s"' % value)
-        value = sub(r'/', r'\\', value)
+        value = re.sub(r'/', r'\\', value)
     if not config.arg(FORCECMD):
         cmd = '%s -h' % value
         try:
@@ -132,7 +132,6 @@ def check_leap(enabled, expire, file, url, timeout, retries, log):
         return file
     else:
         return 'NONE'
-
 
 def hash(text):
     """
@@ -338,7 +337,7 @@ def assert_valid_time(log, time):
     """
     Check timestamp format.
     """
-    if match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
+    if re.match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
         return time
     else:
         msg = 'Invalid time format "%s"' % time
@@ -606,16 +605,16 @@ def iris_fixer(log, line):
     # Acceptable source identifier codes contain only these characters
     acceptable_code = "[-_,A-Za-z0-9*?]"
 
-    if not match(acceptable_code, fields[0]):
+    if not re.match(acceptable_code, fields[0]):
         raise Exception ("Unrecognized request line, invalid network code: '%s'" % line)
 
-    if not match(acceptable_code, fields[1]):
+    if not re.match(acceptable_code, fields[1]):
         raise Exception ("Unrecognized request line, invalid station code: '%s'" % line)
 
-    if not match(acceptable_code, fields[2]):
+    if not re.match(acceptable_code, fields[2]):
         raise Exception ("Unrecognized request line, invalid location code: '%s'" % line)
 
-    if not match(acceptable_code, fields[3]):
+    if not re.match(acceptable_code, fields[3]):
         raise Exception ("Unrecognized request line, invalid channel code: '%s'" % line)
 
     # Tidy time values, allowing '*' as an exception (meaning "open" time)
