@@ -71,23 +71,19 @@ class ErrorStatistics:
     Encapsulate the statistics that count errors.
     Raw values are per retrieval, they are accumulated on the source.
     """
+    bytecount = 0 # Determines whether data was returned to a download.
+
     def __init__(self):
         self.downloads = 0
         self.errors = 0
-        self.bytecount = 0
-        self.initial_bytecount = 0
         self.bytecountlimit = 0
         self.final_errors = None
 
     def accumulate(self, errors):
         self.downloads += errors.downloads
-        self.bytecount += errors.bytecount
         self.errors += errors.errors
         self.bytecountlimit += self.bytecountlimit
-        # Add the byte count returned by each run and check against the byte count to verify that data were actually downloaded. 
-        
         self.final_errors = errors.errors
-
 
 class Chunks:
     """
@@ -270,9 +266,8 @@ class Retrieval:
             else:
                 command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, path)
         self._log.debug(command)
-        ret_byte = workers.execute(command, lambda cmd, rtn: self._worker_callback(cmd, rtn, path)) # Everytime worker callback is run the errors.downloads counter is incrimented by 1.         
-        if len(ret_byte) is not 0: # Determines if bytes are returned by the subprocess created by workers.execute. 
-            self.errors.bytecount += 1  
+        # Everytime worker callback is run the errors.downloads counter is incrimented by 1.
+        workers.execute(command, lambda cmd, rtn: self._worker_callback(cmd, rtn, path))
         self.worker_count += 1
 
     def is_complete(self):
@@ -381,10 +376,9 @@ class Source(SqliteSupport):
         complete: Terminates the loop. 
         """
         retry_possible = self.n_retries < self.download_retries
-
-        # Only one possible retry needs to be written in the initial loop. The second loop is just there to verify the first loop. The The total possible retries need to count upward in the first and second loop.  in the first loop continues to count upward in both the second and first loop. 
-
-
+        # Only one possible retry needs to be written in the initial loop. The second loop is just there to verify the first loop.
+        # The The total possible retries need to count upward in the first and second loop.  in the first loop
+        # continues to count upward in both the second and first loop.
         # this is complicated by the fact that we also check for consistency.
         # inconsistency is when we expect to download no data, but still get some, or expect to get
         # some, but get nothing.  we can't detect all cases, but we do our best by waiting until
@@ -397,11 +391,10 @@ class Source(SqliteSupport):
         # we throw an exception if we finish with incomplete data (errors) or proof of inconsistency.
             #complete = self._is_complete_final_read(retry_possible)
         if self._retrieval.is_complete():
-            self.errors.initial_bytecount =  self.errors.bytecount
-            self.errors.accumulate(self._retrieval.errors) # This is where the download and the errors are accumulated. 
+            #Download/errors stats accumulated here.
+            self.errors.accumulate(self._retrieval.errors)
             complete = True  # default if exception thrown
             try:
-                
                 if self._expect_empty:
                     complete = self._is_complete_final_read(retry_possible)
                 else:
@@ -417,7 +410,6 @@ class Source(SqliteSupport):
     def _is_complete_initial_reads(self, retry_possible):
         # the last retrieval had errors.
         if self._retrieval.errors.errors:
-
             # if we can retry, then do so
             if retry_possible:
                 self._log.default(('Retrieval attempt %d of %d completed with %d errors after %d attempts. '+
@@ -429,11 +421,8 @@ class Source(SqliteSupport):
             else:
                 raise ManagerException('Retrieval attempt %d of %d had %d errors on the final attempt.' %
                                     (self.n_retries, self.download_retries, self._retrieval.errors.errors, self.n_retries, self.download_retries))
-
         # no errors last retrieval, but we did download some more data
-        # elif on line 408 is the primray download state _is_complete_initial_reads. If these boolean conditions are maintained then rover will continue to make download attmepts. 
-            # Determine if no bytes were downloaded. 
-        
+        #If these boolean conditions are maintained then rover will continue to make download attempts.
         elif self._retrieval.errors.downloads:
             # can we try again, to make sure there are no more data?
             # Line 429 Deals with the case when rover.config has number of download attempts set to 1. 
@@ -445,14 +434,14 @@ class Source(SqliteSupport):
                     self._expect_empty =True
                     return True     
             else:
-                if self.errors.bytecount > self.errors.initial_bytecount: # Determines if data was collected. 
+                if ErrorStatistics.bytecount > 0: # Determines if data was collected.
                     if self.errors.bytecountlimit < 100: # creates a limit on the amount of times we will attempt to download a request 
-                        self._log.default(('Retrieval attempt had no errors. The attempted download returned bytes > 0 of data so ' +
+                        self._log.default(('Retrieval attempt had no errors. The attempted download returned data so ' +
                                    'we will retry, verfiying that all data were retrieved. Retrieval attempts will be reset to %d.') % (self.n_retries))
                         self.n_retries = self.n_retries-1
                         self._expect_empty = False
                         self._new_retrieval(True)
-                        self.errors.bytecount = 0
+                        ErrorStatistics.bytecount = 0
                         self.errors.bytecountlimit += 1
                         return False
                     else :
@@ -462,11 +451,10 @@ class Source(SqliteSupport):
                         return True  
                 else :
                     if retry_possible:
-                        self._log.default(('Retrieval attempt %d of %d had no errors. The attempted download returned 0 bytes of data so ' +
+                        self._log.default(('Retrieval attempt %d of %d had no errors. The attempted download returned no data so ' +
                                    'we will retry, verfiying that all data were retrieved.') % (self.n_retries, self.download_retries))
                         self._expect_empty =False
                         self._new_retrieval(True)
-                        #self.errors.bytecount = 0
                         return False
             # if not, we're going to say we're complete anyway, since we didn't have any errors.
                     else:
@@ -474,12 +462,9 @@ class Source(SqliteSupport):
                             ('The latest %sretrieval attempt completed with no errors and we attempted to download data.  We will not retry ' +
                              'because we have already made %d attempts.') % (self._name, self.n_retries))
                         return True
-        
-
         # no errors and no data. The else statement on line 433. is used for rovers first download attempt and to exit out the _is_complete_initial_reads program so the 
         # _is_complete_final_reads program can be run. When escaping is_complete_initial_reads an additional _new_retrieval should not be run. 
         else:
-
             # can we try again to make sure things are consistent?
             if retry_possible:
                 self._log.default(('Retrieval attempt %d of %d had no errors and downloaded no data. ' +
@@ -851,7 +836,7 @@ class DownloadManager(SqliteSupport,):
         """
         Run to completion (for a single shot, after add()).
         """
-        # Return the byte count to either new workers, step or downloads. Use accumulate to store and uodate the byte count
+        # Return the byte count to either new workers, step or downloads. Use accumulate to store and update the byte count
         if len(self._sources) != 1:
             raise Exception('download() logic intended for single source (retrieve)')
         source = next(iter(self._sources.values()))

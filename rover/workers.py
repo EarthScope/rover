@@ -1,9 +1,9 @@
-
 from os import O_WRONLY, open
 from subprocess import Popen
 from time import sleep
 import sys
 import subprocess
+
 
 """
 Support for running multiple sub-processes.
@@ -24,6 +24,7 @@ class Workers:
         self._n_workers = n_workers
         self._workers = []  # (command, popen, callback)
 
+
     def execute(self, command, callback=None):
         """
         Execute the command in a separate process.
@@ -32,12 +33,7 @@ class Workers:
         if not callback:
             callback = self._default_callback
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        # Verify that the command outputs bytes.  
-        bytecount= subprocess.check_output(command, shell=True)
-        print("\033[F") # Adds bytes to the bytecount. Byte counter logic does not work without this line.  
         self._workers.append((command, self._popen(command), callback))
-        return bytecount
-       
 
     def _wait_for_space(self):
         while True:
@@ -79,5 +75,14 @@ class Workers:
             sleep(0.1)
 
     def _popen(self, command):
-        return Popen(command, shell=True)
-
+        from .manager import ErrorStatistics
+        self.errors = ErrorStatistics()
+        p = Popen([command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, errors = p.communicate()
+        # Print statement is used to add bytes to the output pipe. Semi-kluge but works until we find a better solution.
+        # Potentially associated with the asynchronous behavior of the workers downloads.
+        print("\033[F")
+        # Determines if bytes are returned by the subprocess created by workers.execute.
+        if len(output) is not 0:
+            ErrorStatistics.bytecount += 1 #Increments the byte count in manager.ErrorStatistics
+        return p
