@@ -116,7 +116,7 @@ def check_leap(enabled, expire, file, url, timeout, retries, log):
     """
     Download a file if none exists or it is more than 3 months old.
 
-    Returns the file name or NONE - the value to be passed to the mseedindex command.
+    Returns the file name or 'NONE' - the value to be passed to the mseedindex command.
     """
     if enabled:
         file = canonify(file)
@@ -127,11 +127,45 @@ def check_leap(enabled, expire, file, url, timeout, retries, log):
             download = age > expire * 24 * 60 * 60
         else:
             download= True
+
         if download:
             get_to_file(url, file, timeout, retries, log, unique=False)
-        return file
+
+        if valid_leapfile(file, log):
+            return file
+        else:
+            log.warning('Invalid leap second file will be ignored: %s' % file)
+            return 'NONE'
     else:
         return 'NONE'
+
+def valid_leapfile(file, log):
+    """
+    Perform simple validation of an IETF leap second file.
+
+    Validation: all non-comment or blank lines should contain
+    1) an epoch time stamp, followed by
+    2) a offset in seconds
+    Both fields are all digits separated by whitespace with optional
+    trailing comment, for example:
+    '3692217600      37      # 1 Jan 2017'
+
+    Returns the file name on success or None if an unrecognized line is found
+    """
+    twodigits = re.compile("^\d+\s+\d+$")
+
+    with open(file) as fp:
+        for line in fp.readlines():
+            trimmed = line.partition('#')[0].rstrip('\n\r').rstrip()
+
+            if len(trimmed) == 0:
+                continue
+
+            if not twodigits.match(trimmed):
+                log.warning('Unrecognized line in leap second file: "%s"' % line.rstrip('\n\r'))
+                return None
+
+    return file
 
 def hash(text):
     """
