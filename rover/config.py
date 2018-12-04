@@ -31,6 +31,25 @@ class BaseConfig:
         self._configdir = configdir
         self.args = args.args
         self.command = args.command
+        # make arguments absolute
+        self.set_args_absolute()
+
+    def set_args_absolute(self):
+        """
+        Make file and directories have absolute paths
+        """
+        abs_args = {}
+        for action in Arguments()._actions:
+            name = action.dest
+            if unbar(name) not in DYNAMIC_ARGS:
+                if action.metavar in (DIRVAR, FILEVAR):
+                    value = self.path(name)
+                else:
+                    value = self.arg(name)
+                abs_args[name] = value
+        abs_args = Namespace(**abs_args)
+        self._args = abs_args
+        self.args = abs_args.args
 
     def set_configdir(self, configdir):
         """
@@ -69,29 +88,12 @@ class BaseConfig:
                 break
         return value
 
-    def absolute(self):
-        """
-        Clone this configuration, making file and directories absolute.  Used before we write a
-        config for a sub-process, because it may be written in a different location to the original,
-        so relative paths will change value (yeah that was a fun bug to fix).
-        """
-        args = {}
-        for action in Arguments()._actions:
-            name = action.dest
-            if unbar(name) not in DYNAMIC_ARGS:   # todo - should this include FILE?
-                if action.metavar in (DIRVAR, FILEVAR):
-                    value = self.path(name)
-                else:
-                    value = self.arg(name)
-                args[name] = value
-        return BaseConfig(self.log, self.log_path, Namespace(**args), self.db, self._configdir)
-
     def path(self, name):
         """
         Paths have an implicit configdir if they are relative.
         """
         path = expanduser(self.arg(name))
-        if not isabs(path):
+        if self._configdir and not isabs(path):
             path = join(self._configdir, path)
         return realpath(abspath(path))
 
@@ -246,7 +248,7 @@ def write_config(config, filename, **kargs):
     """
     Write a config file for sub-processes.
     """
-    args = config.absolute()._args
+    args = config._args
     temp_dir = config.dir(TEMPDIR)
     config_path = join(temp_dir, filename)
     safe_unlink(config_path)
