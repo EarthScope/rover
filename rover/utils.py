@@ -1,6 +1,6 @@
-
 import ctypes
 import datetime
+import json
 import time
 import re
 from binascii import hexlify
@@ -223,6 +223,18 @@ def unique_path(dir, filename, salt):
     name = uniqueish(filename, salt)
     return unique_filename(join(dir, name))
 
+def get_process_feedback_filename(pid):
+    return"pid_{0}_feedback".format(pid)
+
+def write_process_feedback_file(temp_dir, pid, attr_dict):
+    """
+    Write a dictionary of values as JSON to a temporary file identified
+    by a process id of the process. This is used to pass feedback from a
+    subprocess to its parent process.
+    """
+    filename = join(temp_dir, get_process_feedback_filename(pid))
+    with open(filename, "w") as fp:
+        json.dump(attr_dict, fp)
 
 def _stream_output(request, down, unique=True):
     # special case empty return.  this avoids handling empty files elsewhere

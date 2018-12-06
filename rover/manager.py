@@ -1,9 +1,9 @@
-
 import datetime as dt
 from collections import deque
 from random import randint
 from sqlite3 import OperationalError
 from time import time, sleep
+from os import getpid
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
     DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, \
@@ -34,6 +34,9 @@ class ProgressStatistics:
       index 0 - current value
       index 1 - initial value / limit
     """
+
+    total_bytecount = 0 # total number of downloaded bytes
+    download_retry_count = 1 # number of times that tried to download
 
     def __init__(self):
         self.__prev_net_sta = [None, None]
@@ -235,8 +238,12 @@ class Retrieval:
                      tuple(code if code else '--' for code in tuple(sncl.split('_')))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
-    def _worker_callback(self, command, return_code, path):
+    def _worker_callback(self, command, return_code, path, **kwargs):
         if self._delete_files:
+            feedback = kwargs.get("feedback")
+            if feedback:
+                bytecount = feedback.get("bytecount", 0)
+                ProgressStatistics.total_bytecount += bytecount
             safe_unlink(path)
         self.worker_count -= 1
         self.errors.downloads += 1
@@ -263,7 +270,7 @@ class Retrieval:
             else:
                 command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, path)
         self._log.debug(command)
-        workers.execute(command, lambda cmd, rtn: self._worker_callback(cmd, rtn, path))
+        workers.execute(command, lambda cmd, rtn, **kwargs: self._worker_callback(cmd, rtn, path, **kwargs))
         self.worker_count += 1
 
     def is_complete(self):
@@ -419,7 +426,7 @@ class Source(SqliteSupport):
             # otherwise, we can't retry so we're done, but failed.
             else:
                 raise ManagerException('Retrieval attempt %d of %d had %d errors on the final attempt.' %
-                                    (self.n_retries, self.download_retries, self._retrieval.errors.errors, self.n_retries, self.download_retries))
+                                       (self.n_retries, self.download_retries, self._retrieval.errors.errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data
         # elif on line 408 is the primray download state _is_complete_initial_reads. If these boolean conditions are maintained then rover will continue to make download attmepts. 
@@ -428,19 +435,36 @@ class Source(SqliteSupport):
             # Line 419 Deals with the case when rover.config has number of download attempts set to 1. 
             if self.download_retries == 1:
                 if retry_possible:
-                    self._log.default(('Retrieval attempt %d of %d had no errors and we downloaded data.' +
-                                   'The rover.config parameter download-retries is set to %d attempt so rover is exiting.'+
-                                   ' We recommend increasing the number of download attempts. ') % (self.n_retries, self.download_retries, self.download_retries))
-                    self._expect_empty =True
+                    self._log.default(('Retrieval attempt %d of %d had no errors and we downloaded data.'
+                                   'The rover.config parameter download-retries is set to %d attempt so rover is exiting.'
+                                   ' We recommend increasing the number of download attempts. ')
+                                   % (self.n_retries, self.download_retries, self.download_retries))
+                    self._expect_empty = True
                     return True     
-            else:    
-                if retry_possible:
-                    self._log.default(('Retrieval attempt %d of %d had no errors, but we downloaded data so ' +
-                                   'will try again to check that all data were retrieved.') % (self.n_retries, self.download_retries))
+            else:
+                if ProgressStatistics.total_bytecount > 0: # Determines if data was collected.
+                    if ProgressStatistics.download_retry_count < 100: # creates a limit on the amount of times we will attempt to download a request 
+                        self._log.default(('Retrieval attempt had no errors. The attempted download returned data so '
+                                           'we will retry, verfiying that all data were retrieved. Retrieval attempts will be reset to %d.')
+                                           % (self.n_retries))
+                        self.n_retries = self.n_retries - 1
+                        self._expect_empty = False
+                        self._new_retrieval(True)
+                        ProgressStatistics.total_bytecount = 0
+                        ProgressStatistics.download_retry_count += 1
+                        return False
+                    else :
+                        self._log.default(('The retrieval request has been attempted %d times. Rover is exiting please inspect the content of'
+                                           'your request and try again later.') % (ProgressStatistics.download_retry_count))
+                        self._expect_empty =True
+                        return True  
+                elif retry_possible:
+                    self._log.default(('Retrieval attempt %d of %d had no errors, but we downloaded data so '
+                                       'will try again to check that all data were retrieved.') % (self.n_retries, self.download_retries))
                     self._expect_empty =False
                     self._new_retrieval(True)
                     return False
-            # if not, we're going to say we're complete anyway, since we didn't have any errors.
+                # if not, we're going to say we're complete anyway, since we didn't have any errors.
                 else:
                     self._log.default(
                         ('The latest %sretrieval attempt completed with no errors, but we downloaded data.  We will not retry ' +

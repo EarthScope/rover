@@ -1,7 +1,11 @@
+import json
+import os
 
-from os import O_WRONLY, open
 from subprocess import Popen
 from time import sleep
+
+from .args import TEMPDIR
+from .utils import get_process_feedback_filename
 
 """
 Support for running multiple sub-processes.
@@ -18,6 +22,7 @@ class Workers:
     """
 
     def __init__(self, config, n_workers):
+        self._temp_dir = config.dir(TEMPDIR)
         self._log = config.log
         self._n_workers = n_workers
         self._workers = []  # (command, popen, callback)
@@ -43,7 +48,7 @@ class Workers:
     def has_space(self):
         return len(self._workers) < self._n_workers
 
-    def _default_callback(self, cmd, returncode):
+    def _default_callback(self, cmd, returncode, **kwargs):
         if returncode:
             raise Exception('"%s" returned %d' % (cmd, returncode))
         else:
@@ -56,7 +61,19 @@ class Workers:
             process.poll()
             if process.returncode is not None:
                 self._log.debug('Calling callback %s (command %s)' % (callback, command))
-                callback(command, process.returncode)
+                process_feedback = {}
+                try:  
+                    process_feedback_file = os.path.join(self._temp_dir,
+                                                         get_process_feedback_filename(process.pid))
+                    fp = open(process_feedback_file, "r")
+                    process_feedback = json.load(fp)
+                    os.remove(process_feedback_file)
+                except Exception:
+                    pass # no process feedback file
+                if process_feedback:
+                    callback(command, process.returncode, feedback=process_feedback)
+                else:
+                    callback(command, process.returncode)
                 self._workers = self._workers[:i] + self._workers[i+1:]
             i -= 1
 
