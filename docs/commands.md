@@ -448,11 +448,9 @@ from the command line:
 
     rover download file [path]
 
-`Rover download` downloads a single request, typically for a day, from a URL to a given path. The downloaded data is ingested and indexed into the local repository. If no path is given then a temporary file is created and deleted after use.  Rover treats the argument as a URL if it contains the characters "://". `rover retrieve` generates workers that call `rover download` in the terminal. 
+`Rover download` downloads a single request, typically for a day, from a URL to a given path. File arguments are sent as POST to the URL set in the `dataselect-url` configuration parameter. Requested data are downloaded to the path argument, ingested and indexed to the local repository.  If no path is given, than a temporary file is created and deleted after use.
 
-The URL must be for a Data Select service, and can not request data that spans multiple calendar days.
-
-File arguments are sent as POST to the URL set in the `dataselect-url` configuration parameter. Requested data are downloaded to the path argument, ingested and indexed.  If no path is given then a temporary file is created and deleted after use.
+Rover will treat an input argument as an URL if it contains the characters "://". The URL argument must be for a Data Select service, and can not request data that spans multiple calendar days. `rover retrieve` generates workers that call `rover download` in the terminal. 
 
 `download` is the main low-level task called in the processing pipeline. Each instances of download calls ingest and index as long as they are configured as true. To reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are automatically deleted on exit.
 
@@ -471,7 +469,7 @@ File arguments are sent as POST to the URL set in the `dataselect-url` configura
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 
-Parameters used to configure the sub-commands ingest, index are also applicable - see help for those commands for more details.
+Parameters used to configure the sub-commands ingest, index are also applicable - see Ingest/Index help for more details.
 
 ##### Examples
 
@@ -489,11 +487,11 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
 
     rover ingest file
 
-Add the contents of the file (MSEED format) to the repository and index the new data.
+Adds contents from a MSEED formatted file to Rover's local repository and indexes the new data.
 
-The `mseedindex` command is used to index the different blocks of dta present in the file.  THe corresponding byte ranges are then appended to the appropriate files in the repository.
+The `mseedindex` command indexes blocks of data present in the file, corresponding byte ranges are then appended to  appropriate files in the repository.
 
-The file should not contain data that spans multiple calendar days.
+The file agrument should not contain data spanning multiple calendar days.
 
 ##### Significant Parameters
 
@@ -510,13 +508,13 @@ The file should not contain data that spans multiple calendar days.
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 
-In addition, parameters for sub-commands (index) will be used - see help for those commands for more details.
+Parameters used to configure the sub-command index are also applicable - see Index help for more details.
 
 ##### Examples
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
-will add all the data in the given file to the repository.
+will add all data from the file argument to the repository.
 
 
 ### Index
@@ -525,13 +523,11 @@ will add all the data in the given file to the repository.
 
     rover index (file|dir)+
 
-Index the files (add or change entires in the tsindex table in the mseed database).
+Indexes files stored within a directory structure, creating a local repository. If a repository exist, `rover index` will add or change entires in the tsindex table stored in the mseed database.
 
-When no argument is give all modified files in the repository are processed.  To force all files, use `--all`.
+When no argument is given, all modified files in the repository are processed. The `--all` flag forces all files to process. If a directory argument is provided, all files contained in the directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
-When a directory is given, all files contained in that directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
-
-The `mseedindex` command is used to index the data.  This optionally uses a file of leap-second data.  By default (unless `--no-leap`) a file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older than `--leap-expire` days.
+`rover index` uses the command `mseedindex` at its core. `mseedindex` has an optional argument that uses a file of leap-second data.  By default, unless configured `--no-leap`, the leap-second file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older than `--leap-expire` days.
 
 ##### Significant Parameters
 
@@ -560,7 +556,7 @@ will index the entire repository.
 
     rover summary
 
-Create a summary of the index in the database.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queries using `rover list-summary`.
+Creates a summary of the index stored in a Rover database.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
 
 ##### Significant Parameters
 
@@ -575,14 +571,14 @@ Create a summary of the index in the database.  This lists the overall span of d
 
     rover summary
 
-will create the summary.
+will create the summary of a local Rover repository. 
 
 
     
 
 ### Daemon
 
-The background (daemon) process that supports `rover subscribe`.
+The background, daemon, process that supports `rover subscribe`.
 
 **Prefer using `rover start` to start this task in the background.**
 
@@ -614,27 +610,27 @@ See also `rover stop`, `rover status`.
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 | dev                 | False                | Development mode (show exceptions)? |
 
-In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands for download, ingest and index) will apply,
+In addition, parameters relevant to the processing pipeline apply. Processing pipeline commands include `rover retrieve` or its subprocesses download, ingest and index.
 
-Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`. For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted (see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
-
-When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription is processed an email can be sent to the user (if `--email` is used).
+Logging for processes in the pipeline are automatically configured with `--unique-logs --log-verbosity 3`. To preserve logs, and used the default verbosity level, start the daemon with the flag `--dev`. When the daemon is running it's status should be visible at http://localhost:8000 (by default).  When a subscription is processed an email can be sent to the user if the `--email` flag is configured.
 
 #### Errors, Retries and Consistency
 
-If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete, an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if additional data are found - then the web services are inconsistent.
+Subscriptions are re-processed until no errors occur and data appear to be complete, or the configured maximum download retries limit is reached. Once a retrieval with no errors or downloads occurs, an additional retrieval is made, which should result in no data being downloaded. If the additional retrieval leads to a data download- than the availabilty services and web services are inconsistent.
 
-Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
+Errors and inconsistencies are reported in the terminal, logs, and an optional email (`email` parameter) sent to the user.
 
 ##### Examples
 
     rover daemon -f roverrc
 
-will start the daemon (in the foreground - see `rover start`) using the given configuration file.
+will start the daemon in the foreground using the given configuration file.
 
     rover start --recheck-period 24
 
-will start the daemon (in the foreground - see `rover start`), processing subscriptions every 24 hours.
+will start the daemon in the foreground, processing subscriptions every 24 hours.
+
+Rover start is the perferred method to launch the subscription service. 
 
     
 
@@ -648,11 +644,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
 
     rover retrieve --web ...   # the default
 
-Start a web server that provides information on the progress of the download manager (the core of the `rover daemon` and `rover retrieve` commands).
-
-With the default configuration this is started automatically, provided `--no-web` is not used with `rover retrieve` or `rover start`.
-
-As with the `rover download` command, empty logs are removed on exit to avoid cluttering the log directory.
+Starts a web server that provides information on the progress of the download manager, the core of the `rover daemon` and `rover retrieve` commands. Rover's default configuration starts `rover web` automatically, provided `--no-web` is not used with `rover retrieve` or `rover start`. Empty logs are removed on exit to avoid cluttering the log directory.
 
 ##### Significant Parameters
 
