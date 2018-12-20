@@ -1,6 +1,4 @@
-
-from os import getpid
-from os.path import join, exists
+import os
 
 from .args import DOWNLOAD, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, HTTPTIMEOUT, \
@@ -114,7 +112,7 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                                 'You may have forgotten to quote the URL (and should expect failure).') % url)
         else:
             url, in_path, get = self._dataselect_url, in_path_or_url, False
-            if not exists(in_path):
+            if not os.path.exists(in_path):
                 raise Exception('Could not find file "%s"' % in_path)
         if len(args) == 2:
             out_path, delete_out = args[2], False
@@ -130,14 +128,14 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                     safe_unlink(out_path)
                 log_path = self._config.log_path
                 # avoid lots of empty logs cluttering things up
-                if exists(log_path) and file_size(log_path) == 0:
+                if os.path.exists(log_path) and file_size(log_path) == 0:
                     safe_unlink(log_path)
                 safe_unlink(db_path)
 
     def _do_download(self, get, url, in_path, out_path):
         # previously we extracted the file name from the header, but the code
         # failed in python 2 (looked like a backport library bug), so now we let the user specify,
-        if exists(out_path):
+        if os.path.exists(out_path):
             raise Exception('Path %s for download already exists' % out_path)
         create_parents(out_path)
         if get:
@@ -149,6 +147,9 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                 response, check_status = post_to_file(url, in_path, out_path,
                                                       self._http_timeout, self._http_retries, self._log)
                 check_status()
+                # write download byte count to stdout as feedback to caller
+                if response:
+                    print ('{"download_byte_count":%d}' % os.path.getsize(response))
             except Exception as e:
                 diagnose_error(self._log, str(e), in_path, out_path, copied=False)
                 raise
@@ -156,4 +157,4 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
 
     def _ingesters_db_path(self, url):
         name = uniqueish('rover_ingester', url)
-        return unique_filename(join(self._temp_dir, name))
+        return unique_filename(os.path.join(self._temp_dir, name))

@@ -1,4 +1,3 @@
-
 import ctypes
 import datetime
 import time
@@ -222,7 +221,6 @@ def unique_path(dir, filename, salt):
     """
     name = uniqueish(filename, salt)
     return unique_filename(join(dir, name))
-
 
 def _stream_output(request, down, unique=True):
     # special case empty return.  this avoids handling empty files elsewhere
