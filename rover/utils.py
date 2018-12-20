@@ -1,6 +1,5 @@
 import ctypes
 import datetime
-import json
 import time
 import re
 from binascii import hexlify

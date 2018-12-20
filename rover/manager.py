@@ -3,7 +3,6 @@ from collections import deque
 from random import randint
 from sqlite3 import OperationalError
 from time import time, sleep
-from os import getpid
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
     DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, \
