@@ -5,7 +5,7 @@ from subprocess import Popen
 from time import sleep
 
 from .args import TEMPDIR
-from .utils import get_process_feedback_filename
+from .utils import uniqueish, unique_filename
 
 """
 Support for running multiple sub-processes.
@@ -17,7 +17,7 @@ class Workers:
     code here does NOT run asynchonously - it will block if there are no free
     workers.
 
-    The idea is that (for example) we run N meedindex processes in the background
+    The idea is that (for example) we run N mseedindex processes in the background
     so that we are not waiting on them to complete.
     """
 
@@ -27,15 +27,26 @@ class Workers:
         self._n_workers = n_workers
         self._workers = []  # (command, popen, callback)
 
-    def execute(self, command, callback=None):
+    def execute(self, command, callback=None, feedback=None):
         """
         Execute the command in a separate process.
         """
         self._wait_for_space()
+
         if not callback:
             callback = self._default_callback
+
+        if feedback:
+            name = uniqueish('rover_worker_feedback', command)
+            filename = unique_filename(os.path.join(self._temp_dir, name))
+
+            try:
+                feedback = open (filename, 'w+')
+            except Exception as ex:
+                raise Exception('Cannot open feedback file: %s' % ex)
+
         self._log.debug('Adding worker for "%s" (callback %s)' % (command, callback))
-        self._workers.append((command, self._popen(command), callback))
+        self._workers.append((command, self._popen(command, feedback=feedback), callback, feedback))
 
     def _wait_for_space(self):
         while True:
@@ -57,19 +68,22 @@ class Workers:
     def check(self):
         i = len(self._workers) - 1
         while i > -1:
-            command, process, callback = self._workers[i]
+            command, process, callback, feedback = self._workers[i]
             process.poll()
             if process.returncode is not None:
                 self._log.debug('Calling callback %s (command %s)' % (callback, command))
                 process_feedback = {}
-                try:  
-                    process_feedback_file = os.path.join(self._temp_dir,
-                                                         get_process_feedback_filename(process.pid))
-                    fp = open(process_feedback_file, "r")
-                    process_feedback = json.load(fp)
-                    os.remove(process_feedback_file)
-                except Exception:
-                    pass # no process feedback file
+                if feedback:
+                    try:
+                        feedback.seek(0, 0)
+                        process_feedback = json.load(feedback)
+                    except Exception as ex:
+                        if os.path.getsize(feedback.name) > 0:
+                            feedback.seek(0, 0)
+                            self._log.error('Error processing feedback file: %s, first line: %s' % (ex, feedback.readline()))
+                    finally:
+                        feedback.close()
+                        os.remove(feedback.name)
                 if process_feedback:
                     callback(command, process.returncode, feedback=process_feedback)
                 else:
@@ -88,5 +102,5 @@ class Workers:
                 return
             sleep(0.1)
 
-    def _popen(self, command):
-        return Popen(command, shell=True)
+    def _popen(self, command, feedback=None):
+        return Popen(command, shell=True, stdout=feedback)

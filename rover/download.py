@@ -7,8 +7,7 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, unique_filename, \
     clean_old_files, match_prefixes, create_parents, unique_path, \
-    safe_unlink, file_size, post_to_file, diagnose_error, \
-    write_process_feedback_file
+    safe_unlink, file_size, post_to_file, diagnose_error
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -148,12 +147,9 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                 response, check_status = post_to_file(url, in_path, out_path,
                                                       self._http_timeout, self._http_retries, self._log)
                 check_status()
-                # write download bytecount to process file
+                # write download byte count to stdout as feedback to caller
                 if response:
-                    write_process_feedback_file(self._temp_dir,
-                                                os.getpid(),
-                                                {"bytecount":
-                                                 os.path.getsize(response)})
+                    print ('{"download_byte_count":%d}' % os.path.getsize(response))
             except Exception as e:
                 diagnose_error(self._log, str(e), in_path, out_path, copied=False)
                 raise
