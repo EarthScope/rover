@@ -141,7 +141,7 @@ class Config(BaseConfig):
 
         # Special case of initializing repository, set config directory
         configdir = None
-        if args.command in (INIT_REPOSITORY):
+        if args.command and args.command in (INIT_REPOSITORY):
             if not args.args:
                 configdir = getcwd()
             elif len(args.args) == 1:
