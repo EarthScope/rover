@@ -138,6 +138,7 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
         if os.path.exists(out_path):
             raise Exception('Path %s for download already exists' % out_path)
         create_parents(out_path)
+
         if get:
             response, check_status = get_to_file(url, out_path,
                                                  self._http_timeout, self._http_retries, self._log)
@@ -147,12 +148,14 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                 response, check_status = post_to_file(url, in_path, out_path,
                                                       self._http_timeout, self._http_retries, self._log)
                 check_status()
-                # write download byte count to stdout as feedback to caller
-                if response:
-                    print ('{"download_byte_count":%d}' % os.path.getsize(response))
             except Exception as e:
                 diagnose_error(self._log, str(e), in_path, out_path, copied=False)
                 raise
+
+        # write download byte count to stdout as feedback to caller
+        if response:
+            print ('{"download_byte_count":%d}' % os.path.getsize(response))
+
         return response
 
     def _ingesters_db_path(self, url):
