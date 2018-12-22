@@ -1,6 +1,6 @@
 
 pkg_path = __file__
-__version__ = '0.0.8plus'
+__version__ = '0.0.9'
 
 # the following replaces the default signal handler so that keyboardinterrupt
 # is not raised if the user hits ctrl-C
