@@ -6,13 +6,14 @@ from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
     DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, \
-    TIMESPANINC, ABORT_CODE
+    TIMESPANINC, ABORT_CODE, OUTPUT_FORMAT, DATADIR
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
 from .sqlite import SqliteSupport
 from .utils import utc, EPOCH_UTC, PushBackIterator, format_epoch, safe_unlink, unique_path, post_to_file, \
-    sort_file_inplace, parse_epoch, check_cmd, run, windows, diagnose_error, format_year_day_epoch
+    sort_file_inplace, parse_epoch, check_cmd, run, windows, diagnose_error, format_year_day_epoch, \
+    remove_empty_folders
 from .workers import Workers
 
 """
@@ -793,6 +794,9 @@ class DownloadManager(SqliteSupport):
             if complete:
                 self._log.debug('Source %s complete' % self._source(name))
                 del self._sources[name]
+                if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
+                    # remove empty mseed directories from data directory
+                    remove_empty_folders(self._config.arg(DATADIR), self._log)
 
     def is_idle(self):
         """

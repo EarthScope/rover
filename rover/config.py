@@ -6,7 +6,7 @@ from os.path import isabs, join, realpath, abspath, expanduser, dirname
 from re import compile, sub
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE
+    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE, ASDF_FILENAME
 from .logs import init_log, log_name
 from .sqlite import init_db
 from .utils import safe_unlink, canonify
@@ -123,6 +123,9 @@ class BaseConfig:
 
 def timeseries_db(config):
     return join(config.dir(DATADIR), 'timeseries.sqlite')
+
+def asdf_container(config):
+    return join(config.dir(DATADIR), config.arg(ASDF_FILENAME))
 
 
 class Config(BaseConfig):

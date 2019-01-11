@@ -94,6 +94,8 @@ TIMESPANINC = 'timespan-inc'
 TIMESPANTOL = 'timespan-tol'
 LITTLE_V, VERBOSITY = 'v', 'verbosity'
 BIG_V, VERSION = 'V', 'version'
+OUTPUT_FORMAT = 'output-format'
+ASDF_FILENAME = 'asdf-filename'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
                VERSION, HELP, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
@@ -131,6 +133,8 @@ DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANINC = 0.5
 DEFAULT_TIMESPANTOL = 0.5
 DEFAULT_VERBOSITY = 4
+DEFAULT_OUTPUT_FORMAT = 'mseed'
+DEFAULT_ASDF_FILENAME = 'asdf.h5'
 
 DIRVAR = 'DIR'
 FILEVAR = 'FILE'
@@ -144,7 +148,6 @@ PERCENTVAR = 'PERCENT'
 ADDRESSVAR = 'ADDRESS'
 URLVAR = 'URL'
 SIZE = 'SIZE'
-
 
 def parse_bool(value):
     """
@@ -278,6 +281,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
         self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
         self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
+        self.add_argument(mm(OUTPUT_FORMAT), default=DEFAULT_OUTPUT_FORMAT, action='store', help='output data format. Choose from "mseed" or "asdf"', metavar='')
+        self.add_argument(mm(ASDF_FILENAME), default=DEFAULT_ASDF_FILENAME, action='store', help='name of asdf file to create when OUTPUT_FORMAT=asdf', metavar='')
 
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=URLVAR)
