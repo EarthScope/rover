@@ -6,14 +6,13 @@ from time import time, sleep
 
 from .args import mm, FORCEFAILURES, DELETEFILES, TEMPDIR, HTTPTIMEOUT, HTTPRETRIES, TIMESPANTOL, DOWNLOADRETRIES, \
     DOWNLOADWORKERS, ROVERCMD, MSEEDINDEXCMD, LOGUNIQUE, LOGVERBOSITY, VERBOSITY, DOWNLOAD, DEV, WEB, SORTINPYTHON, \
-    TIMESPANINC, ABORT_CODE, OUTPUT_FORMAT, DATADIR
+    TIMESPANINC, ABORT_CODE
 from .config import write_config
 from .coverage import Coverage, SingleSNCLBuilder
 from .download import DEFAULT_NAME, TMPREQUEST, TMPRESPONSE
 from .sqlite import SqliteSupport
 from .utils import utc, EPOCH_UTC, PushBackIterator, format_epoch, safe_unlink, unique_path, post_to_file, \
-    sort_file_inplace, parse_epoch, check_cmd, run, windows, diagnose_error, format_year_day_epoch, \
-    remove_empty_folders
+    sort_file_inplace, parse_epoch, check_cmd, run, windows, diagnose_error, format_year_day_epoch
 from .workers import Workers
 
 """
@@ -315,6 +314,7 @@ class Source(SqliteSupport):
         self._http_retries = config.arg(HTTPRETRIES)
         self._timespan_inc = config.arg(TIMESPANINC)
         self._timespan_tol = config.arg(TIMESPANTOL)
+        self._config = config
         self.download_retries = config.arg(DOWNLOADRETRIES)
         self._sort_in_python = config.arg(SORTINPYTHON)
         self.name = name
@@ -793,10 +793,7 @@ class DownloadManager(SqliteSupport):
                     raise e
             if complete:
                 self._log.debug('Source %s complete' % self._source(name))
-                del self._sources[name]
-                if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
-                    # remove empty mseed directories from data directory
-                    remove_empty_folders(self._config.arg(DATADIR), self._log)
+                del self._sources[name] 
 
     def is_idle(self):
         """

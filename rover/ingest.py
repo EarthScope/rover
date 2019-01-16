@@ -1,5 +1,5 @@
 from datetime import datetime
-from os import getpid, unlink
+from os import getpid
 from os.path import exists, join
 from re import match
 from shutil import copyfile
@@ -119,7 +119,7 @@ will add all the data in the given file to the repository.
             if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
                 # output as ASDF format
                 for mseed_file in updated:
-                    self._move_to_asdf(mseed_file)
+                    self._mseed_to_asdf(mseed_file)
 
     def _copy_all_rows(self, temp_file, rows):
         self._log.info('Ingesting %s' % temp_file)
@@ -133,7 +133,7 @@ will add all the data in the given file to the repository.
                 updated.add(dest)
         return updated
 
-    def _move_to_asdf(self, mseed_file):
+    def _mseed_to_asdf(self, mseed_file):
         """
         Move miniSEED data into the ASDF archive.
         """
@@ -154,8 +154,7 @@ will add all the data in the given file to the repository.
                 self._log.default("Add '{}' to ASDF"
                                   .format(trace))
                 ds.add_waveforms(trace,
-                                 tag="raw_recording",
-                                 labels=[trace.id])
+                                 tag="raw_recording")
                 # update miniSEED TSIndex records
                 # (format= “ASDF”, filename=<ASDF_FILENAME>)
                 with SqliteContext(timeseries_db(self._config), self._log) as db:
@@ -170,7 +169,7 @@ will add all the data in the given file to the repository.
         # file in the process that loads the new data to avoid data loss.
         if hash_before == hash_after:
             # remove miniseed that was inserted into ASDF
-            unlink(mseed_file)
+            safe_unlink(mseed_file)
 
     def _copy_single_row(self, offset, input_buffer, temp_file, network, station, starttime, endtime, byteoffset, raw_bytes):
         self._assert_single_day(temp_file, starttime, endtime, "%s_%s" % (network, station))

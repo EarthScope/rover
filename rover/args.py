@@ -27,6 +27,7 @@ LIST_RETRIEVE = 'list-retrieve'
 LIST_SUBSCRIBE = 'list-subscribe'
 LIST_SUMMARY = 'list-summary'
 RETRIEVE = 'retrieve'
+RETRIEVE_METADATA = 'retrieve-metadata'
 START = 'start'
 STOP = 'stop'
 STATUS = 'status'
@@ -47,6 +48,7 @@ NO = '--no-'
 # parameters
 ALL = 'all'
 ARGS = 'args'
+ASDF_FILENAME = 'asdf-filename'
 AVAILABILITYURL = 'availability-url'
 COMMAND = 'command'
 DATADIR = 'data-dir'
@@ -60,6 +62,7 @@ EMAILFROM = 'email-from'
 F, FILE = 'f', 'file'
 FORCECMD = 'force-cmd'
 FORCEFAILURES = 'force-failures'
+FORCE_METADATA_RELOAD = 'force-metadata-reload'
 FORCEREQUEST = 'force-request'
 H, FULLHELP = 'H', 'full-help'
 HTTPBINDADDRESS = 'http-bind-address'
@@ -79,6 +82,7 @@ LOGCOUNT = 'log-count'
 MDFORMAT = 'md-format'
 MSEEDINDEXCMD = 'mseedindex-cmd'
 MSEEDINDEXWORKERS = 'mseedindex-workers'
+OUTPUT_FORMAT = 'output-format'
 POSTSUMMARY = 'post-summary'
 PREINDEX = 'pre-index'
 RECHECKPERIOD = 'recheck-period'
@@ -87,6 +91,7 @@ ROVERCMD = 'rover-cmd'
 SMTPADDRESS = 'smtp-address'
 SMTPPORT = 'smtp-port'
 SORTINPYTHON = 'sort-in-python'
+STATIONURL = 'station-url'
 SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
@@ -94,14 +99,13 @@ TIMESPANINC = 'timespan-inc'
 TIMESPANTOL = 'timespan-tol'
 LITTLE_V, VERBOSITY = 'v', 'verbosity'
 BIG_V, VERSION = 'V', 'version'
-OUTPUT_FORMAT = 'output-format'
-ASDF_FILENAME = 'asdf-filename'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
                VERSION, HELP, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
 DYNAMIC_ARGS = (VERSION, HELP, FULLHELP)
 
 # default values (for non-boolean parameters)
+DEFAULT_ASDF_FILENAME = 'asdf.h5'
 DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
 DEFAULT_DATADIR = 'data'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
@@ -124,17 +128,18 @@ DEFAULT_LOGCOUNT = 10
 DEFAULT_LOGUNIQUE_EXPIRE = 7
 DEFAULT_MSEEDINDEXCMD = 'mseedindex -sqlitebusyto 60000'
 DEFAULT_MSEEDINDEXWORKERS = 10
+DEFAULT_OUTPUT_FORMAT = 'mseed'
 DEFAULT_RECHECKPERIOD = 12
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_SMTPADDRESS = 'localhost'
+DEFAULT_STATIONURL = 'http://service.iris.edu/fdsnws/station/1/query'
 DEFAULT_SUBSCRIPTIONSDIR = 'subscriptions'
 DEFAULT_TEMPDIR = 'tmp'
 DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANINC = 0.5
 DEFAULT_TIMESPANTOL = 0.5
 DEFAULT_VERBOSITY = 4
-DEFAULT_OUTPUT_FORMAT = 'mseed'
-DEFAULT_ASDF_FILENAME = 'asdf.h5'
+
 
 DIRVAR = 'DIR'
 FILEVAR = 'FILE'
@@ -284,6 +289,10 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(OUTPUT_FORMAT), default=DEFAULT_OUTPUT_FORMAT, action='store', help='output data format. Choose from "mseed" or "asdf"', metavar='')
         self.add_argument(mm(ASDF_FILENAME), default=DEFAULT_ASDF_FILENAME, action='store', help='name of asdf file to create when OUTPUT_FORMAT=asdf', metavar='')
 
+        # metadata retrieval
+        self.add_argument(mm(STATIONURL), default=DEFAULT_STATIONURL, action='store', help='station service url', metavar=URLVAR)
+        self.add_argument(mm(FORCE_METADATA_RELOAD), default=False, action='store_bool', help='force reload of metadata', metavar='')
+
         # downloads
         self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=URLVAR)
         self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=URLVAR)
@@ -318,7 +327,7 @@ class Arguments(ArgumentParser):
 
         # leap seconds
         self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
-        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing file', metavar=NVAR, type=int)
+        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before reloading file', metavar=NVAR, type=int)
         self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar=FILEVAR)
         self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar=URLVAR)
 
