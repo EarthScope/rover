@@ -1,3 +1,4 @@
+import os
 from .args import FORCE_METADATA_RELOAD, UserFeedback, \
     fail_early
 from .config import asdf_container, timeseries_db
@@ -24,8 +25,8 @@ class ASDFHandler(UserFeedback):
     def _get_asdf_dataset(self):
             try:
                 ds = pyasdf.ASDFDataSet(self.asdf_path, mode="a")
-                self._log.default("Opened ASDF dataset '{}'."
-                                  .format(self.asdf_path))
+                self._log.debug("Opened ASDF dataset '{}'."
+                                .format(self.asdf_path))
             except Exception as e:
                 raise Exception("Failed to create ASDF file at '{}': {}."
                                 .format(self.asdf_path, e))
@@ -35,49 +36,47 @@ class ASDFHandler(UserFeedback):
         """
         Load miniSEED data into the ASDF archive and remove miniSEED file.
         """
-        with self._lock_factory.lock(self.asdf_path):
+        lock = self._lock_factory.lock(self.asdf_path, pid=os.getpid())
+        lock.acquire()
+        with SqliteContext(
+                timeseries_db(self._config), self._log) as db:
             for mseed_file in mseed_file_list:
-                hash_before = hash(mseed_file)
-                ds = self._get_asdf_dataset()
-                st = obspy.read(mseed_file)
-                for trace in st:
-                    # write timeseries to asdf file
-                    self._log.default("Add '{}' to ASDF."
-                                      .format(trace))
-                    ds.append_waveforms(trace,
-                                        tag="raw_recording")
-                    # update miniSEED TSIndex records
-                    # (format= “ASDF”, filename=<ASDF_FILENAME>)
-                    with SqliteContext(
-                            timeseries_db(self._config), self._log) as db:
+                # a context manager is used to ensure that the ASDF dataset
+                # object is deleted so that other processes can use the file 
+                with self._get_asdf_dataset() as ds:
+                    st = obspy.read(mseed_file)
+                    for trace in st:
+                        # write timeseries to asdf file
+                        self._log.default("Add '{}' to ASDF."
+                                          .format(trace))
+                        ds.append_waveforms(trace,
+                                            tag="raw_recording")
+                        # update miniSEED TSIndex records
+                        # (format= “ASDF”, filename=<ASDF_FILENAME>)
                         db.execute("UPDATE tsindex "
                                    "SET filename='{0}', format='ASDF', "
                                    "byteoffset=null, hash=null "
                                    "WHERE filename='{1}'"
                                    .format(self.asdf_path, mseed_file))
-                hash_after = hash(mseed_file)
-                # Ensure that the mseed file wasn't changed while data was
-                # being written to ASDF. If the file has been changed, then
-                # remove the mseed file in the process that loads the new data
-                # to avoid data loss.
-                if hash_before == hash_after:
                     # remove miniseed that was inserted into ASDF
                     safe_unlink(mseed_file)
+        lock.release()
         
         
     def load_metadata(self, source):
-        with self._lock_factory.lock(self.asdf_path):
-            summary_rows = source.fetch_summary_rows()
-            ds = self._get_asdf_dataset()
-            # group summary rows by ASDF waveform tag
-            grouped_rows = {}
-            for row in summary_rows:
-                tag = "{}.{}".format(row.network, row.station)
-                if not grouped_rows.get(tag):
-                    grouped_rows[tag] = [row]
-                else:
-                    grouped_rows[tag].append(row)
+        lock = self._lock_factory.lock(self.asdf_path, pid=os.getpid())
+        lock.acquire()
+        summary_rows = source.fetch_summary_rows()
+        # group summary rows by ASDF waveform tag
+        grouped_rows = {}
+        for row in summary_rows:
+            tag = "{}.{}".format(row.network, row.station)
+            if not grouped_rows.get(tag):
+                grouped_rows[tag] = [row]
+            else:
+                grouped_rows[tag].append(row)
     
+        with self._get_asdf_dataset() as ds:
             # loop over grouped summary rows and compare against ASDF data
             for tag, rows in grouped_rows.items():
                 if tag not in ds.waveforms:
@@ -123,3 +122,4 @@ class ASDFHandler(UserFeedback):
                                           .format(row.network, row.station,
                                                   row.location, row.channel,
                                                   row.earliest, row.latest))
+        lock.release()

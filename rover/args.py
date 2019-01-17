@@ -364,7 +364,7 @@ class Arguments(ArgumentParser):
             config, args = self.__extract_config(args)
             if exists(config):
                 args = self.__patch_config(args, config)
-                return super().parse_args(args=args, namespace=namespace), config
+        return super().parse_args(args=args, namespace=namespace), config
 
     def __preprocess_booleans(self, args):
         """

@@ -163,7 +163,7 @@ will add all the data in the given file to the repository.
             tmp = mseed_file + '.tmp'
             if exists(tmp):
                 self._log.warn('Cleaning %s' % tmp)
-                unlink(tmp)
+                safe_unlink(tmp)
             if not exists(mseed_file):
                 create_parents(mseed_file)
                 open(tmp, 'w').close()

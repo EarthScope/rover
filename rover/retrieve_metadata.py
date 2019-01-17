@@ -4,8 +4,7 @@ from collections import namedtuple
 from .args import STATIONURL, RETRIEVE_METADATA, UserFeedback, fail_early, \
     HTTPTIMEOUT, HTTPRETRIES, TEMPDIR, OUTPUT_FORMAT
 from .report import Reporter
-from .sqlite import SqliteSupport, SqliteContext, NoResult
-from .summary import Summarizer
+from .sqlite import SqliteContext, NoResult
 from .utils import post_to_file, diagnose_error, unique_path, safe_unlink
 from .config import timeseries_db
 
@@ -19,11 +18,10 @@ except ImportError:
 TMPDOWNLOAD = 'rover_metadata_download'
 
 
-class MetadataSource(SqliteSupport, UserFeedback):
+class MetadataSource(UserFeedback):
     
     def __init__(self, config):
         UserFeedback.__init__(self, config)
-        SqliteSupport.__init__(self, config)
         self._station_url = config.arg(STATIONURL)
         self._http_timeout = config.arg(HTTPTIMEOUT)
         self._http_retries = config.arg(HTTPRETRIES)
