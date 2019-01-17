@@ -24,7 +24,6 @@ class MetadataSource(SqliteSupport, UserFeedback):
     def __init__(self, config):
         UserFeedback.__init__(self, config)
         SqliteSupport.__init__(self, config)
-        fail_early(config)
         self._station_url = config.arg(STATIONURL)
         self._http_timeout = config.arg(HTTPTIMEOUT)
         self._http_retries = config.arg(HTTPRETRIES)
@@ -205,6 +204,7 @@ will download missing metadata from the asdf.h5 repository.
 
     def __init__(self, config):
         UserFeedback.__init__(self, config)
+        fail_early(config)
         self._reporter = Reporter(config)
         self._config = config
     

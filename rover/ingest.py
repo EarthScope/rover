@@ -6,7 +6,6 @@ from shutil import copyfile
 
 from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, \
     DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, OUTPUT_FORMAT
-from .asdf import ASDFHandler
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
@@ -117,6 +116,7 @@ will add all the data in the given file to the repository.
         if self._index:
             Indexer(self._config).run(updated)
             if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
+                from .asdf import ASDFHandler
                 # output as ASDF format
                 ASDFHandler(self._config).load_miniseed(updated)
 

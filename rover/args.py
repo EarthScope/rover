@@ -364,7 +364,7 @@ class Arguments(ArgumentParser):
             config, args = self.__extract_config(args)
             if exists(config):
                 args = self.__patch_config(args, config)
-        return super().parse_args(args=args, namespace=namespace), config
+                return super().parse_args(args=args, namespace=namespace), config
 
     def __preprocess_booleans(self, args):
         """
@@ -581,6 +581,13 @@ def fail_early(config):
     elif workers > 5:
         config.log.warn('Many workers - data center may refuse service (%s %d)' %
                         (mm(DOWNLOADWORKERS), workers))
+    if config.arg(OUTPUT_FORMAT).upper() == "ASDF":
+        try:
+            import pyasdf
+            import obspy
+        except ImportError:
+            raise Exception("Missing required 'pyasdf' python "
+                            "package for 'output-format=asdf.'") 
 
 
 class UserFeedback:
