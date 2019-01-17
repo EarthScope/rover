@@ -5,14 +5,14 @@ from re import match
 from shutil import copyfile
 
 from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, \
-    DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, OUTPUT_FORMAT, ASDF_FILENAME
+    DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, OUTPUT_FORMAT
+from .asdf import ASDFHandler
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
 from .utils import run, check_cmd, check_leap, create_parents, safe_unlink, \
     windows, atomic_move, hash
-from .config import timeseries_db, asdf_container
 
 """
 The 'rover ingest' command - copy downloaded data into the repository (and then call index).
@@ -118,8 +118,7 @@ will add all the data in the given file to the repository.
             Indexer(self._config).run(updated)
             if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
                 # output as ASDF format
-                for mseed_file in updated:
-                    self._mseed_to_asdf(mseed_file)
+                ASDFHandler(self._config).load_miniseed(updated)
 
     def _copy_all_rows(self, temp_file, rows):
         self._log.info('Ingesting %s' % temp_file)
@@ -132,44 +131,6 @@ will add all the data in the given file to the repository.
                                                      temp_file, *row)
                 updated.add(dest)
         return updated
-
-    def _mseed_to_asdf(self, mseed_file):
-        """
-        Move miniSEED data into the ASDF archive.
-        """
-        if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
-            try:
-                import pyasdf
-                import obspy
-            except ImportError:
-                raise Exception('Missing required "pyasdf" package for '
-                                'outputting ASDF.') 
-        hash_before = hash(mseed_file)
-        asdf_file = asdf_container(self._config)
-        with self._lock_factory.lock(asdf_file):
-            ds = pyasdf.ASDFDataSet(asdf_file, mode="a")
-            st = obspy.read(mseed_file)
-            for trace in st:
-                # write timeseries to asdf file
-                self._log.default("Add '{}' to ASDF"
-                                  .format(trace))
-                ds.add_waveforms(trace,
-                                 tag="raw_recording")
-                # update miniSEED TSIndex records
-                # (format= “ASDF”, filename=<ASDF_FILENAME>)
-                with SqliteContext(timeseries_db(self._config), self._log) as db:
-                    db.execute("UPDATE tsindex "
-                               "SET filename='{0}', format='ASDF', "
-                               "byteoffset=null, hash=null "
-                               "WHERE filename='{1}'"
-                               .format(asdf_file, mseed_file))
-        hash_after = hash(mseed_file)
-        # Ensure that the mseed file wasn't changed while data was being
-        # written to ASDF. If the file has been changed, then remove the mseed
-        # file in the process that loads the new data to avoid data loss.
-        if hash_before == hash_after:
-            # remove miniseed that was inserted into ASDF
-            safe_unlink(mseed_file)
 
     def _copy_single_row(self, offset, input_buffer, temp_file, network, station, starttime, endtime, byteoffset, raw_bytes):
         self._assert_single_day(temp_file, starttime, endtime, "%s_%s" % (network, station))

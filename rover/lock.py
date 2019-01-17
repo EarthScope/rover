@@ -14,6 +14,8 @@ Locking of named resources via the database.
 
 # name used for locking the mseed data file
 MSEED = "mseed"
+# name used for locking the asdf data file
+ASDF = "asdf"
 
 
 class DatabaseBasedLockFactory(SqliteSupport):

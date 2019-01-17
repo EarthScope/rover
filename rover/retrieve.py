@@ -101,6 +101,9 @@ They also cause the command to exit with an error status.
 @log-dir
 @log-verbosity
 @temp-expire
+@output-format
+@asdf-filename
+@force-metadata-reload
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
 commands for more details.
@@ -176,7 +179,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         Populate the download manager by comparing the data from the
         availability service with the local index.
         """
-        if self._pre_index:
+        if self._pre_index and self._config.arg(OUTPUT_FORMAT).upper() != "ASDF":
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
         self._download_manager.add(DEFAULT_NAME, up, fetch,
@@ -199,8 +202,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             # remove empty mseed directories from data directory
             remove_empty_folders(self._config.arg(DATADIR), self._log)
             # load metadata into asdf dataset
-            MetadataRetriever(self._config).process_asdf(
-                force_metadata_refresh=self._config.arg(FORCE_METADATA_RELOAD))   
+            MetadataRetriever(self._config).run([])   
 
     def _display(self):
         """
