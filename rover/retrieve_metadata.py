@@ -143,8 +143,7 @@ class MetadataRetriever(UserFeedback):
     rover retrieve-metadata
 
 Download missing metadata from the fdsnws-station web service and save to the
-data archive. This feature is currently supported only for the ASDF output
-format.
+data archive. This feature is only supported for the ASDF output format.
 
 #### Errors, Retries and Consistency
 
@@ -164,19 +163,11 @@ an error status.
 
 @temp-dir
 @station-url
-@timespan-tol
-@pre-index
-@ingest
-@index
-@post-summary
 @rover-cmd
-@mseedindex-cmd
 @data-dir
-@download-workers
 @download-retries
 @http-timeout
 @http-retries
-@web
 @http-bind-address
 @http-port
 @email
@@ -186,7 +177,6 @@ an error status.
 @verbosity
 @log-dir
 @log-verbosity
-@temp-expire
 @output-format
 @asdf-filename
 @force-metadata-reload
