@@ -155,7 +155,8 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
         # write download byte count to stdout as feedback to caller, 
         # writes to temp file rover_worker_feedback_######_#####     
         if response and response is not None:
-            print ('{"download_byte_count":%d}' % os.path.getsize(response))
+            feedback_str = '{"download_byte_count":%d}' % os.path.getsize(response)
+            print (feedback_str)
 
         return response
 
