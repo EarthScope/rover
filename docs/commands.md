@@ -698,17 +698,12 @@ an error status.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| temp-dir            | tmp                 
-                                              Temporary storage for downloads |
-| station-url         | http://service.iris.edu/fdsnws/station/1/query
-                                                          Station service url |
+| temp-dir            | tmp                  | Temporary storage for downloads |
+| station-url         | http://service.iris.edu/fdsnws/station/1/query | Station service url |
 | rover-cmd           | rover                | Command to run rover           |
-| data-dir            | data                
-                                 The data directory - data, timeseries.sqlite |
-| download-retries    | 3                   
-                                  Maximum number of attempts to download data |
-| http-timeout        | 60                  
-                                             Timeout for HTTP requests (secs) |
+| data-dir            | data                 | The data directory - data, timeseries.sqlite |
+| download-retries    | 3                    | Maximum number of attempts to download data |
+| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
@@ -719,12 +714,9 @@ an error status.
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
-| output-format       | mseed               
-                            Output data format. Choose from "mseed" or "asdf" |
-| asdf-filename       | asdf.h5             
-                          Name of asdf file to create when OUTPUT_FORMAT=asdf |
-| force-metadata-reload | False               
-                                                     Force reload of metadata |
+| output-format       | mseed                | Output data format. Choose from "mseed" or "asdf" |
+| asdf-filename       | asdf.h5              | Name of asdf file to create when OUTPUT_FORMAT=asdf |
+| force-metadata-reload | False              |        Force reload of metadata |
 
 ##### Examples
 
