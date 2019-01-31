@@ -671,4 +671,67 @@ As with the `rover download` command, empty logs are removed on exit to avoid cl
 
 will start the daemon without the web server.
 
+
+
+### Retrieve-metadata
+
+    rover retrieve-metadata
+
+Download missing metadata from the fdsnws-station web service and save to the
+data archive. This feature is only supported for the ASDF output format.
+
+Errors, Retries and Consistency
+
+If `download-retries` allows, retrievals are repeated until no errors occur
+and, once data appear to be complete, an additional retrieval is made which
+should result in no data being downloaded.  If this is not the case - if
+additional data are found - then the web services are inconsistent.
+
+If `force-metadata-reload` is True then already loaded metadata will be
+downloaded and overwritten.
+
+Errors and inconsistencies are reported in the logs and in the optional email
+(`email` parameter) sent to the user. They also cause the command to exit with
+an error status.
+
+##### Significant Parameters
+
+|  Name               | Default              | Description                    |
+| ------------------- | -------------------- | ------------------------------ |
+| temp-dir            | tmp                 
+                                              Temporary storage for downloads |
+| station-url         | http://service.iris.edu/fdsnws/station/1/query
+                                                          Station service url |
+| rover-cmd           | rover                | Command to run rover           |
+| data-dir            | data                
+                                 The data directory - data, timeseries.sqlite |
+| download-retries    | 3                   
+                                  Maximum number of attempts to download data |
+| http-timeout        | 60                  
+                                             Timeout for HTTP requests (secs) |
+| http-retries        | 3                    | Max retries for HTTP requests  |
+| http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
+| http-port           | 8000                 | Port for HTTP server           |
+| email               |                      | Address for completion status  |
+| email-from          | noreply@rover        | From address for email         |
+| smtp-address        | localhost            | Address of SMTP server         |
+| smtp-port           | 25                   | Port for SMTP server           |
+| verbosity           | 4                    | Console verbosity (0-6)        |
+| log-dir             | logs                 | Directory for logs             |
+| log-verbosity       | 4                    | Log verbosity (0-6)            |
+| output-format       | mseed               
+                            Output data format. Choose from "mseed" or "asdf" |
+| asdf-filename       | asdf.h5             
+                          Name of asdf file to create when OUTPUT_FORMAT=asdf |
+| force-metadata-reload | False               
+                                                     Force reload of metadata |
+
+##### Examples
+
+If the "output-format" rover.config setting is set to "asdf" then
+
+    rover retrieve-metadata
+
+will download missing metadata from the asdf.h5 repository.
+
     
