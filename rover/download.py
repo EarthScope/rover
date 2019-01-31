@@ -152,8 +152,9 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                 diagnose_error(self._log, str(e), in_path, out_path, copied=False)
                 raise
 
-        # write download byte count to stdout as feedback to caller
-        if response:
+        # write download byte count to stdout as feedback to caller, 
+        # writes to temp file rover_worker_feedback_######_#####     
+        if response and response is not None:
             print ('{"download_byte_count":%d}' % os.path.getsize(response))
 
         return response

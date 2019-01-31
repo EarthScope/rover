@@ -76,7 +76,9 @@ class Workers:
                 if feedback:
                     try:
                         feedback.seek(0, 0)
-                        process_feedback = json.load(feedback)
+                        # Pulls string from the temp file rover_worker_feedback*
+                        feedback_str = feedback.readline(-1)
+                        process_feedback = json.loads(feedback_str)
                     except Exception as ex:
                         if os.path.getsize(feedback.name) > 0:
                             feedback.seek(0, 0)
