@@ -4,7 +4,7 @@ import time
 import re
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename
+from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
@@ -708,3 +708,23 @@ def atomic_move(log, src, dest):
         else:
             log.debug('Moving %s to %s (atomic 2.7)' % (src, dest))
             rename(src, dest)
+
+
+def remove_empty_folders(path, log):
+    'Function to remove empty folders under root directory'
+    if not isdir(path):
+        return
+
+    # remove empty subfolders
+    files = listdir(path)
+    if len(files):
+        for f in files:
+            fullpath = join(path, f)
+            if isdir(fullpath):
+                remove_empty_folders(fullpath, log)
+
+    # if folder empty, delete it
+    files = listdir(path)
+    if len(files) == 0:
+        log.debug("Removing empty folder: %s" % path)
+        rmdir(path)

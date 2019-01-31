@@ -19,7 +19,8 @@ PREV_HANDLER = signal.signal(signal.SIGINT, signal_handler)
 from traceback import print_exc
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
+    RETRIEVE, RETRIEVE_METADATA, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, \
+    START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER, ABORT_CODE, ERROR_CODE
 from .config import Config, RepoInitializer
 from .daemon import Starter, Stopper, Daemon, StatusShower
@@ -28,6 +29,7 @@ from .index import Indexer, IndexLister
 from .ingest import Ingester
 from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
+from .retrieve_metadata import MetadataRetriever
 from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Trigger
 from .summary import Summarizer, SummaryLister
 from .web import ServerStarter
@@ -42,6 +44,7 @@ COMMANDS = {
     LIST_SUMMARY: (SummaryLister, 'List a summary of the repository'),
     DOWNLOAD: (Downloader, 'Download data from a remote service'),
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
+    RETRIEVE_METADATA: (MetadataRetriever, 'Download missing metadata'),
     LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),

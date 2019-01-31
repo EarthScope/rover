@@ -314,6 +314,7 @@ class Source(SqliteSupport):
         self._http_retries = config.arg(HTTPRETRIES)
         self._timespan_inc = config.arg(TIMESPANINC)
         self._timespan_tol = config.arg(TIMESPANTOL)
+        self._config = config
         self.download_retries = config.arg(DOWNLOADRETRIES)
         self._sort_in_python = config.arg(SORTINPYTHON)
         self.name = name
@@ -792,7 +793,7 @@ class DownloadManager(SqliteSupport):
                     raise e
             if complete:
                 self._log.debug('Source %s complete' % self._source(name))
-                del self._sources[name]
+                del self._sources[name] 
 
     def is_idle(self):
         """
