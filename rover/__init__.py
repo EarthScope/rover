@@ -9,6 +9,7 @@ __version__ = '0.0.9plus'
 
 import signal
 import sys
+import traceback
 
 def signal_handler(sig, frame):
     sys.exit(2)
@@ -89,9 +90,13 @@ def main():
                     execute(config.command, config)
         except KeyboardInterrupt:
             exit(ABORT_CODE)
-    except Exception as e:
+    except Exception:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        error_message = "".join(traceback.format_exception(exc_type,
+                                                           exc_value,
+                                                           exc_traceback))
         if config and config.log:
-            config.log.critical(str(e))
+            config.log.critical(error_message)
             if config.command in COMMANDS:
                 config.log.default('See "rover help %s"' % config.command)
             elif config.command != HELP:
