@@ -5,19 +5,20 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
+OLDVERSION=$(<rover/VERSION)
 echo
-echo -n "previous version: "
-egrep "^__version__.*" rover/__init__.py | sed -e 's/__version__ = //' | sed -e "s/'//g"
+echo "previous version: $OLDVERSION"
 
 VERSION="$1"
 echo
 echo "new version: $VERSION"
 
-sed -i -e "s/^__version__.*/__version__ = '$VERSION'/" rover/__init__.py
+# Replace version
+echo $VERSION > rover/VERSION
 
+NEWVERSION=$(<rover/VERSION)
 echo
-echo -n "updated version: "
-egrep "^__version__.*" rover/__init__.py | sed -e 's/__version__ = //' | sed -e "s/'//g"
+echo "updated version: $NEWVERSION"
 
 echo
 echo "building tarball"
@@ -30,14 +31,14 @@ popd > /dev/null
 
 echo
 echo "Now is a chance to test the rover23 version, if all checks out:"
-echo "  git commit rover/__init__.py -m 'version $VERSION'"
+echo "  git commit rover/VERSION -m 'version $VERSION'"
 echo "  git tag -a v$VERSION -m 'version $VERSION'"
 echo "push changes and tag:"
 echo "  git push"
 echo "  git push origin --tags"
 echo
 echo "Append 'plus' to version and push to master"
-echo "  sed -i -e \"s/^__version__.*/__version__ = '${VERSION}plus'/\" rover/__init__.py"
-echo "  git commit rover/__init__.py -m 'version ${VERSION}plus'"
+echo "  echo '${VERSION}plus' > rover/VERSION"
+echo "  git commit  rover/VERSION -m 'version ${VERSION}plus'"
 echo "  git push"
 

@@ -1,15 +1,21 @@
 
 pkg_path = __file__
-__version__ = '0.0.10plus'
 
 # the following replaces the default signal handler so that keyboardinterrupt
 # is not raised if the user hits ctrl-C
 # the value 2 matches ABORT_CODE in rover.args, but we want to do this before
 # importing any other module.  see issue 46.
 
+import os
 import signal
 import sys
 import traceback
+
+# Set __version__ from package VERSION file
+version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
+with open(version_file, "r") as vf:
+    __version__ = vf.read().strip()
+
 
 def signal_handler(sig, frame):
     sys.exit(2)
