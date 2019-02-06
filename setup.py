@@ -1,4 +1,4 @@
-# For reference: https://github.com/pypa/sampleproject/blob/master/setup.cfg
+# For reference: https://github.com/pypa/sampleproject/blob/master/setup.py
 
 from setuptools import setup, find_packages
 from os import path
@@ -45,5 +45,8 @@ setup(
         'console_scripts': [
             '%s = %s:main' % (module_name,module_name),
         ],
+    },
+    package_data={
+        module_name: ['VERSION']
     }
 )
