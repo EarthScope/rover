@@ -34,6 +34,7 @@ from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
 from .index import Indexer, IndexLister
 from .ingest import Ingester
+from .logs import LoggingContext
 from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
 from .retrieve_metadata import MetadataRetriever
@@ -96,13 +97,17 @@ def main():
                     execute(config.command, config)
         except KeyboardInterrupt:
             exit(ABORT_CODE)
-    except Exception:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        error_message = "".join(traceback.format_exception(exc_type,
-                                                           exc_value,
-                                                           exc_traceback))
+    except Exception as e:
         if config and config.log:
-            config.log.critical(error_message)
+            # log short error message to stdout and stack trace to a file
+            with LoggingContext(config.log, handler=config.log.get_stdout_handler()):
+                config.log.critical(str(e))
+            with LoggingContext(config.log, handler=config.log.get_file_handler()):
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error_traceback = "".join(traceback.format_exception(exc_type,
+                                                                     exc_value,
+                                                                     exc_traceback))
+                config.log.critical(error_traceback)
             if config.command in COMMANDS:
                 config.log.default('See "rover help %s"' % config.command)
             elif config.command != HELP:
