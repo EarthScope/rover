@@ -140,7 +140,7 @@ class LoggingContext(object):
         if self.level is not None:
             self.logger.setLevel(self.old_level)
         if self.handler:
-            self.logger.removeHandler(self.handler)
+            self.logger.handlers = self.old_handlers
         if self.handler and self.close:
             self.logger.handlers = self.old_handlers
             self.handler.close()
