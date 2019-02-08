@@ -68,7 +68,7 @@ class LockContext(SqliteSupport):
                 # very careful with transactions here - want entire process to be in a single transaction
                 with self._db:  # commits or rolls back
                     c = self._db.cursor()
-                    c.execute('BEGIN IMMEDIATE')
+                    c.execute('BEGIN')
                     if not c.execute('SELECT count(*) FROM %s WHERE key = ?' % self._table, (self._key,)).fetchone()[0]:
                         self._log.debug('Acquiring lock on %s with %s for PID %d' % (self._table, self._key, getpid()))
                         c.execute('INSERT INTO %s (pid, key) VALUES (?, ?)' % self._table, (self._pid, self._key))
@@ -91,14 +91,14 @@ class LockContext(SqliteSupport):
         self._log.debug('Setting PID on %s for %s to %d' % (self._table, self._key, pid))
         with self._db:
             c = self._db.cursor()
-            c.execute('BEGIN IMMEDIATE')
+            c.execute('BEGIN')
             c.execute('UPDATE %s SET pid=? WHERE key=?' % self._table, (pid, self._key))
 
     def release(self):
         self._log.debug('Releasing lock on %s with %s' % (self._table, self._key))
         with self._db:
             c = self._db.cursor()
-            c.execute('BEGIN IMMEDIATE')
+            c.execute('BEGIN')
             c.execute('DELETE FROM %s WHERE key = ?' % self._table, (self._key,))
 
     def _clean(self):
@@ -116,7 +116,7 @@ class LockContext(SqliteSupport):
                     pid, self._table, key, format_epoch(epoch)))
                 with self._db:
                     c = self._db.cursor()
-                    c.execute('BEGIN IMMEDIATE')
+                    c.execute('BEGIN')
                     c.execute('DELETE FROM %s WHERE key = ?' % self._table, (self._key,))
                     cleaned[0] = True
 
