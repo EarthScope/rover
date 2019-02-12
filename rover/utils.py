@@ -5,7 +5,7 @@ import re
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir
-from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
+from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath, getmtime
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
@@ -174,23 +174,6 @@ def hash(text):
     hash.update(text.encode('utf-8'))
     return hexlify(hash.digest()).decode('ascii')
 
-
-def lastmod(path):
-    """
-    The last modified epoch for the file.
-    """
-    statinfo = stat(path)
-    return statinfo.st_mtime
-
-
-def file_size(path):
-    """
-    Size of the file
-    """
-    statinfo = stat(path)
-    return statinfo.st_size
-
-
 def uniqueish(prefix, salt, pid=None):
     """
     Generate a unique(ish) name, from a prefix, text (hashed) and pid.
@@ -300,7 +283,7 @@ def clean_old_files(dir, age_secs, match, log):
         for file in listdir(dir):
             if match(file):
                 try:
-                    if time.time() - lastmod(file) > age_secs:
+                    if time.time() - getmtime(file) > age_secs:
                         log.warn('Deleting old %s' % file)
                 except:   # py2.7 no FileNotFound
                     pass  # was deleted from under us

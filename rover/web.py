@@ -1,5 +1,5 @@
 
-from os.path import exists
+import os
 from sqlite3 import OperationalError
 from threading import Thread
 from time import sleep
@@ -10,7 +10,7 @@ from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
-from .utils import process_exists, format_time_epoch, format_time_epoch_local, file_size, safe_unlink
+from .utils import process_exists, format_time_epoch, format_time_epoch_local, safe_unlink
 
 """
 The 'rover web' command - run a web service that displays information on the download manager.
@@ -36,7 +36,7 @@ class DeadMan(Thread):
         while self._ppid != 1 and process_exists(self._ppid):
             sleep(1)
         self._log.info('Exiting because parent exited')
-        if self._log_path and exists(self._log_path) and file_size(self._log_path) == 0:
+        if self._log_path and os.path.exists(self._log_path) and os.path.getsize(self._log_path) == 0:
                     safe_unlink(self._log_path)
         self._server.shutdown()
         sleep(1)

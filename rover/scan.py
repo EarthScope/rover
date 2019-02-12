@@ -1,12 +1,12 @@
 
 from genericpath import isdir
 from os import listdir, makedirs
-from os.path import split, join, isfile, exists
+from os.path import split, join, isfile, exists, getmtime
 from sqlite3 import OperationalError
 
 from .args import DATADIR, ALL, RECURSE
 from .sqlite import SqliteSupport
-from .utils import canonify, lastmod, PushBackIterator, in_memory, parse_epoch
+from .utils import canonify, PushBackIterator, in_memory, parse_epoch
 
 """
 Iterators over files on the file system, or in the database, and - building
@@ -143,7 +143,7 @@ class ModifiedScanner(SqliteSupport):
             # fspath == dbpath so test if need to scan
             else:
                 dbepoch = parse_epoch(dblastmod) + 1   # add one because it's rounded down
-                if self._all or lastmod(fspath) > dbepoch:
+                if self._all or getmtime(fspath) > dbepoch:
                     self.process(fspath)
 
     def _delete(self, path):

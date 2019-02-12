@@ -9,7 +9,7 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, unique_filename, \
     clean_old_files, match_prefixes, create_parents, unique_path, \
-    safe_unlink, file_size, post_to_file, diagnose_error
+    safe_unlink, post_to_file, diagnose_error
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
