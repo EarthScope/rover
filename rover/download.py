@@ -120,18 +120,23 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
             out_path, delete_out = args[2], False
         else:
             out_path, delete_out = unique_path(self._temp_dir, TMPDOWNLOAD, in_path_or_url), True
+
         try:
             if self._do_download(get, url, in_path, out_path):  # False when no data available
                 if self._ingest:
                     Ingester(self._config).run([out_path], db_path=db_path)
+        except:
+            raise
+        else:
+            if self._delete_files:
+                # Remove empty log files to avoid clutter
+                log_path = self._config.log_path
+                if os.path.exists(log_path) and os.path.getsize(log_path) == 0:
+                    safe_unlink(log_path)
         finally:
             if self._delete_files:
                 if delete_out:
                     safe_unlink(out_path)
-                log_path = self._config.log_path
-                # avoid lots of empty logs cluttering things up
-                if os.path.exists(log_path) and file_size(log_path) == 0:
-                    safe_unlink(log_path)
                 safe_unlink(db_path)
 
     def _do_download(self, get, url, in_path, out_path):
