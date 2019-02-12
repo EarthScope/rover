@@ -76,15 +76,17 @@ class Workers:
                 del self._workers[idx]
 
                 self._log.debug('Calling callback %s (command %s)' % (callback, command))
+
                 process_feedback = {}
                 if feedback:
                     try:
                         feedback.seek(0, 0)
-                        process_feedback = json.load(feedback)
+                        feedback_data = feedback.read()
+
+                        if len(feedback_data) > 0:
+                            process_feedback = json.loads(feedback_data)
                     except Exception as ex:
-                        if os.path.getsize(feedback.name) > 0:
-                            feedback.seek(0, 0)
-                            self._log.error('Error processing feedback file: %s, first line: %s' % (ex, feedback.readline()))
+                        self._log.error('Error processing feedback file: %s, contents: %s' % (ex, feedback_data))
                     finally:
                         feedback.close()
                         os.remove(feedback.name)

@@ -1,4 +1,6 @@
 import os
+import json
+import sys
 
 from .args import DOWNLOAD, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, HTTPTIMEOUT, \
@@ -152,9 +154,13 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                 diagnose_error(self._log, str(e), in_path, out_path, copied=False)
                 raise
 
-        # write download byte count to stdout as feedback to caller
-        if response:
-            print ('{"download_byte_count":%d}' % os.path.getsize(response))
+        # write feedback, in JSON, to caller on stdout with download byte count
+        if response and os.path.isfile(response):
+            feedback = {}
+            feedback['download_byte_count'] = os.path.getsize(response)
+
+            if feedback['download_byte_count']:
+                sys.stdout.buffer.write(json.dumps(feedback).encode('utf-8'))
 
         return response
 
