@@ -66,11 +66,15 @@ class Workers:
             self._log.debug('"%s" succeeded' % (cmd,))
 
     def check(self):
-        i = len(self._workers) - 1
-        while i > -1:
-            command, process, callback, feedback = self._workers[i]
+        for idx, worker in enumerate(self._workers):
+            command, process, callback, feedback = worker
+
             process.poll()
             if process.returncode is not None:
+
+                # Remove finished worker from list
+                del self._workers[idx]
+
                 self._log.debug('Calling callback %s (command %s)' % (callback, command))
                 process_feedback = {}
                 if feedback:
@@ -84,12 +88,11 @@ class Workers:
                     finally:
                         feedback.close()
                         os.remove(feedback.name)
+
                 if process_feedback:
                     callback(command, process.returncode, feedback=process_feedback)
                 else:
                     callback(command, process.returncode)
-                self._workers = self._workers[:i] + self._workers[i+1:]
-            i -= 1
 
     def wait_for_all(self):
         """
