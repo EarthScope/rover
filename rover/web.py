@@ -109,7 +109,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._write('''<p><pre>File: <a href="file://%s">%s</a>
 Availability URL: <a href="%s">%s</a>
 Dataselect URL: <a href="%s">%s</a>
-Created: %s (%s local)   
+Created: %s (%s local)
 Last active: %s (%s local)</pre></p>''' %
                         (file, file, availability_url, availability_url, dataselect_url, dataselect_url,
                          format_time_epoch(creation_epoch), format_time_epoch_local(creation_epoch),
@@ -119,9 +119,9 @@ Last active: %s (%s local)</pre></p>''' %
             self._write_progress(id, last_check_epoch, last_error_count, consistent)
 
         try:
-            self.server.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, 
+            self.server.foreachrow('''SELECT id, file, availability_url, dataselect_url, creation_epoch,
                                              last_check_epoch, last_error_count, consistent
-                                        from rover_subscriptions order by id''', tuple(), callback)
+                                        FROM rover_subscriptions ORDER BY id''', tuple(), callback)
         except OperationalError:
             pass
         if not count[0]:
@@ -136,9 +136,9 @@ Last active: %s (%s local)</pre></p>''' %
     def _write_progress(self, name, last_check_epoch, last_error_count, consistent):
         try:
             initial_stations, remaining_stations, initial_time, remaining_time, n_retries, download_retries = \
-                self.server.fetchone('''select initial_stations, remaining_stations, initial_time, remaining_time,
+                self.server.fetchone('''SELECT initial_stations, remaining_stations, initial_time, remaining_time,
                                                n_retries, download_retries
-                                          from rover_download_stats where submission = ?''', (name,))
+                                          FROM rover_download_stats WHERE submission = ?''', (name,))
             self._write('<p>Progress for download attempt %d of %d:<pre>\n' % (n_retries, download_retries))
             self._write_bar('stations', initial_stations, remaining_stations)
             self._write_bar('timespan', initial_time, remaining_time)

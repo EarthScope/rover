@@ -253,7 +253,7 @@ printed to stdout.
 
     def _check_database(self):
         try:
-            self.execute('select count(*) from tsindex')
+            self.execute('SELECT count(*) FROM tsindex')
         except OperationalError:
             raise Exception('''Cannot access the index table in the database (%s).  Bad configuration or no data indexed?''' % self._timeseries_db)
 

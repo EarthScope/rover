@@ -658,10 +658,10 @@ class Source(SqliteSupport):
             # this is handled by rover.coverage.BaseBuilder
             # see issue 47
             # note we separate times with space as time contains colons
-            self.foreachrow('''select coalesce(timespans,'<' || starttime || ' ' || endtime || '>'), samplerate
-                                    from tsindex
-                                    where network=? and station=? and location=? and channel=?
-                                    order by starttime, endtime''',
+            self.foreachrow('''SELECT coalesce(timespans, '<' || starttime || ' ' || endtime || '>'), samplerate
+                                    FROM tsindex
+                                    WHERE network=? AND station=? AND location=? AND channel=?
+                                    ORDER BY starttime, endtime''',
                             sncl.split('_'),
                             callback, quiet=True)
         except OperationalError:
@@ -793,7 +793,7 @@ class DownloadManager(SqliteSupport):
                     raise e
             if complete:
                 self._log.debug('Source %s complete' % self._source(name))
-                del self._sources[name] 
+                del self._sources[name]
 
     def is_idle(self):
         """
@@ -874,7 +874,7 @@ class DownloadManager(SqliteSupport):
     # stats for web display
 
     def _create_stats_table(self):
-        self.execute('''create table if not exists rover_download_stats (
+        self.execute('''CREATE TABLE IF NOT EXISTS rover_download_stats (
                           submission text not null,
                           initial_stations int not null,
                           remaining_stations int not null,
@@ -886,14 +886,14 @@ class DownloadManager(SqliteSupport):
 
     def _update_stats(self):
         with self._db:  # single transaction
-            self._db.cursor().execute('begin')
-            self._db.execute('delete from rover_download_stats', tuple())
+            self._db.cursor().execute('BEGIN')
+            self._db.execute('DELETE FROM rover_download_stats', tuple())
             for source in self._sources.values():
                 progress = source.stats()
-                self._db.execute('''insert into rover_download_stats
-                                      (submission, initial_stations, remaining_stations, initial_time, remaining_time,
-                                       n_retries, download_retries)
-                                      values (?, ?, ?, ?, ?, ?, ?)''',
+                self._db.execute('''INSERT INTO rover_download_stats
+                                    (submission, initial_stations, remaining_stations, initial_time, remaining_time,
+                                     n_retries, download_retries)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)''',
                                  (source.name,
                                   progress.stations[1], progress.stations[1] - progress.stations[0],
                                   progress.seconds[1], max(0, int(progress.seconds[1] - progress.seconds[0])),

@@ -108,8 +108,8 @@ will add all the data in the given file to the repository.
                 run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
                     % (self._leap_file, self._mseed_cmd, self._db_path, temp_file), self._log)
             with SqliteContext(self._db_path, self._log) as db:
-                rows = db.fetchall('''select network, station, starttime, endtime, byteoffset, bytes
-                                  from tsindex order by byteoffset''')
+                rows = db.fetchall('''SELECT network, station, starttime, endtime, byteoffset, bytes
+                                  FROM tsindex ORDER BY byteoffset''')
                 updated.update(self._copy_all_rows(temp_file, rows))
         finally:
             safe_unlink(self._db_path)

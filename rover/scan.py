@@ -53,7 +53,7 @@ class DatabasePathIterator(SqliteSupport):
         # modification time if there's more than one value (not clear if mseedindex
         # updates all rows with the latest value).
         try:
-            sql = 'select distinct filemodtime, filename from tsindex order by filename asc, filemodtime desc'
+            sql = 'SELECT distinct filemodtime, filename FROM tsindex ORDER BY filename ASC, filemodtime DESC'
             self._log.debug('Execute: %s' % sql)
             self._cursor.execute(sql)
         except OperationalError as e:
