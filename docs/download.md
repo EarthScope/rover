@@ -31,9 +31,9 @@ To see what data would be downloaded without downloading it use the `list-retriv
 
     rover list-retrieve IU_ANMO_3?_* 2016-01-01T00:00:00 2016-01-02T00:00:00
 
-## Background mode: Rover Subscribe
+## Background mode: ROVER Subscribe
 
-Rover subscribe performs a  `rover retrieve` periodically (see `--recheck-period`)
+ROVER subscribe performs a  `rover retrieve` periodically (see `--recheck-period`)
 checking for new data in a server's availabilty server based on subscriptions.
 
 To support this, a background "daemon" must be running.  This can be

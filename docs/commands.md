@@ -1,5 +1,5 @@
 ---
-title: Rover Commands
+title: ROVER Commands
 layout: default
 ---
 
@@ -35,7 +35,7 @@ layout: default
 
     rover init [directory]
 
-`init-repository` generates a rover.config file containing rover's default configuration parameters; a rover.config file, a data directory, and a logs directory to a target path.
+`init-repository` generates a rover.config file containing ROVER's default configuration parameters; a rover.config file, a data directory, and a logs directory to a target path.
 
 To avoid over-writing data, `rover init-repository` returns an error if the command's target directory contains the file rover.config, or the directories data or logs.
 
@@ -53,9 +53,9 @@ To avoid over-writing data, `rover init-repository` returns an error if the comm
 
 will create the repository in the current directory.
 
-    rover init-repository ~/rover
+    rover init-repository ~/ROVER
 
-will create the repository in ~/rover
+will create the repository in ~/ROVER
 
     
 
@@ -76,9 +76,9 @@ During the retrieve process, the command's status is available at `http://localh
 See `rover subscribe` for similar functionality, but with regular updates.
 #### Errors, Retries and Consistency
 
-Rover retrieve will repeat until no errors occur and no more data is downloaded or its configurable limit of download attempts returning 0 bytes of data, set by `download-retries`, is reached. Upon apparent process completion an additional retrieval is made, which should result in no data being downloaded. If data are downloaded during the additional retrieval phase then the data availability and web services servers are inconsistent.
+ROVER retrieve will repeat until no errors occur and no more data is downloaded or its configurable limit of download attempts returning 0 bytes of data, set by `download-retries`, is reached. Upon apparent process completion an additional retrieval is made, which should result in no data being downloaded. If data are downloaded during the additional retrieval phase then the data availability and web services servers are inconsistent.
 
-Inconsistencies cause rover processes to exit with an error status and are reported in the logs directory and via the configurable email parameter.
+Inconsistencies cause ROVER processes to exit with an error status and are reported in the logs directory and via the configurable email parameter.
 
 ##### Significant Parameters
 
@@ -120,10 +120,9 @@ Additional sub-command (download, ingest, index) parameters affect retrieve - se
 
     rover retrieve N_S_L_C.txt
 
-will process a request to download, ingest, and index data missing from rover's local repository.
+will process a request to download, ingest, and index data missing from ROVER's local repository.
     
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
-
 
 ### List Retrieve
 
@@ -283,7 +282,7 @@ will instruct the daemon to periodically download, ingest, and index any data mi
 
     rover subscribe IU_ANMO_00_BH1 2017-01-01 2075-01-04
 
-will instruct the daemon to periodically download, ingest and index data for IU.ANMO.00.BH1. Rover subscribe can be set into the future to update a local repository in semi-real time.
+will instruct the daemon to periodically download, ingest and index data for IU.ANMO.00.BH1. ROVER subscribe can be set into the future to update a local repository in semi-real time.
 
     
 
@@ -444,13 +443,14 @@ from the command line:
 
 ### Download
 
+
     rover download url [path]
 
     rover download file [path]
 
-`Rover download` downloads a single request, typically for a day, from a URL to a given path. File arguments are sent as POST to the URL set in the `dataselect-url` configuration parameter. Requested data are downloaded to the path argument, ingested and indexed to the local repository.  If no path is given, than a temporary file is created and deleted after use.
+`rover download` downloads a single request, typically for a day, from a URL to a given path. File arguments are sent as POST to the URL set in the `dataselect-url` configuration parameter. Requested data are downloaded to the path argument, ingested and indexed to the local repository.  If no path is given, than a temporary file is created and deleted after use.
 
-Rover will treat an input argument as an URL if it contains the characters "://". The URL argument must be for a Data Select service, and can not request data that spans multiple calendar days. `rover retrieve` generates workers that call `rover download` in the terminal. 
+ROVER will treat an input argument as an URL if it contains the characters "://". The URL argument must be for a Data Select service, and can not request data that spans multiple calendar days. `rover retrieve` generates workers that call `rover download` in the terminal. 
 
 `download` is the main low-level task called in the processing pipeline. Each instances of download calls ingest and index as long as they are configured as true. To reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are automatically deleted on exit.
 
@@ -487,7 +487,7 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
 
     rover ingest file
 
-Adds contents from a MSEED formatted file to Rover's local repository and indexes the new data.
+Adds contents from a MSEED formatted file to ROVER's local repository and indexes the new data.
 
 The `mseedindex` command indexes blocks of data present in the file, corresponding byte ranges are then appended to  appropriate files in the repository.
 
@@ -556,7 +556,7 @@ will index the entire repository.
 
     rover summary
 
-Creates a summary of the index stored in a Rover database.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
+Creates a summary of the index stored in a ROVER database.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
 
 ##### Significant Parameters
 
@@ -571,10 +571,8 @@ Creates a summary of the index stored in a Rover database.  This lists the overa
 
     rover summary
 
-will create the summary of a local Rover repository. 
+will create the summary of a local ROVER repository. 
 
-
-    
 
 ### Daemon
 
@@ -630,7 +628,7 @@ will start the daemon in the foreground using the given configuration file.
 
 will start the daemon in the foreground, processing subscriptions every 24 hours.
 
-Rover start is the perferred method to launch the subscription service. 
+ROVER start is the perferred method to launch the subscription service. 
 
     
 
@@ -644,9 +642,10 @@ Rover start is the perferred method to launch the subscription service.
 
     rover retrieve --web ...   # the default
 
-Starts a web server that provides information on the progress of the download manager, the core of the `rover daemon` and `rover retrieve` commands. Rover's default configuration starts `rover web` automatically, provided `--no-web` is not used with `rover retrieve` or `rover start`. Empty logs are removed on exit to avoid cluttering the log directory.
+Starts a web server that provides information on the progress of the download manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's default configuration starts `rover web` automatically, provided `--no-web` is not used with `rover retrieve` or `rover start`. Empty logs are removed on exit to avoid cluttering the log directory.
 
 ##### Significant Parameters
+
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |

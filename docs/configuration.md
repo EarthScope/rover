@@ -1,22 +1,22 @@
 ---
-title: Rover Configuration
+title: ROVER Configuration
 layout: default
 ---
 
-Rover can be configured via a file or using command line parameters.
+ROVER can be configured via a file or using command line parameters.
 The parameter names are the same in both cases.
 
 ## File Configuration
 
 The default location for the configuration file is `~/rover/config`
 (the file `config` in the `rover` directory located in the user's home
-directory).  This file is generated when Rover is first used and can
+directory).  This file is generated when ROVER is first used and can
 be reset with `rover make-config`.
 
 If a file in a different location is used, the location can be given
 with `-f` or `--file` on the command line:
 
-    rover -f /some/where/config ,,,
+    rover -f /some/where/config ...
 
 Use a text editor to change parameter values in the file.  A line
 starting with `#` is a comment.
@@ -74,7 +74,7 @@ structure:
           +- ...
 
 The configuration file is created automatically if not found, so **to
-use Rover with a completely new database, configuration, etc, it is
+use ROVER with a completely new database, configuration, etc, it is
 only necessary to sepecify a new path for the configuration file:**
 
     rover -f newdir/config

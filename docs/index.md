@@ -1,35 +1,35 @@
 ---
-title: The IRIS rover user guide
+title: The IRIS ROVER user guide
 layout: default
 ---
 ## Description
 
-Rover is a tool to robustly retrieve geophysical timeseries data from data
+ROVER is a tool to robustly retrieve geophysical timeseries data from data
 centers such as [IRIS DMC](http://ds.iris.edu). It builds an associated index 
 for the downloaded data to generate a local repository.
 
-Rover is a command-line tool and requires Python 2.7, 3.5 or a newer version. 
+ROVER is a command-line tool and requires Python 2.7, 3.5 or a newer version. 
 Python 3.5 and above is preferred.
 
 ## Documentation
 
 * [Installation](#installation)
 * [Quick start](#quickstart)
-* [Rover commands](commands.md)
-* [Rover configuration](configuration.md)
+* [ROVER commands](commands.md)
+* [ROVER configuration](configuration.md)
 * [Example commands to download data](download.md)
 * [Example commands to manage and maintain the local store](maintenance.md)
-* [Rover's processing pipeline](pipeline.md)
+* [ROVER's processing pipeline](pipeline.md)
 * [Known bugs and limitations](bugs.md)
-* [Rover development](development.md)
+* [ROVER development](development.md)
 
 ## Installation <a id="installation"></a>
 
-Rover requires [mseedindex](https://github.com/iris-edu/mseedindex) -
+ROVER requires [mseedindex](https://github.com/iris-edu/mseedindex) -
 see [mseedindex install guidelines](mseedindex.md).  This is a `C` language program
 that must be compiled.
 
-Install rover, and other Python requirements, with `pip`:
+Install ROVER, and other Python requirements, with `pip`:
 
     pip install rover
     
@@ -70,32 +70,32 @@ Retrieved files are miniseed format containing day lengths of station data. The 
    ```
    <datarepo>/data/<network>/<year>/<day>/<station>.<network>.<year>.<day>
    ```
-## Exploring Rover 
+## Exploring ROVER 
 
-Rover has built-in help. The command `rover help` prints a rover introduction to the terminal.
+ROVER has built-in help. The command `rover help` prints a ROVER introduction to the terminal.
 
-There are many more options available in rover including; the ability to send emails that monitor 
-rover request and subscriptions (see the `--email` option), view listings of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).`rover help help` prints a list of [commands](commands.md) available in the rover code suite. 
+There are many more options available in ROVER including; the ability to send emails that monitor 
+ROVER request and subscriptions (see the `--email` option), view listings of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).`rover help help` prints a list of [commands](commands.md) available in the ROVER code suite. 
 
-Rover is configurable via the rover.config file or by using the command line. Type `rover -h` to see the configuration parameters that are adjustable using the command line.
+ROVER is configurable via the rover.config file or by using the command line. Type `rover -h` to see the configuration parameters that are adjustable using the command line.
 
 For more detailed examples, see more [example commands to download data](download.md) and [example commands to manage and maintain the local repository](maintenance.md).
 
 ## Copyright and License
 
-Rover is a [IRIS Data Management Center](http://ds.iris.edu/ds/nodes/dmc/) product.
+ROVER is a [IRIS Data Management Center](http://ds.iris.edu/ds/nodes/dmc/) product.
 
 It is free software and can be redistributed and/or modified
 under the terms of the GNU General Public License, version 3 or later, as published by
 the Free Software Foundation.
 
-Rover is distributed without any warranty including the 
+ROVER is distributed without any warranty including the 
 implied warranty of merchantability or fitness for a 
 particular purpose.  See the GNU General Public License 
 for more details.
 
 A copy of the GNU General Public License should be included 
-with the Rover package. If not, see http://www.gnu.org/licenses/.
+with the ROVER package. If not, see http://www.gnu.org/licenses/.
 
 Copyright (c) 2018 Incorporated Research
 Institutions for Seismology (IRIS).

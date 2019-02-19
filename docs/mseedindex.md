@@ -1,9 +1,9 @@
 ---
-title: mseedindex install guidelines (for rover)
+title: mseedindex install guidelines (for ROVER)
 layout: default
 ---
 
-Rover is dependent upon the program [mseedindex](https://github.com/iris-edu/mseedindex) to maintain an index of downloaded miniSEED data.
+ROVER is dependent upon the program [mseedindex](https://github.com/iris-edu/mseedindex) to maintain an index of downloaded miniSEED data.
 
 To install mseedindex, a system must have a `C` (or `C++`) compiler and the `make` program. Sqlite database support is required. The instructions below outline mseedindex installation:
 
