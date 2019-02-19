@@ -33,7 +33,7 @@ class Downloader(SqliteSupport):
     rover download file [path]
 
 If given a URL, download a single request (typically for a day) to the given path, ingest and index it.  If no path
-is given then a temporary file is created and deleted after use.  Rover treats the argument as a URL if it contains
+is given then a temporary file is created and deleted after use. ROVER treats the argument as a URL if it contains
 the characters "://".
 
 

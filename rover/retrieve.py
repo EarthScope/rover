@@ -153,7 +153,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             fix_file_inplace(self._log, path, self._temp_dir)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             if fetch:
-                self._log.default('Rover version %s - starting retrieve' % __version__)
+                self._log.default('ROVER version %s - starting retrieve' % __version__)
                 self.display_feedback()
             self._query(path, fetch)
             if fetch:
@@ -163,7 +163,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         except ManagerException:
             raise
         except Exception as e:
-            self._reporter.send_email('Rover Failure', self._reporter.describe_error(RETRIEVE, e))
+            self._reporter.send_email('ROVER Failure', self._reporter.describe_error(RETRIEVE, e))
             raise
         finally:
             if self._delete_files:

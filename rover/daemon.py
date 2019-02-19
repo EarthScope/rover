@@ -104,7 +104,7 @@ will start the daemon, processing subscriptions every 24 hours.
             run('%s %s -f %s' % ('pythonw -m rover', DAEMON, self._config_path), self._log, uncouple=True)
         else:
             run('%s %s -f %s' % (self._rover_cmd, DAEMON, self._config_path), self._log, uncouple=True)
-        self._log.default('Rover version %s - starting %s' % (__version__, DAEMON))
+        self._log.default('ROVER version %s - starting %s' % (__version__, DAEMON))
         self.display_feedback()
 
 
@@ -272,7 +272,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
                 self._download_manager.step()
                 sleep(1)
             except Exception as e:
-                self._reporter.send_email('Rover Failure', self._reporter.describe_error(DAEMON, e))
+                self._reporter.send_email('ROVER Failure', self._reporter.describe_error(DAEMON, e))
                 raise
 
     def _source_callback(self, source):

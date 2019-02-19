@@ -259,7 +259,7 @@ class Unsubscriber(SqliteSupport):
     rover unsubscribe N[:M]+
 
 Delete one or more subscriptions.  The arguments can be single numbers (identifying the subscriptions, as
-displayed by `rover list-subscrive`), or ranges (N:M).
+displayed by `rover list-subscribe`), or ranges (N:M).
 
 Note: To avoid conflicts with subscriptions that are currently being processed, the daemon must be stopped
 (with `rover stop`) before using the `unsubscribe` command.

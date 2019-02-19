@@ -244,7 +244,7 @@ class Arguments(ArgumentParser):
     """
 
     def __init__(self):
-        super().__init__(fromfile_prefix_chars='@', prog='rover',
+        super().__init__(fromfile_prefix_chars='@', prog='ROVER',
                          formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          epilog=dedent('''
@@ -253,7 +253,7 @@ class Arguments(ArgumentParser):
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
 
-        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='rover %s' % __version__)
+        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='ROVER %s' % __version__)
         self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
 
         # operation details

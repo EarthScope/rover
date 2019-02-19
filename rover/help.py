@@ -28,7 +28,7 @@ rover %s %s
     
 rover %s %s
 
-  Covers Rover's advanced mode, where it runs in the background, 
+  Covers ROVER's advanced mode, where it runs in the background, 
   continuously checking subscriptions and downloading data when 
   needed.
     
@@ -61,7 +61,7 @@ To display this screen again, type "rover" or "rover help".
 
 def usage(config):
     return '''
-                    Common Rover Commands
+                    Common ROVER Commands
                     
 rover %s [directory]
 
@@ -107,7 +107,7 @@ rover %s ...
 
 def background(config):
     return '''
-                   Advanced Rover Commands
+                   Advanced ROVER Commands
     
 rover %s
 
@@ -151,7 +151,7 @@ rover %s N
 
 def low_level(config):
     return '''
-                   Low-Level Rover Commands
+                   Low-Level ROVER Commands
                    
 The following commands are used internally, but are usually not
 useful from the command line:
@@ -192,7 +192,7 @@ rover %s
 
 GENERAL = {
     USAGE: (usage, 'General interactive use'),
-    BACKGROUND: (background, 'Advanced use with rover in the background'),
+    BACKGROUND: (background, 'Advanced use with ROVER in the background'),
     LOWLEVEL: (low_level, 'Rarely used, low-level commands')
 }
 

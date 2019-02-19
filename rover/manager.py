@@ -362,7 +362,7 @@ class Source(SqliteSupport):
         """
         Is this source complete (all retrievals)?
         Dependent Functions: _
-        is_complete_final_read: Verifies that all data is downloaded with no errors makes rover robust. 
+        is_complete_final_read: Verifies that all data is downloaded with no errors makes ROVER robust. 
         If data is missing calls _new_retrieval is callesmand _is_complete_initial_reads 
         _is_complete_initial_reads: Call the new_retrieval function until all data is downloaded with no errors. 
         _new_retrieval: 
@@ -429,7 +429,7 @@ class Source(SqliteSupport):
             if self.download_retries == 1:
                 if retry_possible:
                     self._log.default(('Retrieval attempt %d of %d had no errors and we downloaded data.' +
-                                   'The rover.config parameter download-retries is set to %d attempt so rover is exiting.'+
+                                   'The rover.config parameter download-retries is set to %d attempt so ROVER is exiting.'+
                                    ' We recommend increasing the number of download attempts. ') % (self.n_retries, self.download_retries, self.download_retries))
                     self._expect_empty =True
                     return True     
@@ -641,7 +641,7 @@ class Source(SqliteSupport):
                             sncl.split('_'),
                             callback, quiet=True)
         except OperationalError:
-            self._log.debug('No index - first time using rover?')
+            self._log.debug('No index - check rover.config')
         return availability.coverage()
 
 
