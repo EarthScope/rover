@@ -7,10 +7,10 @@ layout: default
 ## Quality, sampling frequency and timespans
 
 miniSEED files can contain data at multiple qualities and sampling
-frequencies.  When `ROVER retrieve` uses the index to assess what data
+frequencies.  When `rover retrieve` uses the index to assess what data
 already exist it uses the *maximal* range across all qualities and
 sampling frequencies.  So if a given **N\_S\_L\_C** has 20 samples/second data from 06:00 to 10:00
-hours, but 10 samples/second data only from 08:00 to 09:00 then `ROVER retrieve`
+hours, but 10 samples/second data only from 08:00 to 09:00 then `rover retrieve`
 will assume all data exist from 08:00 to 10:00 hours.  Any "missing"
 10 samples/second data will never be downloaded.
 
@@ -26,7 +26,7 @@ my go undetected.
 ## Handling of duplicate data
 
 
-If `ROVER ingest` is used manually it is possible for duplicate data
+If `rover ingest` is used manually it is possible for duplicate data
 to be added to the repository (e.g. by ingesting the same file twice).
 This cannot (or should not) happen in normal use, because ROVER does
 not download duplicate data, so cannot ingest it.
@@ -39,7 +39,7 @@ or we should have an additional command that compacts files.
 
 
 
-The `ROVER ingest` command rejects files that span multiple calendar
+The `rover ingest` command rejects files that span multiple calendar
 days.  This is because it works by blindly copying byte ranges based
 on the mseedindex output, and the targets for this data (the files in
 the repository) are per-day.
@@ -51,7 +51,7 @@ duplicate data above).
 ## Availability request format
 
 
-To avoid duplicate data (see above) `ROVER subscribe` checks the
+To avoid duplicate data (see above) `rover subscribe` checks the
 subscription against existing subscriptions.  This comparison only
 supports the basic request format:
 
