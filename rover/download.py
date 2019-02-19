@@ -1,6 +1,6 @@
-
-from os import getpid
-from os.path import join, exists
+import os
+import json
+import sys
 
 from .args import DOWNLOAD, TEMPDIR, DELETEFILES, INGEST, \
     TEMPEXPIRE, HTTPTIMEOUT, \
@@ -9,7 +9,7 @@ from .ingest import Ingester
 from .sqlite import SqliteSupport
 from .utils import uniqueish, get_to_file, unique_filename, \
     clean_old_files, match_prefixes, create_parents, unique_path, \
-    safe_unlink, file_size, post_to_file, diagnose_error
+    safe_unlink, post_to_file, diagnose_error
 
 """
 The 'rover download' command - download data from a URL (and then call ingest).
@@ -114,32 +114,38 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
                                 'You may have forgotten to quote the URL (and should expect failure).') % url)
         else:
             url, in_path, get = self._dataselect_url, in_path_or_url, False
-            if not exists(in_path):
+            if not os.path.exists(in_path):
                 raise Exception('Could not find file "%s"' % in_path)
         if len(args) == 2:
             out_path, delete_out = args[2], False
         else:
             out_path, delete_out = unique_path(self._temp_dir, TMPDOWNLOAD, in_path_or_url), True
+
         try:
             if self._do_download(get, url, in_path, out_path):  # False when no data available
                 if self._ingest:
                     Ingester(self._config).run([out_path], db_path=db_path)
+        except:
+            raise
+        else:
+            if self._delete_files:
+                # Remove empty log files to avoid clutter
+                log_path = self._config.log_path
+                if os.path.exists(log_path) and os.path.getsize(log_path) == 0:
+                    safe_unlink(log_path)
         finally:
             if self._delete_files:
                 if delete_out:
                     safe_unlink(out_path)
-                log_path = self._config.log_path
-                # avoid lots of empty logs cluttering things up
-                if exists(log_path) and file_size(log_path) == 0:
-                    safe_unlink(log_path)
                 safe_unlink(db_path)
 
     def _do_download(self, get, url, in_path, out_path):
         # previously we extracted the file name from the header, but the code
         # failed in python 2 (looked like a backport library bug), so now we let the user specify,
-        if exists(out_path):
+        if os.path.exists(out_path):
             raise Exception('Path %s for download already exists' % out_path)
         create_parents(out_path)
+
         if get:
             response, check_status = get_to_file(url, out_path,
                                                  self._http_timeout, self._http_retries, self._log)
@@ -152,8 +158,17 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
             except Exception as e:
                 diagnose_error(self._log, str(e), in_path, out_path, copied=False)
                 raise
+
+        # write feedback, in JSON, to caller on stdout with download byte count
+        if response and os.path.isfile(response):
+            feedback = {}
+            feedback['download_byte_count'] = os.path.getsize(response)
+
+            if feedback['download_byte_count']:
+                sys.stdout.write(json.dumps(feedback).encode('utf-8'))
+
         return response
 
     def _ingesters_db_path(self, url):
         name = uniqueish('rover_ingester', url)
-        return unique_filename(join(self._temp_dir, name))
+        return unique_filename(os.path.join(self._temp_dir, name))

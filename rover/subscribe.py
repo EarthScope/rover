@@ -14,7 +14,7 @@ from .utils import unique_path, build_file, format_day_epoch, safe_unlink, forma
 Commands related to subscription:
 
 The 'rover subscribe' command - add a subscription
-The 'rover unsubscribe' command - remove a subscription 
+The 'rover unsubscribe' command - remove a subscription
 The 'rover list-subscriptions' command - display information about subscriptions
 """
 
@@ -91,7 +91,7 @@ dates that are missing from the repository.
         self._create_table()
 
     def _create_table(self):
-        self.execute('''create table if not exists rover_subscriptions (
+        self.execute('''CREATE TABLE IF NOT EXISTS rover_subscriptions (
                            id integer primary key autoincrement,
                            file text unique,
                            availability_url text not null,
@@ -103,7 +103,7 @@ dates that are missing from the repository.
         )''')
 
     def _check_all_for_overlap(self, path1):
-        rows = self.fetchall('''select file from rover_subscriptions''')
+        rows = self.fetchall('''SELECT file FROM rover_subscriptions''')
         for row in rows:
             try:
                 RequestComparison(path1, row[0]).assert_no_overlap()
@@ -133,7 +133,7 @@ dates that are missing from the repository.
             self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in the repository' % (mm(FORCEREQUEST)))
         else:
             self._check_all_for_overlap(path)
-        self.execute('''insert into rover_subscriptions (file, availability_url, dataselect_url) values (?, ?, ?)''',
+        self.execute('''INSERT INTO rover_subscriptions (file, availability_url, dataselect_url) VALUES (?, ?, ?)''',
                      (path, self._availability_url, self._dataselect_url))
         self._log.default('Subscribed')
 
@@ -214,7 +214,7 @@ will show what data would be downloaded by the daemon if the subscription were p
             for id in range(id1, id2+1):
                 try:
                     path, availability_url, dataselect_url = self.fetchone(
-                        '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,),
+                        '''SELECT file, availability_url, dataselect_url FROM rover_subscriptions WHERE id = ?''', (id,),
                     quiet=True)
                     self.add = download_manager.add(id, path, False, availability_url, dataselect_url, None)
                 except (NoResult, OperationalError):
@@ -241,8 +241,8 @@ will show what data would be downloaded by the daemon if the subscription were p
 
         try:
 
-            self.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch
-                                 from rover_subscriptions order by creation_epoch
+            self.foreachrow('''SELECT id, file, availability_url, dataselect_url, creation_epoch, last_check_epoch
+                                 FROM rover_subscriptions ORDER BY creation_epoch
                             ''', tuple(), callback, quiet=True)
         except OperationalError:
             # no table
@@ -292,8 +292,8 @@ will delete subscriptions 1, 2 and 3.
                 self._log.debug('Deleting %s' % file)
                 safe_unlink(file)
 
-            self.foreachrow('''select file from rover_subscriptions where id >= ? and id <= ?''', (id1, id2), callback)
-            self.execute('''delete from rover_subscriptions where id >= ? and id <= ?''', (id1, id2))
+            self.foreachrow('''SELECT file FROM rover_subscriptions WHERE id >= ? AND id <= ?''', (id1, id2), callback)
+            self.execute('''DELETE FROM rover_subscriptions WHERE id >= ? AND id <= ?''', (id1, id2))
             self._log.default('Cleared subscriptions between %d and %d' % (id1, id2))
 
 
@@ -331,6 +331,6 @@ will ask the daemon to re-process subscription 2.
         if not args:
             raise Exception('Usage: rover %s (id|id1:id2)+' % TRIGGER)
         for id1, id2 in parse_integers(args):
-            self.execute('''update rover_subscriptions set last_check_epoch = NULL where id >= ? and id <= ?''',
+            self.execute('''UPDATE rover_subscriptions SET last_check_epoch = NULL WHERE id >= ? AND id <= ?''',
                          (id1, id2))
             self._log.default('Cleared last check date for subscriptions between %d and %d' % (id1, id2))

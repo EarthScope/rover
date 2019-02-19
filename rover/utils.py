@@ -1,12 +1,11 @@
-
 import ctypes
 import datetime
 import time
 import re
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename
-from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath
+from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir
+from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath, getmtime
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
@@ -175,23 +174,6 @@ def hash(text):
     hash.update(text.encode('utf-8'))
     return hexlify(hash.digest()).decode('ascii')
 
-
-def lastmod(path):
-    """
-    The last modified epoch for the file.
-    """
-    statinfo = stat(path)
-    return statinfo.st_mtime
-
-
-def file_size(path):
-    """
-    Size of the file
-    """
-    statinfo = stat(path)
-    return statinfo.st_size
-
-
 def uniqueish(prefix, salt, pid=None):
     """
     Generate a unique(ish) name, from a prefix, text (hashed) and pid.
@@ -222,7 +204,6 @@ def unique_path(dir, filename, salt):
     """
     name = uniqueish(filename, salt)
     return unique_filename(join(dir, name))
-
 
 def _stream_output(request, down, unique=True):
     # special case empty return.  this avoids handling empty files elsewhere
@@ -302,7 +283,7 @@ def clean_old_files(dir, age_secs, match, log):
         for file in listdir(dir):
             if match(file):
                 try:
-                    if time.time() - lastmod(file) > age_secs:
+                    if time.time() - getmtime(file) > age_secs:
                         log.warn('Deleting old %s' % file)
                 except:   # py2.7 no FileNotFound
                     pass  # was deleted from under us
@@ -710,3 +691,23 @@ def atomic_move(log, src, dest):
         else:
             log.debug('Moving %s to %s (atomic 2.7)' % (src, dest))
             rename(src, dest)
+
+
+def remove_empty_folders(path, log):
+    'Function to remove empty folders under root directory'
+    if not isdir(path):
+        return
+
+    # remove empty subfolders
+    files = listdir(path)
+    if len(files):
+        for f in files:
+            fullpath = join(path, f)
+            if isdir(fullpath):
+                remove_empty_folders(fullpath, log)
+
+    # if folder empty, delete it
+    files = listdir(path)
+    if len(files) == 0:
+        log.debug("Removing empty folder: %s" % path)
+        rmdir(path)

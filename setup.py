@@ -1,17 +1,20 @@
+# For reference: https://github.com/pypa/sampleproject/blob/master/setup.py
 
-import setuptools
-
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+from setuptools import setup, find_packages
+from os import path
+from io import open
 
 module_name = 'rover'
 
-# Extract version string from code
-import importlib
-mod = importlib.import_module(module_name)
-version = mod.__version__
+here = path.abspath(path.dirname(__file__))
 
-setuptools.setup(
+with open(path.join(here, "README.md"), encoding='utf-8') as fh:
+    long_description = fh.read()
+
+with open(path.join(here, module_name, 'VERSION')) as vf:
+    version = vf.read().strip()
+
+setup(
     name=module_name,
     version=version,
     author="IRIS",
@@ -20,7 +23,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://iris-edu.github.io/rover",
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
     classifiers=(
         "Development Status :: 4 - Beta",
         "Environment :: Console",
@@ -33,15 +37,16 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ),
+    install_requires=["requests", "future"],
+    extras_require={
+        'dev': ["nose", "robotframework"]
+    },
     entry_points={
         'console_scripts': [
             '%s = %s:main' % (module_name,module_name),
         ],
     },
-    install_requires=[
-        "requests",
-        "nose",
-        "future",
-        "robotframework",
-    ]
+    package_data={
+        module_name: ['VERSION']
+    }
 )

@@ -94,6 +94,15 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     if dir:
         clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
+    def get_file_handler():
+        return file_handler
+    
+    def get_stdout_handler():
+        return stdout_handler
+
+    log.get_file_handler = get_file_handler
+    log.get_stdout_handler = get_stdout_handler
+
     # monkey patch logger (LogAdapter works in 3, but fails on 2)
     def default(msg, *args, **kwargs):
         log.log(DEFAULT, msg, *args, **kwargs)
@@ -104,3 +113,35 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
         clean_old_files(dir, log_unique_expire * 60 * 60 * 24, match_unique, log)
 
     return log, path, stream
+
+
+class LoggingContext(object):
+    """
+    Use this context manager to temporarily change the logging configuration
+    and revert it back after doing something.
+    """
+
+    def __init__(self, logger, level=None, handler=None, close=True):
+        self.logger = logger
+        self.level = level
+        self.handler = handler
+        self.close = close
+
+    def __enter__(self):
+        if self.level is not None:
+            self.old_level = self.logger.level
+            self.logger.setLevel(self.level)
+        if self.handler:
+            self.old_handlers = self.logger.handlers
+            self.logger.handlers = []
+            self.logger.addHandler(self.handler)
+
+    def __exit__(self, et, ev, tb):
+        if self.level is not None:
+            self.logger.setLevel(self.old_level)
+        if self.handler:
+            self.logger.handlers = self.old_handlers
+        if self.handler and self.close:
+            self.logger.handlers = self.old_handlers
+            self.handler.close()
+        # implicit return of None => don't swallow exceptions

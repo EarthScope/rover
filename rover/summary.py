@@ -50,14 +50,14 @@ will create the summary.
         if len(args):
             raise Exception('Usage: rover %s' % SUMMARY)
         self._log.info('Generating summary table')
-        self.execute('drop table if exists tsindex_summary')
+        self.execute('DROP TABLE IF EXISTS tsindex_summary')
         try:
-            self.execute('''create table tsindex_summary as
-                              select network, station, location, channel, 
-                                     min(starttime) as earliest, max(endtime) as latest, 
-                                     datetime('now') as updt
-                              from tsindex
-                              group by 1,2,3,4''')
+            self.execute('''CREATE TABLE tsindex_summary AS
+                              SELECT network, station, location, channel,
+                                     min(starttime) AS earliest, max(endtime) AS latest,
+                                     datetime('now') AS updt
+                              FROM tsindex
+                              GROUP BY 1,2,3,4''')
         except OperationalError:
             self._log.default('No index found')
 
@@ -128,7 +128,7 @@ will list all entries in the summary after the year 2000.
 
     def _check_database(self):
         try:
-            self.execute('select count(*) from tsindex_summary')
+            self.execute('SELECT count(*) FROM tsindex_summary')
         except OperationalError:
             raise Exception('''Cannot access the summary table in the database (%s).  Bad configuration or summary not generated?''' % self._timeseries_db)
 
@@ -178,7 +178,7 @@ will list all entries in the summary after the year 2000.
         self._multiple_constraints[found].append(value)
 
     def _build_query(self):
-        sql, params = 'select network, station, location, channel, earliest, latest from tsindex_summary ', []
+        sql, params = 'SELECT network, station, location, channel, earliest, latest FROM tsindex_summary ', []
         constrained = False
 
         def conjunction(sql, constrained):

@@ -6,7 +6,7 @@ from os.path import isabs, join, realpath, abspath, expanduser, dirname
 from re import compile, sub
 
 from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE
+    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE, ASDF_FILENAME
 from .logs import init_log, log_name
 from .sqlite import init_db
 from .utils import safe_unlink, canonify
@@ -124,6 +124,9 @@ class BaseConfig:
 def timeseries_db(config):
     return join(config.dir(DATADIR), 'timeseries.sqlite')
 
+def asdf_container(config):
+    return join(config.dir(DATADIR), config.arg(ASDF_FILENAME))
+
 
 class Config(BaseConfig):
     """
@@ -133,13 +136,27 @@ class Config(BaseConfig):
     def __init__(self):
         argparse = Arguments()
         args, self.__config = argparse.parse_args()
+
         # there's a pile of ugliness here so that we delay error handling until we have logs.
         # see also comments in parse_args.
         self.__error = self.__config and not exists(self.__config)  # see logic in parse_args
         full_config = self.__config and not self.__error
+
+        # Special case of initializing repository, set config directory
+        configdir = None
+        if args.command and args.command in (INIT_REPOSITORY):
+            if not args.args:
+                configdir = getcwd()
+            elif len(args.args) == 1:
+                configdir = args.args[0]
+            else:
+                raise Exception('Command %s takes at most one argument - the directory to initialise' %
+                                INIT_REPOSITORY)
+            configdir = canonify(configdir)
+
         # this is a bit ugly, but we need to use the base methods to construct the log and db
         # note that log is not used in base!
-        super().__init__(None, None, args, None, dirname(self.__config) if full_config else None)
+        super().__init__(None, None, args, None, dirname(self.__config) if full_config else configdir)
         self.log, self.log_path, self.__log_stream = \
             init_log(self.dir(LOGDIR) if full_config else None, self.arg(LOGSIZE), self.arg(LOGCOUNT),
                      self.arg(LOGVERBOSITY), self.arg(VERBOSITY), self.arg(COMMAND) or 'rover',
@@ -156,7 +173,7 @@ class Config(BaseConfig):
 
     def dump_log(self):
         """
-        Called only from initialisation, when logging to an in-memory stream.
+        Called only from initialization, when logging to an in-memory stream.
         """
         path, dir = log_name(self.dir(LOGDIR), self.arg(COMMAND))
         self.log.info('Dumping log to %s' % path)
@@ -204,23 +221,8 @@ will create the repository in ~/rover
         self.__args = config._args
 
     def run(self, args):
-        self.__validate(args)
         self.__check_empty()
         self.__create()
-
-    def __validate(self, args):
-        if not args:
-            configdir = getcwd()
-        elif len(args) == 1:
-            configdir = args[0]
-        else:
-            raise Exception('Command %s takes at most one argument - the directory to initialise' %
-                            INIT_REPOSITORY)
-        configdir = canonify(configdir)
-        self.__config.set_configdir(configdir)
-        file = self.__config.file(FILE, create_dir=False)
-        if not file.startswith(configdir):
-            raise Exception('A configuration file was specified outside the repository (%s)' % file)
 
     def __check_empty(self):
         data_dir = self.__config.dir(DATADIR, create_dir=False)

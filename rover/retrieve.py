@@ -5,14 +5,16 @@ from shutil import copyfile
 from rover import __version__
 from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
     LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
-    HTTPRETRIES
+    HTTPRETRIES, OUTPUT_FORMAT, DATADIR, FORCE_METADATA_RELOAD
 from .download import DEFAULT_NAME
 from .index import Indexer
 from .manager import DownloadManager, ManagerException
 from .report import Reporter
+from .retrieve_metadata import MetadataRetriever
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import clean_old_files, match_prefixes, check_leap, unique_path, safe_unlink, build_file, fix_file_inplace
+from .utils import clean_old_files, match_prefixes, check_leap, unique_path, \
+    safe_unlink, build_file, fix_file_inplace, remove_empty_folders
 
 """
 Commands related to data retrieval:
@@ -99,6 +101,9 @@ They also cause the command to exit with an error status.
 @log-dir
 @log-verbosity
 @temp-expire
+@output-format
+@asdf-filename
+@force-metadata-reload
 
 In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
 commands for more details.
@@ -174,7 +179,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         Populate the download manager by comparing the data from the
         availability service with the local index.
         """
-        if self._pre_index:
+        if self._pre_index and self._config.arg(OUTPUT_FORMAT).upper() != "ASDF":
             self._log.info('Ensuring index is current before retrieval')
             Indexer(self._config).run([])
         self._download_manager.add(DEFAULT_NAME, up, fetch,
@@ -189,7 +194,15 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         finally:
             if self._post_summary:
                 Summarizer(self._config).run([])
+                self._complete_asdf_retrieve()
         return n_downloads
+
+    def _complete_asdf_retrieve(self):
+        if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
+            # remove empty mseed directories from data directory
+            remove_empty_folders(self._config.arg(DATADIR), self._log)
+            # load metadata into asdf dataset
+            MetadataRetriever(self._config).run([])   
 
     def _display(self):
         """

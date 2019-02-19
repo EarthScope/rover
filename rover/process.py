@@ -19,11 +19,11 @@ class ProcessManager(SqliteSupport):
         self._create_processes_table()
 
     def _create_processes_table(self):
-        self.execute('''create table if not exists rover_processes (
+        self.execute('''CREATE TABLE IF NOT EXISTS rover_processes (
                            id integer primary key autoincrement,
                            pid integer unique,
                            command text not null,
-                           creation_epoch int default (cast(strftime('%s', 'now') as int))
+                           creation_epoch int default (cast(strftime('%s', 'now') AS int))
         )''')
 
     def __enter__(self):
@@ -50,7 +50,7 @@ class ProcessManager(SqliteSupport):
 
     def _current_command_inside_transaction(self):
         pid, command = None, None
-        rows = self._db.execute('select pid, command from rover_processes', tuple())
+        rows = self._db.execute('SELECT pid, command FROM rover_processes', tuple())
         try:
             pid, candidate = next(rows)
             if process_exists(pid):
@@ -58,7 +58,7 @@ class ProcessManager(SqliteSupport):
                 self._log.debug('Current process is %s/%d' % (command, pid))
             else:
                 self._log.debug('Removing dead process %s/%d' % (candidate, pid))
-                self._db.execute('delete from rover_processes where pid = ?', (pid,))
+                self._db.execute('DELETE FROM rover_processes WHERE pid = ?', (pid,))
         except StopIteration:
             pass  # table is empty
         try:
@@ -70,12 +70,12 @@ class ProcessManager(SqliteSupport):
 
     def _record_process_inside_transaction(self, command):
         self._log.debug('Record new process %s/%d' % (command, getpid()))
-        self._db.execute('insert into rover_processes (command, pid) values (?, ?)', (command, getpid()))
+        self._db.execute('INSERT INTO rover_processes (command, pid) VALUES (?, ?)', (command, getpid()))
 
     def _check_command(self, name):
         error = None
         with self._db:  # single transaction
-            self._db.cursor().execute('begin')
+            self._db.cursor().execute('BEGIN')
             pid, command = self._current_command_inside_transaction()
             if command == DAEMON:
                 error = Exception(('You cannot use rover %s while the %s is running (PID %d). ' +
@@ -91,7 +91,7 @@ class ProcessManager(SqliteSupport):
     def _check_daemon(self, record):
         error = None
         with self._db:  # single transaction
-            self._db.cursor().execute('begin')
+            self._db.cursor().execute('BEGIN')
             pid, command = self._current_command_inside_transaction()
             if command == RETRIEVE:
                 error = Exception('You cannot use the %s while rover %s is running (PID %d). ' %
@@ -105,21 +105,21 @@ class ProcessManager(SqliteSupport):
             raise error
 
     def _delete_command_inside_transaction(self, command):
-        self._db.execute('delete from rover_processes where command like ?', (command,))
+        self._db.execute('DELETE FROM rover_processes WHERE command LIKE ?', (command,))
 
     def _clean_entry(self, command):
         with self._db:
-            self._db.cursor().execute('begin')
+            self._db.cursor().execute('BEGIN')
             self._delete_command_inside_transaction(command)
 
     def current_command(self):
         with self._db:
-            self._db.cursor().execute('begin')
+            self._db.cursor().execute('BEGIN')
             pid, command = self._current_command_inside_transaction()
             return pid, command
 
     def _pid_inside_transaction(self, command):
-        cmd, params = 'select pid from rover_processes where command like ?', (command,)
+        cmd, params = 'SELECT pid FROM rover_processes WHERE command LIKE ?', (command,)
         try:
             pid = next(self._db.execute(cmd, params))[0]
             if process_exists(pid):
@@ -136,7 +136,7 @@ class ProcessManager(SqliteSupport):
         """
         try:
             with self._db:
-                self._db.cursor().execute('begin')
+                self._db.cursor().execute('BEGIN')
                 pid = self._pid_inside_transaction(DAEMON)
                 self._log.default('Killing %s (pid %d)' % (DAEMON, pid))
                 kill(pid, 9)
@@ -147,7 +147,7 @@ class ProcessManager(SqliteSupport):
     def daemon_status(self):
         with self._db:
             try:
-                self._db.cursor().execute('begin')
+                self._db.cursor().execute('BEGIN')
                 pid = self._pid_inside_transaction(DAEMON)
                 return 'The %s is running (process %d)' % (DAEMON, pid)
             except NoResult:

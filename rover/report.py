@@ -82,6 +82,21 @@ class Reporter:
         else:
             return "{0:0.2f} seconds".format(seconds)
 
+    @staticmethod
+    def _human_size(bytes):
+        if bytes < 1000:
+            return "{0:d} bytes".format(bytes)
+        elif (bytes / 1024) < 1000:
+            return "{0:0.1f} KiB".format(bytes / 1024)
+        elif (bytes / 1024 / 1024) < 1000:
+            return "{0:0.1f} MiB".format(bytes / 1024 / 1024)
+        elif (bytes / 1024 / 1024 / 1024) < 1000:
+            return "{0:0.1f} GiB".format(bytes / 1024 / 1024 / 1024)
+        elif (bytes / 1024 / 1024 / 1024 / 1024) < 1000:
+            return "{0:0.1f} TiB".format(bytes / 1024 / 1024 / 1024 / 1024)
+        else:
+            return "{0:0.1f} PiB".format(bytes / 1024 / 1024 / 1024 / 1024 / 1024)
+
     def describe_error(self, task, error):
         """
         Generate an email for critical errors.
@@ -100,17 +115,22 @@ The ROVER %s (PID %d) task on %s has failed with the error:
         msg = '''
 ----- Retrieval Finished -----
 
-A ROVER %s task on %s started %s
-(%s local) has completed in %s
 
-The task comprised of %d stations with data covering %ds.
+A ROVER %s task on %s
+started %s (%s UTC)
+has completed in %s
 
-A total of %d downloads were made, with %d errors (%d on
-final pass of %d).
-''' % (RETRIEVE, gethostname(), format_time_epoch(source.start_epoch),
+The download for %d stations totaled %s,
+with data covering %d seconds.
+
+A total of %d downloads were made, with %d errors (%d on final pass of %d).
+''' % (RETRIEVE, gethostname(),
        format_time_epoch_local(source.start_epoch),
+       format_time_epoch(source.start_epoch),
        self._human_duration(time() - source.start_epoch),
-       source.initial_progress.stations[1], source.initial_progress.seconds[1],
+       source.initial_progress.stations[1],
+       self._human_size(source.initial_progress.download_total_bytes),
+       source.initial_progress.seconds[1],
        source.errors.downloads, source.errors.errors, source.errors.final_errors,
        source.n_retries)
         if source.errors.final_errors:

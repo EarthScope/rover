@@ -1,5 +1,5 @@
 
-from os.path import exists
+import os
 from sqlite3 import OperationalError
 from threading import Thread
 from time import sleep
@@ -10,7 +10,7 @@ from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
-from .utils import process_exists, format_time_epoch, format_time_epoch_local, file_size, safe_unlink
+from .utils import process_exists, format_time_epoch, format_time_epoch_local, safe_unlink
 
 """
 The 'rover web' command - run a web service that displays information on the download manager.
@@ -36,7 +36,7 @@ class DeadMan(Thread):
         while self._ppid != 1 and process_exists(self._ppid):
             sleep(1)
         self._log.info('Exiting because parent exited')
-        if self._log_path and exists(self._log_path) and file_size(self._log_path) == 0:
+        if self._log_path and os.path.exists(self._log_path) and os.path.getsize(self._log_path) == 0:
                     safe_unlink(self._log_path)
         self._server.shutdown()
         sleep(1)
@@ -109,7 +109,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self._write('''<p><pre>File: <a href="file://%s">%s</a>
 Availability URL: <a href="%s">%s</a>
 Dataselect URL: <a href="%s">%s</a>
-Created: %s (%s local)   
+Created: %s (%s local)
 Last active: %s (%s local)</pre></p>''' %
                         (file, file, availability_url, availability_url, dataselect_url, dataselect_url,
                          format_time_epoch(creation_epoch), format_time_epoch_local(creation_epoch),
@@ -119,9 +119,9 @@ Last active: %s (%s local)</pre></p>''' %
             self._write_progress(id, last_check_epoch, last_error_count, consistent)
 
         try:
-            self.server.foreachrow('''select id, file, availability_url, dataselect_url, creation_epoch, 
+            self.server.foreachrow('''SELECT id, file, availability_url, dataselect_url, creation_epoch,
                                              last_check_epoch, last_error_count, consistent
-                                        from rover_subscriptions order by id''', tuple(), callback)
+                                        FROM rover_subscriptions ORDER BY id''', tuple(), callback)
         except OperationalError:
             pass
         if not count[0]:
@@ -136,9 +136,9 @@ Last active: %s (%s local)</pre></p>''' %
     def _write_progress(self, name, last_check_epoch, last_error_count, consistent):
         try:
             initial_stations, remaining_stations, initial_time, remaining_time, n_retries, download_retries = \
-                self.server.fetchone('''select initial_stations, remaining_stations, initial_time, remaining_time,
+                self.server.fetchone('''SELECT initial_stations, remaining_stations, initial_time, remaining_time,
                                                n_retries, download_retries
-                                          from rover_download_stats where submission = ?''', (name,))
+                                          FROM rover_download_stats WHERE submission = ?''', (name,))
             self._write('<p>Progress for download attempt %d of %d:<pre>\n' % (n_retries, download_retries))
             self._write_bar('stations', initial_stations, remaining_stations)
             self._write_bar('timespan', initial_time, remaining_time)

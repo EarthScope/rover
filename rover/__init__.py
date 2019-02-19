@@ -1,14 +1,21 @@
 
 pkg_path = __file__
-__version__ = '0.0.8plus'
 
 # the following replaces the default signal handler so that keyboardinterrupt
 # is not raised if the user hits ctrl-C
 # the value 2 matches ABORT_CODE in rover.args, but we want to do this before
 # importing any other module.  see issue 46.
 
+import os
 import signal
 import sys
+import traceback
+
+# Set __version__ from package VERSION file
+version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
+with open(version_file, "r") as vf:
+    __version__ = vf.read().strip()
+
 
 def signal_handler(sig, frame):
     sys.exit(2)
@@ -19,15 +26,18 @@ PREV_HANDLER = signal.signal(signal.SIGINT, signal_handler)
 from traceback import print_exc
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
+    RETRIEVE, RETRIEVE_METADATA, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, \
+    START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER, ABORT_CODE, ERROR_CODE
 from .config import Config, RepoInitializer
 from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
 from .index import Indexer, IndexLister
 from .ingest import Ingester
+from .logs import LoggingContext
 from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
+from .retrieve_metadata import MetadataRetriever
 from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Trigger
 from .summary import Summarizer, SummaryLister
 from .web import ServerStarter
@@ -42,6 +52,7 @@ COMMANDS = {
     LIST_SUMMARY: (SummaryLister, 'List a summary of the repository'),
     DOWNLOAD: (Downloader, 'Download data from a remote service'),
     RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
+    RETRIEVE_METADATA: (MetadataRetriever, 'Download missing metadata'),
     LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
     START: (Starter, 'Start the background daemon'),
     STOP: (Stopper, 'Stop the background daemon'),
@@ -88,7 +99,15 @@ def main():
             exit(ABORT_CODE)
     except Exception as e:
         if config and config.log:
-            config.log.critical(str(e))
+            # log short error message to stdout and stack trace to a file
+            with LoggingContext(config.log, handler=config.log.get_stdout_handler()):
+                config.log.critical(str(e))
+            with LoggingContext(config.log, handler=config.log.get_file_handler()):
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error_traceback = "".join(traceback.format_exception(exc_type,
+                                                                     exc_value,
+                                                                     exc_traceback))
+                config.log.critical(error_traceback)
             if config.command in COMMANDS:
                 config.log.default('See "rover help %s"' % config.command)
             elif config.command != HELP:

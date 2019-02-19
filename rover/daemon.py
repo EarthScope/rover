@@ -276,7 +276,7 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
                 raise
 
     def _source_callback(self, source):
-        self.execute('''update rover_subscriptions set last_error_count = ?, consistent = ? where id = ?''',
+        self.execute('''UPDATE rover_subscriptions SET last_error_count = ?, consistent = ? WHERE id = ?''',
                      (source.errors.final_errors, source.consistent, source.name))
         if self._post_summary:
             Summarizer(self._config).run([])
@@ -296,9 +296,9 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
                     found[0] = id
 
         try:
-            self.foreachrow('''select id from rover_subscriptions
-                                  where (last_check_epoch is NULL or last_check_epoch < ?)
-                                  order by creation_epoch''', (now - self._recheck_period,),
+            self.foreachrow('''SELECT id FROM rover_subscriptions
+                                  WHERE (last_check_epoch IS NULL OR last_check_epoch < ?)
+                                  ORDER BY creation_epoch''', (now - self._recheck_period,),
                             callback, quiet=True)
         except OperationalError:
             pass  # no table exists, so no data
@@ -311,8 +311,8 @@ will start the daemon (in the foreground - see `rover start`), processing subscr
     def _add_subscription(self, id):
         try:
             path, availability_url, dataselect_url = self.fetchone(
-                '''select file, availability_url, dataselect_url from rover_subscriptions where id = ?''', (id,))
+                '''SELECT file, availability_url, dataselect_url FROM rover_subscriptions WHERE id = ?''', (id,))
             self._log.default('Adding subscription %d (%s, %s)' % (id, availability_url, dataselect_url))
             self._download_manager.add(id, path, True, availability_url, dataselect_url, self._source_callback)
         finally:
-            self.execute('''update rover_subscriptions set last_check_epoch = ? where id = ?''', (time(), id))
+            self.execute('''UPDATE rover_subscriptions SET last_check_epoch = ? WHERE id = ?''', (time(), id))

@@ -1,4 +1,3 @@
-
 import datetime as dt
 from collections import deque
 from random import randint
@@ -34,6 +33,10 @@ class ProgressStatistics:
       index 0 - current value
       index 1 - initial value / limit
     """
+
+    download_bytes = 0 # number of downloaded bytes per run
+    download_total_bytes = 0 # total number of downloaded bytes
+    download_retry_count = 1 # number of times that tried to download
 
     def __init__(self):
         self.__prev_net_sta = [None, None]
@@ -235,7 +238,12 @@ class Retrieval:
                      tuple(code if code else '--' for code in tuple(sncl.split('_')))
         return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
 
-    def _worker_callback(self, command, return_code, path):
+    def _worker_callback(self, command, return_code, path, **kwargs):
+        feedback = kwargs.get("feedback")
+        if feedback:
+            bytecount = feedback.get("download_byte_count", 0)
+            ProgressStatistics.download_bytes += bytecount
+            ProgressStatistics.download_total_bytes += bytecount
         if self._delete_files:
             safe_unlink(path)
         self.worker_count -= 1
@@ -243,7 +251,7 @@ class Retrieval:
         if return_code:
             self.errors.errors += 1
             if return_code != ABORT_CODE:   # hide message on ctrl-C as we will exit as well
-                self._log.error('Download %sfailed (return code %d)' % (self._name, return_code))
+                self._log.error('Download %s failed (return code %d)' % (self._name, return_code))
 
     def new_worker(self, workers, config_path, rover_cmd):
         """
@@ -263,8 +271,15 @@ class Retrieval:
             else:
                 command = '%s -f %s %s "%s"' % (rover_cmd, config_path, DOWNLOAD, path)
         self._log.debug(command)
-        workers.execute(command, lambda cmd, rtn: self._worker_callback(cmd, rtn, path))
-        self.worker_count += 1
+
+        callback_function = lambda cmd, rtn, **kwargs: self._worker_callback(cmd, rtn, path, **kwargs)
+
+        try:
+            workers.execute(command, callback=callback_function, feedback=True)
+        except Exception as ex:
+            self._log.error('Worker failed (%s): %s' % (command, ex))
+        else:
+            self.worker_count += 1
 
     def is_complete(self):
         """
@@ -299,6 +314,7 @@ class Source(SqliteSupport):
         self._http_retries = config.arg(HTTPRETRIES)
         self._timespan_inc = config.arg(TIMESPANINC)
         self._timespan_tol = config.arg(TIMESPANTOL)
+        self._config = config
         self.download_retries = config.arg(DOWNLOADRETRIES)
         self._sort_in_python = config.arg(SORTINPYTHON)
         self.name = name
@@ -361,20 +377,23 @@ class Source(SqliteSupport):
     def is_complete(self):
         """
         Is this source complete (all retrievals)?
-        Dependent Functions: _
+        Dependent Functions:
+        
         is_complete_final_read: Verifies that all data is downloaded with no errors makes ROVER robust. 
-        If data is missing calls _new_retrieval is callesmand _is_complete_initial_reads 
+        If data is missing _new_retrieval and _is_complete_initial_reads are called.
         _is_complete_initial_reads: Call the new_retrieval function until all data is downloaded with no errors. 
         _new_retrieval: 
         
         important variables: 
+
         self._expect_empty: Determines if the _is_complete_final_read or _is_complete_initial_reads function is called/
-        complete: Terminates the loop. 
+        complete: Terminates the loop.
         """
         retry_possible = self.n_retries < self.download_retries
 
-        # Only one possible rety needs to be written in the intial loop. Thew second loop is just there to verfy the first loop. The The total pssoible retries need to county upward in the first and second loop./  in the first loop continues to count upward in both the second and first loop. 
-
+        # Only one possible rety needs to be written in the intial loop.
+        # The second loop is just there to verfy the first loop.
+        # The total possible retries need to counted upward in the first and second loop
 
         # this is complicated by the fact that we also check for consistency.
         # inconsistency is when we expect to download no data, but still get some, or expect to get
@@ -382,20 +401,17 @@ class Source(SqliteSupport):
         # we get a clean download (no errors and so presumably complete) and then running an
         # extra download.  that should generate no downloads.  if it doesn't, we have problems.
 
-        # that sounds fairly simple, but when you consider all possible cases you get the code below...
-
         # the default value for consistent is UNCERTAIN so it is left unchanged in many places below
         # we throw an exception if we finish with incomplete data (errors) or proof of inconsistency.
-            #complete = self._is_complete_final_read(retry_possible)
         if self._retrieval.is_complete():
             self.errors.accumulate(self._retrieval.errors)
             complete = True  # default if exception thrown
             try:
-                
+
                 if self._expect_empty:
                     complete = self._is_complete_final_read(retry_possible)
                 else:
-                    complete = self._is_complete_initial_reads(retry_possible)  
+                    complete = self._is_complete_initial_reads(retry_possible)
                 return complete
             finally:
                 if complete:
@@ -411,59 +427,74 @@ class Source(SqliteSupport):
 
             # if we can retry, then do so
             if retry_possible:
-                self._log.default(('Retrieval attempt %d of %d completed with %d errors after %d attempts. '+
+                self._log.default(('Retrieval attempt %d of %d completed with %d errors. '+
                                     'We will retry to check that all data were retrieved') %
-                                    (self.n_retries, self.download_retries, self._retrieval.errors.errors, self.n_retries))
+                                    (self.n_retries, self.download_retries, self._retrieval.errors.errors))
                 self._new_retrieval(True)
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
                 raise ManagerException('Retrieval attempt %d of %d had %d errors on the final attempt.' %
-                                    (self.n_retries, self.download_retries, self._retrieval.errors.errors, self.n_retries, self.download_retries))
+                                       (self.n_retries, self.download_retries, self._retrieval.errors.errors))
 
-        # no errors last retrieval, but we did download some more data
-        # elif on line 408 is the primray download state _is_complete_initial_reads. If these boolean conditions are maintained then rover will continue to make download attmepts. 
+        # No errors last retrieval, but we did attempt some downloads
+        # If these boolean conditions are maintained then rover will continue to make download attmepts.
         elif self._retrieval.errors.downloads:
-            # can we try again, to make sure there are no more data?
-            # Line 419 Deals with the case when rover.config has number of download attempts set to 1. 
+            # Can we try again, to make sure there are no more data retrievable?
+            # Deal with the case when config has number of download attempts set to 1.
             if self.download_retries == 1:
                 if retry_possible:
-                    self._log.default(('Retrieval attempt %d of %d had no errors and we downloaded data.' +
-                                   'The rover.config parameter download-retries is set to %d attempt so ROVER is exiting.'+
-                                   ' We recommend increasing the number of download attempts. ') % (self.n_retries, self.download_retries, self.download_retries))
-                    self._expect_empty =True
-                    return True     
-            else:    
-                if retry_possible:
-                    self._log.default(('Retrieval attempt %d of %d had no errors, but we downloaded data so ' +
-                                   'will try again to check that all data were retrieved.') % (self.n_retries, self.download_retries))
+
+                    self._log.default(('Retrieval attempt %d of %d had no errors and we downloaded data.'
+                                       'The config parameter download-retries is set to %d attempt so rover is exiting.'
+                                       'We recommend increasing the number of download attempts. ')
+                                      % (self.n_retries, self.download_retries, self.download_retries))
+                    self._expect_empty = True
+                    return True
+            else:
+                if ProgressStatistics.download_bytes > 0: # Determines if data was collected.
+                    if ProgressStatistics.download_retry_count < 100: # A hard limit on the amount of times we will attempt to download a request
+                        self._log.default('Successful retrieval, downloaded data so resetting retry count and verify.')
+                        self.n_retries = self.n_retries - 1
+                        self._expect_empty = False
+                        self._new_retrieval(True)
+                        ProgressStatistics.download_bytes = 0
+                        ProgressStatistics.download_retry_count += 1
+                        return False
+                    else :
+                        self._log.default(('The retrieval has been attempted %d times. ROVER is exiting. Please check the log files and try again later.')
+                                          % (ProgressStatistics.download_retry_count))
+                        self._expect_empty =True
+                        return True
+                elif retry_possible:
+                    self._log.default(('Successful retrieval attempt %d of %d, but no new data downloaded so try again.')
+                                      % (self.n_retries, self.download_retries))
+
                     self._expect_empty =False
                     self._new_retrieval(True)
                     return False
-            # if not, we're going to say we're complete anyway, since we didn't have any errors.
+                # if not, we're going to say we're complete anyway, since we didn't have any errors.
                 else:
                     self._log.default(
-                        ('The latest %sretrieval attempt completed with no errors, but we downloaded data.  We will not retry ' +
-                         'because we have already made %d attempts.') % (self._name, self.n_retries))
+                        ('The latest retrieval attempt had no errors.  Stopping at %d retry attempts.') % (self.n_retries))
                     return True
 
-        # no errors and no data. The else statement on line 433. is used for rovers first download attempt and to exit out the _is_complete_initial_reads program so the 
-        # _is_complete_final_reads program can be run. When escaping is_complete_initial_reads an additional _new_retrieval should not be run. 
+        # no errors and no data. used for rovers first download attempt and to exit out the
+        # _is_complete_initial_reads program so the _is_complete_final_reads program can be run.
+        # When escaping is_complete_initial_reads an additional _new_retrieval should not be run.
         else:
             # presumably this was an empty initial download
             if self.n_retries == 1:
                 # can we try again to make sure things are consistent?
                 if retry_possible:
-                    self._log.default(('The initial %sretrieval attempt had no errors or data.  ' +
-                                       'We will verify that this is accurate.') % self._name)
-                    self._expect_empty = True 
+                    self._log.default('The initial retrieval attempt resulted in no errors or data downloaded, will verify.')
+                    self._expect_empty = True
                     self._new_retrieval(True)
-                    
+
                     return False
                 # if not, we're going to say we're complete anyway.
                 else:
-                    self._log.default('The initial %sretrieval attempt had no errors and no retries are configured.'
-                                      % self._name)
+                    self._log.default('The initial retrieval attempt had no errors and no retries are configured.')
                     return True
             # something odd has happened - no data when it wasn't expected
             else:
@@ -473,7 +504,7 @@ class Source(SqliteSupport):
                                        'We will check that all data were retrieved.') % (self.n_retries, self.download_retries))
                     self._expect_empty = True
                     return False
-                
+
                 else:
                     self.consistent = INCONSISTENT
                     raise ManagerException(('The final retrieval, attempt %d of %d, downloaded no data' +
@@ -487,16 +518,16 @@ class Source(SqliteSupport):
             self.consistent = INCONSISTENT
             # if we can retry, then do so
             if retry_possible:
-                self._log.default(('The latest %sretrieval attempt had %d errors after %d attempts.  ' +
+                self._log.default(('The latest retrieval attempt had %d errors after %d attempts.  ' +
                                    'We will retry to complete the retrieval.') %
-                                  (self._name, self._retrieval.errors.errors, self.n_retries))
+                                  (self._retrieval.errors.errors, self.n_retries))
                 self._new_retrieval(True)
                 self._expect_empty = False
                 return False
             # otherwise, we can't retry so we're done, but failed.
             else:
-                raise ManagerException('The latest %sretrieval attempt had %d errors on final attempt (%d of %d).' %
-                                       (self._name, self._retrieval.errors.errors, self.n_retries, self.download_retries))
+                raise ManagerException('The latest retrieval attempt had %d errors on final attempt (%d of %d).' %
+                                       (self._retrieval.errors.errors, self.n_retries, self.download_retries))
 
         # no errors last retrieval, but we did download some more data (again, unexpected)
         elif self._retrieval.errors.downloads:
@@ -504,16 +535,16 @@ class Source(SqliteSupport):
             # got a single point that was missed because the interval was too small for the server
             if self.n_retries == 2:
                 if retry_possible:
-                    self._log.default(('The latest %sretrieval attempt downloaded additional data - ' +
+                    self._log.default(('The latest retrieval attempt downloaded additional data - ' +
                                        'probably an isolated point that was not retrieved on the first pass. ' +
-                                       'We will retry to make sure data are complete.') % self._name)
+                                       'We will retry to make sure data are complete.'))
                     self._new_retrieval(True)
                     self._expect_empty = False
                     return False
                 else:
-                    self._log.default(('The latest %sretrieval attempt downloaded additional data - ' +
+                    self._log.default(('The latest retrieval attempt downloaded additional data - ' +
                                        'probably an isolated point that was not retrieved on the first pass. ' +
-                                       'We cannot be certain download is complete without more retries.') % self._name)
+                                       'We cannot be certain download is complete without more retries.'))
                     return True
             else:
                 self.consistent = INCONSISTENT
@@ -521,28 +552,25 @@ class Source(SqliteSupport):
                 # there's a case where this is expected - when we have data on a day boundary and need tp
                 # download once to get the samplerate so we can judge exactly how small a chunk to take
                 # from the next day.
-                if retry_possible:                        
-                    self._log.default(('The latest %s retrieval attempt downloaded unexpected data so trying again ' +
-                                       'to check behavior.') % self._name)
+                if retry_possible:
+                    self._log.default(('The latest retrieval attempt downloaded unexpected data so trying again ' +
+                                       'to check behavior.'))
                     self._new_retrieval(True)
                     self._expect_empty = False
                     return False
                 # something odd is happening
                 else:
-                    raise ManagerException(('The latest %sretrieval attempt downloaded unexpected data (%d N_S_L_C chunks) on the ' +
+                    raise ManagerException(('The latest retrieval attempt downloaded unexpected data (%d N_S_L_C chunks) on the ' +
                                             'final attempt (%d of %d) (inconsistent web services?).') %
-                                           (self._name, self._retrieval.errors.downloads, self.n_retries, self.download_retries))
+                                           (self._retrieval.errors.downloads, self.n_retries, self.download_retries))
 
         # no errors and no data
         else:
             self.consistent = CONFIRMED
-            self._log.default('The final %sretrieval, attempt %d of %d, made no downloads and had no errors, we are complete.' % (self._name, self.n_retries, self.download_retries))
+            self._log.default('The final %sretrieval, attempt %d of %d, made no downloads and had no errors, we are complete.' %
+                              (self._name, self.n_retries, self.download_retries))
             return True
-            #else:
-            #    self._new_retrieval(True)
-            #    print('Retries Possible', retry_possible)
-            #    return False
-    
+
     def _new_retrieval(self, fetch):
         # fetch indicates we're not simply querying and so should check for no data and prime days
         self.n_retries += 1
@@ -634,10 +662,10 @@ class Source(SqliteSupport):
             # this is handled by rover.coverage.BaseBuilder
             # see issue 47
             # note we separate times with space as time contains colons
-            self.foreachrow('''select coalesce(timespans,'<' || starttime || ' ' || endtime || '>'), samplerate
-                                    from tsindex 
-                                    where network=? and station=? and location=? and channel=?
-                                    order by starttime, endtime''',
+            self.foreachrow('''SELECT coalesce(timespans, '<' || starttime || ' ' || endtime || '>'), samplerate
+                                    FROM tsindex
+                                    WHERE network=? AND station=? AND location=? AND channel=?
+                                    ORDER BY starttime, endtime''',
                             sncl.split('_'),
                             callback, quiet=True)
         except OperationalError:
@@ -844,12 +872,13 @@ class DownloadManager(SqliteSupport):
         finally:
             # not needed in normal use, as no workers when no sources, but useful on error
             self._workers.wait_for_all()
+
         return self._n_downloads
 
     # stats for web display
 
     def _create_stats_table(self):
-        self.execute('''create table if not exists rover_download_stats (
+        self.execute('''CREATE TABLE IF NOT EXISTS rover_download_stats (
                           submission text not null,
                           initial_stations int not null,
                           remaining_stations int not null,
@@ -861,14 +890,14 @@ class DownloadManager(SqliteSupport):
 
     def _update_stats(self):
         with self._db:  # single transaction
-            self._db.cursor().execute('begin')
-            self._db.execute('delete from rover_download_stats', tuple())
+            self._db.cursor().execute('BEGIN')
+            self._db.execute('DELETE FROM rover_download_stats', tuple())
             for source in self._sources.values():
                 progress = source.stats()
-                self._db.execute('''insert into rover_download_stats
-                                      (submission, initial_stations, remaining_stations, initial_time, remaining_time, 
-                                       n_retries, download_retries)
-                                      values (?, ?, ?, ?, ?, ?, ?)''',
+                self._db.execute('''INSERT INTO rover_download_stats
+                                    (submission, initial_stations, remaining_stations, initial_time, remaining_time,
+                                     n_retries, download_retries)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)''',
                                  (source.name,
                                   progress.stations[1], progress.stations[1] - progress.stations[0],
                                   progress.seconds[1], max(0, int(progress.seconds[1] - progress.seconds[0])),

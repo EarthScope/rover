@@ -3,7 +3,8 @@ from re import sub
 
 from .args import HELP, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
-    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, TRIGGER, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT
+    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, TRIGGER, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT, \
+    RETRIEVE_METADATA
 
 """
 The 'rover help' command.
@@ -183,11 +184,16 @@ rover %s [(file|dir) ...]
 rover %s
 
   Re-generate the summary table used by `rover %s`.
+
+rover %s
+
+Download missing metadata from the fdsnws-station web service and save to the
+data archive. This feature is only supported for the ASDF output format.
       
 ''' % (DOWNLOAD, TEMPDIR, DATADIR, SUBSCRIBE, DAEMON,
        INGEST, DATADIR, RETRIEVE,
        INDEX, MSEEDINDEXCMD, INGEST, DATADIR, ALL, mm(ALL),
-       SUMMARY, LIST_SUMMARY)
+       SUMMARY, LIST_SUMMARY, RETRIEVE_METADATA)
 
 
 GENERAL = {
