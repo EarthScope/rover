@@ -67,7 +67,7 @@ will create the repository in ~/ROVER
 
     rover retrieve N_S_L_C [begin [end]]
 
-`rover retrieve` post a URL request to the availability service defined in rover.config. Returned availability data is compared with a local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
+ROVER retrieve post a URL request to the availability service defined in rover.config. Returned availability data is compared with a local repository's index using maximal timespans across quality and sample rates. Data not available in the local repository are downloaded, ingested, and the index is updated. Retrieve reindexes the local repository before comparing to account for modified data. 
 
 File arguments must only contain a list of text strings following the pattern `net sta loc cha YYYY-MM-DDThh:mm:ss YYYY-MM-DDThh:mm:ss` where the first date-string occurs prior to the second date-string. Wild cards of `*` or `?` are accepted to partially or fully replace `net`, `sta`, `loc`, `cha` arguments. Starttime and endtime arguments cannot be assigned as a wildcard. For non-file arguments One or more `net`, `sta`, `loc`, `cha` input arguments must be provided; missing values are taken as wildcards.  
 
