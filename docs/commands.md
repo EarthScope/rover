@@ -448,9 +448,9 @@ from the command line:
 
     rover download file [path]
 
-`rover download` downloads a single request, typically for a day, from a URL to a given path. File arguments are sent as POST to the URL set in the `dataselect-url` configuration parameter. Requested data are downloaded to the path argument, ingested and indexed to the local repository.  If no path is given, than a temporary file is created and deleted after use.
+`rover download` downloads a single request, typically for a day, from a URL or a given file. File arguments are expected to contain fdsn web services requests and fetch data from the configured URL set by the parameter `dataselect-url` in rover.config. Requested data are downloaded, ingested, and indexed to a local repository. The path argument of `rover download` sets the location of the repository.  If no path is given, than a temporary file is created and deleted after use.
 
-ROVER will treat an input argument as an URL if it contains the characters "://". The URL argument must be for a Data Select service, and can not request data that spans multiple calendar days. `rover retrieve` generates workers that call `rover download` in the terminal. 
+ROVER will treat an input argument as an URL if it contains the characters "://". The URL argument must point towards fdsnws-dataselect services, and can not request data that spans multiple calendar days. `rover retrieve` generates workers that call `rover download` in the terminal. 
 
 `download` is the main low-level task called in the processing pipeline. Each instances of download calls ingest and index as long as they are configured as true. To reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are automatically deleted on exit.
 
@@ -487,11 +487,11 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
 
     rover ingest file
 
-Adds contents from a MSEED formatted file to ROVER's local repository and indexes the new data.
+Adds contents from a miniSEED formatted file to ROVER's local repository and indexes the new data.
 
-The `mseedindex` command indexes blocks of data present in the file, corresponding byte ranges are then appended to  appropriate files in the repository.
+The `mseedindex` command indexes blocks of data present in the miniSEED file. Data within byte ranges mapped by `mseedindex` are then appended to the appropriate files in the repository.
 
-The file agrument should not contain data spanning multiple calendar days.
+The input miniseed file should not contain data spanning multiple calendar days.
 
 ##### Significant Parameters
 
@@ -514,7 +514,7 @@ Parameters used to configure the sub-command index are also applicable - see Ind
 
     rover ingest /tmp/IU.ANMO.00.*.mseed
 
-will add all data from the file argument to the repository.
+will add all data from the specified file to the repository.
 
 
 ### Index
@@ -523,11 +523,11 @@ will add all data from the file argument to the repository.
 
     rover index (file|dir)+
 
-Indexes files stored within a directory structure, creating a local repository. If a repository exist, `rover index` will add or change entires in the tsindex table stored in the mseed database.
+Indexes files, adds or changes entires in the tsindex table stored in the miniSEED database.
 
-When no argument is given, all modified files in the repository are processed. The `--all` flag forces all files to process. If a directory argument is provided, all files contained in the directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
+When no argument is given, all modified files in the repository are processed. The `--all` flag forces all files to be processed. If a directory argument is provided, all files contained in the directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
-`rover index` uses the command `mseedindex` at its core. `mseedindex` has an optional argument that uses a file of leap-second data.  By default, unless configured `--no-leap`, the leap-second file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older than `--leap-expire` days.
+`rover index` uses the command `mseedindex` at its core. `mseedindex` optionally uses a file of leap-second data.  By default, unless configured `--no-leap`, the leap-second file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older than `--leap-expire` days.
 
 ##### Significant Parameters
 
@@ -556,7 +556,7 @@ will index the entire repository.
 
     rover summary
 
-Creates a summary of the index stored in a ROVER database.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
+Creates a summary of the index stored in a ROVER repository.  This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
 
 ##### Significant Parameters
 
