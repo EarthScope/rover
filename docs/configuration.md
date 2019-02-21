@@ -1,37 +1,39 @@
----
-title: ROVER Configuration
-layout: default
----
 
-ROVER can be configured via a file or using command line parameters.
-The parameter names are the same in both cases.
+# ROVER Configuration
+
+ROVER can be configured via a file or by using command line parameters.
+Parameter names are the same in both cases.
 
 ## File Configuration
 
-The default location for the configuration file is `~/rover/config`
-(the file `config` in the `rover` directory located in the user's home
-directory).  This file is generated when ROVER is first used and can
-be reset with `rover make-config`.
+ROVER's configuation file, rover.config, is written to a user specified
+location upon the initialization of a rover data repository. ROVER
+repositories are intilized by running the command
+`rover init-repository /PATH/TO/DATAREPO`, a configuration file is
+automatically generated in the directory DATAREPO. The command
+`rover make-config` resets a rover.config.
 
-If a file in a different location is used, the location can be given
-with `-f` or `--file` on the command line:
+To use a configuration file external to the data repository, the
+`-f` or `--file` flag follwed by a path to the configuration
+file must be included when calling ROVER:
 
-    rover -f /some/where/config ...
+    rover -f /PATH/TO/rover.config
 
-Use a text editor to change parameter values in the file.  A line
-starting with `#` is a comment.
+Use a text editor to change parameter values in the rover.config file. Lines
+starting with `#` are comments.
 
 ## Command Line Configuration
 
-The same parameters can also be specified on the command line.  So,
-for example, th eparameter `temp-dir` in the configuration file could
-be specified as:
+Parameters can be directly specified on the command line.
+For example, the `temp-dir` parameter could be assigned
+when running ROVER.
 
     rover --temp-dir /tmp ...
 
-Note that the syntax for boolean parameters on teh command line is
-different to the file.  They are simply given as flags, which can be
-negated by prefixing with `no`:
+Boolean parameters follow different syntax when assigned through the
+command prompt rather than a file. In the terminal,
+boolean paramters are interperted as flags, which can be
+negated by prefixing the parametrer's name with `no-`:
 
     rover --index ...
 
@@ -43,23 +45,9 @@ Available parameters can be displayed using `rover -h`.
 
 ## Variables, Relative Paths, Default Configuration
 
-The value `${CONFIGDIR}` in any file value is replaced by the directory
-in which the configuration file is located.
-
-An escaped value `$${...}` is replaced by `${...}`.
-
-Relative paths for files and directories (bit not commands) are intepreted
-as relative to `${CONFIGDIR}`.  So, in the configuration file
-
-    data_dir=mseed
-
-is equivalent to
-
-    data_dir=${CONFIGDIR}/mseed
-
-The default configuration uses relative paths only and assumes that the
-configuration file is in `~/rover`.  This implies the following directory
-structure:
+ROVER's default configuration uses relative paths and assumes that the
+configuration file is in the `PATH/TO/DATAREPO` directory. Unless
+otherwise configured, ROVER excpets the following directory structure:
 
     USERHOME/
     +- rover/
@@ -73,13 +61,15 @@ structure:
        +- tmp/
           +- ...
 
-The configuration file is created automatically if not found, so **to
-use ROVER with a completely new database, configuration, etc, it is
-only necessary to sepecify a new path for the configuration file:**
+A rover.config file is created automatically when initiating a ROVER
+data repository. To create multiple ROVER data repositories using
+one instance of ROVER, a user can either intiate a new repository using
+`rover init-repository /PATH/TO/DATAREPO2` or specifiy a path to a
+configuration using the -f/--file flag:
 
     rover -f newdir/config
 
-This will place all files in `newdir`.
+Will place all files in `newdir`.
 
 ## Parameters
 
@@ -103,6 +93,10 @@ This will place all files in `newdir`.
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
 | post-summary        | True                 | Call summary after retrieval?  |
+| output-format       | mseed                | Output data format. Choose from "mseed" or "asdf" |
+| asdf-filename       | asdf.h5              | Name of asdf file to create when OUTPUT_FORMAT=asdf |
+| station-url         | http://service.iris.edu/fdsnws/station/1/query | Station service url            |
+| force-metadata-reload | False                | Force reload of metadata       |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | tmp                  | Temporary storage for downloads |
@@ -126,9 +120,9 @@ This will place all files in `newdir`.
 | mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
 | leap                | True                 | Use leapseconds file?          |
-| leap-expire         | 30                   | Number of days before refreshing file |
+| leap-expire         | 30                   | Number of days before reloading file |
 | leap-file           | leap-seconds.list    | File for leapsecond data       |
-| leap-url            | http://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
