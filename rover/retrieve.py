@@ -39,37 +39,15 @@ class BaseRetriever(SqliteSupport, UserFeedback):
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compare available data with the repository, then download, ingest and index data.
+Compares ROVER's local index with remotely available data, then downloads and 
+ingest files missing from the local repository. The URL determining the 
+availability of remote data can be configured by the availability-url parameter,
+and URL controlling data downloads is configured by the dataselect-url 
+parameter. 
 
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).
-
-In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
-taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed
-containing that data.
-
-The list of available data is retrieved from the service and compared with the local index.  Data not
-available locally are downloaded and ingested.
-
-In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
-and samplerate information is "merged").
-
-This command also indexes modified data in the repository before processing.
-
-When the process is running status should be visible at http://localhost:8000 (by default).  When the process
-ends an email can be sent to the user (if `--email` is used).
-
-See `rover subscribe` for similar functionality, but with regular updates.
-
-#### Errors, Retries and Consistency
-
-If `download-retries` allows, retrievals are repeated until no errors occur and, once data appear to be complete,
-an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if
-additional data are found - then the web services are inconsistent.
-
-Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
-They also cause the command to exit with an error status.
-
+Use ROVER's list-index function to determine data available on a remote server
+which is not in the local repository.
+   
 ##### Significant Parameters
 
 @temp-dir
@@ -112,11 +90,13 @@ commands for more details.
 
     rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the repository for N_S_L_Cs / timespans present in the given file.
-
+processes a file containing a request to download, ingest, and index 
+data missing from rover’s local repository.
+    
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the repository.
+processes a command line request to download, ingest, and index 
+data missing from rover’s local repository.
 
 """
 
@@ -234,11 +214,9 @@ class ListRetriever(BaseRetriever):
 
     rover list-retrieve N_S_L_C [begin [end]]
 
-Display what data would be downloaded if the `retrieve` equivalent command was run.
-
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_S_L_C and timespan are given, a
-(single-line) file will be automatically constructed containing that data.
+Compares the local index with the requested data remotely available, then 
+displays the difference. Note that the summary is printed to stdout, while 
+logging is to stderr.
 
 ##### Significant Parameters
 

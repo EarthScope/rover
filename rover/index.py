@@ -32,16 +32,13 @@ class Indexer(ModifiedScanner, DirectoryScanner):
 
     rover index (file|dir)+
 
-Index the files (add or change entires in the tsindex table in the mseed database).
-
-When no argument is give all modified files in the repository are processed.  To force all files, use `--all`.
-
-When a directory is given, all files contained in that directory are processed, along with the contents of
-sub-directories, unless `--no-recurse` is specified.
-
-The `mseedindex` command is used to index the data.  This optionally uses a file of leap-second data.  By default
-(unless `--no-leap`) a file is downloaded from `--leap-url` if the file currently at `--leap-file` is missing or older
-than `--leap-expire` days.
+Indexes files, adds or changes entries in the tsindex table stored in the 
+miniSEED database.
+ 
+When no argument is given, all modified files in the repository are processed. 
+The `--all` flag forces all files to be processed. If a path argument
+is provided, all files contained in the directory are processed, along with the
+contents of sub-directories, unless `--no-recurse` is specified.
 
 ##### Significant Parameters
 
@@ -125,34 +122,19 @@ class IndexLister(SqliteSupport, HelpFormatter):
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \\
     [count|join|join-qsr]
 
-List index entries for the repository (config parameter data-dir) that match the given constraints.
+List an index of entries for a ROVER repository, defined by the the data-dir 
+configuration parameter, that match given constraints. For more information, 
+run "rover list-index" with no arguments.
 
-Note that console logging is to stderr, while the command results are listed to stdout.
-
-#### Net_Sta_Chan_Loc_Qual and Samplerate
-
-Query parameters can be named (network, station, location, channel, quality, samplerate) and unambiguous abbreviations
-are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least
-one underscore).
-
-The wildcards '*' and '?' can be used.
-
-#### Time Range
-
-The 'begin' and 'end' parameters can be given only once.  They must be of the form YYYY-MM-DDTHH:MM:SS.SSSSSS
-(may be truncated on the right).  They define a range of times over which the data must appear (at least partially)
-to be included:
-
-#### Flags
-
-The following parameters are simple flags that change the output format.  They are mutually exclusive and take no
-value:
+Flag parameters used to change the output format are optional arguments. 
+Flags are mutually exclusive and take no value:
 
   count - only the number of matches will be shown
 
   join - continguous time ranges will be joined
 
-  join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
+  join-qsr - the maximal timespan across all quality and samplerates is shown 
+  (as used by retrieve)
 
 ##### Significant Parameters
 

@@ -145,20 +145,6 @@ class MetadataRetriever(UserFeedback):
 Download missing metadata from the fdsnws-station web service and save to the
 data archive. This feature is only supported for the ASDF output format.
 
-#### Errors, Retries and Consistency
-
-If `download-retries` allows, retrievals are repeated until no errors occur
-and, once data appear to be complete, an additional retrieval is made which
-should result in no data being downloaded.  If this is not the case - if
-additional data are found - then the web services are inconsistent.
-
-If `force-metadata-reload` is True then already loaded metadata will be
-downloaded and overwritten.
-
-Errors and inconsistencies are reported in the logs and in the optional email
-(`email` parameter) sent to the user. They also cause the command to exit with
-an error status.
-
 ##### Significant Parameters
 
 @temp-dir

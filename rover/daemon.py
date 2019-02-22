@@ -32,7 +32,9 @@ class Starter(UserFeedback):
     """
 ### Start
 
-Start the background (daemon) process to support `rover subscribe`.
+Starts the background, daemon, process to support `rover subscribe`. The 
+parameter, --recheck-period, sets the time interval in hours for the daemon to
+reprocess. ROVER start is the preferred method to begin a ROVER subscription. 
 
 See also `rover stop`, `rover status` and `rover daemon`.
 
@@ -60,23 +62,8 @@ See also `rover stop`, `rover status` and `rover daemon`.
 @log-verbosity
 @dev
 
-In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands
-for download, ingest and index) will apply,
-
-Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`.
-For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted
-(see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
-
-When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription
-is processed an email can be sent to the user (if `--email` is used).
-
-#### Errors, Retries and Consistency
-
-If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete,
-an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if
-additional data are found - then the web services are inconsistent.
-
-Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
+In addition, parameters relevant to the processing pipeline (see `rover retrieve`
+, or the individual commands for download, ingest and index) apply.
 
 ##### Examples
 
@@ -112,7 +99,7 @@ class Stopper:
     """
 ### Stop
 
-Stop the background (daemon) process to support `rover subscribe`.
+Stop the background, daemon, process to support `rover subscribe`.
 
 See also `rover start`, `rover status`.
 
@@ -144,7 +131,7 @@ class StatusShower:
     """
 ### Status
 
-Show whether the daemon is running or not..
+Displays if the daemon is operating.
 
 See also `rover start`, `rover stop`.
 
@@ -158,7 +145,7 @@ See also `rover start`, `rover stop`.
 
     rover status -f roverrc
 
-will show whether the daemon using the given configuration file is running.
+will show whether a daemon, using a given configuration file, is running.
 
     """
 
@@ -186,9 +173,8 @@ class Daemon(SqliteSupport):
     """
 ### Daemon
 
-The background (daemon) process that supports `rover subscribe`.
-
-**Prefer using `rover start` to start this task in the background.**
+The background, daemon, process that supports `rover subscribe`. ROVER's start 
+command is the preferred method to launch the subscription service.
 
 See also `rover stop`, `rover status`.
 
@@ -216,33 +202,17 @@ See also `rover stop`, `rover status`.
 @log-verbosity
 @dev
 
-In addition, parameters relevant to the processing pipeline (see `rover retrieve`, or the individual commands
-for download, ingest and index) will apply,
-
-Logging for individual processes in the pipeline will automatically configured with `--unique-logs --log-verbosity 3`.
-For most worker tasks, that will give empty logs (no warnings or errors), which will be automatically deleted
-(see `rover download`).  To preserve logs, and to use the provided verbosity level, start the daemon with `--dev`,
-
-When the daemon is running status should be visible at http://localhost:8000 (by default).  When a subscription
-is processed an email can be sent to the user (if `--email` is used).
-
-#### Errors, Retries and Consistency
-
-If `download-retries` allows, subscriptions are re-processed until no errors occur and, once data appear to be complete,
-an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if
-additional data are found - then the web services are inconsistent.
-
-Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
-
 ##### Examples
 
     rover daemon -f roverrc
 
-will start the daemon (in the foreground - see `rover start`) using the given configuration file.
-
+will start the daemon in the foreground using the given configuration file.
+  
     rover start --recheck-period 24
 
-will start the daemon (in the foreground - see `rover start`), processing subscriptions every 24 hours.
+will start the daemon in the foreground, processing subscriptions every 24 hours.
+
+REMINDER: ROVER start is the preferred method to launch the subscription service. 
 
     """
 
