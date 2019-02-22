@@ -143,3 +143,4 @@ dev/rover help index --md-format >> docs/commands.md
 dev/rover help summary --md-format >> docs/commands.md
 dev/rover help daemon --md-format >> docs/commands.md
 dev/rover help web --md-format >> docs/commands.md
+dev/rover help retrieve-metadata --md-format >> docs/commands.md
