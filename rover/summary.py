@@ -24,10 +24,11 @@ class Summarizer(SqliteSupport):
 
     rover summary
 
-Create a summary of the index in the database.  This lists the overall span of data for each Net_Sta_Loc_Chan
-and can be queries using `rover list-summary`.
+Creates a summary of the index stored in a ROVER repository. This lists the
+overall span of data for each Net_Sta_Loc_Chan and can be queried using
+`rover list-summary`.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -38,7 +39,7 @@ and can be queries using `rover list-summary`.
 
     rover summary
 
-will create the summary.
+will create the summary of a local ROVER repository.
 
 
     """
@@ -59,7 +60,7 @@ will create the summary.
                               FROM tsindex
                               GROUP BY 1,2,3,4''')
         except OperationalError:
-            self._log.default('No index - first time using rover?')
+            self._log.default('No index found')
 
 
 class SummaryLister(SqliteSupport):
@@ -70,27 +71,12 @@ class SummaryLister(SqliteSupport):
 
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List summary entries for the repository (config parameter data-dir) that match the given constraints.
-The summary entries are pre-calculated and record the whole time span, from earliest to latest data.
-Because of this the `list-summary` command runs more quickly, but shows less information, than `list-index`.
+List a summary of entries for a ROVER repository, defined by the data-dir
+configuration option, that match given constraints. List summary is faster
+than `rover list-index` but gives less detail.  For more information,
+run "rover %s" with no arguments.
 
-Note that console logging is to stderr, while the command results are listed to stdout.
-
-#### Net_Sta_Loc_Chan
-
-Query parameters can be named (network, station, location, channel) and unambiguous abbreviations
-are accepted.  Alternatively, a N_S_L_C can be supplied (which can be truncated on the right, but must contain at least
-one underscore).
-
-The wildcards '*' and '?' can be used.
-
-#### Time Range
-
-The 'begin' and 'end' parameters can be given only once.  They must be of the form YYYY-MM-DDTHH:MM:SS.SSSSSS
-(may be truncated on the right).  They define a range of times over which the data must appear (at least partially)
-to be included:
-
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -101,7 +87,7 @@ to be included:
 
     rover list-summary net=* begin=2001-01-01
 
-will list all entries in the summary after the year 2000.
+list all entries in the summary after 2001-01-01.
 
 """
 
@@ -172,7 +158,7 @@ will list all entries in the summary after the year 2000.
         for key in self._multiple_constraints.keys():
             if key.startswith(name):
                 if found:
-                    raise Exception('Ambiguous parameter: %s' % name)
+                    raise Exception('Ambiguous option: %s' % name)
                 else:
                     found = key
         self._multiple_constraints[found].append(value)

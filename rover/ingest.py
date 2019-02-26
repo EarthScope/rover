@@ -29,14 +29,10 @@ class Ingester(SqliteSupport, DirectoryScanner):
 
     rover ingest file
 
-Add the contents of the file (MSEED format) to the repository and index the new data.
+Adds contents from a miniSEED formatted file to ROVER's local repository and
+indexes the new data.
 
-The `mseedindex` command is used to index the different blocks of data present in the file.
-The corresponding byte ranges are then appended to the appropriate files in the repository.
-
-The file should not contain data that spans multiple calendar days.
-
-##### Significant Parameters
+##### Significant Options
 
 @mseedindex-cmd
 @data-dir
@@ -49,8 +45,8 @@ The file should not contain data that spans multiple calendar days.
 @log-dir
 @log-verbosity
 
-In addition, parameters for sub-commands (index) will be used - see help for those commands
-for more details.
+Options used to configure the sub-command index are also applicable -
+see Index help for more details.
 
 ##### Examples
 

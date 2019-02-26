@@ -1,11 +1,11 @@
 ---
-title: Rover Development
+title: ROVER Development
 layout: default
 ---
 
 ## Python 2 and 3 support
 
-Rover is developed using in Python 3.
+ROVER is developed using in Python 3.
 
 A combination of Python 2.7 and Python 3.5 and later are supported
 by auto-generating portable code using the
@@ -15,7 +15,7 @@ by auto-generating portable code using the
 One consequence of this is that the "installable" code (typically
 available via `pip` from the [PyPI rover project](https://pypi.org/project/rover/) or a tarball) is not
 identical to the development code (typically available from the
-[rover repository](https://github.com/iris-edu/rover/)). Because of this disparity, instances of development Rover should not be inistalled into system Python 2.7.
+[rover repository](https://github.com/iris-edu/rover/)). Because of this disparity, instances of development ROVER should not be inistalled into system Python 2.7.
 
 ## Getting started
 
@@ -124,12 +124,12 @@ the source, tag the version in git, and build a suitably named tarball in the `r
   * Compile mseedindex (no need for sqlite install - see mseedindex
     docs)
 
-* You can now install and run rover:
+* You can now install and run ROVER:
 
   * See other batch scripts in dev. 
 
-  * You will need to configure rover as normal to find mseedindex.
+  * You will need to configure ROVER as normal to find mseedindex.
 
-Note that on Windows we ignore the `rover-cmd` parameter because we
+Note that on Windows we ignore the `ROVER-cmd` parameter because we
 must use `pythonw` for sub-processes.
 

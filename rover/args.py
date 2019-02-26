@@ -252,7 +252,7 @@ class Arguments(ArgumentParser):
     """
 
     def __init__(self):
-        super().__init__(fromfile_prefix_chars='@', prog='rover',
+        super().__init__(fromfile_prefix_chars='@', prog='ROVER',
                          formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          epilog=dedent('''
@@ -261,7 +261,7 @@ class Arguments(ArgumentParser):
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
 
-        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='rover %s' % __version__)
+        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='ROVER %s' % __version__)
         self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
 
         # operation details
@@ -286,8 +286,8 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
         self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
         self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
-        self.add_argument(mm(OUTPUT_FORMAT), default=DEFAULT_OUTPUT_FORMAT, action='store', help='output data format. Choose from "mseed" or "asdf"', metavar='')
-        self.add_argument(mm(ASDF_FILENAME), default=DEFAULT_ASDF_FILENAME, action='store', help='name of asdf file to create when OUTPUT_FORMAT=asdf', metavar='')
+        self.add_argument(mm(OUTPUT_FORMAT), default=DEFAULT_OUTPUT_FORMAT, action='store', help='output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF)', metavar='')
+        self.add_argument(mm(ASDF_FILENAME), default=DEFAULT_ASDF_FILENAME, action='store', help='name of ASDF file when ASDF output is specified', metavar='')
 
         # metadata retrieval
         self.add_argument(mm(STATIONURL), default=DEFAULT_STATIONURL, action='store', help='station service url', metavar=URLVAR)
@@ -326,10 +326,10 @@ class Arguments(ArgumentParser):
         self.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar=NVAR, type=int)
 
         # leap seconds
-        self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leapseconds file?', metavar='')
-        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before reloading file', metavar=NVAR, type=int)
-        self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leapsecond data', metavar=FILEVAR)
-        self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leapsecond data', metavar=URLVAR)
+        self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leap seconds file?', metavar='')
+        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing leap seconds file', metavar=NVAR, type=int)
+        self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leap second data', metavar=FILEVAR)
+        self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leap second data', metavar=URLVAR)
 
         # user feedback
         self.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
@@ -587,7 +587,7 @@ def fail_early(config):
             import obspy
         except ImportError:
             raise Exception("Missing required 'pyasdf' python "
-                            "package for 'output-format=asdf.'") 
+                            "package for 'output-format=asdf'")
 
 
 class UserFeedback:

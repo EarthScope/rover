@@ -32,22 +32,15 @@ class Downloader(SqliteSupport):
 
     rover download file [path]
 
-If given a URL, download a single request (typically for a day) to the given path, ingest and index it.  If no path
-is given then a temporary file is created and deleted after use.  Rover treats the argument as a URL if it contains
-the characters "://".
+Downloads a single request, typically for a day, from a URL or a given file.
+File arguments are expected to contain FDSN web services requests and fetch data
+from the URL set by the dataselect-url option. Data are downloaded to a
+temporary directory, which is configured by the temp-dir option.
+After downloaded, data are ingested into the data-dir repository and are deleted
+from the temp directory. `rover download` is called by `rover retrieve`,
+'rover subscribe` and `rover daemon`.
 
-
-The url should be for a Data Select service, and should not request data that spans multiple calendar days.
-
-If given a file name, POST that file to URL given by the `dataselect-url` configuration parameter, download the
-response to the given path,  ingest and index it.  If no path is given then a temporary file is created and deleted
-after use.
-
-This task is the main low-level task called in the processing pipeline (it calls ingest and index as needed).
-Because of this, to reduce the quantity of unhelpful logs generated when a pipeline is running, empty logs are
-automatically deleted on exit.
-
-##### Significant Parameters
+##### Significant Options
 
 @dataselect-url
 @temp-dir
@@ -60,19 +53,21 @@ automatically deleted on exit.
 @log-dir
 @log-verbosity
 
-In addition, parameters for sub-commands (ingest, index) will be used - see help for those
-commands for more details.
+Options used to configure the sub-commands ingest, index are also applicable
+- see Ingest/Index help for more details.
+
 
 ##### Examples
 
-    rover download \\
+    rover download
     'http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000'
 
 will download, ingest and index data from the given URL.
 
     rover download myrequest.txt
 
-will download, ingest and index data from `dataselect-url` after POSTing `myrequest.txt`.
+will download, ingest and index data from `dataselect-url` after POSTing
+`myrequest.txt`.
 
 """
 

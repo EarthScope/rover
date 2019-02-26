@@ -39,38 +39,16 @@ class BaseRetriever(SqliteSupport, UserFeedback):
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compare available data with the repository, then download, ingest and index data.
+Compares ROVER's local index with remotely available data, then downloads and
+ingest files missing from the local repository. The URL determining the
+availability of remote data can be configured by the availability-url option,
+and URL controlling data downloads is configured by the dataselect-url
+option.
 
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).
+Use ROVER's list-index function to determine data available on a remote server
+which is not in the local repository.
 
-In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
-taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed
-containing that data.
-
-The list of available data is retrieved from the service and compared with the local index.  Data not
-available locally are downloaded and ingested.
-
-In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
-and samplerate information is "merged").
-
-This command also indexes modified data in the repository before processing.
-
-When the process is running status should be visible at http://localhost:8000 (by default).  When the process
-ends an email can be sent to the user (if `--email` is used).
-
-See `rover subscribe` for similar functionality, but with regular updates.
-
-#### Errors, Retries and Consistency
-
-If `download-retries` allows, retrievals are repeated until no errors occur and, once data appear to be complete,
-an additional retrieval is made which should result in no data being downloaded.  If this is not the case - if
-additional data are found - then the web services are inconsistent.
-
-Errors and inconsistencies are reported in the logs and in the optional email (`email` parameter) sent to the user.
-They also cause the command to exit with an error status.
-
-##### Significant Parameters
+##### Significant Options
 
 @temp-dir
 @availability-url
@@ -105,18 +83,20 @@ They also cause the command to exit with an error status.
 @asdf-filename
 @force-metadata-reload
 
-In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
+In addition, options for sub-commands (download, ingest, index) will be used - see help for those
 commands for more details.
 
 ##### Examples
 
     rover retrieve N_S_L_C.txt
 
-will download, ingest, and index any data missing from the repository for N_S_L_Cs / timespans present in the given file.
+processes a file containing a request to download, ingest, and index
+data missing from rover’s local repository.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-will download, ingest and index and data for IU_ANMO_00_BH1 between the given dates that are missing from the repository.
+processes a command line request to download, ingest, and index
+data missing from rover’s local repository.
 
 """
 
@@ -145,7 +125,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % command
         if not args:
             raise Exception(usage)
-        # input is a temp file as we prepend parameters
+        # input is a temp file as we prepend options
         path = unique_path(self._temp_dir, RETRIEVEWEB, args[0])
         try:
             if len(args) == 1:
@@ -158,7 +138,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             fix_file_inplace(self._log, path, self._temp_dir)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
             if fetch:
-                self._log.default('Rover version %s - starting retrieve' % __version__)
+                self._log.default('ROVER version %s - starting retrieve' % __version__)
                 self.display_feedback()
             self._query(path, fetch)
             if fetch:
@@ -168,7 +148,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
         except ManagerException:
             raise
         except Exception as e:
-            self._reporter.send_email('Rover Failure', self._reporter.describe_error(RETRIEVE, e))
+            self._reporter.send_email('ROVER Failure', self._reporter.describe_error(RETRIEVE, e))
             raise
         finally:
             if self._delete_files:
@@ -202,7 +182,7 @@ will download, ingest and index and data for IU_ANMO_00_BH1 between the given da
             # remove empty mseed directories from data directory
             remove_empty_folders(self._config.arg(DATADIR), self._log)
             # load metadata into asdf dataset
-            MetadataRetriever(self._config).run([])   
+            MetadataRetriever(self._config).run([])
 
     def _display(self):
         """
@@ -234,13 +214,11 @@ class ListRetriever(BaseRetriever):
 
     rover list-retrieve N_S_L_C [begin [end]]
 
-Display what data would be downloaded if the `retrieve` equivalent command was run.
+Compares the local index with the requested data remotely available, then
+displays the difference. Note that the summary is printed to stdout, while
+logging is to stderr.
 
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).  Otherwise, if a N_S_L_C and timespan are given, a
-(single-line) file will be automatically constructed containing that data.
-
-##### Significant Parameters
+##### Significant Options
 
 @availability-url
 @timespan-tol

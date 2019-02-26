@@ -1,5 +1,6 @@
 ---
 title: Known bugs and limitations
+
 layout: default
 ---
 
@@ -20,17 +21,23 @@ considered significant if they exceed the minimum sample time
 **N\_S\_L\_C** contains 20 samples/sec and 1 samples/sec data a significant gap in the 20 samples/sec data
 my go undetected.
 
+
+
 ## Handling of duplicate data
+
 
 If `rover ingest` is used manually it is possible for duplicate data
 to be added to the repository (e.g. by ingesting the same file twice).
-This cannot (or should not) happen in normal use, because rover does
+This cannot (or should not) happen in normal use, because ROVER does
 not download duplicate data, so cannot ingest it.
 
 Ideally either ingest should check and refuse to add duplicate data,
 or we should have an additional command that compacts files.
 
+
 ## Ingest limited to single days
+
+
 
 The `rover ingest` command rejects files that span multiple calendar
 days.  This is because it works by blindly copying byte ranges based
@@ -42,6 +49,7 @@ day-sized chunks), but is restrictive when ingesting local files (see
 duplicate data above).
 
 ## Availability request format
+
 
 To avoid duplicate data (see above) `rover subscribe` checks the
 subscription against existing subscriptions.  This comparison only

@@ -19,7 +19,7 @@ from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERI
 """
 Support for emailing the user after a download finishes.
 
-(This is not exposed as a direct rover command).
+(This is not exposed as a direct ROVER command).
 """
 
 
@@ -102,7 +102,7 @@ class Reporter:
         Generate an email for critical errors.
         """
         return '''
-The rover %s (PID %d) task on %s has failed with the error:
+The ROVER %s (PID %d) task on %s has failed with the error:
 
   %s
   (%s)
@@ -115,7 +115,8 @@ The rover %s (PID %d) task on %s has failed with the error:
         msg = '''
 ----- Retrieval Finished -----
 
-A rover %s task on %s
+
+A ROVER %s task on %s
 started %s (%s UTC)
 has completed in %s
 
@@ -151,7 +152,7 @@ The consistency of the web services could not be confirmed.
 Re-run the %s command with %s > 1 to check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.errors.final_errors else self._log.default)
-        return 'Rover %s complete' % RETRIEVE, msg
+        return 'ROVER %s complete' % RETRIEVE, msg
 
     def describe_daemon(self, source):
         """
@@ -191,4 +192,4 @@ The consistency of the web services could not be confirmed
 (daemon must have %s > 1).
 ''' % mm(DOWNLOADRETRIES)
         self._log_message(msg, self._log.warn if source.errors.final_errors else self._log.default)
-        return 'Rover subscription %s processed' % source.name, msg
+        return 'ROVER subscription %s processed' % source.name, msg

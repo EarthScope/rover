@@ -543,7 +543,7 @@ def diagnose_error(log, error, request, response, copied=True):
     log_file_contents(request, log, 10)
     log.error('The request is either provided by the user or created from the user input.')
     if copied:
-        log.error('To ensure consistency rover copies files.  ' +
+        log.error('To ensure consistency ROVER copies files.  ' +
                   'To see the paths and avoid deleting temporary copies re-run the command ' +
                   'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
 

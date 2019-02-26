@@ -61,7 +61,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.end_headers()
         self._html_header()
-        self._write('<h1>Rover</h1>')
+        self._write('<h1>ROVER</h1>')
         pid, command = self.server.process_manager.current_command()
         if command == DAEMON:
             self._do_daemon()
@@ -78,7 +78,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self._write('''<html lang="en">
   <head>
     <meta charset="ascii">
-    <title>Rover</title>
+    <title>ROVER</title>
     <style>
 * {
   font-family: monospace;
@@ -206,16 +206,13 @@ class ServerStarter:
 
     rover retrieve --web ...   # the default
 
-Start a web server that provides information on the progress of the download manager (the core of the
-`rover daemon` and `rover retrieve` commands).
+Starts a web server that provides information on the progress of the download
+manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's
+default configuration starts `rover web` automatically. The flag`--no-web`
+prevents ROVER's web server from launching in accordance with `rover retrieve`
+or `rover start`.
 
-With the default configuration this is started automatically, provided `--no-web` is not used with
-`rover retrieve` or `rover start`.
-
-As with the `rover download` command, empty logs are removed on exit to avoid cluttering the log
-directory.
-
-##### Significant Parameters
+##### Significant Options
 
 @web
 @http-bind-address

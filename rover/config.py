@@ -12,13 +12,13 @@ from .sqlite import init_db
 from .utils import safe_unlink, canonify
 
 """
-Package common data used in all/most classes (db connection, lgs and parameters).
+Package common data used in all/most classes (db connection, logs and options).
 """
 
 
 class BaseConfig:
     """
-    The configuration of the system (log, parameters, database).
+    The configuration of the system (log, options, database).
 
     The Config subclass provides a different constructor.
     """
@@ -67,7 +67,7 @@ class BaseConfig:
         try:
             value = getattr(self._args, name)
         except:
-            raise Exception('Parameter %s does not exist' % name)
+            raise Exception('Option %s does not exist' % name)
         while True:
             try:
                 matchvar = compile(r'(.*(?:^|[^\$]))\${(\w+)}(.*)').match(value)
@@ -191,13 +191,16 @@ class RepoInitializer:
 
     rover init [directory]
 
-Creates the expected directory structure and writes default values to the
-config file.
+Initializes a given directory, or the current directory if no argument is
+provided, as a ROVER data repository. Init repository will create a
+configuration file, rover.config, as well as log and data directories.
 
-To avoid over-writing data, it is an error if the config file, data directory
-or log directory already exist.
+   The aliases `rover init-repo` and `rover int` also exist.
 
-##### Significant Parameters
+To avoid over-writing data, rover init-repo returns an error if
+a rover.config file, data or log directory exist in the targeted directory.
+
+##### Significant Options
 
 @verbosity
 @log-dir

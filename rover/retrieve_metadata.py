@@ -19,7 +19,7 @@ TMPDOWNLOAD = 'rover_metadata_download'
 
 
 class MetadataSource(UserFeedback):
-    
+
     def __init__(self, config):
         UserFeedback.__init__(self, config)
         self._station_url = config.arg(STATIONURL)
@@ -27,7 +27,7 @@ class MetadataSource(UserFeedback):
         self._http_retries = config.arg(HTTPRETRIES)
         self._temp_dir = config.dir(TEMPDIR)
         self._config = config
-        
+
     def _do_download(self, url, in_path, out_path):
         try:
             response, check_status = post_to_file(url, in_path, out_path,
@@ -40,7 +40,7 @@ class MetadataSource(UserFeedback):
                            out_path, copied=False)
             raise
         return response
-    
+
     def download_stationxml(self, net_code, sta_code, loc_code, cha_code,
                             starttime, endtime):
         '''
@@ -67,7 +67,7 @@ class MetadataSource(UserFeedback):
                                        stationxml_path)
         safe_unlink(request_path)
         return stationxml
-    
+
     def has_tsindex(self):
         with SqliteContext(timeseries_db(self._config), self._log) as db:
             try:
@@ -89,7 +89,7 @@ class MetadataSource(UserFeedback):
                 return True
             except NoResult:
                 return False
-    
+
     def fetch_summary_rows(self):
         '''
         Fetch all summary rows.
@@ -145,21 +145,7 @@ class MetadataRetriever(UserFeedback):
 Download missing metadata from the fdsnws-station web service and save to the
 data archive. This feature is only supported for the ASDF output format.
 
-#### Errors, Retries and Consistency
-
-If `download-retries` allows, retrievals are repeated until no errors occur
-and, once data appear to be complete, an additional retrieval is made which
-should result in no data being downloaded.  If this is not the case - if
-additional data are found - then the web services are inconsistent.
-
-If `force-metadata-reload` is True then already loaded metadata will be
-downloaded and overwritten.
-
-Errors and inconsistencies are reported in the logs and in the optional email
-(`email` parameter) sent to the user. They also cause the command to exit with
-an error status.
-
-##### Significant Parameters
+##### Significant Options
 
 @temp-dir
 @station-url
@@ -195,7 +181,7 @@ will download missing metadata from the asdf.h5 repository.
         fail_early(config)
         self._reporter = Reporter(config)
         self._config = config
-    
+
     def process_asdf(self):
         """
         Retrieve metadata and insert into ASDF
@@ -211,11 +197,11 @@ will download missing metadata from the asdf.h5 repository.
         """
         try:
             self._log.default("Trying new metadata retrieval.")
-            
+
             if not os.path.exists(timeseries_db(self._config)):
                 raise Exception("No timeseries index database exists at {}."
                                 .format(timeseries_db(self._config)))
-            
+
             if self._config.arg(OUTPUT_FORMAT).upper() == "ASDF":
                 self.process_asdf()
             else:
@@ -230,4 +216,3 @@ will download missing metadata from the asdf.h5 repository.
                                       self._reporter.describe_error(
                                                         RETRIEVE_METADATA, e))
             raise
-            

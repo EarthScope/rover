@@ -32,29 +32,13 @@ class Subscriber(SqliteSupport):
 
     rover subscribe N_S_L_C [begin [end]]
 
-Arrange for the background service (daemon) to regularly compare available data with the repository then
-download, ingest and index any new data.
+Subscribe generates a background service, daemon, that regularly compares data
+available at the configured server with the local repository. If there is a
+discrepancy, available data is downloaded, ingested and indexed. ROVER subscribe
+is similar to `rover retrieve` but uses a daemon to regularly update a local
+repository.
 
-This is similar to `rover retrieve`, but uses a background service to regularly update the repository.  To
-start the service use `rover start`.  See also `rover status` and `rover stop`.
-
-The file argument should contain a list of Net_Sta_Loc_Chans and timespans, as appropriate for calling an Availability
-service (eg http://service.iris.edu/irisws/availability/1/).
-
-In the second form above, at least one of `net`, `sta`, `loc`, `cha` should be given (missing values are
-taken as wildcards).  For this and the third form a (single-line) file will be automatically constructed
-containing that data.
-
-The list of available data is retrieved from the service and compared with the local index.  Data not
-available locally are downloaded and ingested.
-
-In the comparison of available data, maximal timespans across all quality and sample rates are used (so quality
-and samplerate information is "merged").
-
-A user may have multiple subscriptions (see `rover list-subscribe`), but to avoid downloading duplicate data
-they must not describe overlapping data.  To enforce this, requests are checked on submission.
-
-##### Significant Parameters
+##### Significant Options
 
 @availability-url
 @dataselect-url
@@ -64,7 +48,7 @@ they must not describe overlapping data.  To enforce this, requests are checked 
 @log-verbosity
 @temp-dir
 
-Most of the download process is controlled by the parameters provided when starting the service (see
+Most of the download process is controlled by the options provided when starting the service (see
 `rover start`).
 
 ##### Examples
@@ -119,7 +103,7 @@ dates that are missing from the repository.
                 raise e
 
     def run(self, args):
-        # input is a temp file as we prepend parameters
+        # input is a temp file as we prepend options
         try:
             path = unique_path(self._subscriptions_dir, SUBSCRIBEFILE, args[0])
             if len(args) == 1:
@@ -174,7 +158,7 @@ ranges (N:M).
 The data to be downloaded is not exact, because the daemon may already be downloading data, or because when
 the subscription is processed (in the future) the available data have changed.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -258,13 +242,15 @@ class Unsubscriber(SqliteSupport):
 
     rover unsubscribe N[:M]+
 
-Delete one or more subscriptions.  The arguments can be single numbers (identifying the subscriptions, as
-displayed by `rover list-subscrive`), or ranges (N:M).
+Deletes one or more subscriptions identified by their indices.
+ROVER list-subscribe displays subscription indices. Unsubscribe accepts
+integers or ranges of integers (N:M) as arguments. Data associated with a
+subscription(s) are not deleted.
 
-Note: To avoid conflicts with subscriptions that are currently being processed, the daemon must be stopped
-(with `rover stop`) before using the `unsubscribe` command.
+To avoid conflicts with subscriptions that are currently being processed,
+`rover stop` must stop the daemon before using the unsubscribe command.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -303,13 +289,11 @@ class Trigger(SqliteSupport):
 
     rover trigger N[:M]+
 
-Ask the daemon to re-process the given subscriptions.  The arguments can be single numbers (identifying the
-subscriptions, as displayed by `rover list-subscribe`), or ranges (N:M).
+Ask the daemon to immediately re-process a subscription(s) based on its index.
+List-subscribe displays subscriptions indices. Trigger accepts integers or
+ranges of integers (N:M) as arguments.
 
-More exactly, this command resets the "last checked" date in the database, so when the daemon re-checks the
-database (typically once per minute) it will process the subscription.
-
-#### Significant Parameters
+#### Significant Options
 
 @data-dir
 @verbosity

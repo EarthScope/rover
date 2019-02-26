@@ -1,5 +1,5 @@
 ---
-title: Rover's processing pipeline
+title: ROVER's processing pipeline
 layout: default
 ---
 

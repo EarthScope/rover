@@ -377,13 +377,15 @@ class Source(SqliteSupport):
     def is_complete(self):
         """
         Is this source complete (all retrievals)?
-        Dependent Functions: _
-        is_complete_final_read: Verifies that all data is downloaded with no errors makes rover robust.
-        If data is missing calls _new_retrieval is callesmand _is_complete_initial_reads
-        _is_complete_initial_reads: Call the new_retrieval function until all data is downloaded with no errors.
-        _new_retrieval:
+        Dependent Functions:
+        
+        is_complete_final_read: Verifies that all data is downloaded with no errors makes ROVER robust. 
+        If data is missing _new_retrieval and _is_complete_initial_reads are called.
+        _is_complete_initial_reads: Call the new_retrieval function until all data is downloaded with no errors. 
+        _new_retrieval: 
+        
+        important variables: 
 
-        important variables:
         self._expect_empty: Determines if the _is_complete_final_read or _is_complete_initial_reads function is called/
         complete: Terminates the loop.
         """
@@ -442,6 +444,7 @@ class Source(SqliteSupport):
             # Deal with the case when config has number of download attempts set to 1.
             if self.download_retries == 1:
                 if retry_possible:
+
                     self._log.default(('Retrieval attempt %d of %d had no errors and we downloaded data.'
                                        'The config parameter download-retries is set to %d attempt so rover is exiting.'
                                        'We recommend increasing the number of download attempts. ')
@@ -459,13 +462,14 @@ class Source(SqliteSupport):
                         ProgressStatistics.download_retry_count += 1
                         return False
                     else :
-                        self._log.default(('The retrieval has been attempted %d times. Rover is exiting. Please check the log files and try again later.')
+                        self._log.default(('The retrieval has been attempted %d times. ROVER is exiting. Please check the log files and try again later.')
                                           % (ProgressStatistics.download_retry_count))
                         self._expect_empty =True
                         return True
                 elif retry_possible:
                     self._log.default(('Successful retrieval attempt %d of %d, but no new data downloaded so try again.')
                                       % (self.n_retries, self.download_retries))
+
                     self._expect_empty =False
                     self._new_retrieval(True)
                     return False
@@ -665,7 +669,7 @@ class Source(SqliteSupport):
                             sncl.split('_'),
                             callback, quiet=True)
         except OperationalError:
-            self._log.debug('No index - first time using rover?')
+            self._log.debug('No index - check rover.config')
         return availability.coverage()
 
 
