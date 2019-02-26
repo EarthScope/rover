@@ -32,15 +32,15 @@ class Indexer(ModifiedScanner, DirectoryScanner):
 
     rover index (file|dir)+
 
-Indexes files, adds or changes entries in the tsindex table stored in the 
+Indexes files, adds or changes entries in the tsindex table stored in the
 miniSEED database.
- 
-When no argument is given, all modified files in the repository are processed. 
+
+When no argument is given, all modified files in the repository are processed.
 The `--all` flag forces all files to be processed. If a path argument
 is provided, all files contained in the directory are processed, along with the
 contents of sub-directories, unless `--no-recurse` is specified.
 
-##### Significant Parameters
+##### Significant Options
 
 @all
 @data-dir
@@ -122,21 +122,21 @@ class IndexLister(SqliteSupport, HelpFormatter):
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \\
     [count|join|join-qsr]
 
-List an index of entries for a ROVER repository, defined by the the data-dir 
-configuration parameter, that match given constraints. For more information, 
+List an index of entries for a ROVER repository, defined by the the data-dir
+configuration options, that match given constraints. For more information,
 run "rover list-index" with no arguments.
 
-Flag parameters used to change the output format are optional arguments. 
+Flag options used to change the output format are optional arguments.
 Flags are mutually exclusive and take no value:
 
   count - only the number of matches will be shown
 
   join - continguous time ranges will be joined
 
-  join-qsr - the maximal timespan across all quality and samplerates is shown 
+  join-qsr - the maximal timespan across all quality and samplerates is shown
   (as used by retrieve)
 
-##### Significant Parameters
+##### Significant Options
 
 @timespan-tol
 @data-dir

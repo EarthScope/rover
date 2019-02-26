@@ -206,13 +206,13 @@ class ServerStarter:
 
     rover retrieve --web ...   # the default
 
-Starts a web server that provides information on the progress of the download 
-manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's 
-default configuration starts `rover web` automatically. The flag`--no-web` 
-prevents ROVER's web server from launching in accordance with `rover retrieve` 
+Starts a web server that provides information on the progress of the download
+manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's
+default configuration starts `rover web` automatically. The flag`--no-web`
+prevents ROVER's web server from launching in accordance with `rover retrieve`
 or `rover start`.
 
-##### Significant Parameters
+##### Significant Options
 
 @web
 @http-bind-address

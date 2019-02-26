@@ -24,11 +24,11 @@ class Summarizer(SqliteSupport):
 
     rover summary
 
-Creates a summary of the index stored in a ROVER repository. This lists the 
-overall span of data for each Net_Sta_Loc_Chan and can be queried using 
+Creates a summary of the index stored in a ROVER repository. This lists the
+overall span of data for each Net_Sta_Loc_Chan and can be queried using
 `rover list-summary`.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -71,12 +71,12 @@ class SummaryLister(SqliteSupport):
 
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List a summary of entries for a ROVER repository, defined by the data-dir 
-configuration parameter, that match given constraints. List summary is faster 
+List a summary of entries for a ROVER repository, defined by the data-dir
+configuration option, that match given constraints. List summary is faster
 than `rover list-index` but gives less detail.  For more information,
 run "rover %s" with no arguments.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -158,7 +158,7 @@ list all entries in the summary after 2001-01-01.
         for key in self._multiple_constraints.keys():
             if key.startswith(name):
                 if found:
-                    raise Exception('Ambiguous parameter: %s' % name)
+                    raise Exception('Ambiguous option: %s' % name)
                 else:
                     found = key
         self._multiple_constraints[found].append(value)

@@ -39,16 +39,16 @@ class BaseRetriever(SqliteSupport, UserFeedback):
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compares ROVER's local index with remotely available data, then downloads and 
-ingest files missing from the local repository. The URL determining the 
-availability of remote data can be configured by the availability-url parameter,
-and URL controlling data downloads is configured by the dataselect-url 
-parameter. 
+Compares ROVER's local index with remotely available data, then downloads and
+ingest files missing from the local repository. The URL determining the
+availability of remote data can be configured by the availability-url option,
+and URL controlling data downloads is configured by the dataselect-url
+option.
 
 Use ROVER's list-index function to determine data available on a remote server
 which is not in the local repository.
-   
-##### Significant Parameters
+
+##### Significant Options
 
 @temp-dir
 @availability-url
@@ -83,19 +83,19 @@ which is not in the local repository.
 @asdf-filename
 @force-metadata-reload
 
-In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those
+In addition, options for sub-commands (download, ingest, index) will be used - see help for those
 commands for more details.
 
 ##### Examples
 
     rover retrieve N_S_L_C.txt
 
-processes a file containing a request to download, ingest, and index 
+processes a file containing a request to download, ingest, and index
 data missing from rover’s local repository.
-    
+
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-processes a command line request to download, ingest, and index 
+processes a command line request to download, ingest, and index
 data missing from rover’s local repository.
 
 """
@@ -125,7 +125,7 @@ data missing from rover’s local repository.
         usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % command
         if not args:
             raise Exception(usage)
-        # input is a temp file as we prepend parameters
+        # input is a temp file as we prepend options
         path = unique_path(self._temp_dir, RETRIEVEWEB, args[0])
         try:
             if len(args) == 1:
@@ -182,7 +182,7 @@ data missing from rover’s local repository.
             # remove empty mseed directories from data directory
             remove_empty_folders(self._config.arg(DATADIR), self._log)
             # load metadata into asdf dataset
-            MetadataRetriever(self._config).run([])   
+            MetadataRetriever(self._config).run([])
 
     def _display(self):
         """
@@ -214,11 +214,11 @@ class ListRetriever(BaseRetriever):
 
     rover list-retrieve N_S_L_C [begin [end]]
 
-Compares the local index with the requested data remotely available, then 
-displays the difference. Note that the summary is printed to stdout, while 
+Compares the local index with the requested data remotely available, then
+displays the difference. Note that the summary is printed to stdout, while
 logging is to stderr.
 
-##### Significant Parameters
+##### Significant Options
 
 @availability-url
 @timespan-tol

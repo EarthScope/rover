@@ -34,12 +34,12 @@
     rover init [directory]
 
 Initializes a given directory, or the current directory if no argument is provided, as a ROVER data repository. Init repository will create a configuration file, rover.config, as well as log and data directories.
- 
+
    The aliases `rover init-repo` and `rover int` also exist.
 
 To avoid over-writing data, rover init-repo returns an error if a rover.config file, data or log directory exist in the targeted directory.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -67,11 +67,11 @@ will create the repository in ~/rover
 
     rover retrieve N_S_L_C [begin [end]]
 
-Compares ROVER's local index with remotely available data, then downloads and ingest files missing from the local repository. The URL determining the availability of remote data can be configured by the availability-url parameter, and URL controlling data downloads is configured by the dataselect-url parameter.
+Compares ROVER's local index with remotely available data, then downloads and ingest files missing from the local repository. The URL determining the availability of remote data can be configured by the availability-url option, and URL controlling data downloads is configured by the dataselect-url option.
 
 Use ROVER's list-index function to determine data available on a remote server which is not in the local repository.
-   
-##### Significant Parameters
+
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -90,9 +90,9 @@ Use ROVER's list-index function to determine data available on a remote server w
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
-| leap-expire         | 30                   | Number of days before reloading file |
-| leap-file           | leap-seconds.list    | File for leapsecond data       |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
+| leap-file           | leap-seconds.list    | File for leap second data      |
+| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
@@ -104,18 +104,18 @@ Use ROVER's list-index function to determine data available on a remote server w
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 | temp-expire         | 1                    | Number of days before deleting temp files (days) |
-| output-format       | mseed                | Output data format. Choose from "mseed" or "asdf" |
-| asdf-filename       | asdf.h5              | Name of asdf file to create when OUTPUT_FORMAT=asdf |
+| output-format       | mseed                | Output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF) |
+| asdf-filename       | asdf.h5              | Name of ASDF file when ASDF output is specified |
 | force-metadata-reload | False                | Force reload of metadata       |
 
-In addition, parameters for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
+In addition, options for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
 
 ##### Examples
 
     rover retrieve N_S_L_C.txt
 
 processes a file containing a request to download, ingest, and index data missing from rover’s local repository.
-    
+
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
 processes a command line request to download, ingest, and index data missing from rover’s local repository.
@@ -129,7 +129,7 @@ processes a command line request to download, ingest, and index data missing fro
 
 Compares the local index with the requested data remotely available, then displays the difference. Note that the summary is printed to stdout, while logging is to stderr.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -159,9 +159,9 @@ will display the data missing from the repository to match what is available for
     rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
     [count|join|join-qsr]
 
-List an index of entries for a ROVER repository, defined by the the data-dir configuration parameter, that match given constraints. For more information, run "rover list-index" with no arguments.
+List an index of entries for a ROVER repository, defined by the the data-dir configuration options, that match given constraints. For more information, run "rover list-index" with no arguments.
 
-Flag parameters used to change the output format are optional arguments. Flags are mutually exclusive and take no value:
+Flag options used to change the output format are optional arguments. Flags are mutually exclusive and take no value:
 
   count - only the number of matches will be shown
 
@@ -169,7 +169,7 @@ Flag parameters used to change the output format are optional arguments. Flags a
 
   join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -196,9 +196,9 @@ will list all entries in the index after the year 2000.
 
     rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
 
-List a summary of entries for a ROVER repository, defined by the data-dir configuration parameter, that match given constraints. List summary is faster than `rover list-index` but gives less detail.  For more information, run "rover %s" with no arguments.
+List a summary of entries for a ROVER repository, defined by the data-dir configuration option, that match given constraints. List summary is faster than `rover list-index` but gives less detail.  For more information, run "rover %s" with no arguments.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -226,7 +226,7 @@ list all entries in the summary after 2001-01-01.
 
 Subscribe generates a background service, daemon, that regularly compares data available at the configured server with the local repository. If there is a discrepancy, available data is downloaded, ingested and indexed. ROVER subscribe is similar to `rover retrieve` but uses a daemon to regularly update a local repository.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -238,7 +238,7 @@ Subscribe generates a background service, daemon, that regularly compares data a
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 
-Most of the download process is controlled by the parameters provided when starting the service (see `rover start`).
+Most of the download process is controlled by the options provided when starting the service (see `rover start`).
 
 ##### Examples
 
@@ -254,11 +254,11 @@ will instruct the daemon to regularly download, ingest and index and data for IU
 
 ### Start
 
-Starts the background, daemon, process to support `rover subscribe`. The parameter, --recheck-period, sets the time interval in hours for the daemon to reprocess. ROVER start is the preferred method to begin a ROVER subscription.
+Starts the background, daemon, process to support `rover subscribe`. The option, --recheck-period, sets the time interval in hours for the daemon to reprocess. ROVER start is the preferred method to begin a ROVER subscription.
 
 See also `rover stop`, `rover status` and `rover daemon`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -284,7 +284,7 @@ See also `rover stop`, `rover status` and `rover daemon`.
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 | dev                 | False                | Development mode (show exceptions)? |
 
-In addition, parameters relevant to the processing pipeline (see `rover retrieve` , or the individual commands for download, ingest and index) apply.
+In addition, options relevant to the processing pipeline (see `rover retrieve` , or the individual commands for download, ingest and index) apply.
 
 ##### Examples
 
@@ -304,7 +304,7 @@ Stop the background, daemon, process to support `rover subscribe`.
 
 See also `rover start`, `rover status`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -326,7 +326,7 @@ Displays if the daemon is operating.
 
 See also `rover start`, `rover stop`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -350,7 +350,7 @@ Deletes one or more subscriptions identified by their indices. ROVER list-subscr
 
 To avoid conflicts with subscriptions that are currently being processed, `rover stop` must stop the daemon before using the unsubscribe command.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -373,7 +373,7 @@ will delete subscriptions 1, 2 and 3.
 
 Ask the daemon to immediately re-process a subscription(s) based on its index. List-subscribe displays subscriptions indices. Trigger accepts integers or ranges of integers (N:M) as arguments.
 
-#### Significant Parameters
+#### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -401,9 +401,9 @@ useful from the command line:
 
     rover download file [path]
 
-Downloads a single request, typically for a day, from a URL or a given file. File arguments are expected to contain FDSN web services requests and fetch data from the URL set by the dataselect-url parameter. Data are downloaded to a temporary directory, which is configured by the temp-dir parameter. After downloaded, data are ingested into the data-dir repository and are deleted from the temp directory. `rover download` is called by `rover retrieve`, 'rover subscribe` and `rover daemon`.
+Downloads a single request, typically for a day, from a URL or a given file. File arguments are expected to contain FDSN web services requests and fetch data from the URL set by the dataselect-url option. Data are downloaded to a temporary directory, which is configured by the temp-dir option. After downloaded, data are ingested into the data-dir repository and are deleted from the temp directory. `rover download` is called by `rover retrieve`, 'rover subscribe` and `rover daemon`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -418,7 +418,7 @@ Downloads a single request, typically for a day, from a URL or a given file. Fil
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 
-Parameters used to configure the sub-commands ingest, index are also applicable - see Ingest/Index help for more details.
+Options used to configure the sub-commands ingest, index are also applicable - see Ingest/Index help for more details.
 
 
 ##### Examples
@@ -438,22 +438,22 @@ will download, ingest and index data from `dataselect-url` after POSTing `myrequ
 
 Adds contents from a miniSEED formatted file to ROVER's local repository and indexes the new data.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | index               | True                 | Call index after ingest?       |
-| leap                | True                 | Use leapseconds file?          |
-| leap-expire         | 30                   | Number of days before reloading file |
-| leap-file           | leap-seconds.list    | File for leapsecond data       |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| leap                | True                 | Use leap seconds file?         |
+| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
+| leap-file           | leap-seconds.list    | File for leap second data      |
+| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 
-Parameters used to configure the sub-command index are also applicable - see Index help for more details.
+Options used to configure the sub-command index are also applicable - see Index help for more details.
 
 ##### Examples
 
@@ -469,10 +469,10 @@ will add all the data in the given file to the repository.
     rover index (file|dir)+
 
 Indexes files, adds or changes entries in the tsindex table stored in the miniSEED database.
- 
+
 When no argument is given, all modified files in the repository are processed. The `--all` flag forces all files to be processed. If a path argument is provided, all files contained in the directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -480,10 +480,10 @@ When no argument is given, all modified files in the repository are processed. T
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
-| leap                | True                 | Use leapseconds file?          |
-| leap-expire         | 30                   | Number of days before reloading file |
-| leap-file           | leap-seconds.list    | File for leapsecond data       |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| leap                | True                 | Use leap seconds file?         |
+| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
+| leap-file           | leap-seconds.list    | File for leap second data      |
+| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
@@ -501,7 +501,7 @@ will index the entire repository.
 
 Creates a summary of the index stored in a ROVER repository. This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -525,7 +525,7 @@ The background, daemon, process that supports `rover subscribe`. ROVER's start c
 
 See also `rover stop`, `rover status`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -556,12 +556,12 @@ See also `rover stop`, `rover status`.
     rover daemon -f roverrc
 
 will start the daemon in the foreground using the given configuration file.
-  
+
     rover start --recheck-period 24
 
 will start the daemon in the foreground, processing subscriptions every 24 hours.
 
-REMINDER: ROVER start is the preferred method to launch the subscription service. 
+REMINDER: ROVER start is the preferred method to launch the subscription service.
 
     
 
@@ -577,7 +577,7 @@ REMINDER: ROVER start is the preferred method to launch the subscription service
 
 Starts a web server that provides information on the progress of the download manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's default configuration starts `rover web` automatically. The flag`--no-web` prevents ROVER's web server from launching in accordance with `rover retrieve` or `rover start`.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -602,7 +602,7 @@ will start the daemon without the web server.
 
 Download missing metadata from the fdsnws-station web service and save to the data archive. This feature is only supported for the ASDF output format.
 
-##### Significant Parameters
+##### Significant Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -622,8 +622,8 @@ Download missing metadata from the fdsnws-station web service and save to the da
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
-| output-format       | mseed                | Output data format. Choose from "mseed" or "asdf" |
-| asdf-filename       | asdf.h5              | Name of asdf file to create when OUTPUT_FORMAT=asdf |
+| output-format       | mseed                | Output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF) |
+| asdf-filename       | asdf.h5              | Name of ASDF file when ASDF output is specified |
 | force-metadata-reload | False                | Force reload of metadata       |
 
 ##### Examples

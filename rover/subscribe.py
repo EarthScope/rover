@@ -35,10 +35,10 @@ class Subscriber(SqliteSupport):
 Subscribe generates a background service, daemon, that regularly compares data
 available at the configured server with the local repository. If there is a
 discrepancy, available data is downloaded, ingested and indexed. ROVER subscribe
-is similar to `rover retrieve` but uses a daemon to regularly update a local 
+is similar to `rover retrieve` but uses a daemon to regularly update a local
 repository.
 
-##### Significant Parameters
+##### Significant Options
 
 @availability-url
 @dataselect-url
@@ -48,7 +48,7 @@ repository.
 @log-verbosity
 @temp-dir
 
-Most of the download process is controlled by the parameters provided when starting the service (see
+Most of the download process is controlled by the options provided when starting the service (see
 `rover start`).
 
 ##### Examples
@@ -103,7 +103,7 @@ dates that are missing from the repository.
                 raise e
 
     def run(self, args):
-        # input is a temp file as we prepend parameters
+        # input is a temp file as we prepend options
         try:
             path = unique_path(self._subscriptions_dir, SUBSCRIBEFILE, args[0])
             if len(args) == 1:
@@ -158,7 +158,7 @@ ranges (N:M).
 The data to be downloaded is not exact, because the daemon may already be downloading data, or because when
 the subscription is processed (in the future) the available data have changed.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -243,14 +243,14 @@ class Unsubscriber(SqliteSupport):
     rover unsubscribe N[:M]+
 
 Deletes one or more subscriptions identified by their indices.
-ROVER list-subscribe displays subscription indices. Unsubscribe accepts 
-integers or ranges of integers (N:M) as arguments. Data associated with a 
+ROVER list-subscribe displays subscription indices. Unsubscribe accepts
+integers or ranges of integers (N:M) as arguments. Data associated with a
 subscription(s) are not deleted.
 
-To avoid conflicts with subscriptions that are currently being processed, 
+To avoid conflicts with subscriptions that are currently being processed,
 `rover stop` must stop the daemon before using the unsubscribe command.
 
-##### Significant Parameters
+##### Significant Options
 
 @data-dir
 @verbosity
@@ -289,11 +289,11 @@ class Trigger(SqliteSupport):
 
     rover trigger N[:M]+
 
-Ask the daemon to immediately re-process a subscription(s) based on its index. 
-List-subscribe displays subscriptions indices. Trigger accepts integers or 
+Ask the daemon to immediately re-process a subscription(s) based on its index.
+List-subscribe displays subscriptions indices. Trigger accepts integers or
 ranges of integers (N:M) as arguments.
 
-#### Significant Parameters
+#### Significant Options
 
 @data-dir
 @verbosity

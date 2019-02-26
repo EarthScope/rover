@@ -1,77 +1,74 @@
 
 # ROVER Configuration
 
-ROVER can be configured via a file or by using command line parameters.
-Parameter names are the same in both cases.
+ROVER can be configured via a file or by using command line options
+or a combination of the two.  Option names are the same in both cases.
 
 ## File Configuration
 
-ROVER's configuation file, rover.config, is written to a user specified
-location upon the initialization of a rover data repository. ROVER
-repositories are intilized by running the command
-`rover init-repository /PATH/TO/DATAREPO`, a configuration file is
-automatically generated in the directory DATAREPO. The command
-`rover make-config` resets a rover.config.
+ROVER's configuration file, normally named rover.config, contains all
+options for a ROVER repository. A default config is is created when a
+ROVER repository is initialized.
 
-To use a configuration file external to the data repository, the
-`-f` or `--file` flag follwed by a path to the configuration
-file must be included when calling ROVER:
+By default `rover.config` is searched for in the current working
+directory, allowing for rover commands to be run without specifying
+a config file.
+
+To explicitly use a configuration file, the `-f` or `--file` option
+followed by a path to the configuration file can be included when
+calling ROVER, e.g.:
 
     rover -f /PATH/TO/rover.config
 
-Use a text editor to change parameter values in the rover.config file. Lines
-starting with `#` are comments.
+Use a text editor to change option values in the rover.config file.
+Lines starting with `#` are comments.
 
 ## Command Line Configuration
 
-Parameters can be directly specified on the command line.
-For example, the `temp-dir` parameter could be assigned
-when running ROVER.
+Options can be directly specified on the command line.
+For example, the `verbosity` option could be assigned
+when running ROVER:
 
-    rover --temp-dir /tmp ...
+    rover --verbosity 6 ...
 
-Boolean parameters follow different syntax when assigned through the
-command prompt rather than a file. In the terminal,
-boolean paramters are interperted as flags, which can be
-negated by prefixing the parametrer's name with `no-`:
+Boolean options follow different syntax when assigned through the
+command prompt versus a config file. In the terminal,
+boolean options are interperted as flags, which can be
+negated by prefixing the option's name with `no-`:
 
-    rover --index ...
+    rover --web ...
 
 or
 
-    rover --no-index ...
+    rover --no-web ...
 
-Available parameters can be displayed using `rover -h`.
+Available options are displayed using `rover -h` or `rover -H`,
+with the later syntax showing the full help with all options.
 
-## Variables, Relative Paths, Default Configuration
+## Default Configuration
 
-ROVER's default configuration uses relative paths and assumes that the
-configuration file is in the `PATH/TO/DATAREPO` directory. Unless
-otherwise configured, ROVER excpets the following directory structure:
+ROVER's default configuration is written to a file named `rover.config`
+when a new repository is initialized using the command:
 
-    USERHOME/
-    +- rover/
-       +- config
-       +- leap-seconds.lst
+    rover init-repository /PATH/TO/DATAREPO
+
+By default, a repository is arranged in the following structure:
+
+    DATAREPO/
+       +- rover.config
+       +- leap-seconds.list
        +- logs/
        |  +- ...
-       +- mseed/
-       |  +- index.sql
+       +- data/
+       |  +- timeseries.sqlite
        |  +- ...
        +- tmp/
           +- ...
 
-A rover.config file is created automatically when initiating a ROVER
-data repository. To create multiple ROVER data repositories using
-one instance of ROVER, a user can either intiate a new repository using
-`rover init-repository /PATH/TO/DATAREPO2` or specifiy a path to a
-configuration using the -f/--file flag:
+All of these base directory and file locations can be specified
+using rover options.
 
-    rover -f newdir/config
-
-Will place all files in `newdir`.
-
-## Parameters
+## Options
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
@@ -93,8 +90,8 @@ Will place all files in `newdir`.
 | ingest              | True                 | Call ingest after retrieval?   |
 | index               | True                 | Call index after ingest?       |
 | post-summary        | True                 | Call summary after retrieval?  |
-| output-format       | mseed                | Output data format. Choose from "mseed" or "asdf" |
-| asdf-filename       | asdf.h5              | Name of asdf file to create when OUTPUT_FORMAT=asdf |
+| output-format       | mseed                | Output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF) |
+| asdf-filename       | asdf.h5              | Name of ASDF file when ASDF output is specified |
 | station-url         | http://service.iris.edu/fdsnws/station/1/query | Station service url            |
 | force-metadata-reload | False                | Force reload of metadata       |
 | availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
@@ -119,10 +116,10 @@ Will place all files in `newdir`.
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
-| leap                | True                 | Use leapseconds file?          |
-| leap-expire         | 30                   | Number of days before reloading file |
-| leap-file           | leap-seconds.list    | File for leapsecond data       |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leapsecond data        |
+| leap                | True                 | Use leap seconds file?         |
+| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
+| leap-file           | leap-seconds.list    | File for leap second data      |
+| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |

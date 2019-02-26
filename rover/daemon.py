@@ -32,13 +32,13 @@ class Starter(UserFeedback):
     """
 ### Start
 
-Starts the background, daemon, process to support `rover subscribe`. The 
-parameter, --recheck-period, sets the time interval in hours for the daemon to
-reprocess. ROVER start is the preferred method to begin a ROVER subscription. 
+Starts the background, daemon, process to support `rover subscribe`. The
+option, --recheck-period, sets the time interval in hours for the daemon to
+reprocess. ROVER start is the preferred method to begin a ROVER subscription.
 
 See also `rover stop`, `rover status` and `rover daemon`.
 
-##### Significant Parameters
+##### Significant Options
 
 @rover-cmd
 @mseedindex-cmd
@@ -62,7 +62,7 @@ See also `rover stop`, `rover status` and `rover daemon`.
 @log-verbosity
 @dev
 
-In addition, parameters relevant to the processing pipeline (see `rover retrieve`
+In addition, options relevant to the processing pipeline (see `rover retrieve`
 , or the individual commands for download, ingest and index) apply.
 
 ##### Examples
@@ -103,7 +103,7 @@ Stop the background, daemon, process to support `rover subscribe`.
 
 See also `rover start`, `rover status`.
 
-##### Significant Parameters
+##### Significant Options
 
 @verbosity
 @log-dir
@@ -135,7 +135,7 @@ Displays if the daemon is operating.
 
 See also `rover start`, `rover stop`.
 
-##### Significant Parameters
+##### Significant Options
 
 @verbosity
 @log-dir
@@ -173,12 +173,12 @@ class Daemon(SqliteSupport):
     """
 ### Daemon
 
-The background, daemon, process that supports `rover subscribe`. ROVER's start 
+The background, daemon, process that supports `rover subscribe`. ROVER's start
 command is the preferred method to launch the subscription service.
 
 See also `rover stop`, `rover status`.
 
-##### Significant Parameters
+##### Significant Options
 
 @rover-cmd
 @mseedindex-cmd
@@ -207,12 +207,12 @@ See also `rover stop`, `rover status`.
     rover daemon -f roverrc
 
 will start the daemon in the foreground using the given configuration file.
-  
+
     rover start --recheck-period 24
 
 will start the daemon in the foreground, processing subscriptions every 24 hours.
 
-REMINDER: ROVER start is the preferred method to launch the subscription service. 
+REMINDER: ROVER start is the preferred method to launch the subscription service.
 
     """
 

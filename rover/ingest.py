@@ -29,10 +29,10 @@ class Ingester(SqliteSupport, DirectoryScanner):
 
     rover ingest file
 
-Adds contents from a miniSEED formatted file to ROVER's local repository and 
+Adds contents from a miniSEED formatted file to ROVER's local repository and
 indexes the new data.
 
-##### Significant Parameters
+##### Significant Options
 
 @mseedindex-cmd
 @data-dir
@@ -45,7 +45,7 @@ indexes the new data.
 @log-dir
 @log-verbosity
 
-Parameters used to configure the sub-command index are also applicable - 
+Options used to configure the sub-command index are also applicable -
 see Index help for more details.
 
 ##### Examples

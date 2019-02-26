@@ -6,77 +6,74 @@ cat <<EOF > docs/configuration.md
 
 # ROVER Configuration
 
-ROVER can be configured via a file or by using command line parameters.
-Parameter names are the same in both cases.
+ROVER can be configured via a file or by using command line options
+or a combination of the two.  Option names are the same in both cases.
 
 ## File Configuration
 
-ROVER's configuation file, rover.config, is written to a user specified
-location upon the initialization of a rover data repository. ROVER
-repositories are intilized by running the command
-\`rover init-repository /PATH/TO/DATAREPO\`, a configuration file is
-automatically generated in the directory DATAREPO. The command
-\`rover make-config\` resets a rover.config.
+ROVER's configuration file, normally named rover.config, contains all
+options for a ROVER repository. A default config is is created when a
+ROVER repository is initialized.
 
-To use a configuration file external to the data repository, the
-\`-f\` or \`--file\` flag follwed by a path to the configuration
-file must be included when calling ROVER:
+By default \`rover.config\` is searched for in the current working
+directory, allowing for rover commands to be run without specifying
+a config file.
+
+To explicitly use a configuration file, the \`-f\` or \`--file\` option
+followed by a path to the configuration file can be included when
+calling ROVER, e.g.:
 
     rover -f /PATH/TO/rover.config
 
-Use a text editor to change parameter values in the rover.config file. Lines
-starting with \`#\` are comments.
+Use a text editor to change option values in the rover.config file.
+Lines starting with \`#\` are comments.
 
 ## Command Line Configuration
 
-Parameters can be directly specified on the command line.
-For example, the \`temp-dir\` parameter could be assigned
-when running ROVER.
+Options can be directly specified on the command line.
+For example, the \`verbosity\` option could be assigned
+when running ROVER:
 
-    rover --temp-dir /tmp ...
+    rover --verbosity 6 ...
 
-Boolean parameters follow different syntax when assigned through the
-command prompt rather than a file. In the terminal,
-boolean paramters are interperted as flags, which can be
-negated by prefixing the parametrer's name with \`no-\`:
+Boolean options follow different syntax when assigned through the
+command prompt versus a config file. In the terminal,
+boolean options are interperted as flags, which can be
+negated by prefixing the option's name with \`no-\`:
 
-    rover --index ...
+    rover --web ...
 
 or
 
-    rover --no-index ...
+    rover --no-web ...
 
-Available parameters can be displayed using \`rover -h\`.
+Available options are displayed using \`rover -h\` or \`rover -H\`,
+with the later syntax showing the full help with all options.
 
-## Variables, Relative Paths, Default Configuration
+## Default Configuration
 
-ROVER's default configuration uses relative paths and assumes that the
-configuration file is in the \`PATH/TO/DATAREPO\` directory. Unless
-otherwise configured, ROVER excpets the following directory structure:
+ROVER's default configuration is written to a file named \`rover.config\`
+when a new repository is initialized using the command:
 
-    USERHOME/
-    +- rover/
-       +- config
-       +- leap-seconds.lst
+    rover init-repository /PATH/TO/DATAREPO
+
+By default, a repository is arranged in the following structure:
+
+    DATAREPO/
+       +- rover.config
+       +- leap-seconds.list
        +- logs/
        |  +- ...
-       +- mseed/
-       |  +- index.sql
+       +- data/
+       |  +- timeseries.sqlite
        |  +- ...
        +- tmp/
           +- ...
 
-A rover.config file is created automatically when initiating a ROVER
-data repository. To create multiple ROVER data repositories using
-one instance of ROVER, a user can either intiate a new repository using
-\`rover init-repository /PATH/TO/DATAREPO2\` or specifiy a path to a
-configuration using the -f/--file flag:
+All of these base directory and file locations can be specified
+using rover options.
 
-    rover -f newdir/config
-
-Will place all files in \`newdir\`.
-
-## Parameters
+## Options
 
 EOF
 
