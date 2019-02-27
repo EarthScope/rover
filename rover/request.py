@@ -61,7 +61,7 @@ def unique(input):
 
 def overlapping_pair(pair1, pair2):
     """
-    Check whether two pairs of dates (begin and end) overlap.
+    Check whether two pairs of dates (start and end) overlap.
     """
     # if either is open, they must overlap
     if not pair1 or not pair2:

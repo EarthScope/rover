@@ -35,9 +35,9 @@ class BaseRetriever(SqliteSupport, UserFeedback):
 
     rover retrieve file
 
-    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
+    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
 
-    rover retrieve N_S_L_C [begin [end]]
+    rover retrieve N_S_L_C [start [end]]
 
 Compares ROVER's local index with remotely available data, then downloads and
 ingest files missing from the local repository. The URL determining the
@@ -122,7 +122,7 @@ data missing from rover’s local repository.
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
-        usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % command
+        usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [start [end]] | N_S_L_C [start [end]])' % command
         if not args:
             raise Exception(usage)
         # input is a temp file as we prepend options
@@ -212,7 +212,7 @@ class ListRetriever(BaseRetriever):
 
     rover list-retrieve file
 
-    rover list-retrieve N_S_L_C [begin [end]]
+    rover list-retrieve N_S_L_C [start [end]]
 
 Compares the local index with the requested data remotely available, then
 displays the difference. Note that the summary is printed to stdout, while

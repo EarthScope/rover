@@ -34,7 +34,8 @@ class Starter(UserFeedback):
 
 Starts the background, daemon, process to support `rover subscribe`. The
 option, --recheck-period, sets the time interval in hours for the daemon to
-reprocess. ROVER start is the preferred method to begin a ROVER subscription.
+reprocess. ROVER start is the preferred method to initiate the retrieval of
+data via subscription(s).
 
 See also `rover stop`, `rover status` and `rover daemon`.
 

@@ -4,7 +4,7 @@ from re import match, sub
 from sqlite3 import OperationalError
 
 from .config import timeseries_db
-from .index import BEGIN, END
+from .index import START, END
 from .utils import STATION, NETWORK, CHANNEL, LOCATION, format_epoch, tidy_timestamp
 from .args import SUMMARY
 from .sqlite import SqliteSupport
@@ -67,9 +67,9 @@ class SummaryLister(SqliteSupport):
     """
 ### List Summary
 
-    rover list-summary [net=...|sta=...|loc=...|cha=..]* [begin=...] [end=...]
+    rover list-summary [net=...|sta=...|loc=...|cha=..]* [start=...] [end=...]
 
-    rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
+    rover list-summary [N_S_L_C_Q]* [start=...] [end=...]
 
 List a summary of entries for a ROVER repository, defined by the data-dir
 configuration option, that match given constraints. List summary is faster
@@ -85,7 +85,7 @@ run "rover %s" with no arguments.
 
 #### Examples
 
-    rover list-summary net=* begin=2001-01-01
+    rover list-summary net=* start=2001-01-01
 
 list all entries in the summary after 2001-01-01.
 
@@ -101,7 +101,7 @@ list all entries in the summary after 2001-01-01.
                                       NETWORK: [],
                                       CHANNEL: [],
                                       LOCATION: []}
-        self._single_constraints = {BEGIN: None,
+        self._single_constraints = {START: None,
                                     END: None}
 
     def run(self, args, stdout=None):
@@ -127,7 +127,7 @@ list all entries in the summary after 2001-01-01.
                 raise Exception('Cannot parse "%s" (not of form name=value)' % arg)
             else:
                 name, value = parts
-                if name in (BEGIN, END):
+                if name in (START, END):
                     self._set_time_limit(name, value)
                 else:
                     self._set_name_value(name, value)
@@ -146,10 +146,10 @@ list all entries in the summary after 2001-01-01.
             raise Exception('Multiple values for %s' % name)
         value = tidy_timestamp(self._log, value)
         self._single_constraints[name] = value
-        if self._single_constraints[BEGIN] and self._single_constraints[END] \
-                and self._single_constraints[BEGIN] > self._single_constraints[END]:
-            raise Exception('begin (%s) must be after end (%s)'
-                            % (self._single_constraints[BEGIN], self._single_constraints[END]))
+        if self._single_constraints[START] and self._single_constraints[END] \
+                and self._single_constraints[START] > self._single_constraints[END]:
+            raise Exception('start time (%s) must be after end time (%s)'
+                            % (self._single_constraints[START], self._single_constraints[END]))
 
     def _set_name_value(self, name, value):
         if not match('^[\w\*\?]*$', value):
@@ -188,10 +188,10 @@ list all entries in the summary after 2001-01-01.
                 params.append(self._wildchars(value))
             if repeated:
                 sql += ') '
-        if self._single_constraints[BEGIN]:
+        if self._single_constraints[START]:
             sql, constrained = conjunction(sql, constrained)
             sql += 'latest > ?'
-            params.append(self._single_constraints[BEGIN])
+            params.append(self._single_constraints[START])
         if self._single_constraints[END]:
             sql, constrained = conjunction(sql, constrained)
             sql += 'earliest < ?'
