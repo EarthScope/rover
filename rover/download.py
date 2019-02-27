@@ -160,7 +160,7 @@ will download, ingest and index data from `dataselect-url` after POSTing
             feedback['download_byte_count'] = os.path.getsize(response)
 
             if feedback['download_byte_count']:
-                sys.stdout.write(json.dumps(feedback).encode('utf-8'))
+                sys.stdout.write(json.dumps(feedback))
 
         return response
 
