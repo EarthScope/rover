@@ -33,7 +33,7 @@ class Coverage:
                 # data are separated by 0.000002s, so use a large value in that case
                 self.samplerate = samplerate if samplerate else 10000
 
-    def add_epochs(self, begin, end, samplerate=None):
+    def add_epochs(self, start, end, samplerate=None):
         """
         Add a timespan to those that already exist, merging if necessary.
 
@@ -41,28 +41,28 @@ class Coverage:
         by increasing start time - see builders that guarantee that.
         """
         self.add_samplerate(samplerate)
-        self.timespans.append((begin, end))
+        self.timespans.append((start, end))
 
     def join(self):
         self._log.debug('Joining overlapping timespans')
         if self:  # avoid looking at samplerate if no data
             joined, (tolerance, increment) = [], self.tolerances()
-            for begin, end in self.timespans:
+            for start, end in self.timespans:
                 if not joined:
-                    joined.append((begin, end))
+                    joined.append((start, end))
                 else:
                     b, e = joined[-1]
-                    if begin < b:
+                    if start < b:
                         raise Exception('Unsorted start times')
                     # do they overlap at all?
-                    if abs(begin - e) < 1.0 / self.samplerate + tolerance:
+                    if abs(start - e) < 1.0 / self.samplerate + tolerance:
                         # if they do, and this extends previous, replace with maximal span
                         if end > e:
-                            self._log.debug('Joining %d-%d and %d-%d' % (begin, end, b, e))
+                            self._log.debug('Joining %d-%d and %d-%d' % (start, end, b, e))
                             joined[-1] = (b, end)
                     # no they don't overlap
                     else:
-                        joined.append((begin, end))
+                        joined.append((start, end))
             self.timespans = joined
 
     def __str__(self):
@@ -109,30 +109,30 @@ class Coverage:
         difference.add_samplerate(self.samplerate)
         while True:
             try:
-                us_begin, us_end = next(us)
+                us_start, us_end = next(us)
             except StopIteration:
                 # we can return difference now, because there's only more subtracting to do
                 return difference
             try:
-                them_begin, them_end = next(them)
+                them_start, them_end = next(them)
             except StopIteration:
                 # there's no more subtraction, so everything left goes into difference
-                if us_end - us_begin >= tolerance:
-                    difference.add_epochs(us_begin, us_end)
-                for (us_begin, us_end) in us:
-                    if us_end - us_begin >= tolerance:
-                        difference.add_epochs(us_begin, us_end)
+                if us_end - us_start >= tolerance:
+                    difference.add_epochs(us_start, us_end)
+                for (us_start, us_end) in us:
+                    if us_end - us_start >= tolerance:
+                        difference.add_epochs(us_start, us_end)
                 return difference
 
             # we start together
-            if abs(us_begin - them_begin) < tolerance:
+            if abs(us_start - them_start) < tolerance:
                 # if we end together too, there's nothing to do
                 if abs(us_end - them_end) < tolerance:
                     pass
                 # if we end first, so are completely wiped out, while they live to
                 # perhaps delete more
                 elif us_end < them_end:
-                    them.push((them_begin, them_end))
+                    them.push((them_start, them_end))
                 # but they end first.  so some of our timespan still lives to face
                 # the next challenger.
                 else:
@@ -140,34 +140,34 @@ class Coverage:
                     # that we avoid including the end point of them again.
                     us.push((them_end + increment, us_end))
             # we start before them (difference must be larger than tolerance - see above)
-            elif us_begin < them_begin:
+            elif us_start < them_start:
                 # we also end before them, so we're home free into the difference and
                 # they live to try kill our next timespan
-                if us_end < them_begin:
-                    difference.add_epochs(us_begin, us_end)
-                    them.push((them_begin, them_end))
+                if us_end < them_start:
+                    difference.add_epochs(us_start, us_end)
+                    them.push((them_start, them_end))
                 # we end after they start, so we overlap.  save the initial part in
                 # the difference and push the rest back for further consideration.
                 else:
-                    # is (us_begin, them_begin - increment) worth adding?
-                    if them_begin - increment - us_begin >= tolerance:
-                        difference.add_epochs(us_begin, them_begin - increment)
-                    if us_end - them_begin > tolerance:
-                        us.push((them_begin, us_end))
-                    them.push((them_begin, them_end))
+                    # is (us_start, them_start - increment) worth adding?
+                    if them_start - increment - us_start >= tolerance:
+                        difference.add_epochs(us_start, them_start - increment)
+                    if us_end - them_start > tolerance:
+                        us.push((them_start, us_end))
+                    them.push((them_start, them_end))
             # we start after them
             else:
                 # if we also end before them, then we're deleted completely
                 # while they continue to face our next timespan.
                 # (this is tricky - we can end slightly after, if it's within tolerance)
                 if us_end - them_end < tolerance:
-                    them.push((them_begin, them_end))
+                    them.push((them_start, them_end))
                 # but we also end after them.  so some (perhaps all) of our timespan
                 # remains to face their next timespan.
                 else:
                     # again, we need to nudge forwards beyond them to avoid
                     # re-including the point
-                    us.push((max(them_end + increment, us_begin), us_end))
+                    us.push((max(them_end + increment, us_start), us_end))
 
 
 # builders are needed to buffer the data read from the database and sort it,
@@ -193,12 +193,12 @@ class BaseBuilder:
         for pair in timespans.split(','):
             inner = pair[1:-1]
             if pair[0] == '[':
-                begin, end = map(float, inner.split(':'))
+                start, end = map(float, inner.split(':'))
             elif pair[0] == '<':
-                begin, end = map(parse_epoch, inner.split(' '))
+                start, end = map(parse_epoch, inner.split(' '))
             else:
                 raise Exception('Unexpected timespans format: "%s"' % pair)
-            yield begin, end
+            yield start, end
 
 
 class SingleSNCLBuilder(BaseBuilder):
@@ -214,13 +214,13 @@ class SingleSNCLBuilder(BaseBuilder):
         self._timespans = []
 
     def add_timespans(self, timespans, samplerate=None):
-        for begin, end in self._parse_timespans(timespans):
-            self._timespans.append((begin, end, samplerate))
+        for start, end in self._parse_timespans(timespans):
+            self._timespans.append((start, end, samplerate))
 
     def coverage(self):
         coverage = Coverage(self._log, self._frac_tolerance, self._frac_increment, self._sncl)
-        for begin, end, samplerate in sorted(self._timespans):
-            coverage.add_epochs(begin, end, samplerate)
+        for start, end, samplerate in sorted(self._timespans):
+            coverage.add_epochs(start, end, samplerate)
         return coverage
 
 
@@ -240,15 +240,15 @@ class MultipleSNCLBuilder(BaseBuilder):
         if sncl not in self._timespans:
             self._timespans[sncl] = []
         ts = self._timespans[sncl]
-        for begin, end in self._parse_timespans(timespans):
-            ts.append((begin, end, samplerate))
+        for start, end in self._parse_timespans(timespans):
+            ts.append((start, end, samplerate))
 
     def coverages(self):
         for sncl in sorted(self._timespans.keys()):
             ts = self._timespans[sncl]
             coverage = Coverage(self._log, self._frac_tolerance, self._frac_increment, sncl)
-            for begin, end, samplerate in sorted(ts):
-                coverage.add_epochs(begin, end, samplerate)
+            for start, end, samplerate in sorted(ts):
+                coverage.add_epochs(start, end, samplerate)
             if self._join:
                 coverage.join()
             yield coverage

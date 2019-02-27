@@ -28,9 +28,9 @@ class Subscriber(SqliteSupport):
 
     rover subscribe file
 
-    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
+    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
 
-    rover subscribe N_S_L_C [begin [end]]
+    rover subscribe N_S_L_C [start [end]]
 
 Subscribe generates a background service, daemon, that regularly compares data
 available at the configured server with the local repository. If there is a
@@ -112,7 +112,7 @@ dates that are missing from the repository.
                 build_file(self._log, path, args)
             fix_file_inplace(self._log, path, self._temp_dir)
         except:
-            raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [begin [end]] | N_S_L_C [begin [end]])' % SUBSCRIBE)
+            raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [start [end]] | N_S_L_C [start [end]])' % SUBSCRIBE)
         if self._force_request:
             self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in the repository' % (mm(FORCEREQUEST)))
         else:

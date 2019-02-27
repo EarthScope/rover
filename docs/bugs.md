@@ -55,10 +55,10 @@ To avoid duplicate data (see above) `rover subscribe` checks the
 subscription against existing subscriptions.  This comparison only
 supports the basic request format:
 
-    net sta loc cha [begin [end]]
+    net sta loc cha [start [end]]
 
 The actual format supported by the availability command is more
-complex (e.g. begin and end dates using parameters), but this will
+complex (e.g. start and end times using parameters), but this will
 trigger an exception during the check for duplicate data.
 
 If necessary, the user can use `--force-request` to avoid the check
