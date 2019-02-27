@@ -8,16 +8,12 @@ Library    OperatingSystem
 *** Comment ***
 
 To trigger this reliably we need multiple entries in the lock table:
-
- * we download a bunch of sites so that there is idnexing work to be done
-
- * we force indexing with --all in the config
-
- * mseedindex-cmd has a "sleep" so that it runs slowly
-
- * a side-effect of the above is warnings about the leap seconds file
-   in the logs.  we don't care, but they appear at random places, so
-   we delete them from the logs before comparison
+  we download a bunch of sites so that there is idnexing work to be done
+  we force indexing with --all in the config 
+  mseedindex-cmd has a "sleep" so that it runs slowly
+  a side-effect of the above is warnings about the leap seconds file
+  in the logs.  we don't care, but they appear at random places, so
+  we delete them from the logs before comparison
 
 
 *** Test Cases ***
