@@ -5,8 +5,9 @@ from os import makedirs, getcwd
 from os.path import isabs, join, realpath, abspath, expanduser, dirname
 from re import compile, sub
 
-from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, \
-    FILEVAR, DIRVAR, TEMPDIR, DATADIR, COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE, ASDF_FILENAME
+from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, \
+    VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, FILEVAR, DIRVAR, TEMPDIR, DATADIR, \
+    COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE, FULLCONFIG, ASDF_FILENAME
 from .logs import init_log, log_name
 from .sqlite import init_db
 from .utils import safe_unlink, canonify
@@ -242,7 +243,7 @@ will create the repository in ~/rover
     def __create(self):
         config_file = self.__config.file(FILE)
         self.__log.default('Writing new config file "%s"' % config_file)
-        Arguments().write_config(config_file, self.__args)
+        Arguments().write_config(config_file, self.__args, WRITE_FULL_CONFIG=self.__config.arg(FULLCONFIG))
         self.__config.dir(DATADIR)
         db = init_db(timeseries_db(self.__config), self.__log)
         db.execute('PRAGMA journal_mode=WAL')

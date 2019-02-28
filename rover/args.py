@@ -65,6 +65,7 @@ FORCEFAILURES = 'force-failures'
 FORCE_METADATA_RELOAD = 'force-metadata-reload'
 FORCEREQUEST = 'force-request'
 H, FULLHELP = 'H', 'full-help'
+FULLCONFIG = 'full-config'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
 HTTPRETRIES = 'http-retries'
@@ -102,6 +103,10 @@ BIG_V, VERSION = 'V', 'version'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
                VERSION, HELP, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
+LITTLE_CONFIG = (DATADIR, DOWNLOADRETRIES, DOWNLOADWORKERS, OUTPUT_FORMAT,
+                 ASDF_FILENAME, STATIONURL, AVAILABILITYURL, DATASELECTURL,
+                 TEMPDIR, LOGDIR, LOGVERBOSITY, VERBOSITY, WEB, HTTPPORT,
+                 EMAIL, SMTPADDRESS, SMTPPORT)
 DYNAMIC_ARGS = (VERSION, HELP, FULLHELP)
 
 # default values (for non-boolean parameters)
@@ -263,6 +268,7 @@ class Arguments(ArgumentParser):
 
         self.add_argument(m(BIG_V), mm(VERSION), action='version', version='ROVER %s' % __version__)
         self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
+        self.add_argument(mm(FULLCONFIG), default=False, action='store_bool', help='initialize with full configuration file', metavar='')
 
         # operation details
         self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
@@ -420,8 +426,14 @@ class Arguments(ArgumentParser):
         If keywords are specified, they over-ride defaults and args.
         """
         create_parents(path)
+
+        if "WRITE_FULL_CONFIG" in kargs and not kargs["WRITE_FULL_CONFIG"]:
+            actions = [action for action in self._actions if unbar(action.dest) in LITTLE_CONFIG]
+        else:
+            actions = self._actions
+
         with open(path, 'w') as out:
-            for action in self._actions:
+            for action in actions:
                 name, default = action.dest, action.default
                 if unbar(name) not in DYNAMIC_ARGS:
                     if default is not None:
