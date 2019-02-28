@@ -1,6 +1,6 @@
-retrieve  DEFAULT: Rover VERSION - starting retrieve
+retrieve  DEFAULT: ROVER VERSION - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
-retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
+retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
 retrieve  DEFAULT: Downloading II_TAU 2018-001 (N_S 1/8; day 1/1)
 retrieve  DEFAULT: Downloading IU_TATO 2018-001 (N_S 2/8; day 1/1)
 retrieve  DEFAULT: Downloading IU_TEIG 2018-001 (N_S 3/8; day 1/1)
@@ -9,18 +9,23 @@ retrieve  DEFAULT: Downloading IU_TRIS 2018-001 (N_S 5/8; day 1/1)
 retrieve  DEFAULT: Downloading IU_TRQA 2018-001 (N_S 6/8; day 1/1)
 retrieve  DEFAULT: Downloading IU_TUC 2018-001 (N_S 7/8; day 1/1)
 retrieve  DEFAULT: Downloading IW_TPAW 2018-001 (N_S 8/8; day 1/1)
-retrieve  DEFAULT: The latest retrieval attempt had no errors, but we downloaded data so will try again to check that all data were retrieved
-retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
-retrieve  DEFAULT: The availability service indicates that there are no more data to download
-retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
+retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
+retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
+retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
+retrieve  DEFAULT: The initial retrieval attempt resulted in no errors or data downloaded, will verify.
+retrieve  DEFAULT: Trying new retrieval attempt 2 of 3.
+retrieve  DEFAULT: Retrieval attempt 2 of 3 is complete.
+retrieve  DEFAULT: The final retrieval, attempt 2 of 3, made no downloads and had no errors, we are complete.
 retrieve  DEFAULT: 
 retrieve  DEFAULT: ----- Retrieval Finished -----
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A rover retrieve task on HOST started DATE
-retrieve  DEFAULT: (DATE local) has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: The task comprised of 8 stations with data covering 28800s.
+retrieve  DEFAULT: A ROVER retrieve task on HOST
+retrieve  DEFAULT: started DATE (DATE UTC)
+retrieve  DEFAULT: has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A total of 8 downloads were made, with 0 errors (0 on
-retrieve  DEFAULT: final pass of 2).
+retrieve  DEFAULT: The download for 8 stations totaled 1.2 MiB,
+retrieve  DEFAULT: with data covering 28800 seconds.
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A total of 8 downloads were made, with 0 errors (0 on final pass of 2).
 retrieve  DEFAULT: 
