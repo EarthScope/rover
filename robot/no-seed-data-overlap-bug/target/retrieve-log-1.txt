@@ -1,24 +1,31 @@
-retrieve  DEFAULT: Rover VERSION - starting retrieve
+retrieve  DEFAULT: ROVER VERSION - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
-retrieve  DEFAULT: Trying new retrieval (attempt 1 of 3)
+retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
 retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 1/2)
 retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 2/2)
-retrieve  DEFAULT: The latest retrieval attempt had no errors, but we downloaded data so will try again to check that all data were retrieved
-retrieve  DEFAULT: Trying new retrieval (attempt 2 of 3)
-retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 1/2)
-retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 2/2)
-retrieve  DEFAULT: The latest retrieval attempt downloaded additional data - probably an isolated point that was not retrieved on the first pass. We will retry to make sure data are complete.
-retrieve  DEFAULT: Trying new retrieval (attempt 3 of 3)
-retrieve  DEFAULT: The availability service indicates that there are no more data to download
-retrieve  DEFAULT: The latest retrieval attempt had no downloads and no errors, so we are complete
+retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
+retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
+retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/1)
+retrieve  DEFAULT: Successful retrieval attempt 1 of 3, but no new data downloaded so try again.
+retrieve  DEFAULT: Trying new retrieval attempt 2 of 3.
+retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/1)
+retrieve  DEFAULT: Successful retrieval attempt 2 of 3, but no new data downloaded so try again.
+retrieve  DEFAULT: Trying new retrieval attempt 3 of 3.
+retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/1)
+retrieve  DEFAULT: The latest retrieval attempt had no errors.  Stopping at 3 retry attempts.
 retrieve  DEFAULT: 
 retrieve  DEFAULT: ----- Retrieval Finished -----
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A rover retrieve task on HOST started DATE
-retrieve  DEFAULT: (DATE local) has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: The task comprised of 1 stations with data covering 10800s.
+retrieve  DEFAULT: A ROVER retrieve task on HOST
+retrieve  DEFAULT: started DATE (DATE UTC)
+retrieve  DEFAULT: has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A total of 4 downloads were made, with 0 errors (0 on
-retrieve  DEFAULT: final pass of 3).
+retrieve  DEFAULT: The download for 1 stations totaled 472.0 KiB,
+retrieve  DEFAULT: with data covering 10800 seconds.
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A total of 5 downloads were made, with 0 errors (0 on final pass of 3).
+retrieve  DEFAULT: 
+retrieve  DEFAULT: The consistency of the web services could not be confirmed.
+retrieve  DEFAULT: Re-run the retrieve command with --download-retries > 1 to check
 retrieve  DEFAULT: 

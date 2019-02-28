@@ -31,6 +31,7 @@ def test_write_config():
         config = BaseConfig(DummyLog(), None, args, None, dir)
         RepoInitializer(config).run([dir])
         path = config.file(FILE)
+        dirpath = dirname(path)
         with open(path, 'r') as input:
             contents = input.read()
             assert contents == \
@@ -45,7 +46,7 @@ md-format=False
 # force cmd use (dangerous)
 force-cmd=False
 # the data directory - data, timeseries.sqlite
-data-dir=data
+data-dir='''+dirpath+'''/data
 # fractional increment for starting next timespan
 timespan-inc=0.5
 # fractional tolerance for overlapping timespans
@@ -64,12 +65,20 @@ ingest=True
 index=True
 # call summary after retrieval?
 post-summary=True
+# output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF)
+output-format=mseed
+# name of ASDF file when ASDF output is specified
+asdf-filename=asdf.h5
+# station service url
+station-url=http://service.iris.edu/fdsnws/station/1/query
+# force reload of metadata
+force-metadata-reload=False
 # availability service url
 availability-url=http://service.iris.edu/irisws/availability/1/query
 # dataselect service url
 dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
 # temporary storage for downloads
-temp-dir=tmp
+temp-dir='''+dirpath+'''/tmp
 # number of days before deleting temp files
 temp-expire=1
 # timeout for HTTP requests
@@ -85,13 +94,13 @@ all=False
 # when given a directory, process children?
 recurse=True
 # directory for subscriptions
-subscriptions-dir=subscriptions
+subscriptions-dir='''+dirpath+'''/subscriptions
 # time between availabilty checks
 recheck-period=12
 # skip overlap checks (dangerous)?
 force-request=False
 # directory for logs
-log-dir=logs
+log-dir='''+dirpath+'''/logs
 # unique log names (with PIDs)?
 log-unique=False
 # number of days before deleting unique logs
@@ -108,14 +117,14 @@ verbosity=4
 mseedindex-cmd=mseedindex -sqlitebusyto 60000
 # number of mseedindex instances to run
 mseedindex-workers=10
-# use leapseconds file?
+# use leap seconds file?
 leap=True
-# number of days before refreshing file
+# number of days before refreshing leap seconds file
 leap-expire=30
-# file for leapsecond data
-leap-file=leap-seconds.list
-# URL for leapsecond data
-leap-url=http://www.ietf.org/timezones/data/leap-seconds.list
+# file for leap second data
+leap-file='''+dirpath+'''/leap-seconds.list
+# URL for leap second data
+leap-url=https://www.ietf.org/timezones/data/leap-seconds.list
 # auto-start the download progress web server?
 web=True
 # bind address for HTTP server
@@ -133,6 +142,8 @@ smtp-port=25
 ''', contents
 
 
+
+
 def test_multiple_flags():
     argparse = Arguments()
     args, config_path = argparse.parse_args(['--index', '--no-index'])
@@ -148,10 +159,13 @@ def test_CONFIGDIR_start():
         argparse = Arguments()
         args, config_path = argparse.parse_args(['-f', config])
         config = BaseConfig(None, None, args, None, dirname(config_path))
+        print(config.dir(TEMPDIR))
+        print(config.dir(DATADIR))
+        print(canonify(dir + canonify(dir) + '/foo'))
         assert config.dir(TEMPDIR)
         assert config.dir(TEMPDIR) == canonify(dir + '/foo'), config.dir(TEMPDIR)
         assert config.dir(DATADIR)
-        assert config.dir(DATADIR) == canonify(join(dir, '${CONFIGDIR}/foo')), config.dir(DATADIR)
+        assert config.dir(DATADIR) == canonify(dir + canonify(dir) + '/foo'), config.dir(DATADIR)
 
 
 def test_CONFIGDIR_middle():
@@ -168,7 +182,7 @@ def test_CONFIGDIR_middle():
             assert config.dir(TEMPDIR)
             assert config.dir(TEMPDIR) == canonify(join(dir, 'xx' + dir + '/foo')), config.dir(TEMPDIR)
             assert config.dir(DATADIR)
-            assert config.dir(DATADIR) == canonify(join(dir, 'xx${CONFIGDIR}/foo')), config.dir(DATADIR)
+            assert config.dir(DATADIR) == canonify(dir + '/xx' + canonify(dir) + '/foo'), config.dir(DATADIR)
 
 
 def test_CONFIGDIR_bad():
@@ -178,8 +192,8 @@ def test_CONFIGDIR_bad():
             output.write('temp-dir=${FOO}\n')
         argparse = Arguments()
         args, config_path = argparse.parse_args(['-f', config])
-        config = BaseConfig(None, None, args, None, dirname(config_path))
         try:
+            config = BaseConfig(None, None, args, None, dirname(config_path))
             config.arg(TEMPDIR)
         except Exception as e:
             assert 'does not exist' in str(e), str(e)
