@@ -1,4 +1,4 @@
-retrieve  DEFAULT: Rover VERSION - starting retrieve
+retrieve  DEFAULT: ROVER VERSION - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
 retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
@@ -9,7 +9,8 @@ retrieve  DEFAULT: The final retrieval, attempt 2 of 3, made no downloads and ha
 retrieve  DEFAULT: 
 retrieve  DEFAULT: ----- Retrieval Finished -----
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A rover retrieve task on HOST
+retrieve  DEFAULT: 
+retrieve  DEFAULT: A ROVER retrieve task on HOST
 retrieve  DEFAULT: started DATE (DATE UTC)
 retrieve  DEFAULT: has completed in DURATION
 retrieve  DEFAULT: 

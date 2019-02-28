@@ -1,4 +1,4 @@
-retrieve  DEFAULT: Rover VERSION - starting retrieve
+retrieve  DEFAULT: ROVER VERSION - starting retrieve
 retrieve  DEFAULT: Status available at http://127.0.0.1:8000
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
 retrieve  DEFAULT: Downloading TA_MSTX 2012-032 (N_S 1/1; day 1/2)
