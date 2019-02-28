@@ -16,4 +16,4 @@ To install mseedindex, a system must have a `C` (or `C++`) compiler and the `mak
 
 * Copy the `mseedindex` program to `/usr/bin` or similar location that is in your PATH.
 
-If you do not want to install mseedinindex in a location in your PATH then you will need to set the `mseedindex-cmd` option in your `rover.config` file(s) to the location of the mseedinindex binary.
+If you do not want to install mseedindex in a location in your PATH then you will need to set the `mseedindex-cmd` option in your `rover.config` file(s) to the location of the mseedindex binary.
