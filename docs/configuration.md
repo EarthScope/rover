@@ -75,6 +75,7 @@ using rover options.
 | help / -h           | False                | Show the help message and exit |
 | version             | ==SUPPRESS==         | Show program's version number and exit |
 | full-help / -H      | False                | Show full help details         |
+| full-config         | False                | Initialize with full configuration file |
 | file / -f           | rover.config         | Specify configuration file     |
 | dev                 | False                | Development mode (show exceptions)? |
 | delete-files        | True                 | Delete temporary files?        |
