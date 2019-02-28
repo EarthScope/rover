@@ -65,7 +65,7 @@ Run the process `rover retrieve` to fetch these data:
       TA_MSTX__BHZ 2012-01-01T00:00:00.000000 2012-01-31T23:59:59.975000
    ```
 
-Retrieved files are miniseed format containing day lengths of station data. The files are saved with the path structure:
+Retrieved files are miniSEED format containing day lengths of station data. The files are saved with the path structure:
 
    ```
    <datarepo>/data/<network>/<year>/<day>/<station>.<network>.<year>.<day>
