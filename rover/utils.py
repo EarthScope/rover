@@ -446,7 +446,7 @@ LOCATION = 'location'
 
 def build_file(log, path, args):
     """
-    Given a N_S_L_C or net=... and begin/end dates, construct an input file in
+    Given a N_S_L_C or net=... and start/end times, construct an input file in
     the correct (availability service) format.
     """
     # just go crazy because any error is caught by the caller and changed into a 'bad syntax' error

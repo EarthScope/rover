@@ -63,9 +63,9 @@ will create the repository in ~/rover
 
     rover retrieve file
 
-    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
+    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
 
-    rover retrieve N_S_L_C [begin [end]]
+    rover retrieve N_S_L_C [start [end]]
 
 Compares ROVER's local index with remotely available data, then downloads and ingest files missing from the local repository. The URL determining the availability of remote data can be configured by the availability-url option, and URL controlling data downloads is configured by the dataselect-url option.
 
@@ -125,7 +125,7 @@ processes a command line request to download, ingest, and index data missing fro
 
     rover list-retrieve file
 
-    rover list-retrieve N_S_L_C [begin [end]]
+    rover list-retrieve N_S_L_C [start [end]]
 
 Compares the local index with the requested data remotely available, then displays the difference. Note that the summary is printed to stdout, while logging is to stderr.
 
@@ -153,10 +153,10 @@ will display the data missing from the repository to match what is available for
 
 ### List Index
 
-    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \
+    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [start=...] [end=...] \
     [count|join|join-qsr]
 
-    rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \
+    rover list-index [N_S_L_C_Q]* [start=...] [end=...] \
     [count|join|join-qsr]
 
 List an index of entries for a ROVER repository, defined by the the data-dir configuration options, that match given constraints. For more information, run "rover list-index" with no arguments.
@@ -185,16 +185,16 @@ Flag options used to change the output format are optional arguments. Flags are 
 
 will display the number of entries for all time, and any quality or smaplerate.
 
-    rover list-index net=* begin=2001-01-01
+    rover list-index net=* start=2001-01-01
 
 will list all entries in the index after the year 2000.
 
 
 ### List Summary
 
-    rover list-summary [net=...|sta=...|loc=...|cha=..]* [begin=...] [end=...]
+    rover list-summary [net=...|sta=...|loc=...|cha=..]* [start=...] [end=...]
 
-    rover list-summary [N_S_L_C_Q]* [begin=...] [end=...]
+    rover list-summary [N_S_L_C_Q]* [start=...] [end=...]
 
 List a summary of entries for a ROVER repository, defined by the data-dir configuration option, that match given constraints. List summary is faster than `rover list-index` but gives less detail.  For more information, run "rover %s" with no arguments.
 
@@ -209,7 +209,7 @@ List a summary of entries for a ROVER repository, defined by the data-dir config
 
 #### Examples
 
-    rover list-summary net=* begin=2001-01-01
+    rover list-summary net=* start=2001-01-01
 
 list all entries in the summary after 2001-01-01.
 
@@ -220,9 +220,9 @@ list all entries in the summary after 2001-01-01.
 
     rover subscribe file
 
-    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [begin [end]]
+    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
 
-    rover subscribe N_S_L_C [begin [end]]
+    rover subscribe N_S_L_C [start [end]]
 
 Subscribe generates a background service, daemon, that regularly compares data available at the configured server with the local repository. If there is a discrepancy, available data is downloaded, ingested and indexed. ROVER subscribe is similar to `rover retrieve` but uses a daemon to regularly update a local repository.
 
@@ -254,7 +254,7 @@ will instruct the daemon to regularly download, ingest and index and data for IU
 
 ### Start
 
-Starts the background, daemon, process to support `rover subscribe`. The option, --recheck-period, sets the time interval in hours for the daemon to reprocess. ROVER start is the preferred method to begin a ROVER subscription.
+Starts the background, daemon, process to support `rover subscribe`. The option, --recheck-period, sets the time interval in hours for the daemon to reprocess. ROVER start is the preferred method to initiate the retrieval of data via subscription(s).
 
 See also `rover stop`, `rover status` and `rover daemon`.
 

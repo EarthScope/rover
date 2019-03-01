@@ -56,7 +56,7 @@ def assert_bad_args(dir, args, msg):
 
 def test_bad_begin():
     with WindowsTemp(TemporaryDirectory) as dir:
-        assert_bad_args(dir, ['begin=2010-1'], 'Cannot parse timestamp "2010-1"')
+        assert_bad_args(dir, ['start=2010-1'], 'Cannot parse timestamp "2010-1"')
 
 
 def test_ambiguous():

@@ -103,7 +103,7 @@ will index the entire repository.
         self._workers.wait_for_all()
 
 
-BEGIN = 'begin'
+START = 'start'
 END = 'end'
 COUNT = 'count'
 JOIN = 'join'
@@ -116,10 +116,10 @@ class IndexLister(SqliteSupport, HelpFormatter):
     """
 ### List Index
 
-    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [begin=...] [end=...] \\
+    rover list-index [net=...|sta=...|loc=...|cha=..|qua=...|samp=...]* [start=...] [end=...] \\
     [count|join|join-qsr]
 
-    rover list-index [N_S_L_C_Q]* [begin=...] [end=...] \\
+    rover list-index [N_S_L_C_Q]* [start=...] [end=...] \\
     [count|join|join-qsr]
 
 List an index of entries for a ROVER repository, defined by the the data-dir
@@ -150,7 +150,7 @@ Flags are mutually exclusive and take no value:
 
 will display the number of entries for all time, and any quality or smaplerate.
 
-    rover list-index net=* begin=2001-01-01
+    rover list-index net=* start=2001-01-01
 
 will list all entries in the index after the year 2000.
 
@@ -168,7 +168,7 @@ will list all entries in the index after the year 2000.
                                       LOCATION: [],
                                       QUALITY: [],
                                       SAMPLERATE: []}
-        self._single_constraints = {BEGIN: None,
+        self._single_constraints = {START: None,
                                     END: None}
         self._flags = {COUNT: False, JOIN: False, JOIN_QSR: False}
 
@@ -191,7 +191,7 @@ the form YYYY-MM-DDTHH:MM:SS.SSSSSS (may be truncated on the
 right), and define a range of times over which the block must
 appear (at least partially) to be included:
 
-  begin, end
+  start, end
 
 The following parameters are simple flags that change the
 output format.  They are mutually exclusive and take no
@@ -211,7 +211,7 @@ Examples:
 will display the number of entries for all time, any
 quality or smaplerate.
 
-    rover list-index net=* begin=2001-01-01
+    rover list-index net=* start=2001-01-01
 
 will list all entries in the index after the year 2000.
 
@@ -252,7 +252,7 @@ printed to stdout.
                     raise Exception('Cannot parse "%s" (not of form name=value)' % arg)
                 else:
                     name, value = parts
-                    if name in (BEGIN, END):
+                    if name in (START, END):
                         self._set_time_limit(name, value)
                     else:
                         self._set_name_value(name, value)
@@ -280,10 +280,10 @@ printed to stdout.
             raise Exception('Multiple values for %s' % name)
         value = tidy_timestamp(self._log, value)
         self._single_constraints[name] = value
-        if self._single_constraints[BEGIN] and self._single_constraints[END] \
-                and self._single_constraints[BEGIN] > self._single_constraints[END]:
-            raise Exception('begin (%s) must be after end (%s)'
-                            % (self._single_constraints[BEGIN], self._single_constraints[END]))
+        if self._single_constraints[START] and self._single_constraints[END] \
+                and self._single_constraints[START] > self._single_constraints[END]:
+            raise Exception('start time (%s) must be after end time (%s)'
+                            % (self._single_constraints[START], self._single_constraints[END]))
 
     def _set_name_value(self, name, value):
         if not match('^[\w\*\?]*$', value):
@@ -332,10 +332,10 @@ printed to stdout.
                 params.append(self._wildchars(value))
             if repeated:
                 sql += ') '
-        if self._single_constraints[BEGIN]:
+        if self._single_constraints[START]:
             sql, constrained = conjunction(sql, constrained)
             sql += 'endtime > ?'
-            params.append(self._single_constraints[BEGIN])
+            params.append(self._single_constraints[START])
         if self._single_constraints[END]:
             sql, constrained = conjunction(sql, constrained)
             sql += 'starttime < ?'

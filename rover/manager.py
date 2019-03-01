@@ -50,11 +50,11 @@ class ProgressStatistics:
             self.stations[1] += 1
             self.__prev_net_sta = net_sta
         # but seconds are counted either way
-        for begin, end in coverage.timespans:
-            self.seconds[1] += (end - begin)
+        for start, end in coverage.timespans:
+            self.seconds[1] += (end - start)
 
-    def pop_timespan(self, begin, end):
-        self.seconds[0] += (end - begin)
+    def pop_timespan(self, start, end):
+        self.seconds[0] += (end - start)
 
     def add_chunks(self, n):
         self.stations[0] += 1  # a set of chunks is for a single station
@@ -96,7 +96,7 @@ class Chunks:
 
     def __init__(self, temp_dir):
         self.__temp_dir = temp_dir
-        self.__chunks = {}   # list of (sncl, begin, end) indexed by end of day epoch
+        self.__chunks = {}   # list of (sncl, start, end) indexed by end of day epoch
         self.__network = None
         self.__station = None
 
@@ -114,10 +114,10 @@ class Chunks:
         left = right - 0.000001
         return left, right
 
-    def _append(self, right, sncl, begin, end):
+    def _append(self, right, sncl, start, end):
         if right not in self.__chunks:
             self.__chunks[right] = []
-        self.__chunks[right].append((sncl, begin, end))
+        self.__chunks[right].append((sncl, start, end))
 
     def _set_ns(self, sncl):
         nslc = sncl.split('_')
@@ -142,17 +142,17 @@ class Chunks:
         except:
             sampleperiod = None
 
-        for begin, end in timespans:
-            left, right = self._end_of_day(begin)
+        for start, end in timespans:
+            left, right = self._end_of_day(start)
 
             # If end time is before end of day, append whole range.
             if right > end:
                 # Skip if max request would be smaller than sample period, if known (implying local data bounds)
                 # In this case, assuming the sampling interval is regular, no data is expected
-                if sampleperiod and sampleperiod > 0 and (left - begin) < sampleperiod:
+                if sampleperiod and sampleperiod > 0 and (left - start) < sampleperiod:
                     continue
                 else:
-                    self._append(right, sncl, begin, end)
+                    self._append(right, sncl, start, end)
 
             # Otherwise, add the range beyond the current day to the timespans and
             # append the range that fits in the first day
@@ -161,10 +161,10 @@ class Chunks:
 
                 # Skip if max request would be smaller than sample period, if known (implying local data bounds)
                 # In this case, assuming the sampling interval is regular, no data is expected
-                if sampleperiod and sampleperiod > 0 and (left - begin) < sampleperiod:
+                if sampleperiod and sampleperiod > 0 and (left - start) < sampleperiod:
                     continue
                 else:
-                    self._append(right, sncl, begin, left)
+                    self._append(right, sncl, start, left)
 
 
     @staticmethod
@@ -177,9 +177,9 @@ class Chunks:
         data = self.__chunks[right]
         path = unique_path(self.__temp_dir, 'rover_chunk', description)
         with open(path, 'w') as out:
-            for (sncl, begin, end) in data:
-                progress.pop_timespan(begin, end)
-                print('%s %s %s' % (self.format_sncl(sncl), format_epoch(begin), format_epoch(end)), file=out)
+            for (sncl, start, end) in data:
+                progress.pop_timespan(start, end)
+                print('%s %s %s' % (self.format_sncl(sncl), format_epoch(start), format_epoch(end)), file=out)
         del self.__chunks[right]
         progress.pop_chunk()
         return description, path
@@ -233,10 +233,10 @@ class Retrieval:
             return True
         return False
 
-    def _build_url(self, sncl, begin, end):
+    def _build_url(self, sncl, start, end):
         url_params = 'net=%s&sta=%s&loc=%s&cha=%s' % \
                      tuple(code if code else '--' for code in tuple(sncl.split('_')))
-        return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(begin), format_epoch(end))
+        return '%s?%s&start=%s&end=%s' % (self._dataselect_url, url_params, format_epoch(start), format_epoch(end))
 
     def _worker_callback(self, command, return_code, path, **kwargs):
         feedback = kwargs.get("feedback")
@@ -747,8 +747,8 @@ class DownloadManager(SqliteSupport):
             source_seconds, source_sncls = 0, 0
             for coverage in coverages:
                 sncl_seconds = 0
-                for (begin, end) in coverage.timespans:
-                    seconds = end - begin
+                for (start, end) in coverage.timespans:
+                    seconds = end - start
                     sncl_seconds += seconds
                     source_seconds += seconds
                     total_seconds += seconds
@@ -756,8 +756,8 @@ class DownloadManager(SqliteSupport):
                     source_sncls += 1
                     total_sncls += 1
                     print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
-                    for (begin, end) in coverage.timespans:
-                        print('    %s - %s  (%4.2f sec)' % (format_epoch(begin), format_epoch(end), end - begin))
+                    for (start, end) in coverage.timespans:
+                        print('    %s - %s  (%4.2f sec)' % (format_epoch(start), format_epoch(end), end - start))
             if name != DEFAULT_NAME:
                 if source_sncls:
                     print()
