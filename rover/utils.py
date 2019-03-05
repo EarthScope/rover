@@ -2,6 +2,8 @@ import ctypes
 import datetime
 import time
 import re
+import codecs
+
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir
@@ -534,12 +536,11 @@ def diagnose_error(log, error, request, response, copied=True):
     # avoid import loop
     from .args import mm, VERBOSITY, NO, DELETEFILES
     log.error(error)
-    log.error('Will log response contents (max 10 lines) here:')
+    log.error('Response contents (max 10 lines) are listed below:')
     log_file_contents(response, log, 10)
     log.error('Please pay special attention to the first lines of the message - ' +
               'they often contains useful information.')
-    log.error('The most likely cause of this problem is that the request contains errors.  ' +
-              'Will log request contents (max 10 lines) here:')
+    log.error('Request contents (max 10 lines) are listed below:')
     log_file_contents(request, log, 10)
     log.error('The request is either provided by the user or created from the user input.')
     if copied:
@@ -551,14 +552,17 @@ def diagnose_error(log, error, request, response, copied=True):
 def log_file_contents(path, log, max_lines=10):
     log.info('Displaying contents of file %s:' % path)
     count = 0
-    with open(path, 'r') as input:
-        for line in input:
-            line = line.strip()
-            if line:
-                log.error('> %s' % line)
-                count += 1
-                if count >= max_lines:
-                    break
+    try:     
+        with codecs.open(path, encoding='utf-8', errors='strict') as input:
+            for line in input:
+                line = line.strip()
+                if line:
+                    log.error('> %s' % line)
+                    count += 1
+                    if count >= max_lines:
+                        break
+    except UnicodeDecodeError:
+        log.error('File contents are not printable.')
 
 
 def calc_bytes(sizestring):
