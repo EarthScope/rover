@@ -12,7 +12,6 @@ from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
 
-
 if version_info[0] >= 3:
     from os import replace
 
@@ -563,7 +562,7 @@ def log_file_contents(path, log, max_lines=10):
                     if count >= max_lines:
                         break
     except UnicodeDecodeError:
-        log.error('Response contents are miniseed and are not human readable.')
+        log.error('File contents are not printable.')
 
 
 def calc_bytes(sizestring):
