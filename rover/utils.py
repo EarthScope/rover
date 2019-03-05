@@ -2,6 +2,8 @@ import ctypes
 import datetime
 import time
 import re
+import codecs
+
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir
@@ -9,6 +11,7 @@ from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath,
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 from sys import version_info
+
 
 if version_info[0] >= 3:
     from os import replace
@@ -538,8 +541,7 @@ def diagnose_error(log, error, request, response, copied=True):
     log_file_contents(response, log, 10)
     log.error('Please pay special attention to the first lines of the message - ' +
               'they often contains useful information.')
-    log.error('The most likely cause of this problem is that the request contains errors.  ' +
-              'Will log request contents (max 10 lines) here:')
+    log.error('Will log request contents (max 10 lines) here:')
     log_file_contents(request, log, 10)
     log.error('The request is either provided by the user or created from the user input.')
     if copied:
@@ -551,14 +553,17 @@ def diagnose_error(log, error, request, response, copied=True):
 def log_file_contents(path, log, max_lines=10):
     log.info('Displaying contents of file %s:' % path)
     count = 0
-    with open(path, 'r') as input:
-        for line in input:
-            line = line.strip()
-            if line:
-                log.error('> %s' % line)
-                count += 1
-                if count >= max_lines:
-                    break
+    try:     
+        with codecs.open(path, encoding='utf-8', errors='strict') as input:
+            for line in input:
+                line = line.strip()
+                if line:
+                    log.error('> %s' % line)
+                    count += 1
+                    if count >= max_lines:
+                        break
+    except UnicodeDecodeError:
+        log.error('Response contents are miniseed and are not human readable.')
 
 
 def calc_bytes(sizestring):
