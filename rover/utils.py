@@ -537,11 +537,11 @@ def diagnose_error(log, error, request, response, copied=True):
     # avoid import loop
     from .args import mm, VERBOSITY, NO, DELETEFILES
     log.error(error)
-    log.error('Will log response contents (max 10 lines) here:')
+    log.error('Response contents (max 10 lines) are listed below:')
     log_file_contents(response, log, 10)
     log.error('Please pay special attention to the first lines of the message - ' +
               'they often contains useful information.')
-    log.error('Will log request contents (max 10 lines) here:')
+    log.error('Request contents (max 10 lines) are listed below:')
     log_file_contents(request, log, 10)
     log.error('The request is either provided by the user or created from the user input.')
     if copied:
