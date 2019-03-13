@@ -137,7 +137,6 @@ class Chunks:
         # On initial download we do not know the sampling rate/period, but if data exists locally we do
         # This indicates that data bounds are determined from local data
         try:
-            # It seems like this is a very likely place for the error yto occur. 
             sampleperiod = 1 / coverage.samplerate
         except:
             sampleperiod = None
@@ -507,7 +506,6 @@ class Source(SqliteSupport):
                     return False
                 else:
                     self.consistent = INCONSISTENT
-                    print(coverage.samplerate)
                     raise ManagerException(('The final retrieval, attempt %d of %d, downloaded no data' +
                                             'following an earlier error (inconsistent web services?)') %
                                            (self.n_retries, self.download_retries))

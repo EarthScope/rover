@@ -100,7 +100,6 @@ class Coverage:
             raise Exception('Sample rate is not available.')
         if self.samplerate == 0:
             return 0.0, 0.0
-            #raise Exception('No samplerate available')
         return self._frac_tolerance / self.samplerate, self._frac_increment / self.samplerate
 
     def subtract(self, other):
