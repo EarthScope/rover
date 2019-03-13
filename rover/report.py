@@ -143,8 +143,8 @@ WARNING: Since the final download had some errors, it may be
         elif source.consistent == INCONSISTENT:
             msg += '''
 WARNING: Inconsistent behaviour was detected in the web
-         services (eg dataselect not providing data promised
-         by availability)
+         services dataselect not providing data promised
+         by availability.
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''
