@@ -60,8 +60,6 @@ class Coverage:
                     if start < b:
                         raise Exception('Unsorted start times')
                     # do they overlap at all?
-                    
-                    # This needs to be fixed here. 
                     if self.samplerate == 0:
                         # channels with 0 sample rate must always be merged. 
                         # Cannot accurately find start/end time without SR and
@@ -95,7 +93,6 @@ class Coverage:
         return bool(self.timespans)
 
     def tolerances(self):
-       # This needs to be fixed here as well≥ 
         if self.samplerate is None:
             raise Exception('Sample rate is not available.')
         if self.samplerate == 0:
