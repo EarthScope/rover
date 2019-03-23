@@ -135,8 +135,7 @@ A total of %d downloads were made, with %d errors (%d on final pass of %d).
        source.n_retries)
         if source.errors.final_errors:
             msg += '''
-WARNING: Since the final download had some errors, it may be
-         incomplete.
+WARNING: The final download had some errors, it may be incomplete.
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
 ''' % (LIST_RETRIEVE, RETRIEVE)
@@ -175,8 +174,7 @@ The subscription will be checked again in %d hours.
        source.n_retries, self._recheck_period)
         if source.errors.final_errors:
             msg += '''
-WARNING: Since the final download had some errors, it may be
-         incomplete.
+WARNING: The final download had some errors, it may be incomplete.
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, TRIGGER, source.name)
