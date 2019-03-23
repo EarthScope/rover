@@ -29,8 +29,8 @@ class Coverage:
             if self.samplerate is not None:
                 self.samplerate = min(self.samplerate, samplerate)
             else:
-                # a samplerate of zero seems to be used for logging channels when contiguous
-                # data are separated by 0.000002s, so use a large value in that case
+                # a samplerate of zero seems to be used for logging or other
+                # state-of-health channels, so use a large value in that case
                 self.samplerate = samplerate if samplerate else 10000
 
     def add_epochs(self, start, end, samplerate=None):
@@ -55,7 +55,11 @@ class Coverage:
                     if start < b:
                         raise Exception('Unsorted start times')
                     # do they overlap at all?
-                    if abs(start - e) < 1.0 / self.samplerate + tolerance:
+                    if self.samplerate == 0:
+                        # Channels with 0 sample rate must always be merged.
+                        self._log.debug('Joining channel with sample rate of zero.')
+                        joined[-1]=(b, end)
+                    elif abs(start - e) < 1.0 / self.samplerate + tolerance:
                         # if they do, and this extends previous, replace with maximal span
                         if end > e:
                             self._log.debug('Joining %d-%d and %d-%d' % (start, end, b, e))
@@ -83,7 +87,9 @@ class Coverage:
 
     def tolerances(self):
         if self.samplerate is None:
-            raise Exception('No samplerate available')
+            raise Exception('Sample rate is not available.')
+        if self.samplerate == 0:
+            return 0.0, 0.0
         return self._frac_tolerance / self.samplerate, self._frac_increment / self.samplerate
 
     def subtract(self, other):

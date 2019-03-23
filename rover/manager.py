@@ -130,7 +130,6 @@ class Chunks:
 
     def add_coverage(self, coverage):
         sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
-
         if not self.__chunks:
             self._set_ns(sncl)
 
@@ -477,7 +476,8 @@ class Source(SqliteSupport):
                 else:
                     self._log.default(
                         ('The latest retrieval attempt had no errors.  Stopping at %d retry attempts.') % (self.n_retries))
-                    return True
+                    self._expect_empty =True
+                    return False
 
         # no errors and no data. used for rovers first download attempt and to exit out the
         # _is_complete_initial_reads program so the _is_complete_final_reads program can be run.
@@ -504,7 +504,6 @@ class Source(SqliteSupport):
                                        'We will check that all data were retrieved.') % (self.n_retries, self.download_retries))
                     self._expect_empty = True
                     return False
-
                 else:
                     self.consistent = INCONSISTENT
                     raise ManagerException(('The final retrieval, attempt %d of %d, downloaded no data' +
@@ -560,9 +559,10 @@ class Source(SqliteSupport):
                     return False
                 # something odd is happening
                 else:
-                    raise ManagerException(('The latest retrieval attempt downloaded unexpected data (%d N_S_L_C chunks) on the ' +
-                                            'final attempt (%d of %d) (inconsistent web services?).') %
-                                           (self._retrieval.errors.downloads, self.n_retries, self.download_retries))
+                    raise ManagerException(('The previous retrieval attempt (%d of %d) downloaded unexpected data.' +
+                                            ' Error potentially caused because of inconsistent web services '+
+                                            'or data had a sample rate = 0.') %
+                                           (self.n_retries, self.download_retries))
 
         # no errors and no data
         else:
