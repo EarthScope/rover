@@ -129,7 +129,7 @@ class Chunks:
         return not self.__chunks or (nslc[0] == self.__network and nslc[1] == self.__station)
 
     def add_coverage(self, coverage):
-        sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))        
+        sncl, timespans = coverage.sncl, PushBackIterator(iter(coverage.timespans))
         if not self.__chunks:
             self._set_ns(sncl)
 

@@ -142,9 +142,9 @@ WARNING: Since the final download had some errors, it may be
 ''' % (LIST_RETRIEVE, RETRIEVE)
         elif source.consistent == INCONSISTENT:
             msg += '''
-WARNING: Inconsistent behaviour was detected in the web
-         services dataselect not providing data promised
-         by availability.
+WARNING: Inconsistent retrieval was detected, most likely
+         data indicated by the availability service was not
+         avaialble from the dataselect service.
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''

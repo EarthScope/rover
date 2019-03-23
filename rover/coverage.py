@@ -24,18 +24,13 @@ class Coverage:
         self.timespans = []
         self.samplerate = None
 
-
     def add_samplerate(self, samplerate):
         if samplerate is not None:
             if self.samplerate is not None:
-
                 self.samplerate = min(self.samplerate, samplerate)
-                                
             else:
-                # set self.samplerate=0 to test a float division by zero error
-                # a samplerate of zero seems to be used for logging channels when contiguous
-                # data are separated by 0.000002s, so use a large value in that case
-
+                # a samplerate of zero seems to be used for logging
+                # channels, so use a large value in that case
                 self.samplerate = samplerate if samplerate else 10000
 
     def add_epochs(self, start, end, samplerate=None):
@@ -61,10 +56,8 @@ class Coverage:
                         raise Exception('Unsorted start times')
                     # do they overlap at all?
                     if self.samplerate == 0:
-                        # channels with 0 sample rate must always be merged. 
-                        # Cannot accurately find start/end time without SR and
-                        # so rover becomes caught in infinite loop.
-                        self._log.debug('Channel has a sample rate of zero.')
+                        # Channels with 0 sample rate must always be merged.
+                        self._log.debug('Joining channel with sample rate of zero.')
                         joined[-1]=(b, end)
                     elif abs(start - e) < 1.0 / self.samplerate + tolerance:
                         # if they do, and this extends previous, replace with maximal span
