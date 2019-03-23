@@ -29,8 +29,8 @@ class Coverage:
             if self.samplerate is not None:
                 self.samplerate = min(self.samplerate, samplerate)
             else:
-                # a samplerate of zero seems to be used for logging
-                # channels, so use a large value in that case
+                # a samplerate of zero seems to be used for logging or other
+                # state-of-health channels, so use a large value in that case
                 self.samplerate = samplerate if samplerate else 10000
 
     def add_epochs(self, start, end, samplerate=None):
