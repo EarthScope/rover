@@ -100,7 +100,7 @@ dates that are missing from the repository.
                 log_file_contents(path1, self._log, 10)
                 self._log.error('The first 10 lines of the existing subscription are:')
                 log_file_contents(row[0], self._log, 10)
-                raise e
+                raise
 
     def run(self, args):
         # input is a temp file as we prepend options

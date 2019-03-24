@@ -91,12 +91,12 @@ commands for more details.
     rover retrieve N_S_L_C.txt
 
 processes a file containing a request to download, ingest, and index
-data missing from rover’s local repository.
+data missing from ROVER's local repository.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
 processes a command line request to download, ingest, and index
-data missing from rover’s local repository.
+data missing from ROVER's local repository.
 
 """
 

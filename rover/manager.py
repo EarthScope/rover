@@ -794,7 +794,7 @@ class DownloadManager(SqliteSupport):
                 if quiet:
                     complete = True
                 else:
-                    raise e
+                    raise
             if complete:
                 self._log.debug('Source %s complete' % self._source(name))
                 del self._sources[name]
