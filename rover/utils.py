@@ -552,7 +552,7 @@ def diagnose_error(log, error, request, response, copied=True):
 def log_file_contents(path, log, max_lines=10):
     log.info('Displaying contents of file %s:' % path)
     count = 0
-    try:     
+    try:
         with codecs.open(path, encoding='utf-8', errors='strict') as input:
             for line in input:
                 line = line.strip()
@@ -563,6 +563,8 @@ def log_file_contents(path, log, max_lines=10):
                         break
     except UnicodeDecodeError:
         log.error('File contents are not printable.')
+    except IOError as e:
+        log.error('Error opening file:', os.strerror(e.errno))
 
 
 def calc_bytes(sizestring):
