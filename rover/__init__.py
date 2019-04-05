@@ -10,6 +10,8 @@ import os
 import signal
 import sys
 import traceback
+from collections import OrderedDict
+from itertools import chain
 
 # Set __version__ from package VERSION file
 version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
@@ -26,7 +28,7 @@ PREV_HANDLER = signal.signal(signal.SIGINT, signal_handler)
 from traceback import print_exc
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, RETRIEVE_METADATA, HELP, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, \
+    RETRIEVE, RETRIEVE_METADATA, HELP_CMD, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, \
     START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
     DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER, ABORT_CODE, ERROR_CODE
 from .config import Config, RepoInitializer
@@ -42,36 +44,45 @@ from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Trigger
 from .summary import Summarizer, SummaryLister
 from .web import ServerStarter
 
+COMMON_COMMANDS = OrderedDict()
+COMMON_COMMANDS[INIT_REPOSITORY] = (RepoInitializer, 'Create / configure the repository')
+COMMON_COMMANDS[RETRIEVE] = (Retriever, 'Download, ingest and index missing data')
+COMMON_COMMANDS[LIST_INDEX] = (IndexLister, 'List the contents of the repository')
+COMMON_COMMANDS[LIST_RETRIEVE] = (ListRetriever, 'Show what data "rover retrieve" will download')
+COMMON_COMMANDS[LIST_SUMMARY] = (SummaryLister, 'List a summary of the repository')
+COMMON_COMMANDS[SUMMARY] = (Summarizer, 'Update summary table')
+# so that help appears in the docs
+COMMON_COMMANDS[HELP_CMD] = (None, 'Return help information about a command.')
 
-COMMANDS = {
-    INIT_REPOSITORY: (RepoInitializer, 'Create / configure the repository'),
-    INDEX: (Indexer, 'Index the repository'),
-    INGEST: (Ingester, 'Ingest data from a file into the repository'),
-    SUMMARY: (Summarizer, 'Update summary table'),
-    LIST_INDEX: (IndexLister, 'List the contents of the repository'),
-    LIST_SUMMARY: (SummaryLister, 'List a summary of the repository'),
-    DOWNLOAD: (Downloader, 'Download data from a remote service'),
-    RETRIEVE: (Retriever, 'Download, ingest and index missing data'),
-    RETRIEVE_METADATA: (MetadataRetriever, 'Download missing metadata'),
-    LIST_RETRIEVE: (ListRetriever, 'Show what data "rover retrieve" will download'),
-    START: (Starter, 'Start the background daemon'),
-    STOP: (Stopper, 'Stop the background daemon'),
-    STATUS: (StatusShower, 'Show the background daemon status'),
-    DAEMON: (Daemon, 'The background daemon (prefer start/stop)'),
-    SUBSCRIBE: (Subscriber, 'Add a subscription'),
-    LIST_SUBSCRIBE: (SubscriptionLister, 'List the subscriptions'),
-    TRIGGER: (Trigger, 'Ask the daemon to reprocess subscriptions'),
-    UNSUBSCRIBE: (Unsubscriber, 'Remove subscriptions'),
-    WEB: (ServerStarter, 'Start a web server showing status')
-}
+ADVANCED_COMMANDS = OrderedDict()
+ADVANCED_COMMANDS[DOWNLOAD] = (Downloader, 'Download data from a remote service')
+ADVANCED_COMMANDS[INDEX] = (Indexer, 'Index the repository')
+ADVANCED_COMMANDS[INGEST] = (Ingester, 'Ingest data from a file into the repository')
+ADVANCED_COMMANDS[WEB] = (ServerStarter, 'Start a web server showing status')
+ADVANCED_COMMANDS[RETRIEVE_METADATA] = (MetadataRetriever, 'Download missing metadata')
+#ADVANCED_COMMANDS[START] = (Starter, 'Start the background daemon')
+#ADVANCED_COMMANDS[STOP] = (Stopper, 'Stop the background daemon')
+#ADVANCED_COMMANDS[STATUS] = (StatusShower, 'Show the background daemon status')
+#ADVANCED_COMMANDS[DAEMON] = (Daemon, 'The background daemon (prefer start/stop)')
+#ADVANCED_COMMANDS[SUBSCRIBE] = (Subscriber, 'Add a subscription')
+#ADVANCED_COMMANDS[LIST_SUBSCRIBE] = (SubscriptionLister, 'List the subscriptions')
+#ADVANCED_COMMANDS[TRIGGER] = (Trigger, 'Ask the daemon to reprocess subscriptions')
+#ADVANCED_COMMANDS[UNSUBSCRIBE] = (Unsubscriber, 'Remove subscriptions')
+
+
+COMMANDS = OrderedDict(chain(COMMON_COMMANDS.items(),
+                             ADVANCED_COMMANDS.items()))
 
 
 def execute(command, config):
     from .help import Helper   # avoid import loop
+    from .args import welcome
     if not command:
-        command = 'help'
+        # print welcome message and exit
+        Helper(config).print_help(welcome())
+        return
     commands = dict(COMMANDS)
-    commands[HELP] = (Helper, '')
+    commands[HELP_CMD] = (Helper, '')
     if command in commands:
         commands[command][0](config).run(config.args)
     else:
@@ -87,10 +98,10 @@ def main():
             # (and it generally seems like a good idea - let's try not to change how python works too much)
             signal.signal(signal.SIGINT, PREV_HANDLER)
             config = Config()
-            if config.command and config.command != HELP:
+            if config.command and config.command != HELP_CMD:
                 config.lazy_validate()
             # initialise without a database...
-            if not config.command or config.command in (INIT_REPOSITORY, HELP):
+            if not config.command or config.command in (INIT_REPOSITORY, HELP_CMD):
                 execute(config.command, config)
             else:
                 with ProcessManager(config):
@@ -109,9 +120,11 @@ def main():
                                                                      exc_traceback))
                 config.log.critical(error_traceback)
             if config.command in COMMANDS:
-                config.log.default('See "rover help %s"' % config.command)
-            elif config.command != HELP:
-                config.log.default('See "rover help help" for a list of commands')
+                config.log.default('See "rover {} {}"'.format(HELP_CMD,
+                                                              config.command))
+            elif config.command != HELP_CMD:
+                config.log.default('See "rover {}" for a list of commands'
+                                   .format(HELP_CMD))
             if not config or not config._args or config.arg(DEV):
                 print_exc()
         else:

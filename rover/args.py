@@ -7,7 +7,7 @@ from smtplib import SMTP_PORT
 from textwrap import dedent
 
 from rover import __version__
-from .utils import create_parents, canonify, check_cmd
+from .utils import create_parents, canonify, check_cmd, dictionary_text_list
 
 """
 Command line / file configuration parameters.
@@ -19,7 +19,7 @@ ABORT_CODE = 2
 # commands
 DAEMON = 'daemon'
 DOWNLOAD = 'download'
-HELP = 'help'
+HELP_CMD = 'help'
 INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
@@ -64,7 +64,7 @@ FORCECMD = 'force-cmd'
 FORCEFAILURES = 'force-failures'
 FORCE_METADATA_RELOAD = 'force-metadata-reload'
 FORCEREQUEST = 'force-request'
-H, FULLHELP = 'H', 'full-help'
+_H, _HELP = 'h', 'help'
 FULLCONFIG = 'full-config'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
@@ -102,12 +102,12 @@ LITTLE_V, VERBOSITY = 'v', 'verbosity'
 BIG_V, VERSION = 'V', 'version'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
-               VERSION, HELP, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
+               VERSION, HELP_CMD, _HELP, FILE, AVAILABILITYURL, DATASELECTURL)
 LITTLE_CONFIG = (DATADIR, DOWNLOADRETRIES, DOWNLOADWORKERS, OUTPUT_FORMAT,
                  ASDF_FILENAME, STATIONURL, AVAILABILITYURL, DATASELECTURL,
                  TEMPDIR, LOGDIR, LOGVERBOSITY, VERBOSITY, WEB, HTTPPORT,
                  EMAIL, SMTPADDRESS, SMTPPORT)
-DYNAMIC_ARGS = (VERSION, HELP, FULLHELP)
+DYNAMIC_ARGS = (VERSION, HELP_CMD, _HELP)
 
 # default values (for non-boolean parameters)
 DEFAULT_ASDF_FILENAME = 'asdf.h5'
@@ -169,6 +169,21 @@ def parse_bool(value):
     return value in ('true', 'yes', 'on')
 
 
+def welcome():
+    from rover import COMMON_COMMANDS   # avoid import loop
+    return '''
+Usage:
+
+  rover <command> [options]
+
+Common Commands:
+{0}
+
+Use "rover {1} <command>" to see help documentation about a command.
+'''.format(dictionary_text_list(COMMON_COMMANDS),
+           HELP_CMD)
+
+
 class StoreBoolAction(Action):
     """
     We need a special action for booleans because we must covertly
@@ -201,7 +216,7 @@ class StoreBoolAction(Action):
 
 class FullHelpAction(Action):
     """
-    Associate -H or --full-help with all help details.
+    Associate -h, --help with all help details.
     """
 
     def __init__(self,
@@ -217,8 +232,7 @@ class FullHelpAction(Action):
             help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        parser.print_big_help()
-        parser.exit()
+        welcome()
 
 
 def m(string): return '-' + string
@@ -260,14 +274,14 @@ class Arguments(ArgumentParser):
         super().__init__(fromfile_prefix_chars='@', prog='ROVER',
                          formatter_class=RawDescriptionHelpFormatter,
                          description='ROVER: Retrieval of Various Experiment data Robustly',
+                         add_help=False,
                          epilog=dedent('''
                          Flags can be negated (eg --no-daemon).
                          Defaults are read from the configuration file (%s).
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
-
         self.add_argument(m(BIG_V), mm(VERSION), action='version', version='ROVER %s' % __version__)
-        self.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
+        self.add_argument(m(_H), mm(_HELP), action=FullHelpAction, help='show full help details')
         self.add_argument(mm(FULLCONFIG), default=False, action='store_bool', help='initialize with full configuration file', metavar='')
 
         # operation details
@@ -477,11 +491,11 @@ class Arguments(ArgumentParser):
             help = '%s (%s)' % (help, unit.lower())
         if name == FILE:
             name += ' / -f'
-        elif name == HELP:
+        elif name == HELP_CMD:
             name += ' / -h'
             default = False
             help = help.replace('this', 'the')
-        elif name == FULLHELP:
+        elif name == _HELP:
             name += ' / -H'
             default = False
             help = help.replace('this', 'the')
