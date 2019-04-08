@@ -64,7 +64,8 @@ FORCECMD = 'force-cmd'
 FORCEFAILURES = 'force-failures'
 FORCE_METADATA_RELOAD = 'force-metadata-reload'
 FORCEREQUEST = 'force-request'
-_H, _HELP = 'h', 'help'
+H, FULLHELP = 'H', 'full-help'
+_h, _help = 'h', 'help'
 FULLCONFIG = 'full-config'
 HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
@@ -102,12 +103,12 @@ LITTLE_V, VERBOSITY = 'v', 'verbosity'
 BIG_V, VERSION = 'V', 'version'
 
 LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
-               VERSION, HELP_CMD, _HELP, FILE, AVAILABILITYURL, DATASELECTURL)
+               VERSION, HELP_CMD, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
 LITTLE_CONFIG = (DATADIR, DOWNLOADRETRIES, DOWNLOADWORKERS, OUTPUT_FORMAT,
                  ASDF_FILENAME, STATIONURL, AVAILABILITYURL, DATASELECTURL,
                  TEMPDIR, LOGDIR, LOGVERBOSITY, VERBOSITY, WEB, HTTPPORT,
                  EMAIL, SMTPADDRESS, SMTPPORT)
-DYNAMIC_ARGS = (VERSION, HELP_CMD, _HELP)
+DYNAMIC_ARGS = (VERSION, HELP_CMD, FULLHELP)
 
 # default values (for non-boolean parameters)
 DEFAULT_ASDF_FILENAME = 'asdf.h5'
@@ -169,21 +170,6 @@ def parse_bool(value):
     return value in ('true', 'yes', 'on')
 
 
-def welcome():
-    from rover import COMMON_COMMANDS   # avoid import loop
-    return '''
-Usage:
-
-  rover <command> [options]
-
-Common Commands:
-{0}
-
-Use "rover {1} <command>" to see help documentation about a command.
-'''.format(dictionary_text_list(COMMON_COMMANDS),
-           HELP_CMD)
-
-
 class StoreBoolAction(Action):
     """
     We need a special action for booleans because we must covertly
@@ -216,7 +202,7 @@ class StoreBoolAction(Action):
 
 class FullHelpAction(Action):
     """
-    Associate -h, --help with all help details.
+    Associate -H or --full-help with all help details.
     """
 
     def __init__(self,
@@ -232,7 +218,9 @@ class FullHelpAction(Action):
             help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
-        welcome()
+        parser.print_big_help()
+        parser.exit()
+
 
 
 def m(string): return '-' + string
@@ -280,85 +268,96 @@ class Arguments(ArgumentParser):
                          Defaults are read from the configuration file (%s).
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
-        self.add_argument(m(BIG_V), mm(VERSION), action='version', version='ROVER %s' % __version__)
-        self.add_argument(m(_H), mm(_HELP), action=FullHelpAction, help='show full help details')
-        self.add_argument(mm(FULLCONFIG), default=False, action='store_bool', help='initialize with full configuration file', metavar='')
-
         # operation details
-        self.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
+        operation_group = self.add_argument_group('general operation arguments')
+        operation_group.add_argument(m(_h), mm(_help), action='store_true', help='show this help message and exit')
+        operation_group.add_argument(m(H), mm(FULLHELP), action=FullHelpAction, help='show full help details')
+        operation_group.add_argument(m(BIG_V), mm(VERSION), action='version', version='ROVER %s' % __version__)
+        operation_group.add_argument(mm(FULLCONFIG), default=False, action='store_bool', help='initialize with full configuration file', metavar='')
+        operation_group.add_argument(m(F), mm(FILE), default=DEFAULT_FILE, help='specify configuration file')
         # metavar must be empty string to hide value since user options
         # are flags that are automatically given values below.
-        self.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
-        self.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
-        self.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
-        self.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
+        operation_group.add_argument(mm(DEV), default=False, action='store_bool', help='development mode (show exceptions)?', metavar='')
+        operation_group.add_argument(mm(DELETEFILES), default=True, action='store_bool', help='delete temporary files?', metavar='')
+        operation_group.add_argument(mm(MDFORMAT), default=False, action='store_bool', help='display help in markdown format?', metavar='')
+        operation_group.add_argument(mm(FORCECMD), default=False, action='store_bool', help='force cmd use (dangerous)', metavar='')
 
         # the repository
-        self.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, timeseries.sqlite', metavar=DIRVAR)
+        repository_group = self.add_argument_group('repository arguments')
+        repository_group.add_argument(mm(DATADIR), default=DEFAULT_DATADIR, action='store', help='the data directory - data, timeseries.sqlite', metavar=DIRVAR)
 
         # retrieval
-        self.add_argument(mm(TIMESPANINC), default=DEFAULT_TIMESPANINC, action='store', help='fractional increment for starting next timespan', metavar=SAMPLESVAR, type=float)
-        self.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
-        self.add_argument(mm(DOWNLOADRETRIES), default=DEFAULT_DOWNLOADRETRIES, action='store', help='maximum number of attempts to download data', metavar=NVAR, type=int)
-        self.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar=NVAR, type=int)
-        self.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar=CMDVAR)
-        self.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
-        self.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
-        self.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
-        self.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
-        self.add_argument(mm(OUTPUT_FORMAT), default=DEFAULT_OUTPUT_FORMAT, action='store', help='output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF)', metavar='')
-        self.add_argument(mm(ASDF_FILENAME), default=DEFAULT_ASDF_FILENAME, action='store', help='name of ASDF file when ASDF output is specified', metavar='')
+        retrieve_group = self.add_argument_group('retrieve arguments')
+        retrieve_group.add_argument(mm(TIMESPANINC), default=DEFAULT_TIMESPANINC, action='store', help='fractional increment for starting next timespan', metavar=SAMPLESVAR, type=float)
+        retrieve_group.add_argument(mm(TIMESPANTOL), default=DEFAULT_TIMESPANTOL, action='store', help='fractional tolerance for overlapping timespans', metavar=SAMPLESVAR, type=float)
+        retrieve_group.add_argument(mm(DOWNLOADRETRIES), default=DEFAULT_DOWNLOADRETRIES, action='store', help='maximum number of attempts to download data', metavar=NVAR, type=int)
+        retrieve_group.add_argument(mm(DOWNLOADWORKERS), default=DEFAULT_DOWNLOADWORKERS, action='store', help='number of download instances to run', metavar=NVAR, type=int)
+        retrieve_group.add_argument(mm(ROVERCMD), default=DEFAULT_ROVERCMD, action='store', help='command to run rover', metavar=CMDVAR)
+        retrieve_group.add_argument(mm(PREINDEX), default=True, action='store_bool', help='index before retrieval?', metavar='')
+        retrieve_group.add_argument(mm(INGEST), default=True, action='store_bool', help='call ingest after retrieval?', metavar='')
+        retrieve_group.add_argument(mm(INDEX), default=True, action='store_bool', help='call index after ingest?', metavar='')
+        retrieve_group.add_argument(mm(POSTSUMMARY), default=True, action='store_bool', help='call summary after retrieval?', metavar='')
+        retrieve_group.add_argument(mm(OUTPUT_FORMAT), default=DEFAULT_OUTPUT_FORMAT, action='store', help='output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF)', metavar='')
+        retrieve_group.add_argument(mm(ASDF_FILENAME), default=DEFAULT_ASDF_FILENAME, action='store', help='name of ASDF file when ASDF output is specified', metavar='')
 
         # metadata retrieval
-        self.add_argument(mm(STATIONURL), default=DEFAULT_STATIONURL, action='store', help='station service url', metavar=URLVAR)
-        self.add_argument(mm(FORCE_METADATA_RELOAD), default=False, action='store_bool', help='force reload of metadata', metavar='')
+        retrieve_md_group = self.add_argument_group('retrieve-metadata arguments')
+        retrieve_md_group.add_argument(mm(STATIONURL), default=DEFAULT_STATIONURL, action='store', help='station service url', metavar=URLVAR)
+        retrieve_md_group.add_argument(mm(FORCE_METADATA_RELOAD), default=False, action='store_bool', help='force reload of metadata', metavar='')
 
         # downloads
-        self.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=URLVAR)
-        self.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=URLVAR)
-        self.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar=DIRVAR)
-        self.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar=DAYSVAR, type=int)
-        self.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar=SECSVAR, type=int)
-        self.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar=NVAR, type=int)
-        self.add_argument(mm(FORCEFAILURES), default=DEFAULT_FORCEFAILURES, action='store', help='force failures for testing (dangerous)', metavar=PERCENTVAR, type=int)
-        self.add_argument(mm(SORTINPYTHON), default=False, action='store_bool', help='avoid OS sort (slower)?', metavar='')
+        download_group = self.add_argument_group('download arguments')
+        download_group.add_argument(mm(AVAILABILITYURL), default=DEFAULT_AVAILABILITYURL, action='store', help='availability service url', metavar=URLVAR)
+        download_group.add_argument(mm(DATASELECTURL), default=DEFAULT_DATASELECTURL, action='store', help='dataselect service url', metavar=URLVAR)
+        download_group.add_argument(mm(TEMPDIR), default=DEFAULT_TEMPDIR, action='store', help='temporary storage for downloads', metavar=DIRVAR)
+        download_group.add_argument(mm(TEMPEXPIRE), default=DEFAULT_TEMPEXPIRE, action='store', help='number of days before deleting temp files', metavar=DAYSVAR, type=int)
+        download_group.add_argument(mm(HTTPTIMEOUT), default=DEFAULT_HTTPTIMEOUT, action='store', help='timeout for HTTP requests', metavar=SECSVAR, type=int)
+        download_group.add_argument(mm(HTTPRETRIES), default=DEFAULT_HTTPRETRIES, action='store', help='max retries for HTTP requests', metavar=NVAR, type=int)
+        download_group.add_argument(mm(FORCEFAILURES), default=DEFAULT_FORCEFAILURES, action='store', help='force failures for testing (dangerous)', metavar=PERCENTVAR, type=int)
+        download_group.add_argument(mm(SORTINPYTHON), default=False, action='store_bool', help='avoid OS sort (slower)?', metavar='')
 
         # index
-        self.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
-        self.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
+        index_group = self.add_argument_group('index arguments')
+        index_group.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
+        index_group.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
 
         # subscription
-        self.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
-        self.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar=HOURSVAR, type=int)
-        self.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
+        subscription_group = self.add_argument_group('subscription arguments')
+        subscription_group.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
+        subscription_group.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar=HOURSVAR, type=int)
+        subscription_group.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
 
         # logging
-        self.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
-        self.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
-        self.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar=DAYSVAR, type=int)
-        self.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-6)', metavar=NVAR, type=int)
-        self.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (e.g. 10M)', metavar=SIZE)
-        self.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar=NVAR, type=int)
-        self.add_argument(m(LITTLE_V), mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-6)', metavar=NVAR, type=int)
+        logging_group = self.add_argument_group('logging arguments')
+        logging_group.add_argument(mm(LOGDIR), default=DEFAULT_LOGDIR, action='store', help='directory for logs', metavar=DIRVAR)
+        logging_group.add_argument(mm(LOGUNIQUE), default=False, action='store_bool', help='unique log names (with PIDs)?', metavar='')
+        logging_group.add_argument(mm(LOGUNIQUEEXPIRE), default=DEFAULT_LOGUNIQUE_EXPIRE, action='store', help='number of days before deleting unique logs', metavar=DAYSVAR, type=int)
+        logging_group.add_argument(mm(LOGVERBOSITY), default=DEFAULT_LOGVERBOSITY, action='store', help='log verbosity (0-6)', metavar=NVAR, type=int)
+        logging_group.add_argument(mm(LOGSIZE), default=DEFAULT_LOGSIZE, action='store', help='maximum log size (e.g. 10M)', metavar=SIZE)
+        logging_group.add_argument(mm(LOGCOUNT), default=DEFAULT_LOGCOUNT, action='store', help='maximum number of logs', metavar=NVAR, type=int)
+        logging_group.add_argument(m(LITTLE_V), mm(VERBOSITY), default=DEFAULT_VERBOSITY, action='store', help='console verbosity (0-6)', metavar=NVAR, type=int)
 
         # mseedindex
-        self.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar=CMDVAR)
-        self.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar=NVAR, type=int)
+        mseedindex_group = self.add_argument_group('mseedindex arguments')
+        mseedindex_group.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar=CMDVAR)
+        mseedindex_group.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar=NVAR, type=int)
 
         # leap seconds
-        self.add_argument(mm(LEAP), default=True, action='store_bool', help='use leap seconds file?', metavar='')
-        self.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing leap seconds file', metavar=NVAR, type=int)
-        self.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leap second data', metavar=FILEVAR)
-        self.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leap second data', metavar=URLVAR)
+        leap_sec_group = self.add_argument_group('leap second arguments')
+        leap_sec_group.add_argument(mm(LEAP), default=True, action='store_bool', help='use leap seconds file?', metavar='')
+        leap_sec_group.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing leap seconds file', metavar=NVAR, type=int)
+        leap_sec_group.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leap second data', metavar=FILEVAR)
+        leap_sec_group.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leap second data', metavar=URLVAR)
 
         # user feedback
-        self.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
-        self.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar=ADDRESSVAR)
-        self.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar=NVAR, type=int)
-        self.add_argument(mm(EMAIL), default='', action='store', help='address for completion status', metavar=ADDRESSVAR)
-        self.add_argument(mm(EMAILFROM), default=DEFAULT_EMAILFROM, action='store', help='from address for email', metavar=ADDRESSVAR)
-        self.add_argument(mm(SMTPADDRESS), default=DEFAULT_SMTPADDRESS, action='store', help='address of SMTP server', metavar=ADDRESSVAR)
-        self.add_argument(mm(SMTPPORT), default=SMTP_PORT, action='store', help='port for SMTP server', metavar=NVAR, type=int)
+        user_feedback_group = self.add_argument_group('user feedback arguments')
+        user_feedback_group.add_argument(mm(WEB), default=True, action='store_bool', help='auto-start the download progress web server?', metavar='')
+        user_feedback_group.add_argument(mm(HTTPBINDADDRESS), default=DEFAULT_HTTPBINDADDRESS, action='store', help='bind address for HTTP server', metavar=ADDRESSVAR)
+        user_feedback_group.add_argument(mm(HTTPPORT), default=DEFAULT_HTTPPORT, action='store', help='port for HTTP server', metavar=NVAR, type=int)
+        user_feedback_group.add_argument(mm(EMAIL), default='', action='store', help='address for completion status', metavar=ADDRESSVAR)
+        user_feedback_group.add_argument(mm(EMAILFROM), default=DEFAULT_EMAILFROM, action='store', help='from address for email', metavar=ADDRESSVAR)
+        user_feedback_group.add_argument(mm(SMTPADDRESS), default=DEFAULT_SMTPADDRESS, action='store', help='address of SMTP server', metavar=ADDRESSVAR)
+        user_feedback_group.add_argument(mm(SMTPPORT), default=SMTP_PORT, action='store', help='port for SMTP server', metavar=NVAR, type=int)
 
         # commands / args
         self.add_argument(COMMAND, metavar='COMMAND', nargs='?', type=cmd_or_alias, help='use "help" for further information')
@@ -380,11 +379,21 @@ class Arguments(ArgumentParser):
         config = None
         # we run this to parse and isolate the command, but will re-run below
         # once the config file is known
-        if super().parse_args(args=args).command != INIT_REPOSITORY:
+        command = super().parse_args(args=args).command
+        if command != INIT_REPOSITORY:
             config, args = self.__extract_config(args)
             if exists(config):
                 args = self.__patch_config(args, config)
-        return super().parse_args(args=args, namespace=namespace), config
+
+        ns = super().parse_args(args=args, namespace=namespace)
+
+        # support rover <command> -h and rover <command> --help usage
+        if mm(_help) in args or m(_h) in args:
+            if command:
+                ns.command = HELP_CMD
+                ns.args.append(command)
+    
+        return ns, config
 
     def __preprocess_booleans(self, args):
         """
@@ -495,7 +504,7 @@ class Arguments(ArgumentParser):
             name += ' / -h'
             default = False
             help = help.replace('this', 'the')
-        elif name == _HELP:
+        elif name == FULLHELP:
             name += ' / -H'
             default = False
             help = help.replace('this', 'the')
@@ -549,7 +558,7 @@ class Arguments(ArgumentParser):
 
     def __print_docs_rows_md(self):
         for name in self.__documentation_names():
-           self.print_docs_row_md(name)
+            self.print_docs_row_md(name)
 
     def print_docs_table_md(self):
         """
@@ -564,25 +573,47 @@ class Arguments(ArgumentParser):
         """
         if file is None:
             file = sys.stdout
-        self._print_message(self.format_help(), file)
+        self._print_message(self.format_big_help(), file)
 
     def print_help(self, file=None):
         """
-        Subvert the -h option to only print a restricted set of options.
+        Subvert the -h and --help options to only print a restricted set of options.
         """
         if file is None:
             file = sys.stdout
         self._print_message(self.format_little_help(), file)
 
-    def format_little_help(self):
+    def format_big_help(self):
         """
-        A hacked version of format_help that restricts actions to those in LITTLE_HELP.
+        A hacked version of format_help that prints big welcome message and
+        includes all commands / actions. 
         """
         formatter = self._get_formatter()
-        actions = [action for action in self._actions if unbar(action.dest) in LITTLE_HELP]
-        formatter.add_usage(self.usage, actions,
-                            self._mutually_exclusive_groups)
         formatter.add_text(self.description)
+        formatter.add_text(self.welcome_big_help())
+        formatter.add_text('---------------------\n'
+                           'Arguments:\n'
+                           '---------------------\n\n')
+        for action_group in self._action_groups:
+            formatter.start_section(action_group.title)
+            formatter.add_text(action_group.description)
+            for action in action_group._group_actions:
+                formatter.add_argument(action)
+            formatter.end_section()
+        formatter.add_text(self.epilog)
+        return formatter.format_help()
+
+    def format_little_help(self):
+        """
+        A hacked version of format_help that prints short welcome message and
+        is restricted to common commands and actions in LITTLE_HELP.
+        """
+        formatter = self._get_formatter()
+        formatter.add_text(self.description)
+        formatter.add_text(self.welcome())
+        formatter.add_text('---------------------\n'
+                           'Arguments:\n'
+                           '---------------------\n\n')
         for action_group in self._action_groups:
             formatter.start_section(action_group.title)
             formatter.add_text(action_group.description)
@@ -592,6 +623,31 @@ class Arguments(ArgumentParser):
             formatter.end_section()
         formatter.add_text(self.epilog)
         return formatter.format_help()
+
+    def welcome(self):
+        from rover import COMMON_COMMANDS   # avoid import loop
+        return ('Usage:\n'
+                '  rover <command> [args]\n\n'
+                 '---------------------\n'
+                'Commands:\n'
+                '---------------------\n\n'
+                'common commands:\n'
+                '{0}\n\n'
+                .format(dictionary_text_list(COMMON_COMMANDS)))
+
+    def welcome_big_help(self):
+        from rover import COMMON_COMMANDS, ADVANCED_COMMANDS   # avoid import loop
+        return ('Usage:\n'
+                '  rover <command> [args]\n\n'
+                 '---------------------\n'
+                'Commands:\n'
+                '---------------------\n\n'
+                'common commands:\n'
+                '{}\n\n'                
+                'advanced commands:\n'
+                '{}\n\n'
+                .format(dictionary_text_list(COMMON_COMMANDS),
+                        dictionary_text_list(ADVANCED_COMMANDS)))
 
 
 def fail_early(config):

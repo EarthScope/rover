@@ -272,13 +272,13 @@ Usage:
 
 Help is available for the following:
 
-Core ROVER commands:
+Core commands:
 {}
 
 General topics:
 {}
 
-Advanced ROVER commands:
+Advanced commands:
 {}
 
 For example:
@@ -286,5 +286,5 @@ For example:
     rover help retrieve
 
 '''.format(dictionary_text_list(COMMON_COMMANDS),
-           dictionary_text_list(ADVANCED_COMMANDS),
-           dictionary_text_list(GENERAL)))
+           dictionary_text_list(GENERAL),
+           dictionary_text_list(ADVANCED_COMMANDS)))

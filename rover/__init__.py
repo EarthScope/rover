@@ -52,7 +52,7 @@ COMMON_COMMANDS[LIST_RETRIEVE] = (ListRetriever, 'Show what data "rover retrieve
 COMMON_COMMANDS[LIST_SUMMARY] = (SummaryLister, 'List a summary of the repository')
 COMMON_COMMANDS[SUMMARY] = (Summarizer, 'Update summary table')
 # so that help appears in the docs
-COMMON_COMMANDS[HELP_CMD] = (None, 'Return help information about a command.')
+COMMON_COMMANDS[HELP_CMD] = (None, 'Return help information about a command')
 
 ADVANCED_COMMANDS = OrderedDict()
 ADVANCED_COMMANDS[DOWNLOAD] = (Downloader, 'Download data from a remote service')
@@ -76,10 +76,10 @@ COMMANDS = OrderedDict(chain(COMMON_COMMANDS.items(),
 
 def execute(command, config):
     from .help import Helper   # avoid import loop
-    from .args import welcome
+    from .args import Arguments
     if not command:
         # print welcome message and exit
-        Helper(config).print_help(welcome())
+        Arguments().print_help()
         return
     commands = dict(COMMANDS)
     commands[HELP_CMD] = (Helper, '')
