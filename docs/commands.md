@@ -211,7 +211,7 @@ The following commands are used internally, and are often less
 useful from the command line:
 
 
-i### Download
+### Download
 
     rover download url [path]
 
