@@ -33,16 +33,7 @@ class InstallBase():
     
     def get_virtualenv_path(self):
         """Used to work out path to install compiled binaries to."""
-        if hasattr(sys, 'real_prefix'):
-            return sys.prefix
-    
-        if hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix:
-            return sys.prefix
-    
-        if 'conda' in sys.prefix:
-            return sys.prefix
-    
-        return None
+        return os.path.join(sys.prefix, 'bin')
 
     def download_mseedindex(self):
         # download mseed index zip ball
