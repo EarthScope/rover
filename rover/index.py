@@ -37,8 +37,8 @@ miniSEED database.
 
 When no argument is given, all modified files in the repository are processed.
 The `--all` flag forces all files to be processed. If a path argument
-is provided, all files contained in the directory are processed, along with the
-contents of sub-directories, unless `--no-recurse` is specified.
+is provided, all files contained in the directory are processed, along with
+the contents of sub-directories, unless `--no-recurse` is specified.
 
 ##### Significant Options
 

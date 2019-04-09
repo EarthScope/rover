@@ -202,15 +202,12 @@ class ServerStarter:
 
     rover web --http-bind-address 0.0.0.0 --http-port 8080
 
-    rover start --web ...   # the default
-
     rover retrieve --web ...   # the default
 
 Starts a web server that provides information on the progress of the download
-manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's
-default configuration starts `rover web` automatically. The flag`--no-web`
-prevents ROVER's web server from launching in accordance with `rover retrieve`
-or `rover start`.
+manager. ROVER's default configuration starts `rover web` automatically.
+The flag`--no-web` prevents ROVER's web server from launching in accordance
+with `rover retrieve`.
 
 ##### Significant Options
 
@@ -223,9 +220,9 @@ or `rover start`.
 
 ##### Examples
 
-    rover start --no-web
+    rover retrieve --no-web
 
-will start the daemon without the web server.
+will run retrieve without the web server.
 
     """
 
@@ -234,7 +231,7 @@ will start the daemon without the web server.
         self._http_port = config.arg(HTTPPORT)
         self._ppid = ProcessManager(config).current_command()[0]
         if not self._ppid:
-            raise Exception('Cannot start web server independently of retrieve / dameon')
+            raise Exception('Cannot start web server independently of retrieve')
         self._log = config.log
         self._log_path = config.log_path
         self._config = config

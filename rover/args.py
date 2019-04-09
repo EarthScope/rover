@@ -102,7 +102,7 @@ TIMESPANTOL = 'timespan-tol'
 LITTLE_V, VERBOSITY = 'v', 'verbosity'
 BIG_V, VERSION = 'V', 'version'
 
-LITTLE_HELP = (TIMESPANTOL, DOWNLOADRETRIES, LOGDIR, VERBOSITY, WEB, EMAIL,
+LITTLE_HELP = (DOWNLOADRETRIES, LOGDIR, VERBOSITY, EMAIL,
                VERSION, HELP_CMD, FULLHELP, FILE, AVAILABILITYURL, DATASELECTURL)
 LITTLE_CONFIG = (DATADIR, DOWNLOADRETRIES, DOWNLOADWORKERS, OUTPUT_FORMAT,
                  ASDF_FILENAME, STATIONURL, AVAILABILITYURL, DATASELECTURL,
@@ -264,7 +264,7 @@ class Arguments(ArgumentParser):
                          description='ROVER: Retrieval of Various Experiment data Robustly',
                          add_help=False,
                          epilog=dedent('''
-                         Flags can be negated (eg --no-daemon).
+                         Flags can be negated (eg --no-web).
                          Defaults are read from the configuration file (%s).
                          Type "rover help" for more information on available commands.''' % DEFAULT_FILE))
         self.register('action', 'store_bool', StoreBoolAction)
@@ -591,9 +591,6 @@ class Arguments(ArgumentParser):
         formatter = self._get_formatter()
         formatter.add_text(self.description)
         formatter.add_text(self.welcome_big_help())
-        formatter.add_text('---------------------\n'
-                           'Arguments:\n'
-                           '---------------------\n\n')
         for action_group in self._action_groups:
             formatter.start_section(action_group.title)
             formatter.add_text(action_group.description)
@@ -611,9 +608,6 @@ class Arguments(ArgumentParser):
         formatter = self._get_formatter()
         formatter.add_text(self.description)
         formatter.add_text(self.welcome())
-        formatter.add_text('---------------------\n'
-                           'Arguments:\n'
-                           '---------------------\n\n')
         for action_group in self._action_groups:
             formatter.start_section(action_group.title)
             formatter.add_text(action_group.description)
@@ -628,9 +622,6 @@ class Arguments(ArgumentParser):
         from rover import COMMON_COMMANDS   # avoid import loop
         return ('Usage:\n'
                 '  rover <command> [args]\n\n'
-                 '---------------------\n'
-                'Commands:\n'
-                '---------------------\n\n'
                 'common commands:\n'
                 '{0}\n\n'
                 .format(dictionary_text_list(COMMON_COMMANDS)))
@@ -639,9 +630,6 @@ class Arguments(ArgumentParser):
         from rover import COMMON_COMMANDS, ADVANCED_COMMANDS   # avoid import loop
         return ('Usage:\n'
                 '  rover <command> [args]\n\n'
-                 '---------------------\n'
-                'Commands:\n'
-                '---------------------\n\n'
                 'common commands:\n'
                 '{}\n\n'                
                 'advanced commands:\n'

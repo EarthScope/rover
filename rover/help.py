@@ -4,7 +4,7 @@ from re import sub
 from .args import HELP_CMD, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
     STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, TRIGGER, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT, \
-    RETRIEVE_METADATA
+    RETRIEVE_METADATA, WEB
 from .utils import dictionary_text_list
 
 """
@@ -25,7 +25,7 @@ rover {0} [directory]
 
   Initializes a given directory, or the current directory
   if no argument is provided, as a ROVER data repository.
-  %s will create a configuration file, by default {0},
+  {0} will create a configuration file, by default {0},
   as well as directories for logs and data.
 
   The aliases `rover {1}` and `rover {2}` also exist.
@@ -37,7 +37,7 @@ rover {3} (file | sta=... [start [end]] | N_S_L_C [start [end]])
   repository. The location of remote data availability is
   determined by the config parameter {4}, and the data is
   downloaded from the URL that is configured by the parameter {5}.
-  Use %s to determine data available on the remote server which
+  Use {7} to determine data available on the remote server which
   is not in the local repository.
 
 rover {6} (file | sta=... [start [end]] | N_S_L_C [start [end]])
@@ -50,19 +50,23 @@ rover {7} ...
 
   List index entries for the repository, config parameter %s,
   that match the given constraints. For more information,
-  run "rover %s" with no arguments.
+  run "rover {7}" with no arguments.
 
 rover {8} ...
 
   List summary entries for the repository, config parameter
   {9}, that match the given constraints.  This is faster than
-  `rover {8}` but gives less detail.  For more information,
-  run "rover {10}" with no arguments.
+  `rover {10}` but gives less detail.  For more information,
+  run "rover {8}" with no arguments.
 
-'''.format(INIT_REPOSITORY, DEFAULT_FILE, INIT, INIT_REPO,
+rover {11} <command>
+
+  Gives help on the various commands.
+
+'''.format(INIT_REPOSITORY, DEFAULT_FILE, INIT,
            RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
-           LIST_INDEX, DATADIR, LIST_INDEX,
-           LIST_SUMMARY)
+           LIST_INDEX, LIST_SUMMARY, DATADIR, LIST_INDEX,
+           HELP_CMD)
 
 
 def background(config):
@@ -126,12 +130,7 @@ rover {0} url
   ingested into the {3} repository and are deleted from the temp
   directory. `rover {0}` is called by {4}, {5}, and {6}.
 
-rover {7} (file|dir) ...
-
-  Adds contents from a miniSEED formatted file to ROVER's local
-  repository and indexes the new data.
-
-rover {8} [(file|dir) ...]
+rover {7} [(file|dir) ...]
 
   Indexes files, adds or changes entries in the tsindex table
   stored in the miniSEED database.
@@ -143,24 +142,37 @@ rover {8} [(file|dir) ...]
   processed, along with the contents of sub-directories,
   unless `--no-recurse` is specified.
 
-rover {9}
+rover {8} (file|dir) ...
+
+  Adds contents from a miniSEED formatted file to ROVER's local
+  repository and indexes the new data.
+
+rover {9} ... 
+
+Starts a web server that provides information on the progress of the download
+manager. ROVER's default configuration starts `rover {9}` automatically.
+The flag`--no-web` prevents ROVER's web server from launching in accordance
+with `rover {4}` or `rover {10}`.
+
+rover {11} ...
+
+  Download missing metadata from the fdsnws-station web service and save to
+  the data archive. This feature is only supported for the ASDF output format.
+
+rover {12} ...
 
   Creates a summary of the index stored in a ROVER repository.
   This lists the overall span of data for each
-  Net_Sta_Loc_Chan and can be queried using `rover {10}`.
-
-rover {11}
-
-  Download missing metadata from the fdsnws-station web service and save to the
-  data archive. This feature is only supported for the ASDF output format.
+  Net_Sta_Loc_Chan and can be queried using `rover {13}`.
 
 '''.format(DOWNLOAD, DATASELECTURL, TEMPDIR, DATADIR, RETRIEVE, SUBSCRIBE,
-           DAEMON, INGEST, INDEX, SUMMARY, LIST_SUMMARY, RETRIEVE_METADATA)
+           DAEMON, INDEX, INGEST, WEB, START, RETRIEVE_METADATA, SUMMARY,
+           LIST_SUMMARY)
 
 
 GENERAL = {
     USAGE: (usage, 'General interactive use'),
-    BACKGROUND: (background, 'Advanced use with ROVER in the background'),
+    #BACKGROUND: (background, 'Advanced use with ROVER in the background'),
     LOWLEVEL: (low_level, 'Rarely used, low-level commands')
 }
 
