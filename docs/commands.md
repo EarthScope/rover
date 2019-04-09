@@ -13,6 +13,7 @@
   * [Index](#index)
   * [Summary](#summary)
   * [Web](#web)
+  * [Retrieve-Metadata](#Retrieve-Metadata)
 
 ## Common ROVER Commands
 
@@ -366,7 +367,7 @@ will start the daemon without the web server.
 
     
 
-### Retrieve
+### Retrieve-Metadata
 
     rover retrieve-metadata
 

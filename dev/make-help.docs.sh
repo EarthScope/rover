@@ -96,6 +96,7 @@ cat <<EOF > docs/commands.md
   * [Index](#index)
   * [Summary](#summary)
   * [Web](#web)
+  * [Retrieve-Metadata](#Retrieve-Metadata)
 
 ## Common ROVER Commands
 
