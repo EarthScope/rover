@@ -4,7 +4,7 @@
 if ! [ -x "$(command -v virtualenv)" ]; then
     echo "Virtualenv not found."
     echo "You may need to install virtualenv or modify this script to use virtualenv-2.7."
-    exit
+    exit 1
 fi
 
 # set up virtiual env
@@ -26,13 +26,13 @@ pyv="$(python -V 2>&1)"
 echo "$pyv"
 
 # Make a that checks for a range of python versions
-ver="Python 2.[6-7]"
+ver="Python 2\.7"
 if ! [[ $pyv =~ $ver ]]; then
     echo "Python 2 virtual enviroment was set up incorrectly."
     echo "Likely, the incorrect version of python is being utlized."
     echo "Please check that Python 2.6 or 2.7 is installed on this system."
     echo "Try again."
-    exit
+    exit 1
 fi
 
 echo "source env2/bin/activate"

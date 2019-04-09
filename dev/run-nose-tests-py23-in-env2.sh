@@ -9,12 +9,12 @@ pyv="$(python -V 2>&1)"
 #echo $pyv
 
 # Check if system is already running python2
-ver="Python 2.[6-7]"
+ver="Python 2\.7"
 if [[ $pyv =~ $ver ]]; then
     echo "Did not activate virtual env."
     pushd ../rover23
     echo
-    echo "unit tests of py23 code in env2"
+    echo "Unit tests of py23 code in env2"
     nosetests tests/*.py
     popd
 # If python 2 is not the system default set up virtual env
@@ -33,7 +33,7 @@ else
     if ! [[ $pyv1 =~ $ver ]]; then
         echo "Python 2 virtual enviroment was set up incorrectly."
         echo "Likely, the incorrect version of Python is being utlized."
-        echo "Please check that Python 2.6 or 2.7 is installed on this system."
+        echo "Please check that Python 2.7 is installed on this system."
         echo "Try again."
         exit
     fi

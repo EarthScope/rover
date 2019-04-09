@@ -8,7 +8,7 @@
  pyv="$(python -V 2>&1)"
 
  # Check if system is already running python3
- ver="Python 3.[5-7]"
+ ver="Python 3\.[5-9]"
  if [[ $pyv =~ $ver ]]; then
      echo "Did not activate virtual env."
      pushd ../rover23
@@ -45,63 +45,3 @@
      nosetests tests/*.py
      popd
  fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-echo
-echo "translating py3 to py23"
-dev/translate-py3-to-py23.sh > /dev/null 2>&1
-source env3/bin/activate
-
- # Check python version in the vitualenv
- pyv="$(python -V 2>&1)"
- echo "$pyv"
-
- # Make a that checks for a range of python versions
- ver="Python 3.[5-7]"
- if ! [[ $pyv =~ $ver ]]; then
-     echo "Python 3 virtual enviroment was set up incorrectly."
-     echo "Likely, the incorrect version of python is being utlized."
-     echo "Please check that Python 3.5 or later is installed on this system."
-     echo "Try again."
-     exit
- fi
-
-pushd ../rover23
-echo
-echo "unit tests of py23 code in env3"
-nosetests tests/*.py
-popd
