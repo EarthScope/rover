@@ -717,3 +717,11 @@ def remove_empty_folders(path, log):
     if len(files) == 0:
         log.debug("Removing empty folder: %s" % path)
         rmdir(path)
+
+def dictionary_text_list(kwargs, prefix=""):
+    cmds = []
+    for command in kwargs.keys():
+        cmds.append("  {0}{1:19}: {2}".format(prefix,
+                                              command,
+                                              kwargs[command][1]))
+    return "\n".join(cmds)

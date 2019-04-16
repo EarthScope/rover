@@ -33,12 +33,12 @@ class Downloader(SqliteSupport):
     rover download file [path]
 
 Downloads a single request, typically for a day, from a URL or a given file.
-File arguments are expected to contain FDSN web services requests and fetch data
-from the URL set by the dataselect-url option. Data are downloaded to a
+File arguments are expected to contain FDSN web services requests and fetch
+data from the URL set by the dataselect-url option. Data are downloaded to a
 temporary directory, which is configured by the temp-dir option.
-After downloaded, data are ingested into the data-dir repository and are deleted
-from the temp directory. `rover download` is called by `rover retrieve`,
-'rover subscribe` and `rover daemon`.
+After downloaded, data are ingested into the data-dir repository and are
+deleted from the temp directory. `rover download` is called by
+`rover retrieve`.
 
 ##### Significant Options
 

@@ -1,10 +1,11 @@
 
 from re import sub
 
-from .args import HELP, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
+from .args import HELP_CMD, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
     AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
     STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, TRIGGER, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT, \
-    RETRIEVE_METADATA
+    RETRIEVE_METADATA, WEB
+from .utils import dictionary_text_list
 
 """
 The 'rover help' command.
@@ -16,142 +17,100 @@ USAGE = 'usage'
 LOWLEVEL = 'low-level'
 
 
-def welcome(config):
-    return '''
-                      Welcome to ROVER!
-
-For more information on ROVER commands:
-
-rover %s %s
-
-  Displays information on the most common commands to immediately
-  download and ingest data.
-
-rover %s %s
-
-  Covers ROVER's advanced mode, which allows ROVER to run as a
-  continuous background process. Subscriptions, a form of request,
-  are checked on a user defined time interval and data is downloaded
-  when needed.
-
-rover %s %s
-
-  Lists lower-level commands that are less likely to be used.
-
-Individual commands have their own help documentation.  See "rover %s %s".
-
-For information on configuration parameters use:
-
-  rover -h
-
-    Displays a list of parameters that can be
-provided via the command line flags or by the rover.config
-file:
-
-  %s
-
-    Contains ROVER's default configuration values, which can be customized
-    to change ROVER's actions.
-
-To display this screen again, type "rover" or "rover help".
-
-''' % (HELP, USAGE,
-       HELP, BACKGROUND,
-       HELP, LOWLEVEL,
-       HELP, HELP,
-       DEFAULT_FILE)
-
-
 def usage(config):
     return '''
                     Common ROVER Commands
 
-rover %s [directory]
+rover {0} [directory]
 
   Initializes a given directory, or the current directory
   if no argument is provided, as a ROVER data repository.
-  %s will create a configuration file, by default %s,
+  {0} will create a configuration file, by default {0},
   as well as directories for logs and data.
 
-  The aliases `rover %s` and `rover %s` also exist.
+  The aliases `rover {1}` and `rover {2}` also exist.
 
-rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
+rover {3} (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Compares ROVER's local index with remotely available data,
   then downloads and ingest files missing from the local
   repository. The location of remote data availability is
-  determined by the config parameter %s, and the data is
-  downloaded from the URL that is configured by the parameter %s.
-  Use %s to determine data available on the remote server which
+  determined by the config parameter {4}, and the data is
+  downloaded from the URL that is configured by the parameter {5}.
+  Use {7} to determine data available on the remote server which
   is not in the local repository.
 
-rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
+rover {6} (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Compares the local index with the data available remotely,
   then displays the difference. Note that the summary is
   printed to stdout, while logging is to stderr.
 
-rover %s ...
+rover {7} ...
 
   List index entries for the repository, config parameter %s,
   that match the given constraints. For more information,
-  run "rover %s" with no arguments.
+  run "rover {7}" with no arguments.
 
-rover %s ...
+rover {8} ...
 
   List summary entries for the repository, config parameter
-  %s, that match the given constraints.  This is faster than
-  `rover %s` but gives less detail.  For more information,
-  run "rover %s" with no arguments.
+  {9}, that match the given constraints.  This is faster than
+  `rover {10}` but gives less detail.  For more information,
+  run "rover {8}" with no arguments.
 
-''' % (INIT_REPOSITORY, INIT_REPOSITORY, DEFAULT_FILE, INIT, INIT_REPO,
-       RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
-       LIST_INDEX, DATADIR, LIST_INDEX,
-       LIST_SUMMARY, DATADIR, LIST_INDEX, LIST_SUMMARY)
+rover {11} <command>
+
+  Gives help on the various commands.
+
+'''.format(INIT_REPOSITORY, DEFAULT_FILE, INIT,
+           RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
+           LIST_INDEX, LIST_SUMMARY, DATADIR, LIST_INDEX,
+           HELP_CMD)
 
 
 def background(config):
     return '''
                    Advanced ROVER Commands
 
-rover %s
+rover {0}
 
   Start the background process that regularly downloads subscriptions.
 
-rover %s
+rover {1}
 
-rover %s
+rover {2}
 
   Display the status of, and stop, the background process.
 
-rover %s (file | sta=... [start [end]] | N_S_L_C [start [end]])
+rover {3} (file | sta=... [start [end]] | N_S_L_C [start [end]])
 
   Subscribe generates a background service (daemon) that regularly compares data
   available at the configured server with the local repository. If there is a
-  discrepancy, available data is downloaded, ingested and indexed. `rover %s` is
-  similar to `rover %s` but uses a daemon to regularly update the local repository.
+  discrepancy, available data is downloaded, ingested and indexed. `rover {3}` is
+  similar to `rover {4}` but uses a daemon to regularly update the local repository.
 
-rover %s
+rover {5}
 
-rover %s N
+rover {5} N
 
-  Displays indices of all ROVER subscriptions. `rover %s` is similar to
-  `rover %s`.
+  Displays indices of all ROVER subscriptions. `rover {5}` is similar to
+  `rover {6}`.
 
-rover %s N
+rover {7} N
 
   Ask the daemon to immediately re-process a subscription(s) based
   on the subscription's index.
 
-rover %s N
+rover {8} N
 
   Delete one or more subscriptions identified by their indices.
   Data associated with the subscription(s) is not deleted.
 
-''' % (START, STATUS, STOP,
-       SUBSCRIBE, SUBSCRIBE, RETRIEVE,
-       LIST_SUBSCRIBE, LIST_SUBSCRIBE, LIST_SUBSCRIBE, LIST_RETRIEVE,
-       TRIGGER, UNSUBSCRIBE)
+'''.format(START, STATUS, STOP,
+           SUBSCRIBE, RETRIEVE,
+           LIST_SUBSCRIBE, LIST_RETRIEVE,
+           TRIGGER, UNSUBSCRIBE)
 
 
 def low_level(config):
@@ -161,22 +120,17 @@ def low_level(config):
 The following commands are used internally, and are often less
 useful from the command line:
 
-rover %s url
+rover {0} url
 
   Downloads a single request, typically for a day, from a URL
   or a given file. File arguments are expected to contain fdsn
   web services requests and fetch data from the URL set by the
-  parameter %s. Data are downloaded to a temporary directory
-  configured by the parameter %s. After downloaded, data are
-  ingested into the %s repository and are deleted from the temp
-  directory. `rover %s` is called by %s, %s, and %s.
+  parameter {1}. Data are downloaded to a temporary directory
+  configured by the parameter {2}. After downloaded, data are
+  ingested into the {3} repository and are deleted from the temp
+  directory. `rover {0}` is called by {4}, {5}, and {6}.
 
-rover %s (file|dir) ...
-
-  Adds contents from a miniSEED formatted file to ROVER's local
-  repository and indexes the new data.
-
-rover %s [(file|dir) ...]
+rover {7} [(file|dir) ...]
 
   Indexes files, adds or changes entries in the tsindex table
   stored in the miniSEED database.
@@ -188,26 +142,37 @@ rover %s [(file|dir) ...]
   processed, along with the contents of sub-directories,
   unless `--no-recurse` is specified.
 
-rover %s
+rover {8} (file|dir) ...
+
+  Adds contents from a miniSEED formatted file to ROVER's local
+  repository and indexes the new data.
+
+rover {9} ... 
+
+Starts a web server that provides information on the progress of the download
+manager. ROVER's default configuration starts `rover {9}` automatically.
+The flag`--no-web` prevents ROVER's web server from launching in accordance
+with `rover {4}` or `rover {10}`.
+
+rover {11} ...
+
+  Download missing metadata from the fdsnws-station web service and save to
+  the data archive. This feature is only supported for the ASDF output format.
+
+rover {12} ...
 
   Creates a summary of the index stored in a ROVER repository.
   This lists the overall span of data for each
-  Net_Sta_Loc_Chan and can be queried using `rover %s`.
+  Net_Sta_Loc_Chan and can be queried using `rover {13}`.
 
-rover %s
-
-  Download missing metadata from the fdsnws-station web service and save to the
-  data archive. This feature is only supported for the ASDF output format.
-
-''' % (DOWNLOAD, DATASELECTURL, TEMPDIR, DATADIR, DOWNLOAD, RETRIEVE,  SUBSCRIBE, DAEMON,
-       INGEST,
-       INDEX,
-       SUMMARY, LIST_SUMMARY, RETRIEVE_METADATA)
+'''.format(DOWNLOAD, DATASELECTURL, TEMPDIR, DATADIR, RETRIEVE, SUBSCRIBE,
+           DAEMON, INDEX, INGEST, WEB, START, RETRIEVE_METADATA, SUMMARY,
+           LIST_SUMMARY)
 
 
 GENERAL = {
     USAGE: (usage, 'General interactive use'),
-    BACKGROUND: (background, 'Advanced use with ROVER in the background'),
+    #BACKGROUND: (background, 'Advanced use with ROVER in the background'),
     LOWLEVEL: (low_level, 'Rarely used, low-level commands')
 }
 
@@ -220,7 +185,7 @@ class HelpFormatter:
     def __init__(self, md_format):
         self._md_format = md_format
 
-    def print(self, text):
+    def print_help(self, text):
         arguments = Arguments()
         first_param = True
         for line in self.__paras(text):
@@ -246,15 +211,7 @@ class HelpFormatter:
         return text
 
     def __paras(self, text):
-        lines = text.splitlines()
-        i = 1
-        while i < len(lines):
-            if lines[i].strip() and lines[i-1].strip() and not lines[i].startswith('@') and not lines[i-1].endswith('\\'):
-                lines[i-1] = lines[i-1].rstrip() + ' ' + lines[i].strip()
-                lines[i:] = lines[i+1:]
-            else:
-                i += 1
-        return lines
+        return text.splitlines()
 
     def __slurp(self, line):
         word = ''
@@ -299,7 +256,7 @@ class Helper(HelpFormatter):
     def run(self, args):
         from rover import COMMANDS   # avoid import loop
         if not args:
-            self.print(welcome(self._config))
+            self._help()
             return
         elif len(args) == 1:
             command = args[0].lower()
@@ -307,31 +264,39 @@ class Helper(HelpFormatter):
                 self._help()
                 return
             if command in COMMANDS:
-                self.print(COMMANDS[command][0].__doc__)
+                self.print_help(COMMANDS[command][0].__doc__)
                 return
             elif command in GENERAL:
-                self.print(GENERAL[command][0](self._config))
+                self.print_help(GENERAL[command][0](self._config))
                 return
         raise Exception('Help is available for: %s, %s, %s, and individual commands (or simply "rover help")' % (USAGE, BACKGROUND, LOWLEVEL))
 
     def _help(self):
-        from rover import COMMANDS   # avoid import loop
-        self.print('''
+        from rover import COMMON_COMMANDS, ADVANCED_COMMANDS   # avoid import loop
+        self.print_help('''
 ### Help
 
 Gives help on the various commands.
 
-Help is available for the following commands:
-        ''')
-        for command in sorted(COMMANDS.keys()):
-            print('%19s: %s' % (command, COMMANDS[command][1]))
-        print('''
-Help is also available for the following general topics:
-''')
-        for command in GENERAL.keys():
-            print('%19s: %s' % (command, GENERAL[command][1]))
-        print('''
+Usage:
+
+  rover help <command>
+
+Help is available for the following:
+
+Core commands:
+{}
+
+General topics:
+{}
+
+Advanced commands:
+{}
+
 For example:
 
     rover help retrieve
-''')
+
+'''.format(dictionary_text_list(COMMON_COMMANDS),
+           dictionary_text_list(GENERAL),
+           dictionary_text_list(ADVANCED_COMMANDS)))
