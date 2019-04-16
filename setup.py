@@ -55,7 +55,7 @@ class InstallBase():
     def compile_and_install_mseedindex(self, mseedindex_path):
         """Used the subprocess module to compile/install mseedindex."""
         # compile the software
-        cmd = "WITHOUTPOSTGRESQL=1 make"
+        cmd = "WITHOUTPOSTGRESQL=1 CFLAGS='-O2' make"
         subprocess.check_call(cmd, cwd=mseedindex_path, shell=True)
         
         venv = self.get_virtualenv_path()
