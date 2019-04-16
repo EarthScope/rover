@@ -30,7 +30,7 @@ ver="Python 2\.7"
 if ! [[ $pyv =~ $ver ]]; then
     echo "Python 2 virtual enviroment was set up incorrectly."
     echo "Likely, the incorrect version of python is being utlized."
-    echo "Please check that Python 2.6 or 2.7 is installed on this system."
+    echo "Please check that Python 2.7 is installed on this system."
     echo "Try again."
     exit 1
 fi
