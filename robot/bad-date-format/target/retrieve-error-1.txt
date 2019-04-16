@@ -5,9 +5,9 @@ retrieve  DEFAULT: Downloading TA_MSTX 2012-032 (N_S 1/1; day 1/2)
 retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 2/2)
 retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 1/1)
-retrieve  DEFAULT: Successful retrieval attempt 1 of 3, but no new data downloaded so try again.
+retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
+retrieve  DEFAULT: The initial retrieval attempt resulted in no errors or data downloaded, will verify.
 retrieve  DEFAULT: Trying new retrieval attempt 2 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 1/1)
-retrieve  DEFAULT: Successful retrieval attempt 2 of 3, but no new data downloaded so try again.
-retrieve  DEFAULT: Trying new retrieval attempt 3 of 3.
+retrieve  DEFAULT: Retrieval attempt 2 of 3 is complete.
+retrieve  DEFAULT: The final retrieval, attempt 2 of 3, made no downloads and had no errors, we are complete.
+retrieve  DEFAULT: 

@@ -1,8 +1,0 @@
-subscribe    ERROR: To avoid duplicating data, subscriptions for the same N_S_L_C and time range are not allowed.
-subscribe    ERROR: Your latest subscription appears to overlap an existing subscription (see error below).
-subscribe    ERROR: The first 10 lines of your new subscription are:
-subscribe    ERROR: > TA MSTX -- BH? 2012-02-01T00:00:00.000000 2012-02-04T00:00:00.000000
-subscribe    ERROR: The first 10 lines of the existing subscription are:
-subscribe    ERROR: > TA MSTX -- BH? 2012-02-01T00:00:00.000000 2012-02-04T00:00:00.000000
-subscribe CRITICAL: A pattern in PATH matches an entry in PATH (TA MSTX -- BH? 2012-02-01T00:00:00.000000 - 2012-02-04T00:00:00.000000)
-subscribe  DEFAULT: See "rover help subscribe"

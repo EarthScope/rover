@@ -5,14 +5,11 @@ retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 1/2)
 retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 2/2)
 retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/1)
-retrieve  DEFAULT: Successful retrieval attempt 1 of 3, but no new data downloaded so try again.
+retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
+retrieve  DEFAULT: The initial retrieval attempt resulted in no errors or data downloaded, will verify.
 retrieve  DEFAULT: Trying new retrieval attempt 2 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/1)
-retrieve  DEFAULT: Successful retrieval attempt 2 of 3, but no new data downloaded so try again.
-retrieve  DEFAULT: Trying new retrieval attempt 3 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/1)
-retrieve  DEFAULT: The latest retrieval attempt had no errors.  Stopping at 3 retry attempts.
+retrieve  DEFAULT: Retrieval attempt 2 of 3 is complete.
+retrieve  DEFAULT: The final retrieval, attempt 2 of 3, made no downloads and had no errors, we are complete.
 retrieve  DEFAULT: 
 retrieve  DEFAULT: ----- Retrieval Finished -----
 retrieve  DEFAULT: 
@@ -21,11 +18,8 @@ retrieve  DEFAULT: A ROVER retrieve task on HOST
 retrieve  DEFAULT: started DATE (DATE UTC)
 retrieve  DEFAULT: has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: The download for 1 stations totaled 472.0 KiB,
+retrieve  DEFAULT: The download for 1 stations totaled 480.0 KiB,
 retrieve  DEFAULT: with data covering 10800 seconds.
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A total of 5 downloads were made, with 0 errors (0 on final pass of 3).
-retrieve  DEFAULT: 
-retrieve  DEFAULT: The consistency of the web services could not be confirmed.
-retrieve  DEFAULT: Re-run the retrieve command with --download-retries > 1 to check
+retrieve  DEFAULT: A total of 2 downloads were made, with 0 errors (0 on final pass of 2).
 retrieve  DEFAULT: 
