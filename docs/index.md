@@ -24,12 +24,17 @@ Python 3.5 and above is preferred.
 * [ROVER development](development.md)
 
 ## Installation <a id="installation"></a>
+### Part 1: mseedindex 
 
-ROVER requires [mseedindex](https://github.com/iris-edu/mseedindex) -
-see [mseedindex install guidelines](mseedindex.md).  This is a `C` language program
-that must be compiled.
+ROVER requires the `C` language program [mseedindex](https://github.com/iris-edu/mseedindex) be available on the system's path.  
 
-Install ROVER, and other Python requirements, with `pip`:
+[Mseedindex](https://github.com/iris-edu/mseedindex) may be downloaded and compiled following the [mseedindex install guidelines](mseedindex.md). Alternatively, mseedindex and ROVER may be downloaded and compiled simultaneously using pip:
+    
+    pip install rover --install-option="--mseedindex"
+
+### Part 2: ROVER
+If mseedindex and ROVER were installed together, disreguard the imformation below. 
+Use `pip` to install ROVER and other Python requirements:
 
     pip install rover
     
