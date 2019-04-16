@@ -73,8 +73,8 @@ class SummaryLister(SqliteSupport):
 
 List a summary of entries for a ROVER repository, defined by the data-dir
 configuration option, that match given constraints. List summary is faster
-than `rover list-index` but gives less detail.  For more information,
-run "rover %s" with no arguments.
+than `rover list-index` but gives less detail. For more information,
+run "rover list-index" with no arguments.
 
 ##### Significant Options
 

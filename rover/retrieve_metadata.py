@@ -138,7 +138,7 @@ don't already have and download it.
 
 class MetadataRetriever(UserFeedback):
     """
-### Retrieve
+### Retrieve-Metadata
 
     rover retrieve-metadata
 
