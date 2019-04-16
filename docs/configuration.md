@@ -1,17 +1,17 @@
 
 # ROVER Configuration
 
-ROVER can be configured via a file or by using command line options
-or a combination of the two.  Option names are the same in both cases.
+ROVER can be configured via a file, by using command line options,
+or a combination of the two. Option names are the same in both cases.
 
 ## File Configuration
 
 ROVER's configuration file, normally named rover.config, contains all
-options for a ROVER repository. A default config is is created when a
+options for a ROVER repository. A default config is created when a
 ROVER repository is initialized.
 
 By default `rover.config` is searched for in the current working
-directory, allowing for rover commands to be run without specifying
+directory, which allows for ROVER commands to be run without specifying
 a config file.
 
 To explicitly use a configuration file, the `-f` or `--file` option
@@ -47,8 +47,9 @@ with the later syntax showing the full help with all options.
 
 ## Default Configuration
 
-ROVER's default configuration is written to a file named `rover.config`
-when a new repository is initialized using the command:
+Upon initialization of a new repository, ROVER's default configuration
+is written to a file named `rover.config`. ROVER repositories are
+initialized by running the command:
 
     rover init-repository /PATH/TO/DATAREPO
 
@@ -66,7 +67,7 @@ By default, a repository is arranged in the following structure:
           +- ...
 
 All of these base directory and file locations can be specified
-using rover options.
+using ROVER options.
 
 ## Options
 
