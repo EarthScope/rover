@@ -37,8 +37,8 @@ miniSEED database.
 
 When no argument is given, all modified files in the repository are processed.
 The `--all` flag forces all files to be processed. If a path argument
-is provided, all files contained in the directory are processed, along with the
-contents of sub-directories, unless `--no-recurse` is specified.
+is provided, all files contained in the directory are processed, along with
+the contents of sub-directories, unless `--no-recurse` is specified.
 
 ##### Significant Options
 
@@ -173,7 +173,7 @@ will list all entries in the index after the year 2000.
         self._flags = {COUNT: False, JOIN: False, JOIN_QSR: False}
 
     def _display_help(self):
-        self.print('''
+        self.print_help('''
 The list-index command prints entries from the index that match
 the query parameters.  Parameters generally have the form
 name=value (no spaces).

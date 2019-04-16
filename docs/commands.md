@@ -7,20 +7,13 @@
   * [List Retrieve](#list-retrieve)
   * [List Index](#list-index)
   * [List Summary](#list-summary)
-* [Advanced Usage](#advanced-usage)
-  * [Subscribe](#subscribe)
-  * [Start](#start)
-  * [Stop](#stop)
-  * [Status](#status)
-  * [Unsubscribe](#unsubscribe)
-  * [Trigger](#trigger)
 * [Low-Level Commands](#low-level-commands)
   * [Download](#download)
   * [Ingest](#ingest)
   * [Index](#index)
   * [Summary](#summary)
-  * [Daemon](#daemon)
   * [Web](#web)
+  * [Retrieve-Metadata](#Retrieve-Metadata)
 
 ## Common ROVER Commands
 
@@ -114,11 +107,11 @@ In addition, options for sub-commands (download, ingest, index) will be used - s
 
     rover retrieve N_S_L_C.txt
 
-processes a file containing a request to download, ingest, and index data missing from rover’s local repository.
+processes a file containing a request to download, ingest, and index data missing from ROVER's local repository.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-processes a command line request to download, ingest, and index data missing from rover’s local repository.
+processes a command line request to download, ingest, and index data missing from ROVER's local repository.
 
 
 ### List Retrieve
@@ -213,182 +206,6 @@ List a summary of entries for a ROVER repository, defined by the data-dir config
 
 list all entries in the summary after 2001-01-01.
 
-## Advanced ROVER Commands
-
-
-### Subscribe
-
-    rover subscribe file
-
-    rover subscribe [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
-
-    rover subscribe N_S_L_C [start [end]]
-
-Subscribe generates a background service, daemon, that regularly compares data available at the configured server with the local repository. If there is a discrepancy, available data is downloaded, ingested and indexed. ROVER subscribe is similar to `rover retrieve` but uses a daemon to regularly update a local repository.
-
-##### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
-| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
-| force-request       | False                | Skip overlap checks (dangerous)? |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-| temp-dir            | tmp                  | Temporary storage for downloads |
-
-Most of the download process is controlled by the options provided when starting the service (see `rover start`).
-
-##### Examples
-
-    rover subscribe N_S_L_C.txt
-
-will instruct the daemon to regularly download, ingest, and index any data missing from the repository for NSLCs / timespans in the given file.
-
-    rover subscribe IU_ANMO_00_BH1 2017-01-01 2017-01-04
-
-will instruct the daemon to regularly download, ingest and index and data for IU.ANMO.00.BH1 between the given dates that are missing from the repository.
-
-    
-
-### Start
-
-Starts the background, daemon, process to support `rover subscribe`. The option, --recheck-period, sets the time interval in hours for the daemon to reprocess. ROVER start is the preferred method to initiate the retrieval of data via subscription(s).
-
-See also `rover stop`, `rover status` and `rover daemon`.
-
-##### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| rover-cmd           | rover                | Command to run rover           |
-| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
-| download-workers    | 5                    | Number of download instances to run |
-| mseedindex-workers  | 10                   | Number of mseedindex instances to run |
-| temp-dir            | tmp                  | Temporary storage for downloads |
-| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12                   | Time between availabilty checks (hours) |
-| download-retries    | 3                    | Maximum number of attempts to download data |
-| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
-| http-retries        | 3                    | Max retries for HTTP requests  |
-| web                 | True                 | Auto-start the download progress web server? |
-| http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
-| http-port           | 8000                 | Port for HTTP server           |
-| email               |                      | Address for completion status  |
-| email-from          | noreply@rover        | From address for email         |
-| smtp-address        | localhost            | Address of SMTP server         |
-| smtp-port           | 25                   | Port for SMTP server           |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-| dev                 | False                | Development mode (show exceptions)? |
-
-In addition, options relevant to the processing pipeline (see `rover retrieve` , or the individual commands for download, ingest and index) apply.
-
-##### Examples
-
-    rover start -f roverrc
-
-will start the daemon using the given configuration file.
-
-    rover start --recheck-period 24
-
-will start the daemon, processing subscriptions every 24 hours.
-
-    
-
-### Stop
-
-Stop the background, daemon, process to support `rover subscribe`.
-
-See also `rover start`, `rover status`.
-
-##### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-
-##### Examples
-
-    rover stop -f roverrc
-
-will stop the daemon that was started using the given configuration file.
-
-    
-
-### Status
-
-Displays if the daemon is operating.
-
-See also `rover start`, `rover stop`.
-
-##### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-
-##### Examples
-
-    rover status -f roverrc
-
-will show whether a daemon, using a given configuration file, is running.
-
-    
-
-### Unsubscribe
-
-    rover unsubscribe N[:M]+
-
-Deletes one or more subscriptions identified by their indices. ROVER list-subscribe displays subscription indices. Unsubscribe accepts integers or ranges of integers (N:M) as arguments. Data associated with a subscription(s) are not deleted.
-
-To avoid conflicts with subscriptions that are currently being processed, `rover stop` must stop the daemon before using the unsubscribe command.
-
-##### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The data directory - data, timeseries.sqlite |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-
-##### Examples
-
-    rover unsubscribe 1:3
-
-will delete subscriptions 1, 2 and 3.
-
-    
-
-### Trigger
-
-    rover trigger N[:M]+
-
-Ask the daemon to immediately re-process a subscription(s) based on its index. List-subscribe displays subscriptions indices. Trigger accepts integers or ranges of integers (N:M) as arguments.
-
-#### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| data-dir            | data                 | The data directory - data, timeseries.sqlite |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-
-##### Examples
-
-    rover trigger 2
-
-will ask the daemon to re-process subscription 2.
-
-    
 ## Low-Level Commands
 
 The following commands are used internally, and are often less
@@ -519,52 +336,6 @@ will create the summary of a local ROVER repository.
 
     
 
-### Daemon
-
-The background, daemon, process that supports `rover subscribe`. ROVER's start command is the preferred method to launch the subscription service.
-
-See also `rover stop`, `rover status`.
-
-##### Significant Options
-
-|  Name               | Default              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| rover-cmd           | rover                | Command to run rover           |
-| mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
-| download-workers    | 5                    | Number of download instances to run |
-| mseedindex-workers  | 10                   | Number of mseedindex instances to run |
-| temp-dir            | tmp                  | Temporary storage for downloads |
-| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12                   | Time between availabilty checks (hours) |
-| download-retries    | 3                    | Maximum number of attempts to download data |
-| http-timeout        | 60                   | Timeout for HTTP requests (secs) |
-| http-retries        | 3                    | Max retries for HTTP requests  |
-| web                 | True                 | Auto-start the download progress web server? |
-| http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
-| http-port           | 8000                 | Port for HTTP server           |
-| email               |                      | Address for completion status  |
-| email-from          | noreply@rover        | From address for email         |
-| smtp-address        | localhost            | Address of SMTP server         |
-| smtp-port           | 25                   | Port for SMTP server           |
-| verbosity           | 4                    | Console verbosity (0-6)        |
-| log-dir             | logs                 | Directory for logs             |
-| log-verbosity       | 4                    | Log verbosity (0-6)            |
-| dev                 | False                | Development mode (show exceptions)? |
-
-##### Examples
-
-    rover daemon -f roverrc
-
-will start the daemon in the foreground using the given configuration file.
-
-    rover start --recheck-period 24
-
-will start the daemon in the foreground, processing subscriptions every 24 hours.
-
-REMINDER: ROVER start is the preferred method to launch the subscription service.
-
-    
-
 ### Web
 
     rover web
@@ -596,7 +367,7 @@ will start the daemon without the web server.
 
     
 
-### Retrieve
+### Retrieve-Metadata
 
     rover retrieve-metadata
 
