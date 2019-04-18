@@ -143,7 +143,7 @@ WARNING: The final download had some errors, it may be incomplete.
             msg += '''
 WARNING: Inconsistent retrieval was detected, most likely
          data indicated by the availability service was not
-         avaialble from the dataselect service.
+         available from the dataselect service.
 '''
         elif source.consistent == UNCERTAIN:
             msg += '''
