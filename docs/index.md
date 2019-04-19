@@ -4,12 +4,9 @@ layout: default
 ---
 ## Description
 
-ROVER is a tool to robustly retrieve geophysical timeseries data from data
+ROVER is a command line tool to robustly retrieve geophysical timeseries data from data
 centers such as [IRIS DMC](http://ds.iris.edu). It builds an associated index 
-for the downloaded data to generate a local repository.
-
-ROVER is a command-line tool and requires Python 2.7, 3.5 or a newer version. 
-Python 3.5 and above is preferred.
+for downloaded data to generate a local repository. ROVER compares a built local index to timeseries availability information provided by the datacenter. This enables a local archive to remain synchronized with a remote data center. 
 
 ## Documentation
 
@@ -24,6 +21,13 @@ Python 3.5 and above is preferred.
 * [ROVER development](development.md)
 
 ## Installation <a id="installation"></a>
+
+ROVER is a command-line tool dependent on Python 2.7, 3.5 or a newer version.         
+Python 3.7 or above is preferred. Pre-installed versions of Python available  
+on some operating systems, such as macOS, may not support ROVER installation or 
+operation. We suggest installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 3 (or [Anaconda](https://www.anaconda.com/distribution/#download-section) if you wish) for
+the best results.
+
 ### Option 1 
 
 ROVER requires the `C` language program [mseedindex](https://github.com/iris-edu/mseedindex) be available on the system's path. A `C` compiler and the `make` program are required to build mseedindex. ROVER and mseedindex may be downloaded and compiled simultaneously using pip:
@@ -38,7 +42,7 @@ Alternatively, ROVER and mseedindex may be installed independently.
 Once mseedindex is configured and availble on the system's path, use `pip` to install ROVER and its other Python requirements:
 
     pip install rover
-    
+
 You should now be able to type `rover --version` to see if it was successfully installed.
 
 ## Quick start <a id="quickstart"></a>
