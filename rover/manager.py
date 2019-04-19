@@ -559,10 +559,10 @@ class Source(SqliteSupport):
                     return False
                 # something odd is happening
                 else:
-                    raise ManagerException(('The previous retrieval attempt (%d of %d) downloaded unexpected data.' +
-                                            ' Error potentially caused because of inconsistent web services '+
-                                            'or data had a sample rate = 0.') %
-                                           (self.n_retries, self.download_retries))
+                    raise ManagerException(('The previous %d retrieval attempts could not download some '+
+                                            'requested data available at the data center. Consider running'+
+                                            ' `rover list-retrieve` to determine missing data.') %
+                                           (self.n_retries))
 
         # no errors and no data
         else:
