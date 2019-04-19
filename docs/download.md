@@ -1,4 +1,4 @@
-## Immedidate download
+## Immediate download
 
 The `retrieve` group of commands are used to download, ingest, and index data.  
 
