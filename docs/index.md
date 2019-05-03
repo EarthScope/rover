@@ -4,7 +4,7 @@ layout: default
 ---
 ## Description
 
-ROVER is a command line tool to robustly retrieve geophysical timeseries data from data centers such as [IRIS DMC](http://ds.iris.edu). It builds an associated index for downloaded data to generate a local repository. ROVER compares a built local index to timeseries availability information provided by the datacenter. This enables a local archive to remain synchronized with a remote data center. 
+ROVER is a command line tool to robustly retrieve geophysical timeseries data from data centers such as [IRIS DMC](http://ds.iris.edu). It builds an associated index for downloaded data to generate a local repository. ROVER compares a built local index to timeseries availability information provided by the datacenter. This enables a local archive to remain synchronized with a remote data center.
 
 ## Documentation
 
@@ -22,16 +22,16 @@ ROVER is a command line tool to robustly retrieve geophysical timeseries data fr
 
 ROVER is a command-line tool dependent on Python 2.7, 3.5 or a newer version. Python 3.7 or above is preferred. Pre-installed versions of Python available on some operating systems, such as macOS, may not support ROVER installation or operation. We suggest installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 3 (or [Anaconda](https://www.anaconda.com/distribution/#download-section) if you wish) for the best results.
 
-### Option 1 
+### Option 1
 
 ROVER requires the `C` language program [mseedindex](https://github.com/iris-edu/mseedindex) be available on the system's path. A `C` compiler and the `make` program are required to build mseedindex. ROVER and mseedindex may be downloaded and compiled simultaneously using pip:
-    
-    pip install rover --install-option="--mseedindex"
+
+    pip install rover[mseedindex]
 
 ### Option 2
-Alternatively, ROVER and mseedindex may be installed independently. 
+Alternatively, ROVER and mseedindex may be installed independently.
 
-[Mseedindex](https://github.com/iris-edu/mseedindex) may be downloaded and compiled following the [mseedindex install guidelines](mseedindex.md). Similar to installation option 1, building mseedindex is dependent upon the `make` program and a `C` compiler.
+[mseedindex](https://github.com/iris-edu/mseedindex) may be downloaded and compiled following the [mseedindex install guidelines](mseedindex.md). Similar to installation option 1, building mseedindex is dependent upon the `make` program and a `C` compiler.
 
 Once mseedindex is configured and availble on the system's path, use `pip` to install ROVER and its other Python requirements:
 
@@ -74,12 +74,12 @@ Retrieved files are miniSEED format containing day lengths of station data. The 
    ```
    <datarepo>/data/<network>/<year>/<day>/<station>.<network>.<year>.<day>
    ```
-## Exploring ROVER 
+## Exploring ROVER
 
 ROVER has built-in help. The command `rover help` prints a ROVER introduction to the terminal.
 
-There are many more options available in ROVER including; the ability to send emails that monitor 
-ROVER request and subscriptions (see the `--email` option), view listings of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).`rover help help` prints a list of [commands](commands.md) available in the ROVER code suite. 
+There are many more options available in ROVER including; the ability to send emails that monitor
+ROVER request and subscriptions (see the `--email` option), view listings of contiguous traces (via the `rover list-index join` command), or view the status of a long-running download using a web browser (by default at [http://localhost:8000/](http://localhost:8000/)).`rover help help` prints a list of [commands](commands.md) available in the ROVER code suite.
 
 ROVER is configurable via the rover.config file or by using the command line. Type `rover -h` to see the configuration parameters that are adjustable using the command line.
 
@@ -93,12 +93,12 @@ It is free software and can be redistributed and/or modified
 under the terms of the GNU General Public License, version 3 or later, as published by
 the Free Software Foundation.
 
-ROVER is distributed without any warranty including the 
-implied warranty of merchantability or fitness for a 
-particular purpose.  See the GNU General Public License 
+ROVER is distributed without any warranty including the
+implied warranty of merchantability or fitness for a
+particular purpose.  See the GNU General Public License
 for more details.
 
-A copy of the GNU General Public License should be included 
+A copy of the GNU General Public License should be included
 with the ROVER package. If not, see http://www.gnu.org/licenses/.
 
 Copyright (c) 2018 Incorporated Research
