@@ -749,30 +749,15 @@ class DownloadManager(SqliteSupport):
             for coverage in coverages:
                 sncl_seconds = 0
                 for (start, end) in coverage.timespans:
-                    if end==start:
-                        seconds = end
-                        sncl_seconds += 0
-                        source_seconds += 0
-                        total_seconds += 0
-                        one_sample =True
-                    else:
-                        seconds = end - start
-                        sncl_seconds += seconds
-                        source_seconds += seconds
-                        total_seconds += seconds
-                if sncl_seconds:
-                    source_sncls += 1
-                    total_sncls += 1
-                    print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
-                    for (start, end) in coverage.timespans:
-                        print('    %s - %s  (%4.2f sec)' % (format_epoch(start), format_epoch(end), end - start))
-                    one_sample =False
-                # flag for the case of one second only
-                if one_sample:
-                    total_sncls += 1
-                    print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
+                    seconds = end - start
+                    sncl_seconds += seconds
+                    source_seconds += seconds
+                    total_seconds += seconds
+                source_sncls += 1
+                total_sncls += 1
+                print('  %s  (%4.2f sec)' % (coverage.sncl, sncl_seconds))
+                for (start, end) in coverage.timespans:
                     print('    %s - %s  (%4.2f sec)' % (format_epoch(start), format_epoch(end), end - start))
-                    one_sample =False
             if name != DEFAULT_NAME:
                 if source_sncls:
                     print()
