@@ -51,15 +51,9 @@ class ProgressStatistics:
             self.__prev_net_sta = net_sta
         # but seconds are counted either way
         for start, end in coverage.timespans:
-            if end==start:
-                self.seconds[1] += 0
-            else:
                 self.seconds[1] += (end - start)
 
     def pop_timespan(self, start, end):
-        if end==start:
-            self.seconds[0] += 0
-        else:
             self.seconds[0] += (end - start)
 
     def add_chunks(self, n):
