@@ -26,11 +26,14 @@
 
     rover init [directory]
 
-Initializes a given directory, or the current directory if no argument is provided, as a ROVER data repository. Init repository will create a configuration file, rover.config, as well as log and data directories.
+Initializes a given directory, or the current directory if no argument is
+provided, as a ROVER data repository. Init repository will create a
+configuration file, rover.config, as well as log and data directories.
 
    The aliases `rover init-repo` and `rover int` also exist.
 
-To avoid over-writing data, rover init-repo returns an error if a rover.config file, data or log directory exist in the targeted directory.
+To avoid over-writing data, rover init-repo returns an error if
+a rover.config file, data or log directory exist in the targeted directory.
 
 ##### Significant Options
 
@@ -60,9 +63,14 @@ will create the repository in ~/rover
 
     rover retrieve N_S_L_C [start [end]]
 
-Compares ROVER's local index with remotely available data, then downloads and ingest files missing from the local repository. The URL determining the availability of remote data can be configured by the availability-url option, and URL controlling data downloads is configured by the dataselect-url option.
+Compares ROVER's local index with remotely available data, then downloads and
+ingest files missing from the local repository. The URL determining the
+availability of remote data can be configured by the availability-url option,
+and URL controlling data downloads is configured by the dataselect-url
+option.
 
-Use ROVER's list-index function to determine data available on a remote server which is not in the local repository.
+Use ROVER's list-index function to determine data available on a remote server
+which is not in the local repository.
 
 ##### Significant Options
 
@@ -101,17 +109,20 @@ Use ROVER's list-index function to determine data available on a remote server w
 | asdf-filename       | asdf.h5              | Name of ASDF file when ASDF output is specified |
 | force-metadata-reload | False                | Force reload of metadata       |
 
-In addition, options for sub-commands (download, ingest, index) will be used - see help for those commands for more details.
+In addition, options for sub-commands (download, ingest, index) will be used - see help for those
+commands for more details.
 
 ##### Examples
 
     rover retrieve N_S_L_C.txt
 
-processes a file containing a request to download, ingest, and index data missing from ROVER's local repository.
+processes a file containing a request to download, ingest, and index
+data missing from ROVER's local repository.
 
     rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-processes a command line request to download, ingest, and index data missing from ROVER's local repository.
+processes a command line request to download, ingest, and index
+data missing from ROVER's local repository.
 
 
 ### List Retrieve
@@ -120,7 +131,9 @@ processes a command line request to download, ingest, and index data missing fro
 
     rover list-retrieve N_S_L_C [start [end]]
 
-Compares the local index with the requested data remotely available, then displays the difference. Note that the summary is printed to stdout, while logging is to stderr.
+Compares the local index with the requested data remotely available, then
+displays the difference. Note that the summary is printed to stdout, while
+logging is to stderr.
 
 ##### Significant Options
 
@@ -152,15 +165,19 @@ will display the data missing from the repository to match what is available for
     rover list-index [N_S_L_C_Q]* [start=...] [end=...] \
     [count|join|join-qsr]
 
-List an index of entries for a ROVER repository, defined by the the data-dir configuration options, that match given constraints. For more information, run "rover list-index" with no arguments.
+List an index of entries for a ROVER repository, defined by the the data-dir
+configuration options, that match given constraints. For more information,
+run "rover list-index" with no arguments.
 
-Flag options used to change the output format are optional arguments. Flags are mutually exclusive and take no value:
+Flag options used to change the output format are optional arguments.
+Flags are mutually exclusive and take no value:
 
   count - only the number of matches will be shown
 
   join - continguous time ranges will be joined
 
-  join-qsr - the maximal timespan across all quality and samplerates is shown (as used by retrieve)
+  join-qsr - the maximal timespan across all quality and samplerates is shown
+  (as used by retrieve)
 
 ##### Significant Options
 
@@ -189,7 +206,10 @@ will list all entries in the index after the year 2000.
 
     rover list-summary [N_S_L_C_Q]* [start=...] [end=...]
 
-List a summary of entries for a ROVER repository, defined by the data-dir configuration option, that match given constraints. List summary is faster than `rover list-index` but gives less detail.  For more information, run "rover %s" with no arguments.
+List a summary of entries for a ROVER repository, defined by the data-dir
+configuration option, that match given constraints. List summary is faster
+than `rover list-index` but gives less detail. For more information,
+run "rover list-index" with no arguments.
 
 ##### Significant Options
 
@@ -218,7 +238,13 @@ useful from the command line:
 
     rover download file [path]
 
-Downloads a single request, typically for a day, from a URL or a given file. File arguments are expected to contain FDSN web services requests and fetch data from the URL set by the dataselect-url option. Data are downloaded to a temporary directory, which is configured by the temp-dir option. After downloaded, data are ingested into the data-dir repository and are deleted from the temp directory. `rover download` is called by `rover retrieve`, 'rover subscribe` and `rover daemon`.
+Downloads a single request, typically for a day, from a URL or a given file.
+File arguments are expected to contain FDSN web services requests and fetch
+data from the URL set by the dataselect-url option. Data are downloaded to a
+temporary directory, which is configured by the temp-dir option.
+After downloaded, data are ingested into the data-dir repository and are
+deleted from the temp directory. `rover download` is called by
+`rover retrieve`.
 
 ##### Significant Options
 
@@ -235,25 +261,29 @@ Downloads a single request, typically for a day, from a URL or a given file. Fil
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 
-Options used to configure the sub-commands ingest, index are also applicable - see Ingest/Index help for more details.
+Options used to configure the sub-commands ingest, index are also applicable
+- see Ingest/Index help for more details.
 
 
 ##### Examples
 
-    rover download 'http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000'
+    rover download
+    'http://service.iris.edu/fdsnws/dataselect/1/query?net=IU&sta=ANMO&loc=00&cha=BHZ&start=2010-02-27T06:30:00.000&end=2010-02-27T10:30:00.000'
 
 will download, ingest and index data from the given URL.
 
     rover download myrequest.txt
 
-will download, ingest and index data from `dataselect-url` after POSTing `myrequest.txt`.
+will download, ingest and index data from `dataselect-url` after POSTing
+`myrequest.txt`.
 
 
 ### Ingest
 
     rover ingest file
 
-Adds contents from a miniSEED formatted file to ROVER's local repository and indexes the new data.
+Adds contents from a miniSEED formatted file to ROVER's local repository and
+indexes the new data.
 
 ##### Significant Options
 
@@ -270,7 +300,8 @@ Adds contents from a miniSEED formatted file to ROVER's local repository and ind
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
 
-Options used to configure the sub-command index are also applicable - see Index help for more details.
+Options used to configure the sub-command index are also applicable -
+see Index help for more details.
 
 ##### Examples
 
@@ -285,9 +316,13 @@ will add all the data in the given file to the repository.
 
     rover index (file|dir)+
 
-Indexes files, adds or changes entries in the tsindex table stored in the miniSEED database.
+Indexes files, adds or changes entries in the tsindex table stored in the
+miniSEED database.
 
-When no argument is given, all modified files in the repository are processed. The `--all` flag forces all files to be processed. If a path argument is provided, all files contained in the directory are processed, along with the contents of sub-directories, unless `--no-recurse` is specified.
+When no argument is given, all modified files in the repository are processed.
+The `--all` flag forces all files to be processed. If a path argument
+is provided, all files contained in the directory are processed, along with
+the contents of sub-directories, unless `--no-recurse` is specified.
 
 ##### Significant Options
 
@@ -316,7 +351,9 @@ will index the entire repository.
 
     rover summary
 
-Creates a summary of the index stored in a ROVER repository. This lists the overall span of data for each Net_Sta_Loc_Chan and can be queried using `rover list-summary`.
+Creates a summary of the index stored in a ROVER repository. This lists the
+overall span of data for each Net_Sta_Loc_Chan and can be queried using
+`rover list-summary`.
 
 ##### Significant Options
 
@@ -342,11 +379,12 @@ will create the summary of a local ROVER repository.
 
     rover web --http-bind-address 0.0.0.0 --http-port 8080
 
-    rover start --web ...   # the default
-
     rover retrieve --web ...   # the default
 
-Starts a web server that provides information on the progress of the download manager, the core of the `rover daemon` and `rover retrieve` commands. ROVER's default configuration starts `rover web` automatically. The flag`--no-web` prevents ROVER's web server from launching in accordance with `rover retrieve` or `rover start`.
+Starts a web server that provides information on the progress of the download
+manager. ROVER's default configuration starts `rover web` automatically.
+The flag`--no-web` prevents ROVER's web server from launching in accordance
+with `rover retrieve`.
 
 ##### Significant Options
 
@@ -361,9 +399,9 @@ Starts a web server that provides information on the progress of the download ma
 
 ##### Examples
 
-    rover start --no-web
+    rover retrieve --no-web
 
-will start the daemon without the web server.
+will run retrieve without the web server.
 
     
 
@@ -371,7 +409,8 @@ will start the daemon without the web server.
 
     rover retrieve-metadata
 
-Download missing metadata from the fdsnws-station web service and save to the data archive. This feature is only supported for the ASDF output format.
+Download missing metadata from the fdsnws-station web service and save to the
+data archive. This feature is only supported for the ASDF output format.
 
 ##### Significant Options
 
