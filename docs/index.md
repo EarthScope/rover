@@ -26,12 +26,12 @@ ROVER is a command-line tool dependent on Python 2.7, 3.5 or a newer version. Py
 
 ROVER requires the `C` language program [mseedindex](https://github.com/iris-edu/mseedindex) be available on the system's path. A `C` compiler and the `make` program are required to build mseedindex. ROVER and mseedindex may be downloaded and compiled simultaneously using pip:
 
-    pip install rover --install-option="--mseedindex"
+    pip install rover[mseedindex]
 
 ### Option 2
 Alternatively, ROVER and mseedindex may be installed independently.
 
-[Mseedindex](https://github.com/iris-edu/mseedindex) may be downloaded and compiled following the [mseedindex install guidelines](mseedindex.md). Similar to installation option 1, building mseedindex is dependent upon the `make` program and a `C` compiler.
+[mseedindex](https://github.com/iris-edu/mseedindex) may be downloaded and compiled following the [mseedindex install guidelines](mseedindex.md). Similar to installation option 1, building mseedindex is dependent upon the `make` program and a `C` compiler.
 
 Once mseedindex is configured and availble on the system's path, use `pip` to install ROVER and its other Python requirements:
 

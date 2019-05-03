@@ -14,13 +14,6 @@ with open(os.path.join(here, "README.md"), encoding='utf-8') as fh:
 with open(os.path.join(here, module_name, 'VERSION')) as vf:
     version = vf.read().strip()
 
-# python 2 / 3 compatibility
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen  # noqa
-
-
 setup(
     name=module_name,
     version=version,
@@ -56,5 +49,5 @@ setup(
     },
     package_data={
         module_name: ['VERSION']
-    },
+    }
 )
