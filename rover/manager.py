@@ -51,10 +51,10 @@ class ProgressStatistics:
             self.__prev_net_sta = net_sta
         # but seconds are counted either way
         for start, end in coverage.timespans:
-                self.seconds[1] += (end - start)
+            self.seconds[1] += (end - start)
 
     def pop_timespan(self, start, end):
-            self.seconds[0] += (end - start)
+        self.seconds[0] += (end - start)
 
     def add_chunks(self, n):
         self.stations[0] += 1  # a set of chunks is for a single station
