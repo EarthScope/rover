@@ -737,7 +737,6 @@ class DownloadManager(SqliteSupport):
         Display a summary of the data that have not been expanded into downloads.
         """
         total_seconds, total_sncls = 0, 0
-        one_sample =False
         print()
         for name in self._sources.keys():
             source = self._sources[name]
