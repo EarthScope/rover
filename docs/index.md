@@ -20,7 +20,7 @@ ROVER is a command line tool to robustly retrieve geophysical timeseries data fr
 
 ## Installation <a id="installation"></a>
 
-ROVER is a command-line tool dependent on Python 2.7, 3.5 or a newer version. Python 3.7 or above is preferred. Pre-installed versions of Python available on some operating systems, such as macOS, may not support ROVER installation or operation. We suggest installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 3 (or [Anaconda](https://www.anaconda.com/distribution/#download-section) if you wish) for the best results.
+ROVER is a command-line tool that requires Python 2.7, 3.6.2 or a later. Python 3.7 or above running on Linux or macOS are known to work best (pre-installed versions of Python available on some operating systems, such as macOS, may not support ROVER installation or operation without additional work). We suggest installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 3 (or the full [Anaconda](https://www.anaconda.com/distribution/#download-section) if you wish) for the best results.
 
 ### Option 1
 
