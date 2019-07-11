@@ -59,6 +59,7 @@ class ProcessManager(SqliteSupport):
             else:
                 self._log.debug('Removing dead process %s/%d' % (candidate, pid))
                 self._db.execute('DELETE FROM rover_processes WHERE pid = ?', (pid,))
+                self._db.commit()
         except StopIteration:
             pass  # table is empty
         try:
