@@ -6,7 +6,7 @@ import codecs
 
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir
+from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir, strerror
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath, getmtime
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
@@ -564,7 +564,7 @@ def log_file_contents(path, log, max_lines=10):
     except UnicodeDecodeError:
         log.error('File contents are not printable.')
     except IOError as e:
-        log.error('Error opening file:', os.strerror(e.errno))
+        log.error('Error opening file:', strerror(e.errno))
 
 
 def calc_bytes(sizestring):
