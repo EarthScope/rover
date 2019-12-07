@@ -603,8 +603,7 @@ class Source(SqliteSupport):
         tmp = unique_path(self._temp_dir, TMPREQUEST, path)
         self._log.debug('Prepending options to %s via %s' % (path, tmp))
         with open(tmp, 'w') as output:
-            print('mergequality=true', file=output)
-            print('mergesamplerate=true', file=output)
+            print('merge=samplerate,quality', file=output)
             with open(path, 'r') as inpath:
                 for line in inpath:
                     print(line, file=output, end='')

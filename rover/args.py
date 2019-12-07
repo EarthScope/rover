@@ -112,7 +112,7 @@ DYNAMIC_ARGS = (VERSION, HELP_CMD, FULLHELP)
 
 # default values (for non-boolean parameters)
 DEFAULT_ASDF_FILENAME = 'asdf.h5'
-DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/irisws/availability/1/query'
+DEFAULT_AVAILABILITYURL = 'http://service.iris.edu/fdsnws/availability/1/query'
 DEFAULT_DATADIR = 'data'
 DEFAULT_DATASELECTURL = 'http://service.iris.edu/fdsnws/dataselect/1/query'
 DEFAULT_DOWNLOADRETRIES = 3
