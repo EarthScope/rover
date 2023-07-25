@@ -77,7 +77,7 @@ which is not in the local repository.
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
 | temp-dir            | tmp                  | Temporary storage for downloads |
-| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
+| availability-url    | http://service.iris.edu/fdsnws/availability/1/query | Availability service url       |
 | dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
 | timespan-tol        | 0.5                  | Fractional tolerance for overlapping timespans (samples) |
 | pre-index           | True                 | Index before retrieval?        |
@@ -139,7 +139,7 @@ logging is to stderr.
 
 |  Name               | Default              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| availability-url    | http://service.iris.edu/irisws/availability/1/query | Availability service url       |
+| availability-url    | http://service.iris.edu/fdsnws/availability/1/query | Availability service url       |
 | timespan-tol        | 0.5                  | Fractional tolerance for overlapping timespans (samples) |
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | verbosity           | 4                    | Console verbosity (0-6)        |

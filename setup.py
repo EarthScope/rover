@@ -17,7 +17,7 @@ with open(os.path.join(here, module_name, 'VERSION')) as vf:
 setup(
     name=module_name,
     version=version,
-    author="IRIS",
+    author="EarthScope",
     author_email="software@earthscope.org",
     description="Tool for the robust retrieval of seismic data",
     long_description=long_description,
