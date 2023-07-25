@@ -3,12 +3,12 @@ title: mseedindex install guidelines (for ROVER)
 layout: default
 ---
 
-ROVER is dependent upon the program [mseedindex](https://github.com/iris-edu/mseedindex) to maintain an index of downloaded miniSEED data.
+ROVER is dependent upon the program [mseedindex](https://github.com/EarthScope/mseedindex) to maintain an index of downloaded miniSEED data.
 
 To install mseedindex, a system must have a `C` (or `C++`) compiler and the `make` program. The instructions below outline mseedindex installation:
 
 * Download the latest source code from the
-  [mseedindex release page](https://github.com/iris-edu/mseedindex/releases).
+  [mseedindex release page](https://github.com/EarthScope/mseedindex/releases).
 
 * Unpack the source code, i.e. untar or unzip.
 

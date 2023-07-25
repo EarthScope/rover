@@ -18,11 +18,11 @@ setup(
     name=module_name,
     version=version,
     author="IRIS",
-    author_email="software-owner@iris.washington.edu",
+    author_email="software@earthscope.org",
     description="Tool for the robust retrieval of seismic data",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://iris-edu.github.io/rover",
+    url="https://earthscope.github.io/rover",
     packages=find_packages(),
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
     classifiers=(
