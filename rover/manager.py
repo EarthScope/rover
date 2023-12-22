@@ -890,6 +890,7 @@ class DownloadManager(SqliteSupport):
         with self._db:  # single transaction
             self._db.cursor().execute('BEGIN')
             self._db.execute('DELETE FROM rover_download_stats', tuple())
+            self._db.commit()
             for source in self._sources.values():
                 progress = source.stats()
                 self._db.execute('''INSERT INTO rover_download_stats
