@@ -2,4 +2,3 @@ name: EarthScope
 title: ROVER - robust data access tool for FDSN data centers
 markdown: kramdown
 auto: true
-remote_theme: iris-edu-int/theme_ghpages
