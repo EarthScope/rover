@@ -104,5 +104,3 @@ limitations under the License.
 
 Copyright (c) 2018 EarthScope Consortium
 
-{% include_relative github-corner.html %}
-
