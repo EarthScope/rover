@@ -7,6 +7,7 @@ env2
 bug-urllib
 *~
 *.html
+!docs/github-corner.html
 *.log
 run
 tmp
