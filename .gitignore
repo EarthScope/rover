@@ -1,23 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 
-.idea
-env3
-env2
-*.iml
-*.pyc
-bug-urllib
-*~
-*.html
-!docs/github-corner.html
-*.log
-run
-tmp
-*.xml
-#*
-leap-seconds.lst
-leap-seconds.list
-build
-dist
-rover.egg-info
-logs
-subscriptions
-config
+# C build objects
+*.so
+*.lo
+*.o
+*.dylib
+*.so
+*.dll
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+eggs/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Development environment
+devenv/
+tmp/
+run*
+
+# Sphinx documentation
+docs/_build/

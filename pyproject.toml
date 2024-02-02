@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.21.0", "requests>=2.26.0"]
+requires = ["hatchling>=1.21.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -10,6 +10,10 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.8"
+dependencies = [
+    "mseedindex>=3.0.4",
+    "requests>=2.26.0"
+]
 keywords = ["seismology", "miniseed", "mseed", "data", "waveform", "seismic"]
 license = { text = "Apache-2.0" }
 classifiers = [
@@ -35,7 +39,7 @@ Homepage = "https://earthscope.github.io/rover/"
 Issues = "https://github.com/EarthScope/rover/issues"
 
 [project.scripts]
-rover = "rover.__main__:main"
+rover = "rover.__init__:main"
 
 [tool.hatch.version]
 path = "src/rover/__version__.py"

@@ -1,0 +1,40 @@
+Commands needed for setting up a development environment, building wheels,
+and uploading to PyPI
+
+# Development environment
+
+## Create the development environment, only needed once
+python3 -m venv devenv
+
+## Activate the development environment
+source ./devenv/bin/activate
+
+## Install the module locally using the source in-place
+python3 -m pip install --editable .
+
+# Testing
+
+The package must be installed to be tested because the C library
+must be compiled and this is done during packaging.
+
+python3 -m pip install pytest robot
+pytest
+
+# Update release version
+
+The single-source package version is specified in:
+src/rover/__version__.py
+
+The versioning follows the semantic versioning definition.
+
+# Building distribution packages
+
+## Ensure required build modules are installed
+python3 -m pip install build twine
+
+## Build sdist
+python3 -m build --sdist
+
+## Test and upload to PyPI
+python3 -m twine check --strict dist/*
+python3 -m twine upload dist/*
