@@ -12,11 +12,7 @@ import sys
 import traceback
 from collections import OrderedDict
 from itertools import chain
-
-# Set __version__ from package VERSION file
-version_file = os.path.join(os.path.dirname(__file__), 'VERSION')
-with open(version_file, "r") as vf:
-    __version__ = vf.read().strip()
+from .__version__ import __version__
 
 
 def signal_handler(sig, frame):

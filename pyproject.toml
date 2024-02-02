@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.21.0", "requests>=2.26.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rover"
+description = "Robust retrieval of seismic data using FDSN web services"
+authors = [
+    { name = "EarthScope Data Services", email = "software@earthscope.org" },
+]
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["seismology", "miniseed", "mseed", "data", "waveform", "seismic"]
+license = { text = "Apache-2.0" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: Other",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://earthscope.github.io/rover/"
+Issues = "https://github.com/EarthScope/rover/issues"
+
+[project.scripts]
+rover = "rover.__main__:main"
+
+[tool.hatch.version]
+path = "src/rover/__version__.py"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

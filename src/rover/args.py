@@ -6,7 +6,7 @@ from re import sub
 from smtplib import SMTP_PORT
 from textwrap import dedent
 
-from rover import __version__
+from .__version__ import __version__
 from .utils import create_parents, canonify, check_cmd, dictionary_text_list
 
 """
@@ -392,7 +392,7 @@ class Arguments(ArgumentParser):
             if command:
                 ns.command = HELP_CMD
                 ns.args.append(command)
-    
+
         return ns, config
 
     def __preprocess_booleans(self, args):
@@ -586,7 +586,7 @@ class Arguments(ArgumentParser):
     def format_big_help(self):
         """
         A hacked version of format_help that prints big welcome message and
-        includes all commands / actions. 
+        includes all commands / actions.
         """
         formatter = self._get_formatter()
         formatter.add_text(self.description)
@@ -631,7 +631,7 @@ class Arguments(ArgumentParser):
         return ('Usage:\n'
                 '  rover <command> [args]\n\n'
                 'common commands:\n'
-                '{}\n\n'                
+                '{}\n\n'
                 'advanced commands:\n'
                 '{}\n\n'
                 .format(dictionary_text_list(COMMON_COMMANDS),
