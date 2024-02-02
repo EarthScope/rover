@@ -4,15 +4,14 @@ from re import match, sub
 from sqlite3 import OperationalError
 
 from .config import timeseries_db
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, DEV, VERBOSITY, MSEEDINDEXWORKERS, HTTPTIMEOUT, \
-    HTTPRETRIES, FORCECMD, TIMESPANINC
+from .args import MSEEDINDEXCMD, DEV, VERBOSITY, MSEEDINDEXWORKERS, HTTPTIMEOUT, HTTPRETRIES, FORCECMD, TIMESPANINC
 from .args import TIMESPANTOL
 from .coverage import MultipleSNCLBuilder
 from .help import HelpFormatter
 from .scan import ModifiedScanner, DirectoryScanner
 from .sqlite import SqliteSupport
 from .utils import format_epoch, windows, tidy_timestamp
-from .utils import check_leap, check_cmd, STATION, NETWORK, CHANNEL, LOCATION
+from .utils import check_cmd, STATION, NETWORK, CHANNEL, LOCATION
 from .workers import Workers
 
 
@@ -46,10 +45,6 @@ the contents of sub-directories, unless `--no-recurse` is specified.
 @data-dir
 @mseedindex-cmd
 @mseedindex-workers
-@leap
-@leap-expire
-@leap-file
-@leap-url
 @verbosity
 @log-dir
 @log-verbosity
@@ -70,8 +65,6 @@ will index the entire repository.
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
         self._timeseries_db = timeseries_db(config)
-        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
-                                     config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._verbose = config.arg(DEV) and config.arg(VERBOSITY) == 5
         self._workers = Workers(config, config.arg(MSEEDINDEXWORKERS))
 
@@ -90,14 +83,9 @@ will index the entire repository.
         Run mseedindex asynchronously in a worker.
         """
         self._log.info('Indexing %s' % path)
-        if windows():
-            self._workers.execute('set LIBMSEED_LEAPSECOND_FILE=%s && %s %s -sqlite %s %s'
-                                  % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                     self._timeseries_db, path))
-        else:
-            self._workers.execute('LIBMSEED_LEAPSECOND_FILE=%s %s %s -sqlite %s %s'
-                                  % (self._leap_file, self._mseed_cmd, '-v -v' if self._verbose  else '',
-                                     self._timeseries_db, path))
+        self._workers.execute('%s %s -sqlite %s %s'
+                              % (self._mseed_cmd, '-v -v' if self._verbose else '',
+                                 self._timeseries_db, path))
 
     def done(self):
         self._workers.wait_for_all()

@@ -3,8 +3,8 @@ import datetime
 from shutil import copyfile
 
 from rover import __version__
-from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, LEAP, LEAPEXPIRE, UserFeedback, \
-    LEAPFILE, LEAPURL, TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
+from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, UserFeedback, \
+    TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
     HTTPRETRIES, OUTPUT_FORMAT, DATADIR, FORCE_METADATA_RELOAD
 from .download import DEFAULT_NAME
 from .index import Indexer
@@ -13,7 +13,7 @@ from .report import Reporter
 from .retrieve_metadata import MetadataRetriever
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import clean_old_files, match_prefixes, check_leap, unique_path, \
+from .utils import clean_old_files, match_prefixes, unique_path, \
     safe_unlink, build_file, fix_file_inplace, remove_empty_folders
 
 """
@@ -65,9 +65,6 @@ which is not in the local repository.
 @download-retries
 @http-timeout
 @http-retries
-@leap-expire
-@leap-file
-@leap-url
 @web
 @http-bind-address
 @http-port
@@ -113,9 +110,6 @@ data missing from ROVER's local repository.
         self._download_manager = None   # created in do_run()
         self._reporter = Reporter(config)
         self._config = config
-        # leap seconds not used here, but avoids multiple threads all downloading later
-        check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.file(LEAPFILE), config.arg(LEAPURL),
-                   config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
 
     def do_run(self, args, fetch, command):

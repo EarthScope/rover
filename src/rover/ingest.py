@@ -4,14 +4,12 @@ from os.path import exists, join
 from re import match
 from shutil import copyfile
 
-from .args import MSEEDINDEXCMD, LEAP, LEAPEXPIRE, LEAPFILE, LEAPURL, \
-    DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, OUTPUT_FORMAT
+from .args import MSEEDINDEXCMD, DATADIR, INDEX, HTTPTIMEOUT, HTTPRETRIES, OUTPUT_FORMAT
 from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import run, check_cmd, check_leap, create_parents, safe_unlink, \
-    windows, atomic_move, hash
+from .utils import run, check_cmd, create_parents, safe_unlink, windows, atomic_move, hash
 
 """
 The 'rover ingest' command - copy downloaded data into the repository (and then call index).
@@ -37,10 +35,6 @@ indexes the new data.
 @mseedindex-cmd
 @data-dir
 @index
-@leap
-@leap-expire
-@leap-file
-@leap-url
 @verbosity
 @log-dir
 @log-verbosity
@@ -66,8 +60,6 @@ will add all the data in the given file to the repository.
         SqliteSupport.__init__(self, config)
         DirectoryScanner.__init__(self, config)
         self._mseed_cmd = check_cmd(config, MSEEDINDEXCMD, 'mseedindex')
-        self._leap_file = check_leap(config.arg(LEAP), config.arg(LEAPEXPIRE), config.arg(LEAPFILE),
-                                     config.arg(LEAPURL), config.arg(HTTPTIMEOUT), config.arg(HTTPRETRIES), config.log)
         self._db_path = None
         self._data_dir = config.dir(DATADIR)
         self._index = config.arg(INDEX)
@@ -97,12 +89,9 @@ will add all the data in the given file to the repository.
             safe_unlink(self._db_path)
         updated = set()
         try:
-            if windows():
-                run('set LIBMSEED_LEAPSECOND_FILE=%s && %s -sqlite %s %s'
-                    % (self._leap_file, self._mseed_cmd, self._db_path, temp_file), self._log)
-            else:
-                run('LIBMSEED_LEAPSECOND_FILE=%s %s -sqlite %s %s'
-                    % (self._leap_file, self._mseed_cmd, self._db_path, temp_file), self._log)
+            run('%s -sqlite %s %s'
+                % (self._mseed_cmd, self._db_path, temp_file), self._log)
+
             with SqliteContext(self._db_path, self._log) as db:
                 rows = db.fetchall('''SELECT network, station, starttime, endtime, byteoffset, bytes
                                   FROM tsindex ORDER BY byteoffset''')

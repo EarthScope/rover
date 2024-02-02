@@ -30,6 +30,9 @@ pip-delete-this-directory.txt
 devenv/
 tmp/
 run*
+log.html
+output.xml
+report.html
 
 # Sphinx documentation
 docs/_build/

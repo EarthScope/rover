@@ -71,10 +71,6 @@ HTTPBINDADDRESS = 'http-bind-address'
 HTTPPORT = 'http-port'
 HTTPRETRIES = 'http-retries'
 HTTPTIMEOUT = 'http-timeout'
-LEAP = 'leap'
-LEAPEXPIRE = 'leap-expire'
-LEAPFILE = 'leap-file'
-LEAPURL = 'leap-url'
 LOGDIR = 'log-dir'
 LOGVERBOSITY = 'log-verbosity'
 LOGSIZE = 'log-size'
@@ -124,9 +120,6 @@ DEFAULT_HTTPBINDADDRESS = '127.0.0.1'
 DEFAULT_HTTPPORT = 8000
 DEFAULT_HTTPRETRIES = 3
 DEFAULT_HTTPTIMEOUT = 60
-DEFAULT_LEAPEXPIRE = 30
-DEFAULT_LEAPFILE = 'leap-seconds.list'
-DEFAULT_LEAPURL = 'https://www.ietf.org/timezones/data/leap-seconds.list'
 DEFAULT_LOGDIR = 'logs'
 DEFAULT_LOGVERBOSITY = 4
 DEFAULT_LOGSIZE = '10M'
@@ -341,13 +334,6 @@ class Arguments(ArgumentParser):
         mseedindex_group = self.add_argument_group('mseedindex arguments')
         mseedindex_group.add_argument(mm(MSEEDINDEXCMD), default=DEFAULT_MSEEDINDEXCMD, action='store', help='mseedindex command', metavar=CMDVAR)
         mseedindex_group.add_argument(mm(MSEEDINDEXWORKERS), default=DEFAULT_MSEEDINDEXWORKERS, action='store', help='number of mseedindex instances to run', metavar=NVAR, type=int)
-
-        # leap seconds
-        leap_sec_group = self.add_argument_group('leap second arguments')
-        leap_sec_group.add_argument(mm(LEAP), default=True, action='store_bool', help='use leap seconds file?', metavar='')
-        leap_sec_group.add_argument(mm(LEAPEXPIRE), default=DEFAULT_LEAPEXPIRE, action='store', help='number of days before refreshing leap seconds file', metavar=NVAR, type=int)
-        leap_sec_group.add_argument(mm(LEAPFILE), default=DEFAULT_LEAPFILE, action='store', help='file for leap second data', metavar=FILEVAR)
-        leap_sec_group.add_argument(mm(LEAPURL), default=DEFAULT_LEAPURL, action='store', help='URL for leap second data', metavar=URLVAR)
 
         # user feedback
         user_feedback_group = self.add_argument_group('user feedback arguments')

@@ -19,6 +19,7 @@ must be compiled and this is done during packaging.
 
 python3 -m pip install pytest robot
 pytest
+robot -F robot robot
 
 # Update release version
 
