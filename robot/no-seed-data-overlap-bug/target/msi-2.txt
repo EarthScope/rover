@@ -1,5 +1,5 @@
-   Source                Start sample             End sample        Gap  Hz  Samples
-TA_MSTX__BHE      2012,033,23:00:00.000000 2012,035,00:00:00.000000  ==  40  3600001
-TA_MSTX__BHN      2012,033,23:00:00.000000 2012,035,00:00:00.000000  ==  40  3600001
-TA_MSTX__BHZ      2012,033,23:00:00.000000 2012,035,00:00:00.000000  ==  40  3600001
+       SourceID                      Start sample                End sample           Gap  Hz  Samples
+FDSN:TA_MSTX__B_H_E         2012-02-02T23:00:00.000000Z  2012-02-04T00:00:00.000000Z   ==  40  3600001
+FDSN:TA_MSTX__B_H_N         2012-02-02T23:00:00.000000Z  2012-02-04T00:00:00.000000Z   ==  40  3600001
+FDSN:TA_MSTX__B_H_Z         2012-02-02T23:00:00.000000Z  2012-02-04T00:00:00.000000Z   ==  40  3600001
 Total: 3 trace(s) with 3 segment(s)
