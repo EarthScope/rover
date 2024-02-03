@@ -39,7 +39,7 @@ Homepage = "https://earthscope.github.io/rover/"
 Issues = "https://github.com/EarthScope/rover/issues"
 
 [project.scripts]
-rover = "rover.__init__:main"
+rover = "rover.__main__:main"
 
 [tool.hatch.version]
 path = "src/rover/__version__.py"

@@ -21,6 +21,11 @@ python3 -m pip install pytest robot
 pytest
 robot -F robot robot
 
+Note that the robot tests are fragile, relying on fixed configuration
+files, and external programs like `sed` and `msi` (and it's output formatting),
+which may or may not be present or the right versions.  These are not expected
+to run on Windows.
+
 # Update release version
 
 The single-source package version is specified in:

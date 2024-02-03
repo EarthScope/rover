@@ -164,13 +164,13 @@ class DirectoryScanner:
         self._log = config.log
 
     def scan_dirs_and_files(self, paths):
-        
+
         for path in paths:
             path = canonify(path)
             if not exists(path):
                 raise Exception('Cannot find %s' % path)
             if isfile(path):
-                self.process(path) # Calls the process method in rover.ingest        
+                self.process(path) # Calls the process method in rover.ingest
             else:
                 self._scan_dir(path)
         self.done()
@@ -187,7 +187,7 @@ class DirectoryScanner:
                 self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
 
     def process(self, path):
-        #process method could/should be removed. It does nothing and is confusing for the person reading the code . 
+        #process method could/should be removed. It does nothing and is confusing for the person reading the code .
         raise Exception('Unimplemented')
 
     def done(self):

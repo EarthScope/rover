@@ -29,7 +29,7 @@ pip-delete-this-directory.txt
 # Development environment
 devenv/
 tmp/
-run*
+run/
 log.html
 output.xml
 report.html
