@@ -1,16 +1,10 @@
+import pytest
+from tempfile import TemporaryDirectory
 from random import randint, seed
-from sys import version_info
-
-if version_info[0] >= 3:
-    from tempfile import TemporaryDirectory
-else:
-    from backports.tempfile import TemporaryDirectory
 
 from rover.logs import init_log
 from rover.coverage import Coverage
 from rover.utils import format_epoch, parse_epoch
-
-from .test_utils import WindowsTemp
 
 
 def loop_date(d1, known=None):
@@ -119,7 +113,7 @@ def run(log, tolerance, increment,
 
 
 def test_coverage():
-    with WindowsTemp(TemporaryDirectory) as dir:
+    with TemporaryDirectory() as dir:
         log = init_log(dir, '10M', 1, 5, 4, 'coverage', False, 1)[0]
         run(log, 0.5, 0.5, 0, 10, 0, 3, 2, 0, ((2,5),(7,10)))
         run(log, 0.5, 0.5, 2, 1, -1, 3, 2, 0, ())

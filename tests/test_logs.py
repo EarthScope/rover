@@ -1,27 +1,21 @@
-
+import pytest
 from io import StringIO
 from os.path import join
 from re import sub
-from sys import version_info
-
-if version_info[0] >= 3:
-    from tempfile import TemporaryDirectory
-else:
-    from backports.tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory
 
 from rover.logs import init_log
 from rover.args import DEFAULT_LOGVERBOSITY, DEFAULT_VERBOSITY
-
-from .test_utils import WindowsTemp
 
 
 def log_all(log):
     log.debug('debug')
     log.info('info')
     log.default('default')
-    log.warn('warn')
+    log.warning('warning')
     log.error('error')
     log.critical('critical')
+
 
 def remove_timestamp(text):
     return sub(r'\d{4}\-\d{2}\-\d{2} \d{2}:\d{2}:\d{2},\d{3}', '[timestamp]', text)
@@ -29,7 +23,7 @@ def remove_timestamp(text):
 
 def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 
-    with WindowsTemp(TemporaryDirectory) as dir:
+    with TemporaryDirectory() as dir:
 
         logdir = join(dir, '.rover')
         stderr = StringIO()
@@ -48,13 +42,13 @@ def do_all_levels(log_level, log_expected, stderr_level, stderr_expected):
 def test_default_levels():
     do_all_levels(DEFAULT_LOGVERBOSITY,
 '''DEFAULT  [timestamp]: default
-WARNING  [timestamp]: warn
+WARNING  [timestamp]: warning
 ERROR    [timestamp]: error
 CRITICAL [timestamp]: critical
 ''',
                   DEFAULT_VERBOSITY,
 '''rover  DEFAULT: default
-rover  WARNING: warn
+rover  WARNING: warning
 rover    ERROR: error
 rover CRITICAL: critical
 ''')
@@ -64,7 +58,7 @@ def test_all_levels():
 '''DEBUG    [timestamp]: debug
 INFO     [timestamp]: info
 DEFAULT  [timestamp]: default
-WARNING  [timestamp]: warn
+WARNING  [timestamp]: warning
 ERROR    [timestamp]: error
 CRITICAL [timestamp]: critical
 ''',
@@ -72,7 +66,7 @@ CRITICAL [timestamp]: critical
 '''rover    DEBUG: debug
 rover     INFO: info
 rover  DEFAULT: default
-rover  WARNING: warn
+rover  WARNING: warning
 rover    ERROR: error
 rover CRITICAL: critical
 ''')
