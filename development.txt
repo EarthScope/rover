@@ -26,6 +26,15 @@ files, and external programs like `sed` and `msi` (and it's output formatting),
 which may or may not be present or the right versions.  These are not expected
 to run on Windows.
 
+# Generate documentation
+
+Documentation generated from the code can be updated with the following script:
+
+% make-help.docs.sh
+
+Some documentation is generated and others are static within the `docs`
+directory.  See docs/README.txt for more details.
+
 # Update release version
 
 The single-source package version is specified in:

@@ -1,6 +1,16 @@
 #!/bin/bash
 
-source env3/bin/activate
+# This script generates the the following help documentation for ROVER:
+# docs/configuration.md
+# docs/commands.md
+#
+# The `rover` command is expected to be in the PATH, e.g. via
+# a virtual environment where the rover package is installed.
+
+# Change to the directory of the script
+script_dir="$(dirname "$(readlink -f "$0")")"
+cd "$script_dir"
+
 
 cat <<EOF > docs/configuration.md
 
@@ -102,11 +112,11 @@ cat <<EOF > docs/commands.md
 
 EOF
 
-dev/rover help init-repository --md-format >> docs/commands.md
-dev/rover help retrieve --md-format >> docs/commands.md
-dev/rover help list-retrieve --md-format >> docs/commands.md
-dev/rover help list-index --md-format >> docs/commands.md
-dev/rover help list-summary --md-format >> docs/commands.md
+rover help init-repository --md-format >> docs/commands.md
+rover help retrieve --md-format >> docs/commands.md
+rover help list-retrieve --md-format >> docs/commands.md
+rover help list-index --md-format >> docs/commands.md
+rover help list-summary --md-format >> docs/commands.md
 
 cat <<EOF >> docs/commands.md
 ## Low-Level Commands
@@ -116,13 +126,13 @@ useful from the command line:
 
 EOF
 
-dev/rover help download --md-format >> docs/commands.md
-dev/rover help ingest --md-format >> docs/commands.md
-dev/rover help index --md-format >> docs/commands.md
-dev/rover help summary --md-format >> docs/commands.md
-# dev/rover help daemon --md-format >> docs/commands.md
-dev/rover help web --md-format >> docs/commands.md
-dev/rover help retrieve-metadata --md-format >> docs/commands.md
+rover help download --md-format >> docs/commands.md
+rover help ingest --md-format >> docs/commands.md
+rover help index --md-format >> docs/commands.md
+rover help summary --md-format >> docs/commands.md
+# rover help daemon --md-format >> docs/commands.md
+rover help web --md-format >> docs/commands.md
+rover help retrieve-metadata --md-format >> docs/commands.md
 
 # Make lines associated with daemon mode invisible for only help docs.
 # To reinstates daemon mode documentation move lines below to line 92
@@ -141,11 +151,11 @@ dev/rover help retrieve-metadata --md-format >> docs/commands.md
 #
 #  EOF
 #
-#  dev/rover help subscribe --md-format >> docs/commands.md
-#  dev/rover help start --md-format >> docs/commands.md
-#  dev/rover help stop --md-format >> docs/commands.md
-#  dev/rover help status --md-format >> docs/commands.md
-#  dev/rover help unsubscribe --md-format >> docs/commands.md
-#  dev/rover help trigger --md-format >> docs/commands.md
+#  rover help subscribe --md-format >> docs/commands.md
+#  rover help start --md-format >> docs/commands.md
+#  rover help stop --md-format >> docs/commands.md
+#  rover help status --md-format >> docs/commands.md
+#  rover help unsubscribe --md-format >> docs/commands.md
+#  rover help trigger --md-format >> docs/commands.md
 #
 #  cat <<EOF >> docs/commands.md

@@ -91,9 +91,6 @@ which is not in the local repository.
 | download-retries    | 3                    | Maximum number of attempts to download data |
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |
 | http-retries        | 3                    | Max retries for HTTP requests  |
-| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
-| leap-file           | leap-seconds.list    | File for leap second data      |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | web                 | True                 | Auto-start the download progress web server? |
 | http-bind-address   | 127.0.0.1            | Bind address for HTTP server   |
 | http-port           | 8000                 | Port for HTTP server           |
@@ -292,10 +289,6 @@ indexes the new data.
 | mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | index               | True                 | Call index after ingest?       |
-| leap                | True                 | Use leap seconds file?         |
-| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
-| leap-file           | leap-seconds.list    | File for leap second data      |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |
@@ -332,10 +325,6 @@ the contents of sub-directories, unless `--no-recurse` is specified.
 | data-dir            | data                 | The data directory - data, timeseries.sqlite |
 | mseedindex-cmd      | mseedindex -sqlitebusyto 60000 | Mseedindex command             |
 | mseedindex-workers  | 10                   | Number of mseedindex instances to run |
-| leap                | True                 | Use leap seconds file?         |
-| leap-expire         | 30                   | Number of days before refreshing leap seconds file |
-| leap-file           | leap-seconds.list    | File for leap second data      |
-| leap-url            | https://www.ietf.org/timezones/data/leap-seconds.list | URL for leap second data       |
 | verbosity           | 4                    | Console verbosity (0-6)        |
 | log-dir             | logs                 | Directory for logs             |
 | log-verbosity       | 4                    | Log verbosity (0-6)            |

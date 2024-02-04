@@ -17,7 +17,6 @@ ROVER is a command line tool to robustly retrieve geophysical timeseries data fr
 * [ROVER's change log](changelog.md)
 * [ROVER's processing pipeline](pipeline.md)
 * [Known bugs and limitations](bugs.md)
-* [ROVER development](development.md)
 
 ## Installation <a id="installation"></a>
 
