@@ -20,20 +20,9 @@ ROVER is a command line tool to robustly retrieve geophysical timeseries data fr
 
 ## Installation <a id="installation"></a>
 
-ROVER is a command-line tool that requires Python 2.7, 3.6.2 or a later. Python 3.7 or above running on Linux or macOS are known to work best (pre-installed versions of Python available on some operating systems, such as macOS, may not support ROVER installation or operation without additional work). We suggest installing [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 3 (or the full [Anaconda](https://www.anaconda.com/distribution/#download-section) if you wish) for the best results.
+ROVER is a command-line tool that requires Python 3.8 or a later.  We suggest installing [Miniconda](https://docs.anaconda.com/free/miniconda/) 3 (or the full [Anaconda](https://www.anaconda.com/download) if you wish) for the best results.
 
-### Option 1
-
-ROVER requires the `C` language program [mseedindex](https://github.com/EarthScope/mseedindex) be available on the system's path. A `C` compiler and the `make` program are required to build mseedindex. ROVER and mseedindex may be downloaded and compiled simultaneously using pip:
-
-    pip install rover[mseedindex]
-
-### Option 2
-Alternatively, ROVER and mseedindex may be installed independently.
-
-[mseedindex](https://github.com/EarthScope/mseedindex) may be downloaded and compiled following the [mseedindex install guidelines](mseedindex.md). Similar to installation option 1, building mseedindex is dependent upon the `make` program and a `C` compiler.
-
-Once mseedindex is configured and availble on the system's path, use `pip` to install ROVER and its other Python requirements:
+ROVER requires the `C` language program [mseedindex](https://github.com/EarthScope/mseedindex) be available in the user's path. A `C` compiler and the `make` program are required to build mseedindex. ROVER and mseedindex may be downloaded and compiled simultaneously using pip:
 
     pip install rover
 
