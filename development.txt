@@ -40,6 +40,8 @@ directory.  See docs/README.txt for more details.
 The single-source package version is specified in:
 src/rover/__version__.py
 
+Release versions must also be tagged on the main branch at release time.
+
 The versioning follows the semantic versioning definition.
 
 # Building distribution packages
