@@ -4,10 +4,10 @@ and uploading to PyPI
 # Development environment
 
 ## Create the development environment, only needed once
-python3 -m venv devenv
+python3 -mvenv venv
 
 ## Activate the development environment
-source ./devenv/bin/activate
+source ./venv/bin/activate
 
 ## Install the module locally using the source in-place
 python3 -m pip install --editable .

@@ -292,7 +292,7 @@ class UTC(datetime.tzinfo):
 
 
 utc = UTC()
-EPOCH = datetime.datetime.utcfromtimestamp(0)
+EPOCH = datetime.datetime(1970, 1, 1)
 EPOCH_UTC = EPOCH.replace(tzinfo=utc)
 
 

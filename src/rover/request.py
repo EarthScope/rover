@@ -28,8 +28,8 @@ def parse_request(path, regexp_only):
                             # the outer sub here fixes things up so we match ? and * (we can't be explicit about
                             # * in the innermost sub because the middle sub would replace it).
                             sncl = list(map(lambda x: sub(r'\?', '?\\*',
-                                                          sub(r'\*', '[A-Za-z0-9\-\?]*',
-                                                              sub(r'\?', '[A-Za-z0-9\-\?]',
+                                                          sub(r'\*', r'[A-Za-z0-9\-\?]*',
+                                                              sub(r'\?', r'[A-Za-z0-9\-\?]',
                                                                   x))), sncl))
                         else:
                             continue  # only regexps

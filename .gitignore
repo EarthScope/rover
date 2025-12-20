@@ -33,6 +33,7 @@ run/
 log.html
 output.xml
 report.html
+TODO
 
 # Sphinx documentation
 docs/_build/

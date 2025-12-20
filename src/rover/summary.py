@@ -152,7 +152,7 @@ list all entries in the summary after 2001-01-01.
                             % (self._single_constraints[START], self._single_constraints[END]))
 
     def _set_name_value(self, name, value):
-        if not match('^[\w\*\?]*$', value):
+        if not match(r'^[\w\*\?]*$', value):
             raise Exception('Illegal characters in "%s"' % value)
         found = None
         for key in self._multiple_constraints.keys():
