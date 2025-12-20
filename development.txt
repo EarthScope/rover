@@ -17,9 +17,9 @@ python3 -m pip install --editable .
 The package must be installed to be tested because the C library
 must be compiled and this is done during packaging.
 
-python3 -m pip install pytest robot
+python3 -m pip install pytest robotframework
 pytest
-robot -F robot robot
+robot robot/
 
 Note that the robot tests are fragile, relying on fixed configuration
 files, and external programs like `sed` and `msi` (and it's output formatting),

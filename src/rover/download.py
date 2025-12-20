@@ -120,7 +120,7 @@ will download, ingest and index data from `dataselect-url` after POSTing
             if self._do_download(get, url, in_path, out_path):  # False when no data available
                 if self._ingest:
                     Ingester(self._config).run([out_path], db_path=db_path)
-        except:
+        except Exception:
             raise
         else:
             if self._delete_files:

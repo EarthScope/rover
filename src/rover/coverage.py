@@ -79,7 +79,7 @@ class Coverage:
     def __eq__(self, other):
         try:
             return self.sncl == other.sncl and self.timespans == other.timespans
-        except:
+        except Exception:
             return False
 
     def __bool__(self):

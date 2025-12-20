@@ -32,6 +32,6 @@ Single Day
     Should Be Equal As Integers    ${ndirectories}  2
     Directory Should Exist    ${CURDIR}${/}run${/}data${/}IU${/}2016${/}001
 
-*** Comment ***
+*** Comments ***
 
 

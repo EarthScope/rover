@@ -111,7 +111,7 @@ dates that are missing from the repository.
             else:
                 build_file(self._log, path, args)
             fix_file_inplace(self._log, path, self._temp_dir)
-        except:
+        except Exception:
             raise Exception('Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [start [end]] | N_S_L_C [start [end]])' % SUBSCRIBE)
         if self._force_request:
             self._log.warn('Not checking for overlaps (%s) - may result in duplicate data in the repository' % (mm(FORCEREQUEST)))
@@ -129,13 +129,13 @@ def parse_integers(args):
         if ':' in arg:
             try:
                 id1, id2 = map(int, arg.split(':'))
-            except:
+            except Exception:
                 raise Exception('Cannot parse %s as a pair of IDs' % arg)
         else:
             try:
                 id = int(arg)
                 id1, id2 = id, id
-            except:
+            except Exception:
                 raise Exception('Cannot parse %s as an IDs' % arg)
         ids.append((id1, id2))
     return ids
@@ -185,7 +185,7 @@ will show what data would be downloaded by the daemon if the subscription were p
     def run(self, args):
         try:
             ids = parse_integers(args)
-        except:
+        except Exception:
             raise Exception('Usage: rover %s [id | id1:id2] ...' % LIST_SUBSCRIBE)
         if not ids:
             self._list_subscriptions()

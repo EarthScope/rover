@@ -38,7 +38,7 @@ def parse_request(path, regexp_only):
                     while len(dates) < 2:
                         dates.append(None)
                     lines.append((' '.join(sncl), [tuple(dates)]))
-            except:
+            except Exception:
                 raise Exception(('Cannot parse "%s" in %s (experts can use %s ' +
                                  'at the risk of duplicating data in the repository)') %
                                 (line, path, mm(FORCEREQUEST)))

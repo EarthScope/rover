@@ -233,7 +233,7 @@ def clean_old_files(dir, age_secs, match, log):
                 try:
                     if time.time() - getmtime(file) > age_secs:
                         log.warn('Deleting old %s' % file)
-                except:   # py2.7 no FileNotFound
+                except Exception:
                     pass  # was deleted from under us
 
 
@@ -373,7 +373,7 @@ def tidy_timestamp(log, timestamp):
         if tidied != timestamp:
             log.debug('Tidied timestamp: "%s" -> "%s"' % (timestamp, tidied))
         return tidied
-    except:
+    except Exception:
         msg = 'Cannot parse timestamp "%s"' % timestamp
         log.error(msg)
         raise Exception(msg)
@@ -588,13 +588,13 @@ def iris_fixer(log, line):
     if fields[4] != '*':
         try:
             fields[4] = tidy_timestamp(log, fields[4])
-        except:
+        except Exception:
             raise Exception ("Unrecognized request line, invalid start time: '%s'" % line)
 
     if fields[5] != '*':
         try:
             fields[5] = tidy_timestamp(log, fields[5])
-        except:
+        except Exception:
             raise Exception ("Unrecognized request line, invalid end time: '%s'" % line)
 
     return " ".join(fields)

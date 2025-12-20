@@ -138,7 +138,7 @@ class Chunks:
         # This indicates that data bounds are determined from local data
         try:
             sampleperiod = 1 / coverage.samplerate
-        except:
+        except Exception:
             sampleperiod = None
 
         for start, end in timespans:
@@ -377,13 +377,13 @@ class Source(SqliteSupport):
         """
         Is this source complete (all retrievals)?
         Dependent Functions:
-        
-        is_complete_final_read: Verifies that all data is downloaded with no errors makes ROVER robust. 
+
+        is_complete_final_read: Verifies that all data is downloaded with no errors makes ROVER robust.
         If data is missing _new_retrieval and _is_complete_initial_reads are called.
-        _is_complete_initial_reads: Call the new_retrieval function until all data is downloaded with no errors. 
-        _new_retrieval: 
-        
-        important variables: 
+        _is_complete_initial_reads: Call the new_retrieval function until all data is downloaded with no errors.
+        _new_retrieval:
+
+        important variables:
 
         self._expect_empty: Determines if the _is_complete_final_read or _is_complete_initial_reads function is called/
         complete: Terminates the loop.
@@ -624,7 +624,7 @@ class Source(SqliteSupport):
         try:
             n, s, l, c, b, e = ('' if token == '--' else token for token in line.split())
             return "%s_%s_%s_%s" % (n, s, l, c), parse_epoch(b), parse_epoch(e)
-        except:
+        except Exception:
             raise Exception('Could not parse "%s" in the response from the availability service' % line)
 
     def _parse_availability(self, response):

@@ -127,7 +127,7 @@ data missing from ROVER's local repository.
             else:
                 try:
                     build_file(self._log, path, args)
-                except:
+                except Exception:
                     raise Exception(usage)
             fix_file_inplace(self._log, path, self._temp_dir)
             self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)

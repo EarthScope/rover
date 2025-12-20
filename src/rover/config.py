@@ -67,12 +67,12 @@ class BaseConfig:
             raise Exception('Circular definition involving %s' % name)
         try:
             value = getattr(self._args, name)
-        except:
+        except Exception:
             raise Exception('Option %s does not exist' % name)
         while True:
             try:
                 matchvar = compile(r'(.*(?:^|[^\$]))\${(\w+)}(.*)').match(value)
-            except:
+            except Exception:
                 # not a string variable
                 break
             if matchvar:
@@ -82,7 +82,7 @@ class BaseConfig:
                     inner = self.arg(matchvar.group(2), depth=depth+1)
                 try:
                     value = matchvar.group(1) + inner + matchvar.group(3)
-                except:
+                except Exception:
                     raise Exception('String substitution only works with string parameters (%s)' % name)
             else:
                 value = sub(r'\$\$', '$', value)

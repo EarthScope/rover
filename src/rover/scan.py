@@ -74,7 +74,7 @@ class DatabasePathIterator(SqliteSupport):
                 return lastmod, join(self._data_dir, path[self._stem + 1:])
             else:
                 raise StopIteration()
-        except:
+        except Exception:
             if self._cursor:
                 self._cursor.close()
             raise
