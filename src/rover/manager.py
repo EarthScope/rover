@@ -115,6 +115,9 @@ class Chunks:
         return left, right
 
     def _append(self, right, sncl, start, end):
+        # Skip zero-length or invalid timespans
+        if start >= end:
+            return
         if right not in self.__chunks:
             self.__chunks[right] = []
         self.__chunks[right].append((sncl, start, end))
@@ -156,7 +159,9 @@ class Chunks:
             # Otherwise, add the range beyond the current day to the timespans and
             # append the range that fits in the first day
             else:
-                timespans.push((right, max(end, right)))
+                # Only push remainder if there's actually more to download beyond this day
+                if end > right:
+                    timespans.push((right, end))
 
                 # Skip if max request would be smaller than sample period, if known (implying local data bounds)
                 # In this case, assuming the sampling interval is regular, no data is expected
