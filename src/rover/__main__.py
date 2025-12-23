@@ -12,18 +12,19 @@ from rover import PREV_HANDLER
 
 
 def execute(command, config):
-    from .help import Helper   # avoid import loop
+    from .help import Helper  # avoid import loop
     from .args import Arguments
+
     if not command:
         # print welcome message and exit
         Arguments().print_help()
         return
     commands = dict(COMMANDS)
-    commands[HELP_CMD] = (Helper, '')
+    commands[HELP_CMD] = (Helper, "")
     if command in commands:
         commands[command][0](config).run(config.args)
     else:
-        raise Exception('Unknown command %s' % command)
+        raise Exception("Unknown command %s" % command)
 
 
 def main():
@@ -45,16 +46,16 @@ def main():
                 config.log.critical(str(e))
             with LoggingContext(config.log, handler=config.log.get_file_handler()):
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-                error_traceback = "".join(traceback.format_exception(exc_type,
-                                                                     exc_value,
-                                                                     exc_traceback))
+                error_traceback = "".join(
+                    traceback.format_exception(exc_type, exc_value, exc_traceback)
+                )
                 config.log.critical(error_traceback)
             if config.command in COMMANDS:
-                config.log.default('See "rover {} {}"'.format(HELP_CMD,
-                                                              config.command))
+                config.log.default('See "rover {} {}"'.format(HELP_CMD, config.command))
             elif config.command != HELP_CMD:
-                config.log.default('See "rover {}" for a list of commands'
-                                   .format(HELP_CMD))
+                config.log.default(
+                    'See "rover {}" for a list of commands'.format(HELP_CMD)
+                )
             if not config or not config._args or config.arg(DEV):
                 print_exc()
         else:
