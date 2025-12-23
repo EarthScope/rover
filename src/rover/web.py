@@ -1,10 +1,13 @@
 
 import os
+from sqlite3 import OperationalError
 from threading import Thread
 from time import sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from .args import HTTPBINDADDRESS, HTTPPORT, WEB
+from .download import DEFAULT_NAME
+from .sqlite import SqliteSupport, NoResult
 from .utils import process_exists, safe_unlink
 
 """
@@ -57,8 +60,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self._html_header()
         self._write('<h1>ROVER</h1>')
-        # Daemon/subscription status removed; show simple message.
-        self._do_quiet()
+        if not self._do_retrieve():
+            self._do_quiet()
         self._html_footer()
 
     def _write(self, text):
@@ -85,17 +88,53 @@ class RequestHandler(BaseHTTPRequestHandler):
 ''')
 
     def _do_quiet(self):
-        self._write('<p>No daemon or retrieve process is running.</p>')
+        self._write('<p>No retrieve process is running.</p>')
+
+    def _do_retrieve(self):
+        """Display retrieve progress if stats exist in the database."""
+        try:
+            initial_stations, remaining_stations, initial_time, remaining_time, n_retries, download_retries = \
+                self.server.fetchone('''SELECT initial_stations, remaining_stations, initial_time, remaining_time,
+                                               n_retries, download_retries
+                                          FROM rover_download_stats WHERE submission = ?''', (DEFAULT_NAME,))
+        except (NoResult, OperationalError):
+            return False
+
+        self._write('<h2>Retrieval Progress</h2>')
+        self._write('<p>Progress for download attempt %d of %d:<pre>\n' % (n_retries, download_retries))
+        self._write_bar('stations', initial_stations, remaining_stations)
+        self._write_bar('timespan', initial_time, remaining_time)
+        self._write('</pre></p>')
+        self._write_explanation()
+        return True
+
+    def _write_bar(self, label, initial, current):
+        # percent based on work completed
+        percent = max(0, min(100, int(100 * (initial - current) / max(1, initial))))
+        n = int(percent / 2 + 0.5)
+        self._write('%10s: %10d/%-10d  (%3d%%)  |%s|\n' %
+                    (label, initial - current, initial, percent, '#' * n + ' ' * (50-n)))
+
+    def _write_explanation(self):
+        self._write('''
+<h2>Notes</h2>
+<ul>
+<li>Progress values are based on data still to be downloaded; they do not include data within the pipeline.</li>
+<li>The stations statistic is the number of distinct Net_Sta that will be requested.</li>
+<li>The timespan statistic is the total time (s) covered by the data in the downloads.</li>
+</ul>
+''')
 
     def log_message(self, format, *args):
         pass
 
 
-class Server(HTTPServer):
-    """Lightweight HTTP server for the rover status page."""
+class Server(HTTPServer, SqliteSupport):
+    """HTTP server for the rover status page with database access."""
 
-    def __init__(self, address, handler):
-        super().__init__(address, handler)
+    def __init__(self, config, address, handler):
+        HTTPServer.__init__(self, address, handler)
+        SqliteSupport.__init__(self, config)
 
 
 class ServerStarter:
@@ -136,11 +175,12 @@ will run retrieve without the web server.
         self._ppid = os.getppid()
         self._log = config.log
         self._log_path = config.log_path
+        self._config = config
 
     def run(self, args):
         if args:
             raise Exception('Usage: rover %s' % WEB)
-        server = Server((self._bind_address, self._http_port), RequestHandler)
+        server = Server(self._config, (self._bind_address, self._http_port), RequestHandler)
         DeadMan(self._log, self._ppid, server, self._log_path).start()
         self._log.info('Starting HTTP server on http://%s:%d' % (self._bind_address, self._http_port))
         server.serve_forever()
