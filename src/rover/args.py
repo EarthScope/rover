@@ -122,9 +122,9 @@ DYNAMIC_ARGS = (VERSION, HELP_CMD, FULLHELP)
 
 # default values (for non-boolean parameters)
 DEFAULT_ASDF_FILENAME = "asdf.h5"
-DEFAULT_AVAILABILITYURL = "http://service.iris.edu/fdsnws/availability/1/query"
+DEFAULT_AVAILABILITYURL = "https://service.earthscope.org/fdsnws/availability/1/query"
 DEFAULT_DATADIR = "data"
-DEFAULT_DATASELECTURL = "http://service.iris.edu/fdsnws/dataselect/1/query"
+DEFAULT_DATASELECTURL = "https://service.earthscope.org/fdsnws/dataselect/1/query"
 DEFAULT_DOWNLOADRETRIES = 3
 DEFAULT_DOWNLOADWORKERS = 5
 DEFAULT_EMAILFROM = "noreply@rover"
@@ -144,7 +144,7 @@ DEFAULT_MSEEDINDEXWORKERS = 10
 DEFAULT_OUTPUT_FORMAT = "mseed"
 DEFAULT_ROVERCMD = "rover"
 DEFAULT_SMTPADDRESS = "localhost"
-DEFAULT_STATIONURL = "http://service.iris.edu/fdsnws/station/1/query"
+DEFAULT_STATIONURL = "https://service.earthscope.org/fdsnws/station/1/query"
 DEFAULT_TEMPDIR = "tmp"
 DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANINC = 0.5

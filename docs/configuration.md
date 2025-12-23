@@ -94,10 +94,10 @@ using ROVER options.
 | post-summary        | True                 | Call summary after retrieval?  |
 | output-format       | mseed                | Output data format. Choose from "mseed" (miniSEED) or "asdf" (ASDF) |
 | asdf-filename       | asdf.h5              | Name of ASDF file when ASDF output is specified |
-| station-url         | http://service.iris.edu/fdsnws/station/1/query | Station service url            |
+| station-url         | https://service.earthscope.org/fdsnws/station/1/query | Station service url            |
 | force-metadata-reload | False                | Force reload of metadata       |
-| availability-url    | http://service.iris.edu/fdsnws/availability/1/query | Availability service url       |
-| dataselect-url      | http://service.iris.edu/fdsnws/dataselect/1/query | Dataselect service url         |
+| availability-url    | https://service.earthscope.org/fdsnws/availability/1/query | Availability service url       |
+| dataselect-url      | https://service.earthscope.org/fdsnws/dataselect/1/query | Dataselect service url         |
 | temp-dir            | tmp                  | Temporary storage for downloads |
 | temp-expire         | 1                    | Number of days before deleting temp files (days) |
 | http-timeout        | 60                   | Timeout for HTTP requests (secs) |

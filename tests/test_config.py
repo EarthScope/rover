@@ -40,11 +40,11 @@ output-format=mseed
 # name of ASDF file when ASDF output is specified
 asdf-filename=asdf.h5
 # station service url
-station-url=http://service.iris.edu/fdsnws/station/1/query
+station-url=https://service.earthscope.org/fdsnws/station/1/query
 # availability service url
-availability-url=http://service.iris.edu/fdsnws/availability/1/query
+availability-url=https://service.earthscope.org/fdsnws/availability/1/query
 # dataselect service url
-dataselect-url=http://service.iris.edu/fdsnws/dataselect/1/query
+dataselect-url=https://service.earthscope.org/fdsnws/dataselect/1/query
 # temporary storage for downloads
 temp-dir='''+dirpath+'''/tmp
 # directory for logs
