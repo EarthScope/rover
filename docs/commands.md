@@ -30,7 +30,7 @@
     provided, as a ROVER data repository. Init repository will create a
     configuration file, rover.config, as well as log and data directories.
 
-       The aliases `rover init-repo` and `rover int` also exist.
+       The aliases `rover init-repo` and `rover init` also exist.
 
     To avoid over-writing data, rover init-repo returns an error if
     a rover.config file, data or log directory exist in the targeted directory.

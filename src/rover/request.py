@@ -1,6 +1,4 @@
-import operator
-from functools import reduce
-from re import sub, compile
+from fnmatch import fnmatchcase
 
 from .args import mm, FORCEREQUEST
 from .utils import parse_epoch
@@ -14,6 +12,7 @@ def parse_request(path, regexp_only):
     """
     Read the request into memory, extracting the N_S_L_C and date data.
     """
+
     lines = []  # in-memory rather than a generator because we need to sort manually
     with open(path, "r") as input:
         for line in input:
@@ -23,27 +22,8 @@ def parse_request(path, regexp_only):
                     parts = line.split(" ")
                     sncl = parts[0:4]
                     if regexp_only:
-                        if reduce(
-                            operator.or_, map(lambda x: "*" in x or "?" in x, sncl)
-                        ):
-                            # the outer sub here fixes things up so we match ? and * (we can't be explicit about
-                            # * in the innermost sub because the middle sub would replace it).
-                            sncl = list(
-                                map(
-                                    lambda x: sub(
-                                        r"\?",
-                                        "?\\*",
-                                        sub(
-                                            r"\*",
-                                            r"[A-Za-z0-9\-\?]*",
-                                            sub(r"\?", r"[A-Za-z0-9\-\?]", x),
-                                        ),
-                                    ),
-                                    sncl,
-                                )
-                            )
-                        else:
-                            continue  # only regexps
+                        if not any("*" in token or "?" in token for token in sncl):
+                            continue  # only patterns with wildcards
                     dates = parts[4:]
                     assert len(dates) <= 2
                     while len(dates) < 2:
@@ -141,23 +121,19 @@ class Regexps:
         self._sncls = sncls
         self._dates = dates
         self._path = path
-        self._regexp = compile("(%s)" % "|".join(sncls))
 
     def assert_no_overlap(self, sncl, dates, path):
         """
         Raise an exception on overlap.
         """
-        # use a single "merged" regexp as gatekeeper and then run through each entry to find the
-        # correct date.
-        if self._regexp.match(sncl):
-            for i in range(len(self._sncls)):
-                if compile(self._sncls[i]).match(sncl) and overlapping_dates(
-                    self._dates[i], dates
-                ):
-                    raise Exception(
-                        "A pattern in %s matches an entry in %s (%s %s)"
-                        % (self._path, path, sncl, format_dates(dates))
-                    )
+        for i in range(len(self._sncls)):
+            if fnmatchcase(sncl, self._sncls[i]) and overlapping_dates(
+                self._dates[i], dates
+            ):
+                raise Exception(
+                    "A pattern in %s matches an entry in %s (%s %s)"
+                    % (self._path, path, sncl, format_dates(dates))
+                )
 
 
 class RequestComparison:
