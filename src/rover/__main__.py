@@ -35,11 +35,7 @@ def main():
             config = Config()
             if config.command and config.command != HELP_CMD:
                 config.lazy_validate()
-            # initialise without a database...
-            if not config.command or config.command in (INIT_REPOSITORY, HELP_CMD):
-                execute(config.command, config)
-            else:
-                execute(config.command, config)
+            execute(config.command, config)
         except KeyboardInterrupt:
             exit(ABORT_CODE)
     except Exception as e:

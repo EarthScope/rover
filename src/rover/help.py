@@ -216,7 +216,7 @@ class Helper(HelpFormatter):
             elif command in GENERAL:
                 self.print_help(GENERAL[command][0](self._config))
                 return
-        raise Exception('Help is available for: %s, %s, %s, and individual commands (or simply "rover help")' % (USAGE, BACKGROUND, LOWLEVEL))
+        raise Exception('Help is available for: %s, %s, and individual commands (or simply "rover help")' % (USAGE, LOWLEVEL))
 
     def _help(self):
         from rover import COMMON_COMMANDS, ADVANCED_COMMANDS   # avoid import loop
