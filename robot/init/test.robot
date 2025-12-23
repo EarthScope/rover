@@ -1,29 +1,24 @@
 
 *** Settings ***
+Suite Setup      Initialize Run Dir    ${RUN_DIR}
 
 Library    Process
 Library    OperatingSystem
+Resource    ../common.robot
 
-Suite Setup   Setup Run Directory
-
-
-*** Keywords ***
-
-Setup Run Directory
-    Remove Directory    ${CURDIR}${/}run  recursive=True,
-    Create Directory    ${CURDIR}${/}run
-
+*** Variables ***
+${RUN_DIR}    ${CURDIR}${/}run
 
 *** Test Cases ***
 
 Init
-    Comment  check that initialisation creates expected dirs and files
-    ${result} =    Run Process    rover  init-repository  cwd=${CURDIR}${/}run
+    Comment  check that initialization creates expected dirs and files
+    ${result} =    Run Process    rover  init-repository  cwd=${RUN_DIR}
     Log    ${result.stdout}
     Log    ${result.stderr}
-    Directory Should Exist    ${CURDIR}${/}run${/}data
-    Directory Should Exist    ${CURDIR}${/}run${/}logs
-    File Should Exist    ${CURDIR}${/}run${/}logs/init-repository.log
-    File Should Exist    ${CURDIR}${/}run${/}rover.config
-    File Should Exist    ${CURDIR}${/}run${/}data${/}timeseries.sqlite
+    Directory Should Exist    ${RUN_DIR}${/}data
+    Directory Should Exist    ${RUN_DIR}${/}logs
+    File Should Exist    ${RUN_DIR}${/}logs/init-repository.log
+    File Should Exist    ${RUN_DIR}${/}rover.config
+    File Should Exist    ${RUN_DIR}${/}data${/}timeseries.sqlite
 

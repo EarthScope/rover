@@ -1,24 +1,19 @@
 
 *** Settings ***
+Suite Setup      Initialize Run Dir    ${RUN_DIR}
 
 Library    Process
 Library    OperatingSystem
+Resource    ../common.robot
 
-Suite Setup   Setup Run Directory
-
-
-*** Keywords ***
-
-Setup Run Directory
-    Remove Directory    ${CURDIR}${/}run  recursive=True,
-    Create Directory    ${CURDIR}${/}run
-
+*** Variables ***
+${RUN_DIR}    ${CURDIR}${/}run
 
 *** Test Cases ***
 
 Help
     Comment  check that help starts and shows basic info
-    ${result} =    Run Process    rover  -f  ../rover.config  cwd=${CURDIR}${/}run
+    ${result} =    Run Process    rover  cwd=${CURDIR}${/}run
     Log    ${result.stdout}
     Log    ${result.stderr}
     Should Match Regexp    ${result.stdout}  help

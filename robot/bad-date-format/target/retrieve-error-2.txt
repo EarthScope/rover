@@ -1,11 +1,3 @@
-retrieve  DEFAULT: ROVER VERSION - starting retrieve
-retrieve  DEFAULT: Status available at http://127.0.0.1:8000
-retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-033 (N_S 1/1; day 1/3)
-retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 2/3)
-retrieve  DEFAULT: Downloading TA_MSTX 2012-035 (N_S 1/1; day 3/3)
-retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
-retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
-retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
-retrieve  DEFAULT: The initial retrieval attempt resulted in no errors or data downloaded, will verify.
-retrieve  DEFAULT: Trying new retrieval attempt 2 of 3.
+retrieve    ERROR: Cannot parse timestamp "2012-02-41"
+retrieve CRITICAL: Unrecognized request line, invalid end time: 'TA MSTX -- BH? 2012-02-01 2012-02-41'
+retrieve  DEFAULT: See "rover help retrieve"

@@ -1,8 +1,4 @@
 retrieve  DEFAULT: ROVER VERSION - starting retrieve
-retrieve  DEFAULT: Status available at http://127.0.0.1:8000
-retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
-retrieve  DEFAULT: Downloading TA_S22A 2010-006 (N_S 1/1; day 1/1)
-retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
 retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
 retrieve  DEFAULT: The initial retrieval attempt resulted in no errors or data downloaded, will verify.
@@ -17,8 +13,8 @@ retrieve  DEFAULT: A ROVER retrieve task on HOST
 retrieve  DEFAULT: started DATE (DATE UTC)
 retrieve  DEFAULT: has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: The download for 1 stations totaled 6.0 KiB,
-retrieve  DEFAULT: with data covering 2942 seconds.
+retrieve  DEFAULT: The download for 0 stations totaled 0 bytes,
+retrieve  DEFAULT: with data covering 0 seconds.
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A total of 1 downloads were made, with 0 errors (0 on final pass of 2).
+retrieve  DEFAULT: A total of 0 downloads were made, with 0 errors (0 on final pass of 2).
 retrieve  DEFAULT: 

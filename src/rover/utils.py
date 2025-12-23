@@ -9,7 +9,7 @@ from hashlib import sha1
 from os import makedirs, getpid, listdir, unlink, kill, name, rmdir, strerror
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath, getmtime
 from shutil import move, copyfile
-from subprocess import Popen, check_output, STDOUT, DEVNULL
+from subprocess import Popen, check_output, STDOUT
 import sys
 
 from requests import __version__ as requests_version, Session
@@ -517,11 +517,7 @@ def calc_bytes(sizestring):
         return int(sizestring)
 
 
-def null_fixer(log, line):
-    return line
-
-
-def iris_fixer(log, line):
+def request_fixer(log, line):
     """
     Tidy and validate a request file line as used by the retrieve command.
 
@@ -578,7 +574,7 @@ def iris_fixer(log, line):
     return " ".join(fields)
 
 
-def fix_file_inplace(log, path, temp_dir, fixer=iris_fixer):
+def fix_file_inplace(log, path, temp_dir, fixer=request_fixer):
     temp_path = unique_path(temp_dir, 'rover_fixed_request', path)
     log.debug('Fixing %s in %s' % (path, temp_path))
     try:

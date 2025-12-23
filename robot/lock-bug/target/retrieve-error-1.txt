@@ -1,8 +1,12 @@
 retrieve  DEFAULT: ROVER VERSION - starting retrieve
-retrieve  DEFAULT: Status available at http://127.0.0.1:8000
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
-retrieve  DEFAULT: Downloading TA_MSTX 2012-034 (N_S 1/1; day 1/2)
-retrieve  DEFAULT: Downloading TA_MSTX 2012-035 (N_S 1/1; day 2/2)
+retrieve  DEFAULT: Downloading II_TAU 2018-001 (N_S 1/7; day 1/1)
+retrieve  DEFAULT: Downloading IU_TATO 2018-001 (N_S 2/7; day 1/1)
+retrieve  DEFAULT: Downloading IU_TEIG 2018-001 (N_S 3/7; day 1/1)
+retrieve  DEFAULT: Downloading IU_TIXI 2018-001 (N_S 4/7; day 1/1)
+retrieve  DEFAULT: Downloading IU_TRIS 2018-001 (N_S 5/7; day 1/1)
+retrieve  DEFAULT: Downloading IU_TUC 2018-001 (N_S 6/7; day 1/1)
+retrieve  DEFAULT: Downloading IW_TPAW 2018-001 (N_S 7/7; day 1/1)
 retrieve  DEFAULT: Successful retrieval, downloaded data so resetting retry count and verify.
 retrieve  DEFAULT: Trying new retrieval attempt 1 of 3.
 retrieve  DEFAULT: Retrieval attempt 1 of 3 is complete.
@@ -18,8 +22,8 @@ retrieve  DEFAULT: A ROVER retrieve task on HOST
 retrieve  DEFAULT: started DATE (DATE UTC)
 retrieve  DEFAULT: has completed in DURATION
 retrieve  DEFAULT: 
-retrieve  DEFAULT: The download for 1 stations totaled 10.0 MiB,
-retrieve  DEFAULT: with data covering 259199 seconds.
+retrieve  DEFAULT: The download for 7 stations totaled 1.2 MiB,
+retrieve  DEFAULT: with data covering 25200 seconds.
 retrieve  DEFAULT: 
-retrieve  DEFAULT: A total of 2 downloads were made, with 0 errors (0 on final pass of 2).
+retrieve  DEFAULT: A total of 7 downloads were made, with 0 errors (0 on final pass of 2).
 retrieve  DEFAULT: 

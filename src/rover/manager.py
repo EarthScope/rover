@@ -713,7 +713,8 @@ class DownloadManager(SqliteSupport):
             log_unique = config.arg(LOGUNIQUE) or not config.arg(DEV)
             log_verbosity = config.arg(LOGVERBOSITY) if config.arg(DEV) else min(config.arg(LOGVERBOSITY), 3)
             self._config_path = write_config(config, config_file, log_unique=log_unique, log_verbosity=log_verbosity)
-            self._start_web()
+            if config.arg(WEB):
+                self._start_web()
         else:
             self._config_path = None
 
