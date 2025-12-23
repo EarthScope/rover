@@ -203,7 +203,7 @@ class FullHelpAction(Action):
                  dest=SUPPRESS,
                  default=SUPPRESS,
                  help=None):
-        super(FullHelpAction, self).__init__(
+        super().__init__(
             option_strings=option_strings,
             dest=dest,
             default=default,
@@ -448,7 +448,7 @@ class Arguments(ArgumentParser):
                     if default is not None:
                         if name in kargs:
                             value = kargs[name]
-                        elif args is not None:  # py2.7 no __bool__ on values
+                        elif args is not None:
                             value = getattr(args, name)
                         else:
                             value = default

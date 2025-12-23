@@ -1,5 +1,6 @@
 import datetime as dt
 from collections import deque
+from enum import IntEnum
 from random import randint
 from sqlite3 import OperationalError
 from time import time, sleep
@@ -292,9 +293,11 @@ class Retrieval:
         return self.worker_count == 0 and not self.has_chunks()
 
 
-# avoid enum because python2 doesn't have it and we want code that runs on both
-# (if we use backports then it's a conditional install)
-UNCERTAIN, CONFIRMED, INCONSISTENT = 0, 1, 2
+class ConsistencyState(IntEnum):
+    """State of consistency check for web services."""
+    UNCERTAIN = 0
+    CONFIRMED = 1
+    INCONSISTENT = 2
 
 
 class Source(SqliteSupport):
@@ -331,7 +334,7 @@ class Source(SqliteSupport):
         self.start_epoch = time()
         self.errors = ErrorStatistics()
         self._expect_empty = False
-        self.consistent = UNCERTAIN
+        self.consistent = ConsistencyState.UNCERTAIN
         # load first retrieval immediately so we don't print messages in the middle of list-retrieve
         self._new_retrieval(fetch)
         self.initial_progress = self._retrieval.progress
@@ -510,7 +513,7 @@ class Source(SqliteSupport):
                     self._expect_empty = True
                     return False
                 else:
-                    self.consistent = INCONSISTENT
+                    self.consistent = ConsistencyState.INCONSISTENT
                     raise ManagerException(('The final retrieval, attempt %d of %d, downloaded no data' +
                                             'following an earlier error (inconsistent web services?)') %
                                            (self.n_retries, self.download_retries))
@@ -519,7 +522,7 @@ class Source(SqliteSupport):
 
         # the last retrieval had errors (it shouldn't have - we should be on final empty download)
         if self._retrieval.errors.errors:
-            self.consistent = INCONSISTENT
+            self.consistent = ConsistencyState.INCONSISTENT
             # if we can retry, then do so
             if retry_possible:
                 self._log.default(('The latest retrieval attempt had %d errors after %d attempts.  ' +
@@ -551,7 +554,7 @@ class Source(SqliteSupport):
                                        'We cannot be certain download is complete without more retries.'))
                     return True
             else:
-                self.consistent = INCONSISTENT
+                self.consistent = ConsistencyState.INCONSISTENT
                 # can we try again, in case this was some weird hiccup?
                 # there's a case where this is expected - when we have data on a day boundary and need tp
                 # download once to get the samplerate so we can judge exactly how small a chunk to take
@@ -571,7 +574,7 @@ class Source(SqliteSupport):
 
         # no errors and no data
         else:
-            self.consistent = CONFIRMED
+            self.consistent = ConsistencyState.CONFIRMED
             self._log.default('The final %sretrieval, attempt %d of %d, made no downloads and had no errors, we are complete.' %
                               (self._name, self.n_retries, self.download_retries))
             return True

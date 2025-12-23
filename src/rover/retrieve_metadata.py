@@ -1,18 +1,22 @@
 import os
 import shutil
 from collections import namedtuple
-from .args import STATIONURL, RETRIEVE_METADATA, UserFeedback, fail_early, \
-    HTTPTIMEOUT, HTTPRETRIES, TEMPDIR, OUTPUT_FORMAT
+from .args import (
+    STATIONURL,
+    RETRIEVE_METADATA,
+    UserFeedback,
+    fail_early,
+    HTTPTIMEOUT,
+    HTTPRETRIES,
+    TEMPDIR,
+    OUTPUT_FORMAT,
+)
 from .report import Reporter
 from .sqlite import SqliteContext, NoResult
 from .utils import post_to_file, diagnose_error, unique_path, safe_unlink
+from io import StringIO
+
 from .config import timeseries_db
-
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO  # python 3
 
 
 TMPDOWNLOAD = 'rover_metadata_download'

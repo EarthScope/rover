@@ -9,7 +9,8 @@ from .index import Indexer
 from .lock import DatabaseBasedLockFactory, MSEED
 from .scan import DirectoryScanner
 from .sqlite import SqliteSupport, SqliteContext
-from .utils import run, check_cmd, create_parents, safe_unlink, windows, atomic_move, hash
+from os import replace
+from .utils import run, check_cmd, create_parents, safe_unlink, hash
 
 """
 The 'rover ingest' command - copy downloaded data into the repository (and then call index).
@@ -156,7 +157,8 @@ will add all the data in the given file to the repository.
                 copyfile(mseed_file, tmp)
             with open(tmp, 'ba') as output:
                 output.write(data)
-            atomic_move(self._log, tmp, mseed_file)
+            self._log.debug('Moving %s to %s' % (tmp, mseed_file))
+            replace(tmp, mseed_file)
 
     def _assert_single_day(self, temp_file, starttime, endtime, sid):
         # Comparing time strings, presumed format 'YYYY-MM-DDThh:mm:ss.ssssss'

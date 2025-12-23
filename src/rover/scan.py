@@ -91,9 +91,7 @@ def RepositoryIterator(root, depth=1):
     for file in files:
         path = join(root, file)
         if isdir(path) and depth < 4:
-            # cannot use 'yield from' as 3to2 doesn't translate it
-            for path in RepositoryIterator(path, depth=depth + 1):
-                yield path
+            yield from RepositoryIterator(path, depth=depth + 1)
         elif depth == 4:
             yield path
 

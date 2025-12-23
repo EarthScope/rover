@@ -135,8 +135,6 @@ will download, ingest and index data from `dataselect-url` after POSTing
                 safe_unlink(db_path)
 
     def _do_download(self, get, url, in_path, out_path):
-        # previously we extracted the file name from the header, but the code
-        # failed in python 2 (looked like a backport library bug), so now we let the user specify,
         if os.path.exists(out_path):
             raise Exception('Path %s for download already exists' % out_path)
         create_parents(out_path)

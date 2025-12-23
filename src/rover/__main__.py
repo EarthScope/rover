@@ -31,9 +31,7 @@ def main():
     config = None
     try:
         try:
-            # reset the old handler now that we can catch keyboardinterrupt
-            # this is necessary for windows / 2.7 where copies are not atomic and we need to catch this
-            # (and it generally seems like a good idea - let's try not to change how python works too much)
+            # Reset the old signal handler now that we can catch KeyboardInterrupt
             signal.signal(signal.SIGINT, PREV_HANDLER)
             config = Config()
             if config.command and config.command != HELP_CMD:

@@ -96,14 +96,14 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
 
     def get_file_handler():
         return file_handler
-    
+
     def get_stdout_handler():
         return stdout_handler
 
     log.get_file_handler = get_file_handler
     log.get_stdout_handler = get_stdout_handler
 
-    # monkey patch logger (LogAdapter works in 3, but fails on 2)
+    # Add custom 'default' log level method
     def default(msg, *args, **kwargs):
         log.log(DEFAULT, msg, *args, **kwargs)
 
@@ -115,7 +115,7 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
     return log, path, stream
 
 
-class LoggingContext(object):
+class LoggingContext:
     """
     Use this context manager to temporarily change the logging configuration
     and revert it back after doing something.

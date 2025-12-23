@@ -5,7 +5,7 @@ from threading import Thread
 from time import sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from .manager import INCONSISTENT, UNCERTAIN
+from .manager import ConsistencyState
 from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
 from .download import DEFAULT_NAME
 from .process import ProcessManager
@@ -147,10 +147,10 @@ Last active: %s (%s local)</pre></p>''' %
             if last_error_count:
                 self._write('<p>Inactive.  WARNING: Last download had errors, so data may be incomplete.</p>')
             elif last_check_epoch:
-                if consistent == INCONSISTENT:
+                if consistent == ConsistencyState.INCONSISTENT:
                     self._write('''<p>Inactive.  WARNING: last download detected inconsistent web services
                                    (eg dataselect not providing data promised by availability)''')
-                elif consistent == UNCERTAIN:
+                elif consistent == ConsistencyState.UNCERTAIN:
                     self._write('''<p>Inactive.  Last download had no errors but could not check web service consistency
                                    (unlikely to be a problem).''')
                 else:

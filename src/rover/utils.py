@@ -6,14 +6,11 @@ import codecs
 
 from binascii import hexlify
 from hashlib import sha1
-from os import makedirs, stat, getpid, listdir, unlink, kill, name, rename, rmdir, strerror
+from os import makedirs, getpid, listdir, unlink, kill, name, rmdir, strerror
 from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath, getmtime
 from shutil import move, copyfile
-from subprocess import Popen, check_output, STDOUT
-from sys import version_info
-
-if version_info[0] >= 3:
-    from os import replace
+from subprocess import Popen, check_output, STDOUT, DEVNULL
+import sys
 
 from requests import __version__ as requests_version, Session
 from requests.adapters import HTTPAdapter
@@ -98,14 +95,11 @@ def canonify_dir_and_make(path):
 
 def run(cmd, log, uncouple=False):
     """
-    We can't use subprocess.run() because it doesn't exist for 2.7.
+    Run a shell command, optionally uncoupling from the parent process.
     """
     log.debug('Running "%s"' % cmd)
     if uncouple:
-        if version_info[0] >= 3:
-            Popen(cmd, shell=True, close_fds=True, start_new_session=True)
-        else:
-            Popen(cmd, shell=True, close_fds=True)
+        Popen(cmd, shell=True, close_fds=True, start_new_session=True)
     else:
         process = Popen(cmd, shell=True)
         process.wait()
@@ -185,7 +179,7 @@ def _session(retries):
     # Create a User-Agent header with package, requests and Python identifiers
     from rover import __version__
     user_agent = 'rover/%s python-requests/%s Python/%s' % \
-                 (__version__, requests_version, ".".join(map(str, version_info[:3])))
+                 (__version__, requests_version, ".".join(map(str, sys.version_info[:3])))
     session.headers.update({'User-Agent': user_agent})
 
     return session
@@ -275,23 +269,7 @@ class PushBackIterator:
         return value
 
 
-ZERO = datetime.timedelta(0)
-
-
-class UTC(datetime.tzinfo):
-    """UTC timezone (needed for Py2.7)"""
-
-    def utcoffset(self, dt):
-        return ZERO
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return ZERO
-
-
-utc = UTC()
+utc = datetime.timezone.utc
 EPOCH = datetime.datetime(1970, 1, 1)
 EPOCH_UTC = EPOCH.replace(tzinfo=utc)
 
@@ -616,33 +594,6 @@ def fix_file_inplace(log, path, temp_dir, fixer=iris_fixer):
         copyfile(temp_path, path)
     finally:
         safe_unlink(temp_path)
-
-
-def atomic_move(log, src, dest):
-    '''
-    This uses an atomic primitive in 3.3+ and on unix.
-    On Windows the best we can do is two operations, repeating if we catch an interrupt.
-    https://bugs.python.org/issue8828
-    '''
-    if version_info[0] >= 3:
-        log.debug('Moving %s to %s (atomic 3)' % (src, dest))
-        replace(src, dest)
-    else:
-        if windows():
-            log.debug('Moving %s to %s (windows)' % (src, dest))
-            exception = None
-            while exists(src):
-                try:
-                    safe_unlink(dest)
-                    rename(src, dest)
-                except KeyboardInterrupt as e:
-                    log.debug('Caught interrupt; will re-throw once move complete')
-                    exception = e
-            if exception:
-                raise exception
-        else:
-            log.debug('Moving %s to %s (atomic 2.7)' % (src, dest))
-            rename(src, dest)
 
 
 def remove_empty_folders(path, log):

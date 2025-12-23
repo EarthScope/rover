@@ -1,16 +1,11 @@
 
+from email.message import EmailMessage
 from os import getpid
+from smtplib import SMTP
 from socket import gethostname
-from sys import version_info
 from time import time
 
-if version_info[0] >= 3:
-    from email.message import EmailMessage
-else:
-    from email.mime.text import MIMEText
-from smtplib import SMTP
-
-from .manager import INCONSISTENT, UNCERTAIN
+from .manager import ConsistencyState
 from .utils import format_time_epoch, format_time_epoch_local
 from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
     DAEMON, TRIGGER, mm, DOWNLOADRETRIES
@@ -44,20 +39,14 @@ class Reporter:
             self._log.info('Not sending email (see %s)' % mm(EMAIL))
         else:
             try:
-                if version_info[0] >= 3:
-                    email = EmailMessage()
-                    email.set_content(msg)
-                else:
-                    email = MIMEText(msg, _subtype='plain', _charset='utf-8')
+                email = EmailMessage()
+                email.set_content(msg)
                 email['Subject'] = subject
                 email['From'] = self._email_from
                 email['To'] = self._email_to
                 self._log.default('Sending completion email to %s (subject %s)' % (self._email_to, subject))
                 smtp = SMTP(self._smtp_address, port=self._smtp_port)
-                if version_info[0] >= 3:
-                    smtp.send_message(email)
-                else:
-                    smtp.sendmail(self._email_from, [self._email_to], email.as_string())
+                smtp.send_message(email)
                 smtp.quit()
             except Exception as e:
                 self._log.error('Error sending email to %s via %s:%d: %s' %
@@ -139,13 +128,13 @@ WARNING: The final download had some errors, it may be incomplete.
          To check for completeness use `rover %s`
          Re-run the %s command to ensure completeness.
 ''' % (LIST_RETRIEVE, RETRIEVE)
-        elif source.consistent == INCONSISTENT:
+        elif source.consistent == ConsistencyState.INCONSISTENT:
             msg += '''
 WARNING: Inconsistent retrieval was detected, most likely
          data indicated by the availability service was not
          available from the dataselect service.
 '''
-        elif source.consistent == UNCERTAIN:
+        elif source.consistent == ConsistencyState.UNCERTAIN:
             msg += '''
 The consistency of the web services could not be confirmed.
 Re-run the %s command with %s > 1 to check
@@ -178,13 +167,13 @@ WARNING: The final download had some errors, it may be incomplete.
          To check for completeness use `rover %s %s`
          Run `rover %s %s` to reprocess immediately.
 ''' % (LIST_SUBSCRIBE, source.name, TRIGGER, source.name)
-        elif source.consistent == INCONSISTENT:
+        elif source.consistent == ConsistencyState.INCONSISTENT:
             msg += '''
 WARNING: Inconsistent behaviour was detected in the web
          services (eg dataselect not providing data promised
          by availability)
 '''
-        elif source.consistent == UNCERTAIN:
+        elif source.consistent == ConsistencyState.UNCERTAIN:
             msg += '''
 The consistency of the web services could not be confirmed
 (daemon must have %s > 1).
