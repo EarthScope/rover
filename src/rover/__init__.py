@@ -18,9 +18,23 @@ def signal_handler(sig, frame):
 
 PREV_HANDLER = signal.signal(signal.SIGINT, signal_handler)
 
-from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, RETRIEVE_METADATA, HELP_CMD, DOWNLOAD, LIST_RETRIEVE, \
-    DEV, SUMMARY, LIST_SUMMARY, WEB, ABORT_CODE, ERROR_CODE
+from .args import (
+    INIT_REPOSITORY,
+    INDEX,
+    INGEST,
+    LIST_INDEX,
+    RETRIEVE,
+    RETRIEVE_METADATA,
+    HELP_CMD,
+    DOWNLOAD,
+    LIST_RETRIEVE,
+    DEV,
+    SUMMARY,
+    LIST_SUMMARY,
+    WEB,
+    ABORT_CODE,
+    ERROR_CODE,
+)
 from .config import Config, RepoInitializer
 from .download import Downloader
 from .index import Indexer, IndexLister
@@ -32,22 +46,27 @@ from .summary import Summarizer, SummaryLister
 from .web import ServerStarter
 
 COMMON_COMMANDS = OrderedDict()
-COMMON_COMMANDS[INIT_REPOSITORY] = (RepoInitializer, 'Create / configure the repository')
-COMMON_COMMANDS[RETRIEVE] = (Retriever, 'Download, ingest and index missing data')
-COMMON_COMMANDS[LIST_RETRIEVE] = (ListRetriever, 'Show what data "rover retrieve" will download')
-COMMON_COMMANDS[LIST_INDEX] = (IndexLister, 'List the contents of the repository')
-COMMON_COMMANDS[LIST_SUMMARY] = (SummaryLister, 'List a summary of the repository')
+COMMON_COMMANDS[INIT_REPOSITORY] = (
+    RepoInitializer,
+    "Create / configure the repository",
+)
+COMMON_COMMANDS[RETRIEVE] = (Retriever, "Download, ingest and index missing data")
+COMMON_COMMANDS[LIST_RETRIEVE] = (
+    ListRetriever,
+    'Show what data "rover retrieve" will download',
+)
+COMMON_COMMANDS[LIST_INDEX] = (IndexLister, "List the contents of the repository")
+COMMON_COMMANDS[LIST_SUMMARY] = (SummaryLister, "List a summary of the repository")
 # so that help appears in the docs
-COMMON_COMMANDS[HELP_CMD] = (None, 'Return help information about a command')
+COMMON_COMMANDS[HELP_CMD] = (None, "Return help information about a command")
 
 ADVANCED_COMMANDS = OrderedDict()
-ADVANCED_COMMANDS[DOWNLOAD] = (Downloader, 'Download data from a remote service')
-ADVANCED_COMMANDS[INDEX] = (Indexer, 'Index the repository')
-ADVANCED_COMMANDS[INGEST] = (Ingester, 'Ingest data from a file into the repository')
-ADVANCED_COMMANDS[WEB] = (ServerStarter, 'Start a web server showing status')
-ADVANCED_COMMANDS[RETRIEVE_METADATA] = (MetadataRetriever, 'Download missing metadata')
-ADVANCED_COMMANDS[SUMMARY] = (Summarizer, 'Update summary table')
+ADVANCED_COMMANDS[DOWNLOAD] = (Downloader, "Download data from a remote service")
+ADVANCED_COMMANDS[INDEX] = (Indexer, "Index the repository")
+ADVANCED_COMMANDS[INGEST] = (Ingester, "Ingest data from a file into the repository")
+ADVANCED_COMMANDS[WEB] = (ServerStarter, "Start a web server showing status")
+ADVANCED_COMMANDS[RETRIEVE_METADATA] = (MetadataRetriever, "Download missing metadata")
+ADVANCED_COMMANDS[SUMMARY] = (Summarizer, "Update summary table")
 
 
-COMMANDS = OrderedDict(chain(COMMON_COMMANDS.items(),
-                             ADVANCED_COMMANDS.items()))
+COMMANDS = OrderedDict(chain(COMMON_COMMANDS.items(), ADVANCED_COMMANDS.items()))

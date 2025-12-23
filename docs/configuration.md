@@ -106,9 +106,6 @@ using ROVER options.
 | sort-in-python      | False                | Avoid OS sort (slower)?        |
 | all                 | False                | Process all files (not just modified)? |
 | recurse             | True                 | When given a directory, process children? |
-| subscriptions-dir   | subscriptions        | Directory for subscriptions    |
-| recheck-period      | 12                   | Time between availabilty checks (hours) |
-| force-request       | False                | Skip overlap checks (dangerous)? |
 | log-dir             | logs                 | Directory for logs             |
 | log-unique          | False                | Unique log names (with PIDs)?  |
 | log-unique-expire   | 7                    | Number of days before deleting unique logs (days) |

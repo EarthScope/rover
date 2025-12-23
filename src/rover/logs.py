@@ -1,4 +1,3 @@
-
 import sys
 from io import StringIO
 from logging import getLogger, StreamHandler, Formatter, DEBUG, addLevelName
@@ -13,11 +12,11 @@ from .utils import clean_old_files, canonify, calc_bytes
 Support for logging.
 """
 
-DEFAULT = 25   # a new logging level, between INFO and WARN
+DEFAULT = 25  # a new logging level, between INFO and WARN
 
 
 def level(n):
-    '''
+    """
     Our log levels are 0-6 (silent - verbose).
     Logging levels are 50-10 (quiet - verbose)
 
@@ -30,7 +29,7 @@ def level(n):
     5  Info     20
     6  Debug    10
 
-    '''
+    """
     n = max(0, min(n, 6))
     if n == 4:
         return 25
@@ -41,7 +40,7 @@ def level(n):
 
 
 def match_unique(name):
-    return match(r'\w+_\d+\.log', name)
+    return match(r"\w+_\d+\.log", name)
 
 
 def log_name(log_dir, name):
@@ -50,28 +49,38 @@ def log_name(log_dir, name):
         makedirs(dir)
     if not isdir(dir):
         raise Exception('"%s" is not a directory (log-dir)' % dir)
-    path = join(dir, name + '.log')
+    path = join(dir, name + ".log")
     return path, dir
 
 
-def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_unique, log_unique_expire, stderr=None):
+def init_log(
+    log_dir,
+    log_size,
+    log_count,
+    log_verbosity,
+    verbosity,
+    name,
+    log_unique,
+    log_unique_expire,
+    stderr=None,
+):
     """
     Create a log with two handlers.
     One handler is a rotated file, the other stderr.
     The file is for details, stderr for errors to the user.
     """
 
-    addLevelName(DEFAULT, 'DEFAULT')
+    addLevelName(DEFAULT, "DEFAULT")
 
     if log_unique:
-        name = '%s.%d' % (name, getpid())
+        name = "%s.%d" % (name, getpid())
 
     log = getLogger(name)
     log.setLevel(DEBUG)
 
     if log_dir:  # on initialization we have no log dir
         path, dir = log_name(log_dir, name)
-        size = calc_bytes (log_size)
+        size = calc_bytes(log_size)
         count = max(min(log_count, 100), 1)
         file_handler = RotatingFileHandler(path, maxBytes=size, backupCount=count)
         stream = None
@@ -80,12 +89,12 @@ def init_log(log_dir, log_size, log_count, log_verbosity, verbosity, name, log_u
         file_handler = StreamHandler(stream)
         path, dir = None, None
 
-    time_formatter = Formatter('%(levelname)-8s %(asctime)s: %(message)s')
+    time_formatter = Formatter("%(levelname)-8s %(asctime)s: %(message)s")
     file_handler.setFormatter(time_formatter)
     file_handler.setLevel(level(log_verbosity))
     log.addHandler(file_handler)
 
-    name_formatter = Formatter('%(name)s %(levelname)8s: %(message)s')
+    name_formatter = Formatter("%(name)s %(levelname)8s: %(message)s")
     stdout_handler = StreamHandler(stderr if stderr else sys.stderr)
     stdout_handler.setLevel(level(verbosity))
     stdout_handler.setFormatter(name_formatter)

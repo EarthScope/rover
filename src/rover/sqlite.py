@@ -1,4 +1,3 @@
-
 from sqlite3 import connect
 
 from .utils import canonify
@@ -14,11 +13,11 @@ def init_db(dbpath, log):
     Open a connection to the database.
     """
 
-    log.debug('Connecting to sqlite3 %s' % dbpath)
+    log.debug("Connecting to sqlite3 %s" % dbpath)
     db = connect(dbpath, timeout=60.0)
     # https://www.sqlite.org/foreignkeys.html
-    db.execute('PRAGMA foreign_keys = ON')
-    db.execute('PRAGMA case_sensitive_like = ON')  # as used by mseedindex
+    db.execute("PRAGMA foreign_keys = ON")
+    db.execute("PRAGMA case_sensitive_like = ON")  # as used by mseedindex
     return db
 
 
@@ -28,7 +27,7 @@ class NoResult(Exception):
     """
 
     def __init__(self, sql, params):
-        super().__init__('%s %s' % (sql, params))
+        super().__init__("%s %s" % (sql, params))
 
 
 class CursorContext:
@@ -47,9 +46,9 @@ class CursorContext:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type:
             if self._quiet:
-                self._support._log.debug('Cursor exit: %s' % exc_val)
+                self._support._log.debug("Cursor exit: %s" % exc_val)
             else:
-                self._support._log.error('Cursor exit: %s' % exc_val)
+                self._support._log.error("Cursor exit: %s" % exc_val)
         else:
             self._support._db.commit()  # probably implied by close?
         self._cursor.close()
@@ -73,7 +72,7 @@ class SqliteDb:
         Execute a single command in a transaction.
         """
         with self.cursor(quiet=quiet) as c:
-            self._log.debug('Execute: %s %s' % (sql, params))
+            self._log.debug("Execute: %s %s" % (sql, params))
             c.execute(sql, params)
 
     def fetchsingle(self, sql, params=tuple(), quiet=False):
@@ -83,7 +82,7 @@ class SqliteDb:
         Raise NoResult if no value.
         """
         with self.cursor(quiet=quiet) as c:
-            self._log.debug('Fetchsingle: %s %s' % (sql, params))
+            self._log.debug("Fetchsingle: %s %s" % (sql, params))
             result = c.execute(sql, params).fetchone()
             if result:
                 if len(result) > 1:
@@ -100,7 +99,7 @@ class SqliteDb:
         Raise NoResult if no row.
         """
         with self.cursor(quiet=quiet) as c:
-            self._log.debug('Fetchone: %s %s' % (sql, params))
+            self._log.debug("Fetchone: %s %s" % (sql, params))
             result = c.execute(sql, params).fetchone()
             if result:
                 return result
@@ -115,7 +114,7 @@ class SqliteDb:
         the cursor explicitly (see foreachrow).
         """
         with self.cursor() as c:
-            self._log.debug('Fetchall: %s %s' % (sql, params))
+            self._log.debug("Fetchall: %s %s" % (sql, params))
             return c.execute(sql, params).fetchall()
 
     def foreachrow(self, sql, params, callback, quiet=False):
@@ -123,7 +122,7 @@ class SqliteDb:
         Call the callback for each row in the results.
         """
         with self.cursor(quiet=quiet) as c:
-            self._log.debug('foreachrow: %s %s' % (sql, params))
+            self._log.debug("foreachrow: %s %s" % (sql, params))
             for row in c.execute(sql, params):
                 callback(row)
 

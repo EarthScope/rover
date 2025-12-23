@@ -7,7 +7,16 @@ import codecs
 from binascii import hexlify
 from hashlib import sha1
 from os import makedirs, getpid, listdir, unlink, kill, name, rmdir, strerror
-from os.path import dirname, exists, isdir, expanduser, abspath, join, realpath, getmtime
+from os.path import (
+    dirname,
+    exists,
+    isdir,
+    expanduser,
+    abspath,
+    join,
+    realpath,
+    getmtime,
+)
 from shutil import move, copyfile
 from subprocess import Popen, check_output, STDOUT
 import sys
@@ -37,7 +46,7 @@ def touch(path):
     Create or 'modify' a file.
     """
     create_parents(path)
-    open(path, 'a').close()
+    open(path, "a").close()
 
 
 def safe_unlink(path):
@@ -56,21 +65,22 @@ def check_cmd(config, param, name):
     Check the command exists and, if not, inform the user.
     """
     from .args import FORCECMD
+
     value = config.arg(param)
-    if windows() and '/' in value:
+    if windows() and "/" in value:
         config.log.warn('Replacing slashes with back-slashes in "%s"' % value)
-        value = re.sub(r'/', r'\\', value)
+        value = re.sub(r"/", r"\\", value)
     if not config.arg(FORCECMD):
-        cmd = '%s -h' % value
+        cmd = "%s -h" % value
         try:
             check_output(cmd, stderr=STDOUT, shell=True)
             return value
         except Exception as e:
             config.log.error('Command "%s" failed' % cmd)
-            config.log.error('Install %s or configure %s correctly' % (name, param))
-            raise Exception('Cannot find %s (using %s)' % (name, cmd))
+            config.log.error("Install %s or configure %s correctly" % (name, param))
+            raise Exception("Cannot find %s (using %s)" % (name, cmd))
     else:
-        config.log.warn('Not checking command %s' % name)
+        config.log.warn("Not checking command %s" % name)
         return value
 
 
@@ -89,7 +99,7 @@ def canonify_dir_and_make(path):
     if not exists(path):
         makedirs(path)
     if not isdir(path):
-        raise Exception('%s is not a directory')
+        raise Exception("%s is not a directory")
     return path
 
 
@@ -112,8 +122,8 @@ def hash(text):
     SHA1 hash as hex.
     """
     hash = sha1()
-    hash.update(text.encode('utf-8'))
-    return hexlify(hash.digest()).decode('ascii')
+    hash.update(text.encode("utf-8"))
+    return hexlify(hash.digest()).decode("ascii")
 
 
 def uniqueish(prefix, salt, pid=None):
@@ -122,7 +132,7 @@ def uniqueish(prefix, salt, pid=None):
     """
     if pid is None:
         pid = getpid()
-    return '%s_%s_%d' % (prefix, hash(salt)[:6], pid)
+    return "%s_%s_%d" % (prefix, hash(salt)[:6], pid)
 
 
 def unique_filename(path):
@@ -133,7 +143,7 @@ def unique_filename(path):
         count = 0
         while True:
             count += 1
-            new_path = '%s.%d' % (path, count)
+            new_path = "%s.%d" % (path, count)
             if not exists(new_path):
                 return new_path
     else:
@@ -147,6 +157,7 @@ def unique_path(dir, filename, salt):
     name = uniqueish(filename, salt)
     return unique_filename(join(dir, name))
 
+
 def _stream_output(request, down, unique=True):
     # special case empty return.  this avoids handling empty files elsewhere
     # which isn't a 'serious' problem, but causes ugly logging
@@ -157,7 +168,7 @@ def _stream_output(request, down, unique=True):
         create_parents(down)
         if unique:
             down = unique_filename(down)
-        with open(down, 'wb') as output:
+        with open(down, "wb") as output:
             for chunk in request.iter_content(chunk_size=1024):
                 if chunk:
                     output.write(chunk)
@@ -173,14 +184,18 @@ def _session(retries):
     session = Session()
     http_adapter = HTTPAdapter(max_retries=retries)
     https_adapter = HTTPAdapter(max_retries=retries)
-    session.mount('http://', http_adapter)
-    session.mount('https://', https_adapter)
+    session.mount("http://", http_adapter)
+    session.mount("https://", https_adapter)
 
     # Create a User-Agent header with package, requests and Python identifiers
     from rover import __version__
-    user_agent = 'rover/%s python-requests/%s Python/%s' % \
-                 (__version__, requests_version, ".".join(map(str, sys.version_info[:3])))
-    session.headers.update({'User-Agent': user_agent})
+
+    user_agent = "rover/%s python-requests/%s Python/%s" % (
+        __version__,
+        requests_version,
+        ".".join(map(str, sys.version_info[:3])),
+    )
+    session.headers.update({"User-Agent": user_agent})
 
     return session
 
@@ -195,7 +210,7 @@ def get_to_file(url, down, timeout, retries, log, unique=True):
     this gives the caller both the results (which may contain error msg)
     and the error exception.
     """
-    log.info('Downloading %s from %s' % (down, url))
+    log.info("Downloading %s from %s" % (down, url))
     request = _session(retries).get(url, stream=True, timeout=timeout)
     return _stream_output(request, down, unique=unique)
 
@@ -211,8 +226,8 @@ def post_to_file(url, up, down, timeout, retries, log, unique=True):
     and the error exception.
     """
     up = canonify(up)
-    log.info('Downloading %s from %s with %s' % (down, url, up))
-    with open(up, 'rb') as input:
+    log.info("Downloading %s from %s with %s" % (down, url, up))
+    with open(up, "rb") as input:
         request = _session(retries).post(url, stream=True, data=input, timeout=timeout)
     return _stream_output(request, down, unique=unique)
 
@@ -226,7 +241,7 @@ def clean_old_files(dir, age_secs, match, log):
             if match(file):
                 try:
                     if time.time() - getmtime(file) > age_secs:
-                        log.warn('Deleting old %s' % file)
+                        log.warn("Deleting old %s" % file)
                 except Exception:
                     pass  # was deleted from under us
 
@@ -235,11 +250,13 @@ def match_prefixes(*prefixes):
     """
     Match predicate (see above) using a prefix.
     """
+
     def match(name):
         for prefix in prefixes:
             if name.startswith(prefix):
                 return True
         return False
+
     return match
 
 
@@ -255,7 +272,7 @@ class PushBackIterator:
 
     def push(self, value):
         if self._pushed:
-            raise Exception('Cannot push multiple values')
+            raise Exception("Cannot push multiple values")
         self._pushed = value
 
     def __iter__(self):
@@ -278,7 +295,7 @@ def assert_valid_time(log, time):
     """
     Check timestamp format.
     """
-    if re.match(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$', time):
+    if re.match(r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?)?$", time):
         return time
     else:
         msg = 'Invalid time format "%s"' % time
@@ -291,7 +308,7 @@ def format_epoch(epoch):
     Format an epoch in the standard format.
     """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
-    return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S.%f')
+    return datetime.datetime.strftime(dt, "%Y-%m-%dT%H:%M:%S.%f")
 
 
 def format_day_epoch(epoch):
@@ -299,7 +316,7 @@ def format_day_epoch(epoch):
     Format an epoch as a date, without time.
     """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
-    return datetime.datetime.strftime(dt, '%Y-%m-%d')
+    return datetime.datetime.strftime(dt, "%Y-%m-%d")
 
 
 def format_year_day_epoch(epoch):
@@ -307,7 +324,7 @@ def format_year_day_epoch(epoch):
     Format an epoch as year and day
     """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
-    return datetime.datetime.strftime(dt, '%Y-%j')
+    return datetime.datetime.strftime(dt, "%Y-%j")
 
 
 def format_time_epoch(epoch):
@@ -315,7 +332,7 @@ def format_time_epoch(epoch):
     Format an epoch, with time to seconds
     """
     dt = datetime.datetime.fromtimestamp(epoch, utc)
-    return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S')
+    return datetime.datetime.strftime(dt, "%Y-%m-%dT%H:%M:%S")
 
 
 def format_time_epoch_local(epoch):
@@ -323,25 +340,25 @@ def format_time_epoch_local(epoch):
     Format an epoch, with time to seconds
     """
     dt = datetime.datetime.fromtimestamp(epoch)
-    return datetime.datetime.strftime(dt, '%Y-%m-%dT%H:%M:%S')
+    return datetime.datetime.strftime(dt, "%Y-%m-%dT%H:%M:%S")
 
 
 def parse_epoch(date):
     """
     Parse a date in the standard formats
     """
-    if date.endswith('Z'):
+    if date.endswith("Z"):
         date = date[:-1]
     try:
-        dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.%f')
+        dt = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f")
     except ValueError:
         try:
-            dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S')
+            dt = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
         except ValueError:
             try:
-                dt = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M')
+                dt = datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M")
             except ValueError:
-                dt = datetime.datetime.strptime(date, '%Y-%m-%d')
+                dt = datetime.datetime.strptime(date, "%Y-%m-%d")
     return (dt - EPOCH).total_seconds()
 
 
@@ -364,10 +381,10 @@ def in_memory(iterator):
     return iter(list(iterator))
 
 
-STATION = 'station'
-NETWORK = 'network'
-CHANNEL = 'channel'
-LOCATION = 'location'
+STATION = "station"
+NETWORK = "network"
+CHANNEL = "channel"
+LOCATION = "location"
 
 
 def build_file(log, path, args):
@@ -376,14 +393,14 @@ def build_file(log, path, args):
     the correct (availability service) format.
     """
     # just go crazy because any error is caught by the caller and changed into a 'bad syntax' error
-    if '_' in args[0]:
-        (n, s, l, c) = (code if code else '--' for code in args[0].split('_'))
-        args = ['net=' + n, 'sta=' + s, 'loc=' + l, 'cha=' + c] + args[1:]
-    sncl = {NETWORK: '*', STATION: '*', LOCATION: '*', CHANNEL: '*'}
+    if "_" in args[0]:
+        (n, s, l, c) = (code if code else "--" for code in args[0].split("_"))
+        args = ["net=" + n, "sta=" + s, "loc=" + l, "cha=" + c] + args[1:]
+    sncl = {NETWORK: "*", STATION: "*", LOCATION: "*", CHANNEL: "*"}
     count = 0
-    while args and '=' in args[0]:
+    while args and "=" in args[0]:
         arg = args.pop(0)
-        name, value = arg.split('=')
+        name, value = arg.split("=")
         for key in sncl.keys():
             if key.startswith(name):
                 sncl[key] = value
@@ -392,8 +409,8 @@ def build_file(log, path, args):
     assert len(args) < 3
     parts = [sncl[NETWORK], sncl[STATION], sncl[LOCATION], sncl[CHANNEL]]
     parts += args
-    with open(path, 'w') as req:
-        print(' '.join(parts), file=req)
+    with open(path, "w") as req:
+        print(" ".join(parts), file=req)
 
 
 def sort_file_inplace(log, path, temp_dir, sort_in_python):
@@ -406,24 +423,24 @@ def sort_file_inplace(log, path, temp_dir, sort_in_python):
             _os_sort(log, path, temp_dir)
             done = True
     except Exception as e:
-        log.warn('OS sorting failed (%s) using python fallback' % e)
+        log.warn("OS sorting failed (%s) using python fallback" % e)
     if not done:
         _python_sort(log, path)
 
 
 def _python_sort(log, path):
-    log.debug('Sorting %s in memory' % path)
-    with open(path, 'r') as source:
+    log.debug("Sorting %s in memory" % path)
+    with open(path, "r") as source:
         lines = source.readlines()
-    with open(path, 'w') as dest:
+    with open(path, "w") as dest:
         for line in sorted(lines):
             print(line.rstrip(), file=dest)
 
 
 def _os_sort(log, path, temp_dir):
-    sorted_path = unique_path(temp_dir, 'rover_sort', path)
-    log.debug('Sorting %s into %s' % (path, sorted_path))
-    run('sort %s > %s' % (path, sorted_path), log)
+    sorted_path = unique_path(temp_dir, "rover_sort", path)
+    log.debug("Sorting %s into %s" % (path, sorted_path))
+    run("sort %s > %s" % (path, sorted_path), log)
     safe_unlink(path)
     move(sorted_path, path)
 
@@ -453,42 +470,49 @@ def windows():
     """
     Are we running on windows?
     """
-    return name in ('Windows', 'nt')
+    return name in ("Windows", "nt")
 
 
 def diagnose_error(log, error, request, response, copied=True):
     # avoid import loop
     from .args import mm, VERBOSITY, NO, DELETEFILES
+
     log.error(error)
-    log.error('Response contents (max 10 lines) are listed below:')
+    log.error("Response contents (max 10 lines) are listed below:")
     log_file_contents(response, log, 10)
-    log.error('Please pay special attention to the first lines of the message - ' +
-              'they often contains useful information.')
-    log.error('Request contents (max 10 lines) are listed below:')
+    log.error(
+        "Please pay special attention to the first lines of the message - "
+        + "they often contains useful information."
+    )
+    log.error("Request contents (max 10 lines) are listed below:")
     log_file_contents(request, log, 10)
-    log.error('The request is either provided by the user or created from the user input.')
+    log.error(
+        "The request is either provided by the user or created from the user input."
+    )
     if copied:
-        log.error('To ensure consistency ROVER copies files.  ' +
-                  'To see the paths and avoid deleting temporary copies re-run the command ' +
-                  'with the %s 5 and %s%s options' % (mm(VERBOSITY), NO, DELETEFILES))
+        log.error(
+            "To ensure consistency ROVER copies files.  "
+            + "To see the paths and avoid deleting temporary copies re-run the command "
+            + "with the %s 5 and %s%s options" % (mm(VERBOSITY), NO, DELETEFILES)
+        )
 
 
 def log_file_contents(path, log, max_lines=10):
-    log.info('Displaying contents of file %s:' % path)
+    log.info("Displaying contents of file %s:" % path)
     count = 0
     try:
-        with codecs.open(path, encoding='utf-8', errors='strict') as input:
+        with codecs.open(path, encoding="utf-8", errors="strict") as input:
             for line in input:
                 line = line.strip()
                 if line:
-                    log.error('> %s' % line)
+                    log.error("> %s" % line)
                     count += 1
                     if count >= max_lines:
                         break
     except UnicodeDecodeError:
-        log.error('File contents are not printable.')
+        log.error("File contents are not printable.")
     except IOError as e:
-        log.error('Error opening file:', strerror(e.errno))
+        log.error("Error opening file:", strerror(e.errno))
 
 
 def calc_bytes(sizestring):
@@ -504,13 +528,13 @@ def calc_bytes(sizestring):
     Returns a size in bytes.
     """
 
-    if sizestring.endswith('k') or sizestring.endswith('K'):
+    if sizestring.endswith("k") or sizestring.endswith("K"):
         return int(sizestring[:-1]) * 1024
 
-    elif sizestring.endswith('m') or sizestring.endswith('M'):
+    elif sizestring.endswith("m") or sizestring.endswith("M"):
         return int(sizestring[:-1]) * 1024 * 1024
 
-    elif sizestring.endswith('g') or sizestring.endswith('G'):
+    elif sizestring.endswith("g") or sizestring.endswith("G"):
         return int(sizestring[:-1]) * 1024 * 1024 * 1024
 
     else:
@@ -535,65 +559,67 @@ def request_fixer(log, line):
     if len(line) == 0:
         return None
 
-    if line.startswith('#'):
+    if line.startswith("#"):
         return None
 
     fields = line.split()
 
     if len(fields) != 6:
-        raise Exception ("Unrecognized request line, not enough fields: '%s'" % line)
+        raise Exception("Unrecognized request line, not enough fields: '%s'" % line)
 
     # Acceptable source identifier codes contain only these characters
     acceptable_code = "[-_,A-Za-z0-9*?]"
 
     if not re.match(acceptable_code, fields[0]):
-        raise Exception ("Unrecognized request line, invalid network code: '%s'" % line)
+        raise Exception("Unrecognized request line, invalid network code: '%s'" % line)
 
     if not re.match(acceptable_code, fields[1]):
-        raise Exception ("Unrecognized request line, invalid station code: '%s'" % line)
+        raise Exception("Unrecognized request line, invalid station code: '%s'" % line)
 
     if not re.match(acceptable_code, fields[2]):
-        raise Exception ("Unrecognized request line, invalid location code: '%s'" % line)
+        raise Exception("Unrecognized request line, invalid location code: '%s'" % line)
 
     if not re.match(acceptable_code, fields[3]):
-        raise Exception ("Unrecognized request line, invalid channel code: '%s'" % line)
+        raise Exception("Unrecognized request line, invalid channel code: '%s'" % line)
 
     # Tidy time values, allowing '*' as an exception (meaning "open" time)
-    if fields[4] != '*':
+    if fields[4] != "*":
         try:
             fields[4] = tidy_timestamp(log, fields[4])
         except Exception:
-            raise Exception ("Unrecognized request line, invalid start time: '%s'" % line)
+            raise Exception(
+                "Unrecognized request line, invalid start time: '%s'" % line
+            )
 
-    if fields[5] != '*':
+    if fields[5] != "*":
         try:
             fields[5] = tidy_timestamp(log, fields[5])
         except Exception:
-            raise Exception ("Unrecognized request line, invalid end time: '%s'" % line)
+            raise Exception("Unrecognized request line, invalid end time: '%s'" % line)
 
     return " ".join(fields)
 
 
 def fix_file_inplace(log, path, temp_dir, fixer=request_fixer):
-    temp_path = unique_path(temp_dir, 'rover_fixed_request', path)
-    log.debug('Fixing %s in %s' % (path, temp_path))
+    temp_path = unique_path(temp_dir, "rover_fixed_request", path)
+    log.debug("Fixing %s in %s" % (path, temp_path))
     try:
-        with open(temp_path, 'w') as output:
-            with open(path, 'r') as input:
+        with open(temp_path, "w") as output:
+            with open(path, "r") as input:
                 for line in input.readlines():
                     line = line.rstrip()  # remove linefeed
                     line = fixer(log, line)
                     if line:
                         print(line, file=output)
         unlink(path)
-        log.debug('Replacing %s with %s' % (path, temp_path))
+        log.debug("Replacing %s with %s" % (path, temp_path))
         copyfile(temp_path, path)
     finally:
         safe_unlink(temp_path)
 
 
 def remove_empty_folders(path, log):
-    'Function to remove empty folders under root directory'
+    "Function to remove empty folders under root directory"
     if not isdir(path):
         return
 
@@ -611,10 +637,9 @@ def remove_empty_folders(path, log):
         log.debug("Removing empty folder: %s" % path)
         rmdir(path)
 
+
 def dictionary_text_list(kwargs, prefix=""):
     cmds = []
     for command in kwargs.keys():
-        cmds.append("  {0}{1:19}: {2}".format(prefix,
-                                              command,
-                                              kwargs[command][1]))
+        cmds.append("  {0}{1:19}: {2}".format(prefix, command, kwargs[command][1]))
     return "\n".join(cmds)

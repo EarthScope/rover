@@ -1,10 +1,32 @@
-
 from re import sub
 
-from .args import HELP_CMD, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, \
-    LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT, \
-    RETRIEVE_METADATA, WEB
+from .args import (
+    HELP_CMD,
+    LIST_INDEX,
+    DATADIR,
+    INIT_REPOSITORY,
+    RETRIEVE,
+    TEMPDIR,
+    INGEST,
+    INDEX,
+    AVAILABILITYURL,
+    DATASELECTURL,
+    DOWNLOAD,
+    LIST_RETRIEVE,
+    mm,
+    ALL,
+    MSEEDINDEXCMD,
+    Arguments,
+    MDFORMAT,
+    FILE,
+    LIST_SUMMARY,
+    SUMMARY,
+    DEFAULT_FILE,
+    INIT_REPO,
+    INIT,
+    RETRIEVE_METADATA,
+    WEB,
+)
 from .utils import dictionary_text_list
 
 """
@@ -12,12 +34,12 @@ The 'rover help' command.
 """
 
 
-USAGE = 'usage'
-LOWLEVEL = 'low-level'
+USAGE = "usage"
+LOWLEVEL = "low-level"
 
 
 def usage(config):
-    return '''
+    return """
                     Common ROVER Commands
 
 rover {0} [directory]
@@ -62,14 +84,24 @@ rover {11} <command>
 
   Gives help on the various commands.
 
-'''.format(INIT_REPOSITORY, DEFAULT_FILE, INIT,
-           RETRIEVE, AVAILABILITYURL, DATASELECTURL, LIST_RETRIEVE,
-           LIST_INDEX, LIST_SUMMARY, DATADIR, LIST_INDEX,
-           HELP_CMD)
+""".format(
+        INIT_REPOSITORY,
+        DEFAULT_FILE,
+        INIT,
+        RETRIEVE,
+        AVAILABILITYURL,
+        DATASELECTURL,
+        LIST_RETRIEVE,
+        LIST_INDEX,
+        LIST_SUMMARY,
+        DATADIR,
+        LIST_INDEX,
+        HELP_CMD,
+    )
 
 
 def low_level(config):
-    return '''
+    return """
                    Low-Level ROVER Commands
 
 The following commands are used internally, and are often less
@@ -113,14 +145,24 @@ rover {10} ...
   This lists the overall span of data for each
   Net_Sta_Loc_Chan and can be queried using `rover {11}`.
 
-'''.format(DOWNLOAD, DATASELECTURL, TEMPDIR, DATADIR, RETRIEVE,
-           INDEX, INGEST, WEB, RETRIEVE_METADATA, SUMMARY,
-           LIST_SUMMARY)
+""".format(
+        DOWNLOAD,
+        DATASELECTURL,
+        TEMPDIR,
+        DATADIR,
+        RETRIEVE,
+        INDEX,
+        INGEST,
+        WEB,
+        RETRIEVE_METADATA,
+        SUMMARY,
+        LIST_SUMMARY,
+    )
 
 
 GENERAL = {
-    USAGE: (usage, 'General interactive use'),
-    LOWLEVEL: (low_level, 'Rarely used, low-level commands')
+    USAGE: (usage, "General interactive use"),
+    LOWLEVEL: (low_level, "Rarely used, low-level commands"),
 }
 
 
@@ -136,7 +178,7 @@ class HelpFormatter:
         arguments = Arguments()
         first_param = True
         for line in self.__paras(text):
-            if line.startswith('@'):
+            if line.startswith("@"):
                 if first_param:
                     arguments.print_docs_header()
                     first_param = False
@@ -146,14 +188,14 @@ class HelpFormatter:
                     arguments.print_docs_row_text(line[1:])
             elif self._md_format:
                 print(self.__escape(line))
-            elif line.startswith('#'):
-                print(line.lstrip(' #'))
+            elif line.startswith("#"):
+                print(line.lstrip(" #"))
             else:
                 for short in self.__splitlines(line):
                     print(short)
 
     def __escape(self, text):
-        text = sub(r'\\', '\\\\', text)
+        text = sub(r"\\", "\\\\", text)
         # text = sub(r'`', '\\`', text)
         return text
 
@@ -161,32 +203,32 @@ class HelpFormatter:
         return text.splitlines()
 
     def __slurp(self, line):
-        word = ''
-        space = ''
-        while line and not line[0] == ' ':
+        word = ""
+        space = ""
+        while line and not line[0] == " ":
             word += line[0]
             line = line[1:]
-        while line and line[0] == ' ':
+        while line and line[0] == " ":
             space += line[0]
             line = line[1:]
         return word, space, line
 
     def __splitlines(self, line):
-        indentation = ''
-        while line and line.startswith(' '):
+        indentation = ""
+        while line and line.startswith(" "):
             indentation += line[0]
             line = line[1:]
         if not line:
-            yield ''
+            yield ""
             return
         while line:
-            short, space = indentation, ''
+            short, space = indentation, ""
             line = line.lstrip()
             while line:
                 word, next_space, next_line = self.__slurp(line)
                 if short.strip() and len(short + space + word) > 78:
                     yield short
-                    short, space = indentation, ''
+                    short, space = indentation, ""
                 else:
                     short = short + space + word
                     space, line = next_space, next_line
@@ -195,19 +237,19 @@ class HelpFormatter:
 
 
 class Helper(HelpFormatter):
-
     def __init__(self, config):
         super().__init__(config.arg(MDFORMAT))
         self._config = config
 
     def run(self, args):
-        from rover import COMMANDS   # avoid import loop
+        from rover import COMMANDS  # avoid import loop
+
         if not args:
             self._help()
             return
         elif len(args) == 1:
             command = args[0].lower()
-            if command == 'help':
+            if command == "help":
                 self._help()
                 return
             if command in COMMANDS:
@@ -216,11 +258,16 @@ class Helper(HelpFormatter):
             elif command in GENERAL:
                 self.print_help(GENERAL[command][0](self._config))
                 return
-        raise Exception('Help is available for: %s, %s, and individual commands (or simply "rover help")' % (USAGE, LOWLEVEL))
+        raise Exception(
+            'Help is available for: %s, %s, and individual commands (or simply "rover help")'
+            % (USAGE, LOWLEVEL)
+        )
 
     def _help(self):
-        from rover import COMMON_COMMANDS, ADVANCED_COMMANDS   # avoid import loop
-        self.print_help('''
+        from rover import COMMON_COMMANDS, ADVANCED_COMMANDS  # avoid import loop
+
+        self.print_help(
+            """
 ### Help
 
 Gives help on the various commands.
@@ -244,6 +291,9 @@ For example:
 
     rover help retrieve
 
-'''.format(dictionary_text_list(COMMON_COMMANDS),
-           dictionary_text_list(GENERAL),
-           dictionary_text_list(ADVANCED_COMMANDS)))
+""".format(
+                dictionary_text_list(COMMON_COMMANDS),
+                dictionary_text_list(GENERAL),
+                dictionary_text_list(ADVANCED_COMMANDS),
+            )
+        )

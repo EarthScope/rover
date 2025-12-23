@@ -1,4 +1,3 @@
-
 from genericpath import isdir
 from os import listdir, makedirs
 from os.path import split, join, isfile, exists, getmtime
@@ -25,11 +24,11 @@ def find_stem(path, root, log):
     original_path = path
     while True:
         if canonify(path) == root:
-            log.debug('Matched %s as %s' % (root, path))
+            log.debug("Matched %s as %s" % (root, path))
             return len(path)
         path, _ = split(path)
         if not path:
-            raise Exception('Could not find canonical prefix to %s' % original_path)
+            raise Exception("Could not find canonical prefix to %s" % original_path)
 
 
 class DatabasePathIterator(SqliteSupport):
@@ -53,8 +52,8 @@ class DatabasePathIterator(SqliteSupport):
         # modification time if there's more than one value (not clear if mseedindex
         # updates all rows with the latest value).
         try:
-            sql = 'SELECT distinct filemodtime, filename FROM tsindex ORDER BY filename ASC, filemodtime DESC'
-            self._log.debug('Execute: %s' % sql)
+            sql = "SELECT distinct filemodtime, filename FROM tsindex ORDER BY filename ASC, filemodtime DESC"
+            self._log.debug("Execute: %s" % sql)
             self._cursor.execute(sql)
         except OperationalError as e:
             # this is the case when there's no table yet, so no files
@@ -71,7 +70,7 @@ class DatabasePathIterator(SqliteSupport):
                     self._stem = find_stem(path, self._data_dir, self._log)
                 if self._prev_path != path:
                     self._prev_path = path
-                return lastmod, join(self._data_dir, path[self._stem + 1:])
+                return lastmod, join(self._data_dir, path[self._stem + 1 :])
             else:
                 raise StopIteration()
         except Exception:
@@ -134,59 +133,59 @@ class ModifiedScanner(SqliteSupport):
             if fspath and (not dbpath or fspath < dbpath):
                 if not closed:
                     dbpaths.push((dblastmod, dbpath))
-                dblastmod, dbpath = '1970-01-01T00:00:00', fspath
+                dblastmod, dbpath = "1970-01-01T00:00:00", fspath
             # extra entry in database, needs deleting
             if dbpath and (not fspath or fspath > dbpath):
                 self._delete(dbpath)
             # fspath == dbpath so test if need to scan
             else:
-                dbepoch = parse_epoch(dblastmod) + 1   # add one because it's rounded down
+                dbepoch = (
+                    parse_epoch(dblastmod) + 1
+                )  # add one because it's rounded down
                 if self._all or getmtime(fspath) > dbepoch:
                     self.process(fspath)
 
     def _delete(self, path):
-        self._log.debug('Removing %s from index' % path)
-        self.execute('delete from tsindex where filename like ?', (path,))
+        self._log.debug("Removing %s from index" % path)
+        self.execute("delete from tsindex where filename like ?", (path,))
 
     def process(self, path):
-        raise Exception('Unimplemented')
+        raise Exception("Unimplemented")
 
     def done(self):
         pass
 
 
 class DirectoryScanner:
-
     def __init__(self, config):
         self._recurse = config.arg(RECURSE)
         self._log = config.log
 
     def scan_dirs_and_files(self, paths):
-
         for path in paths:
             path = canonify(path)
             if not exists(path):
-                raise Exception('Cannot find %s' % path)
+                raise Exception("Cannot find %s" % path)
             if isfile(path):
-                self.process(path) # Calls the process method in rover.ingest
+                self.process(path)  # Calls the process method in rover.ingest
             else:
                 self._scan_dir(path)
         self.done()
 
     def _scan_dir(self, dir):
-        self._log.debug('Scanning directory %s' % dir)
+        self._log.debug("Scanning directory %s" % dir)
         for file in listdir(dir):
             path = join(dir, file)
             if isfile(path):
-                self.process(path) # Calls the process method in rover.ingest
+                self.process(path)  # Calls the process method in rover.ingest
             elif self._recurse:
                 self._scan_dir(path)
             else:
-                self._log.warn('Ignoring %s in %s (not a file)' % (file, dir))
+                self._log.warn("Ignoring %s in %s (not a file)" % (file, dir))
 
     def process(self, path):
-        #process method could/should be removed. It does nothing and is confusing for the person reading the code .
-        raise Exception('Unimplemented')
+        # process method could/should be removed. It does nothing and is confusing for the person reading the code .
+        raise Exception("Unimplemented")
 
     def done(self):
         pass

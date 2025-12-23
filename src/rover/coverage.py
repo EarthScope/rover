@@ -1,4 +1,3 @@
-
 from .utils import PushBackIterator, format_epoch, parse_epoch
 
 """
@@ -44,7 +43,7 @@ class Coverage:
         self.timespans.append((start, end))
 
     def join(self):
-        self._log.debug('Joining overlapping timespans')
+        self._log.debug("Joining overlapping timespans")
         if self:  # avoid looking at samplerate if no data
             joined, (tolerance, increment) = [], self.tolerances()
             for start, end in self.timespans:
@@ -53,16 +52,18 @@ class Coverage:
                 else:
                     b, e = joined[-1]
                     if start < b:
-                        raise Exception('Unsorted start times')
+                        raise Exception("Unsorted start times")
                     # do they overlap at all?
                     if self.samplerate == 0:
                         # Channels with 0 sample rate must always be merged.
-                        self._log.debug('Joining channel with sample rate of zero.')
-                        joined[-1]=(b, end)
+                        self._log.debug("Joining channel with sample rate of zero.")
+                        joined[-1] = (b, end)
                     elif abs(start - e) < 1.0 / self.samplerate + tolerance:
                         # if they do, and this extends previous, replace with maximal span
                         if end > e:
-                            self._log.debug('Joining %d-%d and %d-%d' % (start, end, b, e))
+                            self._log.debug(
+                                "Joining %d-%d and %d-%d" % (start, end, b, e)
+                            )
                             joined[-1] = (b, end)
                     # no they don't overlap
                     else:
@@ -70,10 +71,11 @@ class Coverage:
             self.timespans = joined
 
     def __str__(self):
-        return '%s: %d timespans from %s to %s' % (
-            self.sncl, len(self.timespans),
-            format_epoch(self.timespans[0][0]) if self.timespans else '-',
-            format_epoch(self.timespans[-1][1]) if self.timespans else '-'
+        return "%s: %d timespans from %s to %s" % (
+            self.sncl,
+            len(self.timespans),
+            format_epoch(self.timespans[0][0]) if self.timespans else "-",
+            format_epoch(self.timespans[-1][1]) if self.timespans else "-",
         )
 
     def __eq__(self, other):
@@ -87,10 +89,13 @@ class Coverage:
 
     def tolerances(self):
         if self.samplerate is None:
-            raise Exception('Sample rate is not available.')
+            raise Exception("Sample rate is not available.")
         if self.samplerate == 0:
             return 0.0, 0.0
-        return self._frac_tolerance / self.samplerate, self._frac_increment / self.samplerate
+        return (
+            self._frac_tolerance / self.samplerate,
+            self._frac_increment / self.samplerate,
+        )
 
     def subtract(self, other):
         """
@@ -98,7 +103,7 @@ class Coverage:
         other instance does not.
         """
         if not self.sncl == other.sncl:
-            raise Exception('Cannot subtract mismatched availabilities')
+            raise Exception("Cannot subtract mismatched availabilities")
         if not other:  # subtracting zero (avoid checking samplerate)
             return self
 
@@ -110,8 +115,13 @@ class Coverage:
         self.join()
         other.join()
 
-        us, them = PushBackIterator(iter(self.timespans)), PushBackIterator(iter(other.timespans))
-        difference = Coverage(self._log, self._frac_tolerance, self._frac_increment, self.sncl)
+        us, them = (
+            PushBackIterator(iter(self.timespans)),
+            PushBackIterator(iter(other.timespans)),
+        )
+        difference = Coverage(
+            self._log, self._frac_tolerance, self._frac_increment, self.sncl
+        )
         difference.add_samplerate(self.samplerate)
         while True:
             try:
@@ -125,7 +135,7 @@ class Coverage:
                 # there's no more subtraction, so everything left goes into difference
                 if us_end - us_start >= tolerance:
                     difference.add_epochs(us_start, us_end)
-                for (us_start, us_end) in us:
+                for us_start, us_end in us:
                     if us_end - us_start >= tolerance:
                         difference.add_epochs(us_start, us_end)
                 return difference
@@ -195,13 +205,13 @@ class BaseBuilder:
 
     def _parse_timespans(self, timespans):
         if timespans is None:
-            raise Exception('Unexpected NULL reading timespans')
-        for pair in timespans.split(','):
+            raise Exception("Unexpected NULL reading timespans")
+        for pair in timespans.split(","):
             inner = pair[1:-1]
-            if pair[0] == '[':
-                start, end = map(float, inner.split(':'))
-            elif pair[0] == '<':
-                start, end = map(parse_epoch, inner.split(' '))
+            if pair[0] == "[":
+                start, end = map(float, inner.split(":"))
+            elif pair[0] == "<":
+                start, end = map(parse_epoch, inner.split(" "))
             else:
                 raise Exception('Unexpected timespans format: "%s"' % pair)
             yield start, end
@@ -224,7 +234,9 @@ class SingleSNCLBuilder(BaseBuilder):
             self._timespans.append((start, end, samplerate))
 
     def coverage(self):
-        coverage = Coverage(self._log, self._frac_tolerance, self._frac_increment, self._sncl)
+        coverage = Coverage(
+            self._log, self._frac_tolerance, self._frac_increment, self._sncl
+        )
         for start, end, samplerate in sorted(self._timespans):
             coverage.add_epochs(start, end, samplerate)
         return coverage
@@ -252,7 +264,9 @@ class MultipleSNCLBuilder(BaseBuilder):
     def coverages(self):
         for sncl in sorted(self._timespans.keys()):
             ts = self._timespans[sncl]
-            coverage = Coverage(self._log, self._frac_tolerance, self._frac_increment, sncl)
+            coverage = Coverage(
+                self._log, self._frac_tolerance, self._frac_increment, sncl
+            )
             for start, end, samplerate in sorted(ts):
                 coverage.add_epochs(start, end, samplerate)
             if self._join:

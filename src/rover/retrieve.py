@@ -1,11 +1,25 @@
-
 import datetime
 from shutil import copyfile
 
 from rover import __version__
-from .args import RETRIEVE, TEMPDIR, AVAILABILITYURL, PREINDEX, UserFeedback, \
-    TEMPEXPIRE, LIST_RETRIEVE, DELETEFILES, POSTSUMMARY, DATASELECTURL, fail_early, HTTPTIMEOUT, \
-    HTTPRETRIES, OUTPUT_FORMAT, DATADIR, FORCE_METADATA_RELOAD
+from .args import (
+    RETRIEVE,
+    TEMPDIR,
+    AVAILABILITYURL,
+    PREINDEX,
+    UserFeedback,
+    TEMPEXPIRE,
+    LIST_RETRIEVE,
+    DELETEFILES,
+    POSTSUMMARY,
+    DATASELECTURL,
+    fail_early,
+    HTTPTIMEOUT,
+    HTTPRETRIES,
+    OUTPUT_FORMAT,
+    DATADIR,
+    FORCE_METADATA_RELOAD,
+)
 from .download import DEFAULT_NAME
 from .index import Indexer
 from .manager import DownloadManager, ManagerException
@@ -13,8 +27,15 @@ from .report import Reporter
 from .retrieve_metadata import MetadataRetriever
 from .sqlite import SqliteSupport
 from .summary import Summarizer
-from .utils import clean_old_files, match_prefixes, unique_path, \
-    safe_unlink, build_file, fix_file_inplace, remove_empty_folders
+from .utils import (
+    clean_old_files,
+    match_prefixes,
+    unique_path,
+    safe_unlink,
+    build_file,
+    fix_file_inplace,
+    remove_empty_folders,
+)
 
 """
 Commands related to data retrieval:
@@ -24,78 +45,78 @@ The `rover list-retrieve` command - shows what data would be downloaded by `rove
 """
 
 
-RETRIEVEWEB = 'rover_retrieve_availability'
-RETRIEVECONFIG = 'rover_retrieve_config'
+RETRIEVEWEB = "rover_retrieve_availability"
+RETRIEVECONFIG = "rover_retrieve_config"
 EARLY = datetime.datetime(1900, 1, 1)
 
 
 class BaseRetriever(SqliteSupport, UserFeedback):
     """
-### Retrieve
+    ### Retrieve
 
-    rover retrieve file
+        rover retrieve file
 
-    rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
+        rover retrieve [net=N] [sta=S] [loc=L] [cha=C] [start [end]]
 
-    rover retrieve N_S_L_C [start [end]]
+        rover retrieve N_S_L_C [start [end]]
 
-Compares ROVER's local index with remotely available data, then downloads and
-ingest files missing from the local repository. The URL determining the
-availability of remote data can be configured by the availability-url option,
-and URL controlling data downloads is configured by the dataselect-url
-option.
+    Compares ROVER's local index with remotely available data, then downloads and
+    ingest files missing from the local repository. The URL determining the
+    availability of remote data can be configured by the availability-url option,
+    and URL controlling data downloads is configured by the dataselect-url
+    option.
 
-Use ROVER's list-index function to determine data available on a remote server
-which is not in the local repository.
+    Use ROVER's list-index function to determine data available on a remote server
+    which is not in the local repository.
 
-##### Significant Options
+    ##### Significant Options
 
-@temp-dir
-@availability-url
-@dataselect-url
-@timespan-tol
-@pre-index
-@ingest
-@index
-@post-summary
-@rover-cmd
-@mseedindex-cmd
-@data-dir
-@download-workers
-@download-retries
-@http-timeout
-@http-retries
-@web
-@http-bind-address
-@http-port
-@email
-@email-from
-@smtp-address
-@smtp-port
-@verbosity
-@log-dir
-@log-verbosity
-@temp-expire
-@output-format
-@asdf-filename
-@force-metadata-reload
+    @temp-dir
+    @availability-url
+    @dataselect-url
+    @timespan-tol
+    @pre-index
+    @ingest
+    @index
+    @post-summary
+    @rover-cmd
+    @mseedindex-cmd
+    @data-dir
+    @download-workers
+    @download-retries
+    @http-timeout
+    @http-retries
+    @web
+    @http-bind-address
+    @http-port
+    @email
+    @email-from
+    @smtp-address
+    @smtp-port
+    @verbosity
+    @log-dir
+    @log-verbosity
+    @temp-expire
+    @output-format
+    @asdf-filename
+    @force-metadata-reload
 
-In addition, options for sub-commands (download, ingest, index) will be used - see help for those
-commands for more details.
+    In addition, options for sub-commands (download, ingest, index) will be used - see help for those
+    commands for more details.
 
-##### Examples
+    ##### Examples
 
-    rover retrieve N_S_L_C.txt
+        rover retrieve N_S_L_C.txt
 
-processes a file containing a request to download, ingest, and index
-data missing from ROVER's local repository.
+    processes a file containing a request to download, ingest, and index
+    data missing from ROVER's local repository.
 
-    rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
+        rover retrieve IU_ANMO_00_BH1 2017-01-01 2017-01-04
 
-processes a command line request to download, ingest, and index
-data missing from ROVER's local repository.
+    processes a command line request to download, ingest, and index
+    data missing from ROVER's local repository.
 
-"""
+    """
 
     def __init__(self, config):
         UserFeedback.__init__(self, config)
@@ -107,16 +128,24 @@ data missing from ROVER's local repository.
         self._pre_index = config.arg(PREINDEX)
         self._delete_files = config.arg(DELETEFILES)
         self._post_summary = config.arg(POSTSUMMARY)
-        self._download_manager = None   # created in do_run()
+        self._download_manager = None  # created in do_run()
         self._reporter = Reporter(config)
         self._config = config
-        clean_old_files(self._temp_dir, config.arg(TEMPEXPIRE) * 60 * 60 * 24, match_prefixes(RETRIEVEWEB), config.log)
+        clean_old_files(
+            self._temp_dir,
+            config.arg(TEMPEXPIRE) * 60 * 60 * 24,
+            match_prefixes(RETRIEVEWEB),
+            config.log,
+        )
 
     def do_run(self, args, fetch, command):
         """
         Set-up environment, parse commands, and delegate to sub-methods as appropriate.
         """
-        usage = 'Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [start [end]] | N_S_L_C [start [end]])' % command
+        usage = (
+            "Usage: rover %s (file | [net=N] [sta=S] [cha=C] [loc=L] [start [end]] | N_S_L_C [start [end]])"
+            % command
+        )
         if not args:
             raise Exception(usage)
         # input is a temp file as we prepend options
@@ -130,9 +159,11 @@ data missing from ROVER's local repository.
                 except Exception:
                     raise Exception(usage)
             fix_file_inplace(self._log, path, self._temp_dir)
-            self._download_manager = DownloadManager(self._config, RETRIEVECONFIG if fetch else None)
+            self._download_manager = DownloadManager(
+                self._config, RETRIEVECONFIG if fetch else None
+            )
             if fetch:
-                self._log.default('ROVER version %s - starting retrieve' % __version__)
+                self._log.default("ROVER version %s - starting retrieve" % __version__)
                 self.display_feedback()
             self._query(path, fetch)
             if fetch:
@@ -142,7 +173,9 @@ data missing from ROVER's local repository.
         except ManagerException:
             raise
         except Exception as e:
-            self._reporter.send_email('ROVER Failure', self._reporter.describe_error(RETRIEVE, e))
+            self._reporter.send_email(
+                "ROVER Failure", self._reporter.describe_error(RETRIEVE, e)
+            )
             raise
         finally:
             if self._delete_files:
@@ -154,10 +187,16 @@ data missing from ROVER's local repository.
         availability service with the local index.
         """
         if self._pre_index and self._config.arg(OUTPUT_FORMAT).upper() != "ASDF":
-            self._log.info('Ensuring index is current before retrieval')
+            self._log.info("Ensuring index is current before retrieval")
             Indexer(self._config).run([])
-        self._download_manager.add(DEFAULT_NAME, up, fetch,
-                                   self._availability_url, self._dataselect_url, self._source_callback)
+        self._download_manager.add(
+            DEFAULT_NAME,
+            up,
+            fetch,
+            self._availability_url,
+            self._dataselect_url,
+            self._source_callback,
+        )
 
     def _fetch(self):
         """
@@ -190,7 +229,6 @@ data missing from ROVER's local repository.
 
 
 class Retriever(BaseRetriever):
-
     __doc__ = BaseRetriever.__doc__
 
     def __init__(self, config):
@@ -202,36 +240,36 @@ class Retriever(BaseRetriever):
 
 class ListRetriever(BaseRetriever):
     """
-### List Retrieve
+    ### List Retrieve
 
-    rover list-retrieve file
+        rover list-retrieve file
 
-    rover list-retrieve N_S_L_C [start [end]]
+        rover list-retrieve N_S_L_C [start [end]]
 
-Compares the local index with the requested data remotely available, then
-displays the difference. Note that the summary is printed to stdout, while
-logging is to stderr.
+    Compares the local index with the requested data remotely available, then
+    displays the difference. Note that the summary is printed to stdout, while
+    logging is to stderr.
 
-##### Significant Options
+    ##### Significant Options
 
-@availability-url
-@timespan-tol
-@data-dir
-@verbosity
-@log-dir
-@log-verbosity
+    @availability-url
+    @timespan-tol
+    @data-dir
+    @verbosity
+    @log-dir
+    @log-verbosity
 
-##### Examples
+    ##### Examples
 
-    rover list-retrieve N_S_L_C.txt
+        rover list-retrieve N_S_L_C.txt
 
-will display the data missing form the repository to match what is available for the stations in the given file.
+    will display the data missing form the repository to match what is available for the stations in the given file.
 
-    rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
+        rover list-retrieve IU.ANMO.00.BH1 2017-01-01 2017-01-04
 
-will display the data missing from the repository to match what is available for IU.ANMO.00.BH1.
+    will display the data missing from the repository to match what is available for IU.ANMO.00.BH1.
 
-"""
+    """
 
     def __init__(self, config):
         super().__init__(config)

@@ -1,4 +1,3 @@
-
 import operator
 from functools import reduce
 from re import sub, compile
@@ -15,33 +14,49 @@ def parse_request(path, regexp_only):
     """
     Read the request into memory, extracting the N_S_L_C and date data.
     """
-    lines = []   # in-memory rather than a generator because we need to sort manually
-    with open(path, 'r') as input:
+    lines = []  # in-memory rather than a generator because we need to sort manually
+    with open(path, "r") as input:
         for line in input:
             try:
                 line = line.strip()
                 if line:
-                    parts = line.split(' ')
+                    parts = line.split(" ")
                     sncl = parts[0:4]
                     if regexp_only:
-                        if reduce(operator.or_, map(lambda x: '*' in x or '?' in x, sncl)):
+                        if reduce(
+                            operator.or_, map(lambda x: "*" in x or "?" in x, sncl)
+                        ):
                             # the outer sub here fixes things up so we match ? and * (we can't be explicit about
                             # * in the innermost sub because the middle sub would replace it).
-                            sncl = list(map(lambda x: sub(r'\?', '?\\*',
-                                                          sub(r'\*', r'[A-Za-z0-9\-\?]*',
-                                                              sub(r'\?', r'[A-Za-z0-9\-\?]',
-                                                                  x))), sncl))
+                            sncl = list(
+                                map(
+                                    lambda x: sub(
+                                        r"\?",
+                                        "?\\*",
+                                        sub(
+                                            r"\*",
+                                            r"[A-Za-z0-9\-\?]*",
+                                            sub(r"\?", r"[A-Za-z0-9\-\?]", x),
+                                        ),
+                                    ),
+                                    sncl,
+                                )
+                            )
                         else:
                             continue  # only regexps
                     dates = parts[4:]
                     assert len(dates) <= 2
                     while len(dates) < 2:
                         dates.append(None)
-                    lines.append((' '.join(sncl), [tuple(dates)]))
+                    lines.append((" ".join(sncl), [tuple(dates)]))
             except Exception:
-                raise Exception(('Cannot parse "%s" in %s (experts can use %s ' +
-                                 'at the risk of duplicating data in the repository)') %
-                                (line, path, mm(FORCEREQUEST)))
+                raise Exception(
+                    (
+                        'Cannot parse "%s" in %s (experts can use %s '
+                        + "at the risk of duplicating data in the repository)"
+                    )
+                    % (line, path, mm(FORCEREQUEST))
+                )
     return lines
 
 
@@ -51,7 +66,7 @@ def unique(input):
     Needed for the fast comparison (of sorted files) to work correctly.
     """
     output = []
-    for (sncl, dates) in sorted(input):
+    for sncl, dates in sorted(input):
         if output and sncl == output[-1][0]:
             output[-1][1].append(dates[0])
         else:
@@ -109,7 +124,12 @@ def format_dates(dates):
     """
     Format a list of date pairs, where the dates can be None if missing / open.
     """
-    return ', '.join(map(lambda pair: ' - '.join(map(lambda date: date if date else 'open', pair)), dates))
+    return ", ".join(
+        map(
+            lambda pair: " - ".join(map(lambda date: date if date else "open", pair)),
+            dates,
+        )
+    )
 
 
 class Regexps:
@@ -121,7 +141,7 @@ class Regexps:
         self._sncls = sncls
         self._dates = dates
         self._path = path
-        self._regexp = compile('(%s)' % '|'.join(sncls))
+        self._regexp = compile("(%s)" % "|".join(sncls))
 
     def assert_no_overlap(self, sncl, dates, path):
         """
@@ -131,9 +151,13 @@ class Regexps:
         # correct date.
         if self._regexp.match(sncl):
             for i in range(len(self._sncls)):
-                if compile(self._sncls[i]).match(sncl) and overlapping_dates(self._dates[i], dates):
-                    raise Exception('A pattern in %s matches an entry in %s (%s %s)' %
-                                    (self._path, path, sncl, format_dates(dates)))
+                if compile(self._sncls[i]).match(sncl) and overlapping_dates(
+                    self._dates[i], dates
+                ):
+                    raise Exception(
+                        "A pattern in %s matches an entry in %s (%s %s)"
+                        % (self._path, path, sncl, format_dates(dates))
+                    )
 
 
 class RequestComparison:
@@ -175,8 +199,17 @@ class RequestComparison:
                 if regexp2:
                     regexp2.assert_no_overlap(sncl1, dates1, self._path1)
                 if sncl1 == sncl2 and overlapping_dates(dates1, dates2):
-                    raise Exception('Overlap in %s and %s (%s %s and %s %s)' %
-                                    (self._path1, self._path2, sncl1, format_dates(dates1), sncl2, format_dates(dates2)))
+                    raise Exception(
+                        "Overlap in %s and %s (%s %s and %s %s)"
+                        % (
+                            self._path1,
+                            self._path2,
+                            sncl1,
+                            format_dates(dates1),
+                            sncl2,
+                            format_dates(dates2),
+                        )
+                    )
                 if sncl1 < sncl2:
                     sncl1, dates1 = next(values1)
                 else:

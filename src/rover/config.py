@@ -1,13 +1,32 @@
-
 from argparse import Namespace
 from genericpath import exists
 from os import makedirs, getcwd
 from os.path import isabs, join, realpath, abspath, expanduser, dirname
 from re import compile, sub
 
-from .args import Arguments, LOGDIR, LOGSIZE, LOGCOUNT, LOGVERBOSITY, \
-    VERBOSITY, LOGUNIQUE, LOGUNIQUEEXPIRE, FILEVAR, DIRVAR, TEMPDIR, DATADIR, \
-    COMMAND, unbar, DYNAMIC_ARGS, INIT_REPOSITORY, m, F, FILE, FULLCONFIG, ASDF_FILENAME
+from .args import (
+    Arguments,
+    LOGDIR,
+    LOGSIZE,
+    LOGCOUNT,
+    LOGVERBOSITY,
+    VERBOSITY,
+    LOGUNIQUE,
+    LOGUNIQUEEXPIRE,
+    FILEVAR,
+    DIRVAR,
+    TEMPDIR,
+    DATADIR,
+    COMMAND,
+    unbar,
+    DYNAMIC_ARGS,
+    INIT_REPOSITORY,
+    m,
+    F,
+    FILE,
+    FULLCONFIG,
+    ASDF_FILENAME,
+)
 from .logs import init_log, log_name
 from .sqlite import init_db
 from .utils import safe_unlink, canonify
@@ -62,30 +81,33 @@ class BaseConfig:
         """
         Look-up an arg with variable substitution.
         """
-        name = sub('-', '_', name)
+        name = sub("-", "_", name)
         if depth > 10:
-            raise Exception('Circular definition involving %s' % name)
+            raise Exception("Circular definition involving %s" % name)
         try:
             value = getattr(self._args, name)
         except Exception:
-            raise Exception('Option %s does not exist' % name)
+            raise Exception("Option %s does not exist" % name)
         while True:
             try:
-                matchvar = compile(r'(.*(?:^|[^\$]))\${(\w+)}(.*)').match(value)
+                matchvar = compile(r"(.*(?:^|[^\$]))\${(\w+)}(.*)").match(value)
             except Exception:
                 # not a string variable
                 break
             if matchvar:
-                if matchvar.group(2) == 'CONFIGDIR':
+                if matchvar.group(2) == "CONFIGDIR":
                     inner = self._configdir
                 else:
-                    inner = self.arg(matchvar.group(2), depth=depth+1)
+                    inner = self.arg(matchvar.group(2), depth=depth + 1)
                 try:
                     value = matchvar.group(1) + inner + matchvar.group(3)
                 except Exception:
-                    raise Exception('String substitution only works with string parameters (%s)' % name)
+                    raise Exception(
+                        "String substitution only works with string parameters (%s)"
+                        % name
+                    )
             else:
-                value = sub(r'\$\$', '$', value)
+                value = sub(r"\$\$", "$", value)
                 break
         return value
 
@@ -123,7 +145,8 @@ class BaseConfig:
 
 
 def timeseries_db(config):
-    return join(config.dir(DATADIR), 'timeseries.sqlite')
+    return join(config.dir(DATADIR), "timeseries.sqlite")
+
 
 def asdf_container(config):
     return join(config.dir(DATADIR), config.arg(ASDF_FILENAME))
@@ -140,7 +163,9 @@ class Config(BaseConfig):
 
         # there's a pile of ugliness here so that we delay error handling until we have logs.
         # see also comments in parse_args.
-        self.__error = self.__config and not exists(self.__config)  # see logic in parse_args
+        self.__error = self.__config and not exists(
+            self.__config
+        )  # see logic in parse_args
         full_config = self.__config and not self.__error
 
         # Special case of initializing repository, set config directory
@@ -151,71 +176,83 @@ class Config(BaseConfig):
             elif len(args.args) == 1:
                 configdir = args.args[0]
             else:
-                raise Exception('Command %s takes at most one argument - the directory to initialise' %
-                                INIT_REPOSITORY)
+                raise Exception(
+                    "Command %s takes at most one argument - the directory to initialise"
+                    % INIT_REPOSITORY
+                )
             configdir = canonify(configdir)
 
         # this is a bit ugly, but we need to use the base methods to construct the log and db
         # note that log is not used in base!
-        super().__init__(None, None, args, None, dirname(self.__config) if full_config else configdir)
-        self.log, self.log_path, self.__log_stream = \
-            init_log(self.dir(LOGDIR) if full_config else None, self.arg(LOGSIZE), self.arg(LOGCOUNT),
-                     self.arg(LOGVERBOSITY), self.arg(VERBOSITY), self.arg(COMMAND) or 'rover',
-                     self.arg(LOGUNIQUE), self.arg(LOGUNIQUEEXPIRE))
+        super().__init__(
+            None, None, args, None, dirname(self.__config) if full_config else configdir
+        )
+        self.log, self.log_path, self.__log_stream = init_log(
+            self.dir(LOGDIR) if full_config else None,
+            self.arg(LOGSIZE),
+            self.arg(LOGCOUNT),
+            self.arg(LOGVERBOSITY),
+            self.arg(VERBOSITY),
+            self.arg(COMMAND) or "rover",
+            self.arg(LOGUNIQUE),
+            self.arg(LOGUNIQUEEXPIRE),
+        )
         if full_config:  # if initializing, we have no database...
             self.db = init_db(timeseries_db(self), self.log)
 
     def lazy_validate(self):
         # allow Config() to be created first so we can log on error (see main()),
         if self.__error:
-            self.log.error('You may need to configure the repository using `rover %s %s %s`).' %
-                           (INIT_REPOSITORY, m(F), self.__config))
-            raise Exception('Could not find configuration file (%s)' % self.__config)
+            self.log.error(
+                "You may need to configure the repository using `rover %s %s %s`)."
+                % (INIT_REPOSITORY, m(F), self.__config)
+            )
+            raise Exception("Could not find configuration file (%s)" % self.__config)
 
     def dump_log(self):
         """
         Called only from initialization, when logging to an in-memory stream.
         """
         path, dir = log_name(self.dir(LOGDIR), self.arg(COMMAND))
-        self.log.info('Dumping log to %s' % path)
-        with open(path, 'w') as out:
+        self.log.info("Dumping log to %s" % path)
+        with open(path, "w") as out:
             out.write(self.__log_stream.getvalue())
 
 
 class RepoInitializer:
     """
-### Init Repository
+    ### Init Repository
 
-    rover init-repository [directory]
+        rover init-repository [directory]
 
-    rover init-repo [directory]
+        rover init-repo [directory]
 
-    rover init [directory]
+        rover init [directory]
 
-Initializes a given directory, or the current directory if no argument is
-provided, as a ROVER data repository. Init repository will create a
-configuration file, rover.config, as well as log and data directories.
+    Initializes a given directory, or the current directory if no argument is
+    provided, as a ROVER data repository. Init repository will create a
+    configuration file, rover.config, as well as log and data directories.
 
-   The aliases `rover init-repo` and `rover int` also exist.
+       The aliases `rover init-repo` and `rover int` also exist.
 
-To avoid over-writing data, rover init-repo returns an error if
-a rover.config file, data or log directory exist in the targeted directory.
+    To avoid over-writing data, rover init-repo returns an error if
+    a rover.config file, data or log directory exist in the targeted directory.
 
-##### Significant Options
+    ##### Significant Options
 
-@verbosity
-@log-dir
-@log-verbosity
+    @verbosity
+    @log-dir
+    @log-verbosity
 
-##### Examples
+    ##### Examples
 
-    rover init-repository
+        rover init-repository
 
-will create the repository in the current directory.
+    will create the repository in the current directory.
 
-    rover init-repository ~/rover
+        rover init-repository ~/rover
 
-will create the repository in ~/rover
+    will create the repository in ~/rover
 
     """
 
@@ -231,22 +268,24 @@ will create the repository in ~/rover
     def __check_empty(self):
         data_dir = self.__config.dir(DATADIR, create_dir=False)
         if exists(data_dir):
-            raise Exception('The data directory already exists (%s)' % data_dir)
+            raise Exception("The data directory already exists (%s)" % data_dir)
         config_file = self.__config.file(FILE, create_dir=False)
         if exists(config_file):
-            raise Exception('The configuration file already exists (%s)' % config_file)
+            raise Exception("The configuration file already exists (%s)" % config_file)
         log_dir = self.__config.dir(LOGDIR, create_dir=False)
         if exists(log_dir):
-            raise Exception('The log directory already exists (%s)' % log_dir)
+            raise Exception("The log directory already exists (%s)" % log_dir)
         # no need to check database because that's inside the data dir
 
     def __create(self):
         config_file = self.__config.file(FILE)
         self.__log.default('Writing new config file "%s"' % config_file)
-        Arguments().write_config(config_file, self.__args, WRITE_FULL_CONFIG=self.__config.arg(FULLCONFIG))
+        Arguments().write_config(
+            config_file, self.__args, WRITE_FULL_CONFIG=self.__config.arg(FULLCONFIG)
+        )
         self.__config.dir(DATADIR)
         db = init_db(timeseries_db(self.__config), self.__log)
-        db.execute('PRAGMA journal_mode=WAL')
+        db.execute("PRAGMA journal_mode=WAL")
         self.__config.dump_log()
 
 
