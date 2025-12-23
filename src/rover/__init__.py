@@ -19,19 +19,15 @@ def signal_handler(sig, frame):
 PREV_HANDLER = signal.signal(signal.SIGINT, signal_handler)
 
 from .args import INIT_REPOSITORY, INDEX, INGEST, LIST_INDEX, \
-    RETRIEVE, RETRIEVE_METADATA, HELP_CMD, SUBSCRIBE, DOWNLOAD, LIST_RETRIEVE, \
-    START, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, DAEMON, \
-    DEV, SUMMARY, LIST_SUMMARY, STATUS, WEB, TRIGGER, ABORT_CODE, ERROR_CODE
+    RETRIEVE, RETRIEVE_METADATA, HELP_CMD, DOWNLOAD, LIST_RETRIEVE, \
+    DEV, SUMMARY, LIST_SUMMARY, WEB, ABORT_CODE, ERROR_CODE
 from .config import Config, RepoInitializer
-from .daemon import Starter, Stopper, Daemon, StatusShower
 from .download import Downloader
 from .index import Indexer, IndexLister
 from .ingest import Ingester
 from .logs import LoggingContext
-from .process import ProcessManager
 from .retrieve import Retriever, ListRetriever
 from .retrieve_metadata import MetadataRetriever
-from .subscribe import Subscriber, SubscriptionLister, Unsubscriber, Trigger
 from .summary import Summarizer, SummaryLister
 from .web import ServerStarter
 
@@ -51,14 +47,6 @@ ADVANCED_COMMANDS[INGEST] = (Ingester, 'Ingest data from a file into the reposit
 ADVANCED_COMMANDS[WEB] = (ServerStarter, 'Start a web server showing status')
 ADVANCED_COMMANDS[RETRIEVE_METADATA] = (MetadataRetriever, 'Download missing metadata')
 ADVANCED_COMMANDS[SUMMARY] = (Summarizer, 'Update summary table')
-#ADVANCED_COMMANDS[START] = (Starter, 'Start the background daemon')
-#ADVANCED_COMMANDS[STOP] = (Stopper, 'Stop the background daemon')
-#ADVANCED_COMMANDS[STATUS] = (StatusShower, 'Show the background daemon status')
-#ADVANCED_COMMANDS[DAEMON] = (Daemon, 'The background daemon (prefer start/stop)')
-#ADVANCED_COMMANDS[SUBSCRIBE] = (Subscriber, 'Add a subscription')
-#ADVANCED_COMMANDS[LIST_SUBSCRIBE] = (SubscriptionLister, 'List the subscriptions')
-#ADVANCED_COMMANDS[TRIGGER] = (Trigger, 'Ask the daemon to reprocess subscriptions')
-#ADVANCED_COMMANDS[UNSUBSCRIBE] = (Unsubscriber, 'Remove subscriptions')
 
 
 COMMANDS = OrderedDict(chain(COMMON_COMMANDS.items(),

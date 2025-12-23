@@ -1,9 +1,9 @@
 
 from re import sub
 
-from .args import HELP_CMD, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, SUBSCRIBE, \
-    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, START, \
-    STATUS, STOP, LIST_SUBSCRIBE, UNSUBSCRIBE, TRIGGER, DAEMON, LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT, \
+from .args import HELP_CMD, LIST_INDEX, DATADIR, INIT_REPOSITORY, RETRIEVE, TEMPDIR, INGEST, INDEX, \
+    AVAILABILITYURL, DATASELECTURL, DOWNLOAD, LIST_RETRIEVE, mm, ALL, MSEEDINDEXCMD, Arguments, MDFORMAT, FILE, \
+    LIST_SUMMARY, SUMMARY, DEFAULT_FILE, INIT_REPO, INIT, \
     RETRIEVE_METADATA, WEB
 from .utils import dictionary_text_list
 
@@ -12,7 +12,6 @@ The 'rover help' command.
 """
 
 
-BACKGROUND = 'background'
 USAGE = 'usage'
 LOWLEVEL = 'low-level'
 
@@ -69,50 +68,6 @@ rover {11} <command>
            HELP_CMD)
 
 
-def background(config):
-    return '''
-                   Advanced ROVER Commands
-
-rover {0}
-
-  Start the background process that regularly downloads subscriptions.
-
-rover {1}
-
-rover {2}
-
-  Display the status of, and stop, the background process.
-
-rover {3} (file | sta=... [start [end]] | N_S_L_C [start [end]])
-
-  Subscribe generates a background service (daemon) that regularly compares data
-  available at the configured server with the local repository. If there is a
-  discrepancy, available data is downloaded, ingested and indexed. `rover {3}` is
-  similar to `rover {4}` but uses a daemon to regularly update the local repository.
-
-rover {5}
-
-rover {5} N
-
-  Displays indices of all ROVER subscriptions. `rover {5}` is similar to
-  `rover {6}`.
-
-rover {7} N
-
-  Ask the daemon to immediately re-process a subscription(s) based
-  on the subscription's index.
-
-rover {8} N
-
-  Delete one or more subscriptions identified by their indices.
-  Data associated with the subscription(s) is not deleted.
-
-'''.format(START, STATUS, STOP,
-           SUBSCRIBE, RETRIEVE,
-           LIST_SUBSCRIBE, LIST_RETRIEVE,
-           TRIGGER, UNSUBSCRIBE)
-
-
 def low_level(config):
     return '''
                    Low-Level ROVER Commands
@@ -147,32 +102,24 @@ rover {8} (file|dir) ...
   Adds contents from a miniSEED formatted file to ROVER's local
   repository and indexes the new data.
 
-rover {9} ... 
-
-Starts a web server that provides information on the progress of the download
-manager. ROVER's default configuration starts `rover {9}` automatically.
-The flag`--no-web` prevents ROVER's web server from launching in accordance
-with `rover {4}` or `rover {10}`.
-
-rover {11} ...
+rover {9} ...
 
   Download missing metadata from the fdsnws-station web service and save to
   the data archive. This feature is only supported for the ASDF output format.
 
-rover {12} ...
+rover {10} ...
 
   Creates a summary of the index stored in a ROVER repository.
   This lists the overall span of data for each
-  Net_Sta_Loc_Chan and can be queried using `rover {13}`.
+  Net_Sta_Loc_Chan and can be queried using `rover {11}`.
 
-'''.format(DOWNLOAD, DATASELECTURL, TEMPDIR, DATADIR, RETRIEVE, SUBSCRIBE,
-           DAEMON, INDEX, INGEST, WEB, START, RETRIEVE_METADATA, SUMMARY,
+'''.format(DOWNLOAD, DATASELECTURL, TEMPDIR, DATADIR, RETRIEVE,
+           INDEX, INGEST, WEB, RETRIEVE_METADATA, SUMMARY,
            LIST_SUMMARY)
 
 
 GENERAL = {
     USAGE: (usage, 'General interactive use'),
-    #BACKGROUND: (background, 'Advanced use with ROVER in the background'),
     LOWLEVEL: (low_level, 'Rarely used, low-level commands')
 }
 

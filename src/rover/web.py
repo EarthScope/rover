@@ -6,9 +6,8 @@ from time import sleep
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from .manager import ConsistencyState
-from .args import HTTPBINDADDRESS, HTTPPORT, RETRIEVE, DAEMON, WEB
+from .args import HTTPBINDADDRESS, HTTPPORT, WEB
 from .download import DEFAULT_NAME
-from .process import ProcessManager
 from .sqlite import SqliteSupport, NoResult
 from .utils import process_exists, format_time_epoch, format_time_epoch_local, safe_unlink
 
@@ -62,13 +61,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self._html_header()
         self._write('<h1>ROVER</h1>')
-        pid, command = self.server.process_manager.current_command()
-        if command == DAEMON:
-            self._do_daemon()
-        elif command == RETRIEVE:
-            self._do_retrieve()
-        else:
-            self._do_quiet()
+        # Daemon/subscription status removed; show simple message.
+        self._do_quiet()
         self._html_footer()
 
     def _write(self, text):
@@ -191,7 +185,7 @@ class Server(HTTPServer, SqliteSupport):
     def __init__(self, config, address, handler):
         HTTPServer.__init__(self, address, handler)
         SqliteSupport.__init__(self, config)
-        self.process_manager = ProcessManager(config)
+        self.process_manager = None
 
 
 class ServerStarter:
@@ -229,9 +223,7 @@ will run retrieve without the web server.
     def __init__(self, config):
         self._bind_address = config.arg(HTTPBINDADDRESS)
         self._http_port = config.arg(HTTPPORT)
-        self._ppid = ProcessManager(config).current_command()[0]
-        if not self._ppid:
-            raise Exception('Cannot start web server independently of retrieve')
+        self._ppid = os.getppid()
         self._log = config.log
         self._log_path = config.log_path
         self._config = config

@@ -17,24 +17,16 @@ ERROR_CODE = 1
 ABORT_CODE = 2
 
 # commands
-DAEMON = 'daemon'
 DOWNLOAD = 'download'
 HELP_CMD = 'help'
 INDEX = 'index'
 INGEST = 'ingest'
 LIST_INDEX = 'list-index'
 LIST_RETRIEVE = 'list-retrieve'
-LIST_SUBSCRIBE = 'list-subscribe'
 LIST_SUMMARY = 'list-summary'
 RETRIEVE = 'retrieve'
 RETRIEVE_METADATA = 'retrieve-metadata'
-START = 'start'
-STOP = 'stop'
-STATUS = 'status'
 SUMMARY = 'summary'
-SUBSCRIBE = 'subscribe'
-TRIGGER = 'trigger'
-UNSUBSCRIBE = 'unsubscribe'
 WEB = 'web'
 INIT = 'init'
 INIT_REPO = 'init-repo'
@@ -83,14 +75,12 @@ MSEEDINDEXWORKERS = 'mseedindex-workers'
 OUTPUT_FORMAT = 'output-format'
 POSTSUMMARY = 'post-summary'
 PREINDEX = 'pre-index'
-RECHECKPERIOD = 'recheck-period'
 RECURSE = "recurse"
 ROVERCMD = 'rover-cmd'
 SMTPADDRESS = 'smtp-address'
 SMTPPORT = 'smtp-port'
 SORTINPYTHON = 'sort-in-python'
 STATIONURL = 'station-url'
-SUBSCRIPTIONSDIR = 'subscriptions-dir'
 TEMPDIR = 'temp-dir'
 TEMPEXPIRE = 'temp-expire'
 TIMESPANINC = 'timespan-inc'
@@ -128,11 +118,9 @@ DEFAULT_LOGUNIQUE_EXPIRE = 7
 DEFAULT_MSEEDINDEXCMD = 'mseedindex -sqlitebusyto 60000'
 DEFAULT_MSEEDINDEXWORKERS = 10
 DEFAULT_OUTPUT_FORMAT = 'mseed'
-DEFAULT_RECHECKPERIOD = 12
 DEFAULT_ROVERCMD = 'rover'
 DEFAULT_SMTPADDRESS = 'localhost'
 DEFAULT_STATIONURL = 'http://service.iris.edu/fdsnws/station/1/query'
-DEFAULT_SUBSCRIPTIONSDIR = 'subscriptions'
 DEFAULT_TEMPDIR = 'tmp'
 DEFAULT_TEMPEXPIRE = 1
 DEFAULT_TIMESPANINC = 0.5
@@ -313,12 +301,6 @@ class Arguments(ArgumentParser):
         index_group = self.add_argument_group('index arguments')
         index_group.add_argument(mm(ALL), default=False, action='store_bool', help='process all files (not just modified)?', metavar='')
         index_group.add_argument(mm(RECURSE), default=True, action='store_bool', help='when given a directory, process children?', metavar='')
-
-        # subscription
-        subscription_group = self.add_argument_group('subscription arguments')
-        subscription_group.add_argument(mm(SUBSCRIPTIONSDIR), default=DEFAULT_SUBSCRIPTIONSDIR, action='store', help='directory for subscriptions', metavar=DIRVAR)
-        subscription_group.add_argument(mm(RECHECKPERIOD), default=DEFAULT_RECHECKPERIOD, action='store', help='time between availabilty checks', metavar=HOURSVAR, type=int)
-        subscription_group.add_argument(mm(FORCEREQUEST), default=False, action='store_bool', help='skip overlap checks (dangerous)?', metavar='')
 
         # logging
         logging_group = self.add_argument_group('logging arguments')

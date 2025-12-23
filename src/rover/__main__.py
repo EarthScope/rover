@@ -5,7 +5,6 @@ import traceback
 from traceback import print_exc
 
 from .logs import LoggingContext
-from .process import ProcessManager
 from .config import Config
 
 from rover import COMMANDS, HELP_CMD, INIT_REPOSITORY, ABORT_CODE, ERROR_CODE, DEV
@@ -40,8 +39,7 @@ def main():
             if not config.command or config.command in (INIT_REPOSITORY, HELP_CMD):
                 execute(config.command, config)
             else:
-                with ProcessManager(config):
-                    execute(config.command, config)
+                execute(config.command, config)
         except KeyboardInterrupt:
             exit(ABORT_CODE)
     except Exception as e:

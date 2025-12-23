@@ -7,8 +7,8 @@ from time import time
 
 from .manager import ConsistencyState
 from .utils import format_time_epoch, format_time_epoch_local
-from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, RECHECKPERIOD, LIST_RETRIEVE, LIST_SUBSCRIBE, \
-    DAEMON, TRIGGER, mm, DOWNLOADRETRIES
+from .args import EMAIL, EMAILFROM, SMTPPORT, SMTPADDRESS, RETRIEVE, LIST_RETRIEVE, \
+    mm, DOWNLOADRETRIES
 
 
 """
@@ -28,7 +28,6 @@ class Reporter:
         self._email_from = config.arg(EMAILFROM)
         self._smtp_address = config.arg(SMTPADDRESS)
         self._smtp_port = config.arg(SMTPPORT)
-        self._recheck_period = config.arg(RECHECKPERIOD)
         self._log = config.log
 
     def send_email(self, subject, msg):
@@ -141,42 +140,3 @@ Re-run the %s command with %s > 1 to check
 ''' % (RETRIEVE, mm(DOWNLOADRETRIES))
         self._log_message(msg, self._log.warn if source.errors.final_errors else self._log.default)
         return 'ROVER %s complete' % RETRIEVE, msg
-
-    def describe_daemon(self, source):
-        """
-        Generate the message sent by the daemon.
-        """
-        msg = '''
------ Subscription Processed -----
-
-Subscription %s has been processed by the rover %s on %s.
-
-The task comprised of %d stations with data covering %ds.
-
-A total of %d downloads were made, with %d errors (%d on
-final pass of %d).
-
-The subscription will be checked again in %d hours.
-''' % (source.name, DAEMON, gethostname(),
-       source.initial_progress.stations[1], source.initial_progress.seconds[1],
-       source.errors.downloads, source.errors.errors, source.errors.final_errors,
-       source.n_retries, self._recheck_period)
-        if source.errors.final_errors:
-            msg += '''
-WARNING: The final download had some errors, it may be incomplete.
-         To check for completeness use `rover %s %s`
-         Run `rover %s %s` to reprocess immediately.
-''' % (LIST_SUBSCRIBE, source.name, TRIGGER, source.name)
-        elif source.consistent == ConsistencyState.INCONSISTENT:
-            msg += '''
-WARNING: Inconsistent behaviour was detected in the web
-         services (eg dataselect not providing data promised
-         by availability)
-'''
-        elif source.consistent == ConsistencyState.UNCERTAIN:
-            msg += '''
-The consistency of the web services could not be confirmed
-(daemon must have %s > 1).
-''' % mm(DOWNLOADRETRIES)
-        self._log_message(msg, self._log.warn if source.errors.final_errors else self._log.default)
-        return 'ROVER subscription %s processed' % source.name, msg
